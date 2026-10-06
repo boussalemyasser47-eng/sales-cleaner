@@ -3,64 +3,14 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 import io
-# استدعاء دالة توليد الـ PDF من ملف pdf_helper.py
+
+# استدعاء الدوال من الملفات الفرعية المخصصة التي أنشأناها
+from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf
 
-# 🎨 إعدادات واجهة الموقع الأسطورية لتكون عريضة
+# 🎨 تطبيق التنسيق والواجهة العريضة
 st.set_page_config(page_title="نظام المبيعات الأسطوري المتكامل", layout="wide")
-
-# 🖌️ الألوان السيبرانية الأسطورية المضيئة المحدثة بالكامل (Neon Cyberpunk)
-st.markdown("""
-    <style>
-    /* 🌌 خلفية التطبيق العامة */
-    .stApp { background-color: #0d1117; }
-    
-    /* 🛠️ تلوين لوحة التحكم الجانبية بالكامل وتحسين وضوحها */
-    [data-testid="stSidebar"] {
-        background-color: #161b22 !important;
-        border-right: 2px solid #30363d !important;
-    }
-    
-    /* تحسين النصوص والخيارات داخل القائمة الجانبية لتكون بيضاء وواضحة جداً */
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span {
-        color: #ffffff !important;
-        font-weight: bold !important;
-        font-size: 16px !important;
-    }
-    
-    /* تلوين العناوين الرئيسية بنظام النيون المشع */
-    h1 {
-        color: #00ffcc !important;
-        font-family: 'Cairo', sans-serif;
-        text-align: center;
-        text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc;
-        font-weight: bold;
-    }
-    h2, h3 {
-        color: #ff007f !important;
-        text-shadow: 0 0 5px rgba(255, 0, 127, 0.5);
-    }
-    
-    /* 🚀 تحسين الأزرار بتأثير نيون تفاعلي */
-    div.stButton > button:first-child {
-        background: linear-gradient(45deg, #ff007f, #7f00ff);
-        color: white; border-radius: 12px; border: none;
-        padding: 12px 30px; font-size: 18px; font-weight: bold;
-        box-shadow: 0 0 15px #ff007f; transition: 0.4s; width: 100%;
-    }
-    div.stButton > button:first-child:hover {
-        background: linear-gradient(45deg, #00ffcc, #007fff);
-        box-shadow: 0 0 25px #00ffcc; color: #0d1117;
-    }
-    
-    /* 📥 صناديق إدخال متطابقة مع الوضع الداكن */
-    .stTextInput>div>div>input, .stSelectbox>div>div>div, .stFileUploader>div {
-        background-color: #161b22 !important; color: #ffffff !important;
-        border: 2px solid #30363d !important; border-radius: 8px;
-    }
-    p, label, th, td { color: #c9d1d9 !important; }
-    </style>
-    """, unsafe_allow_html=True)
+apply_neon_theme()
 
 # 🏛️ ربط قاعدة البيانات وتجهيز الجداول
 conne = sqlite3.connect("invoices_master_v3.db")
@@ -87,7 +37,7 @@ choice = st.sidebar.radio("اختر الأداة التي تريد استخدا�
 ])
 
 # ========================================================
-# الميزة الأولى: واجهة صانع الفواتير الفردية واختيار الشعار
+# الميزة الأولى: واجهة صانع الفواتير الفردية
 # ========================================================
 if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     st.write("<h1 style='font-size: 32px;'>📄 صانع الفواتير الأسطوري مع الشعار ودعم العربية</h1>", unsafe_allow_html=True)
@@ -150,7 +100,7 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
         st.metric(label=f"📊 صافي أرباح شهر ({filter_month}) فقط:", value=f"{filtered_invoices['final_total'].sum():,.2f} DA")
 
 # ========================================================
-# الميزة الثانية: مطهر ملفات المبيعات والرسوم البيانية النيون
+# الميزة الثانية: مطهر ملفات المبيعات والرسوم البيانية المضيئة
 # ========================================================
 elif choice == "🧼 مطهر ملفات المبيعات والرسوم البيانية":
     st.write("<h1 style='font-size: 32px;'>🧼 نظام تطهير ملفات المبيعات الجماعية (Excel & CSV)</h1>", unsafe_allow_html=True)
@@ -168,23 +118,47 @@ elif choice == "🧼 مطهر ملفات المبيعات والرسوم الب�
         if 'item_price' in df.columns:
             df['item_price'] = df['item_price'].astype(str).str.replace(' DA', '').astype(float)
         
-        duplicated_rows = df[df.duplicated(subset=['product_name'], keep='first')]
+        duplicated_rows = df[df.duplicated(subset=['product_name'], keep='first')].copy()
         df.drop_duplicates(subset=['product_name'], keep='first', inplace=True)
         
-        bad_prices = df[df['item_price'] <= 0]
+        bad_prices = df[df['item_price'] <= 0].copy()
         df = df[df['item_price'] > 0]
         
         if 'sale_date' in df.columns:
             df['sale_date'] = pd.to_datetime(df['sale_date'], dayfirst=True, format='mixed', errors='coerce')
             df.dropna(subset=['sale_date'], inplace=True)
+        
+        # حساب الأرباح وضمان الحفظ قبل العرض لضمان سلامة الجدول
+        df['total_row_sales'] = df['item_price'] * df['quantity_sold']
+        if not duplicated_rows.empty and 'item_price' in duplicated_rows.columns:
+             duplicated_rows['total_row_sales'] = duplicated_rows['item_price'] * duplicated_rows['quantity_sold']
             
         st.success("✅ تم تنظيف الداتا وتجهيز المخططات المضيئة للمتجر!")
         
+        st.subheader("💎 جدول البيانات النظيف تماماً والمصفى:")
+        st.dataframe(df, use_container_width=True)
+        
+        col_clean, col_trash = st.columns(2)
+        with col_clean:
+            st.subheader("📊 إجمالي المبيعات الصافية بعد الفحص:")
+            st.metric(label="صافي الأرباح الحقيقية المتوقعة", value=f"{df['total_row_sales'].sum():,.2f} DA")
+        with col_trash:
+            st.subheader("⚠️ التكرارات والأخطاء المحذوفة:")
+            if not duplicated_rows.empty or not bad_prices.empty:
+                if not duplicated_rows.empty:
+                    st.warning(f"تم عزل وحذف {len(duplicated_rows)} سطر مكرر لحمايتك!")
+                    st.dataframe(duplicated_rows)
+                if not bad_prices.empty:
+                    st.error(f"تم حذف {len(bad_prices)} سطر أسعار سالبة!")
+                    st.dataframe(bad_prices)
+            else:
+                st.info("الملف سليم تماماً ولا يحتوي على تكرارات.")
+                
+        # الرسوم البيانية النيون الملونة
         st.subheader("📈 المخططات البيانية الملونة للمبيعات:")
         chart_col1, chart_col2 = st.columns(2)
         with chart_col1:
             st.write("💰 حجم المبيعات الإجمالي الحقيقي لكل منتج (باللون الأخضر الفسفوري المشع):")
-            df['total_row_sales'] = df['item_price'] * df['quantity_sold']
             st.bar_chart(data=df, x='product_name', y='total_row_sales', color='#00ffcc')
         with chart_col2:
             st.write("📦 مجموع الكميات المستلمة والمباعة (باللون البنفسجي الليزري):")
@@ -199,3 +173,4 @@ elif choice == "🧼 مطهر ملفات المبيعات والرسوم الب�
         )
 
 conne.close()
+
