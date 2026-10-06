@@ -1,81 +1,82 @@
-import pandas as pd
 import streamlit as st
-import sqlite3
-import warnings
-warnings.filterwarnings('ignore')
+import pandas as pd
+from datetime import datetime
 
-st.set_page_config(page_title="محلل مبيعات المتاجر الذكي", layout="wide")
+st.set_page_config(page_title="صانع الفواتير السريع للمتاجر", layout="centered")
 
-st.title("📊 نظام فحص وتطهير بيانات المبيعات الذكي")
-st.write("قم برفع ملف مبيعاتك للكشف عن الثغرات وحساب الأرباح الصافية الحقيقية.")
+st.title("📄 صانع الفواتير الرقمية السريع للمتاجر الجزائرية 🇩🇿")
+st.write("اصنع فاتورة احترافية لزبونك في أقل من دقيقة وأبهر عملاءك!")
 
-# 📂 ميزة رفع الملفات من طرف المستخدم
-uploaded_file = st.file_uploader("اختر ملف المبيعات (صيغة CSV حالياً)", type=["csv"])
+# 🏪 1. معلومات المتجر الأساسية
+st.subheader("🏪 معلومات متجرك:")
+shop_name = st.text_input("اسم متجرك الإلكتروني (مثال: DZ Store):", "متجري الإلكتروني")
 
-if uploaded_file is not None:
-    # قراءة الملف المرفوع
-    df = pd.read_csv(uploaded_file)
-    
-    st.subheader("📋 البيانات المستلمة (قبل التنظيف)")
-    st.dataframe(df.head())
-    
-    # حساب الإيرادات قبل الفحص للمقارنة
-    total_raw = 0
-    if 'item_price' in df.columns and 'quantity_sold' in df.columns:
-        try:
-            temp_price = df['item_price'].astype(str).str.replace(' DA', '').astype(float)
-            total_raw = (temp_price * df['quantity_sold']).sum()
-        except:
-            total_raw = 0
+# 👤 2. معلومات الزبون
+st.subheader("👤 معلومات الزبون:")
+col_c1, col_c2 = st.columns(2)
+with col_c1:
+    customer_name = st.text_input("اسم الزبون الكامل:")
+with col_c2:
+    customer_phone = st.text_input("رقم هاتف الزبون:")
 
-    # 🛠️ عمليات التطهير الذكي للبيانات
-    conne = sqlite3.connect("electronics_shop.db")
-    
-    # 1. تنظيف عمود السعر وتحويله لأرقام
-    if 'item_price' in df.columns:
-        df['item_price'] = df['item_price'].astype(str).str.replace(' DA', '').astype(float)
-    
-    # 2. عزل وفحص الأخطاء (الأسعار السالبة) لإظهارها للتاجر
-    bad_rows = df[df['item_price'] <= 0]
-    df = df[df['item_price'] > 0]
-    
-    # 3. توحيد صيغ التواريخ وحذف الأسطر التالفة
-    if 'sale_date' in df.columns:
-        df['sale_date'] = pd.to_datetime(df['sale_date'], dayfirst=True, format='mixed', errors='coerce')
-        df.dropna(subset=['sale_date'], inplace=True)
-    
-    # حفظ وتخزين البيانات النظيفة في قاعدة بيانات SQLite
-    df.to_sql("cleaned_sales", conne, if_exists="replace", index=False)
-    
-    # قراءة البيانات النظيفة للعرض
-    ddf = pd.read_sql("SELECT * FROM cleaned_sales", conne)
-    
-    # 🟢 عرض النتائج بعد التنظيف
-    st.success("✅ تم فحص وتطهير البيانات بنجاح وتخزينها في قاعدة البيانات!")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("💎 البيانات المطهّرة والجاهزة للحساب:")
-        st.dataframe(ddf)
-    
-    with col2:
-        st.subheader("⚠️ الأخطاء المكتشفة والمحذوفة:")
-        if not bad_rows.empty:
-            st.warning(f"تم اكتشاف {len(bad_rows)} سطر يحتوي على أسعار سالبة أو أخطاء إدخال!")
-            st.dataframe(bad_rows)
-        else:
-            st.info("لا توجد أسعار سالبة في هذا الملف.")
+customer_address = st.text_input("عنوان التوصيل والولاية:")
 
-    # 💰 حساب الإجمالي بضغطة زر
-    if st.button("حساب إجمالي المبيعات الصافية"):
-        total_sales = (ddf['item_price'] * ddf['quantity_sold']).sum()
+# 📦 3. تفاصيل السلعة والحسابات الرياضية بالباندا
+st.subheader("📦 تفاصيل السلعة المبيعة:")
+col_p1, col_p2, col_p3 = st.columns(3)
+
+with col_p1:
+    product_name = st.text_input("اسم المنتج:")
+with col_p2:
+    price = st.number_input("سعر القطعة بالدينار (DA):", min_value=0, value=1200)
+with col_p3:
+    quantity = st.number_input("الكمية المباعة:", min_value=1, value=1)
+
+# شحن وتوصيل
+shipping_cost = st.number_input("مصاريف الشحن والتوصيل (DA):", min_value=0, value=600)
+
+# ⚡ 4. توليد الفاتورة بضغطة زر
+if st.button("إصدار الفاتورة الاحترافية"):
+    if not customer_name or not product_name:
+        st.error("❌ من فضلك أدخل اسم الزبون واسم المنتج لإصدار الفاتورة!")
+    else:
+        # حساب الرياضيات بالبايثون
+        product_total = price * quantity
+        final_total = product_total + shipping_cost
+        current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
         
-        # عرض مقارنة مالية ذكية تبهر العميل
-        st.metric(label="إجمالي المبيعات الحقيقية الصافية", value=f"{total_sales:,.2f} DA")
-        if total_raw > total_sales:
-            diff = total_raw - total_sales
-            st.error(f"⚠️ انتبه: كان هناك أخطاء بقيمة {diff:,.2f} DA في ملفك الأصلي تم تصحيحها لحمايتك من الخسارة!")
+        # 🎨 تصميم شكل الفاتورة التي ستظهر للتاجر
+        st.success("✅ تم توليد الفاتورة بنجاح! انسخ النص بالأسفل وأرسله لزبونك:")
+        
+        invoice_text = f"""
+        ===================================
+        🧾 فاتورة شراء من: {shop_name} 🧾
+        ===================================
+        📅 التاريخ: {current_date}
+        
+        👤 معلومات الزبون:
+        -----------------
+        - الاسم: {customer_name}
+        - الهاتف: {customer_phone}
+        - العنوان: {customer_address}
+        
+        📦 تفاصيل الطلبية:
+        -----------------
+        - المنتج: {product_name}
+        - السعر: {price:,} DA
+        - الكمية: {quantity}
+        
+        -----------------
+        💰 المجموع الفرعي: {product_total:,} DA
+        🚚 مصاريف الشحن: {shipping_cost:,} DA
+        📊 الإجمالي الصافي للدفع: {final_total:,} DA
+        
+        ===================================
+        🙏 شكراً لثقتكم بنا وتسوقكم من متجرنا! 🙏
+        ===================================
+        """
+        
+        # عرض الفاتورة داخل صندوق نظيف لكي يقوم التاجر بنسخها بضغطة زر
+        st.code(invoice_text, language="text")
+        st.info("💡 يمكن للتاجر الضغط على زر النسخ في زاوية الصندوق العلوي وإرسالها فوراً للزبون عبر فيسبوك أو إنستغرام!")
 
-    conne.close()
-else:
-    st.info("💡 في انتظار رفع ملف CSV لبدء الفحص الحقيقي...")
