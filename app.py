@@ -182,18 +182,20 @@ elif choice == "🧼 مطهر ملفات المبيعات والرسوم الب�
             
         st.success("✅ تم تنظيف الداتا وتجهيز المخططات المضيئة للمتجر!")
         
-        # 📈 قسم الرسوم البيانية المضيئة الجديد (Neon Charts)
+        # 📈 قسم الرسوم البيانية المضيئة الجديد والمطور بالألوان الأسطورية (Neon Charts)
         st.subheader("📈 المخططات البيانية الملونة للمبيعات:")
         chart_col1, chart_col2 = st.columns(2)
         
         with chart_col1:
-            st.write("💰 حجم المبيعات الإجمالي الحقيقي لكل منتج:")
+            st.write("💰 حجم المبيعات الإجمالي الحقيقي لكل منتج (باللون الأخضر الفسفوري المشع):")
             df['total_row_sales'] = df['item_price'] * df['quantity_sold']
-            st.bar_chart(data=df, x='product_name', y='total_row_sales')
+            # استخدام اللون الأخضر الفسفوري المضيء للأعمدة المتوافقة مع السايبربانك
+            st.bar_chart(data=df, x='product_name', y='total_row_sales', color='#00ffcc')
             
         with chart_col2:
-            st.write("📦 مجموع الكميات المستلمة والمباعة:")
-            st.bar_chart(data=df, x='product_name', y='quantity_sold')
+            st.write("📦 مجموع الكميات المستلمة والمباعة (باللون البنفسجي الليزري):")
+            # استخدام اللون البنفسجي المضيء للأعمدة المتوافقة مع أزرار التحكم
+            st.bar_chart(data=df, x='product_name', y='quantity_sold', color='#ff007f')
             
         # تحميل الملف النظيف
         csv_buffer = df.to_csv(index=False).encode('utf-8')
@@ -206,4 +208,3 @@ elif choice == "🧼 مطهر ملفات المبيعات والرسوم الب�
 
 conne.close()
 
-  
