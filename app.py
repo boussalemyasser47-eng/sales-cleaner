@@ -8,8 +8,6 @@ import io
 import arabic_reshaper
 from bidi.algorithm import get_display
 from reportlab.pdfgen import canvas
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 
 # 🎨 إعدادات واجهة الموقع لتكون عريضة واحترافية
 st.set_page_config(page_title="نظام المبيعات الأسطوري المتكامل", layout="wide")
@@ -47,11 +45,11 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 🏛️ ربط قاعدة البيانات المشتركة وتجهيز الجداول
-conne = sqlite3.connect("invoices_master.db")
+# 🏛️ ربط قاعدة البيانات المشتركة وتجهيز الجداول باسم جديد لتفادي التعارض القديم
+conne = sqlite3.connect("invoices_master_v2.db")
 cursor = conne.cursor()
 cursor.execute('''
-    CREATE TABLE IF NOT EXISTS customer_invoices (
+    CREATE TABLE IF NOT EXISTS v2_customer_invoices (
         invoice_id INTEGER PRIMARY KEY AUTOINCREMENT,
         shop_name TEXT,
         customer_name TEXT,
@@ -63,11 +61,6 @@ cursor.execute('''
     )
 ''')
 conne.commit()
-
-# دالة لتصحيح النصوص العربية لكي تظهر صحيحة وموصولة في جداول الـ PDF
-def fix_arabic(text):
-    reshaped = arabic_reshaper.reshape(str(text))
-    return get_display(reshaped)
 
 # --- القائمة الجانبية للتنقل بين الأدوات ---
 st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; text-shadow: 0 0 10px #00ffcc;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
@@ -107,15 +100,15 @@ if choice == "✨ صانع الفواتير العربي (PDF)":
         if not customer_name or not product_name:
             st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
         else:
-            # 1. حفظ في قاعدة البيانات مع دعم فلتر الشهر
+            # 1. حفظ في قاعدة البيانات الجديدة v2
             cursor.execute('''
-                INSERT INTO customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created)
+                INSERT INTO v2_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
             conne.commit()
-            st.success("💾 تم حفظ الفاتورة بنجاح في نظام الأرشفة الأسطوري!")
+            st.success("💾 تم حفظ الفاتورة بنجاح في نظام الأرشفة المحدث!")
 
-            # 2. توليد ملف PDF متطور يدعم الكلمات والحسابات
+            # 2. توليد ملف PDF متطور
             buffer = io.BytesIO()
             p = canvas.Canvas(buffer)
             p.drawString(100, 800, f"INVOICE - {shop_name.upper()}")
@@ -145,14 +138,14 @@ if choice == "✨ صانع الفواتير العربي (PDF)":
     st.markdown("---")
     st.subheader("🗄️ نظام أرشفة الفواتير المتقدم")
     
-    # جلب قائمة الأشهر المتوفرة لتصفية البيانات بناءً عليها
-    months_df = pd.read_sql("SELECT DISTINCT month_created FROM customer_invoices ORDER BY month_created DESC", conne)
+    # جلب قائمة الأشهر المتوفرة لتصفية البيانات بناءً عليها من الجدول الجديد
+    months_df = pd.read_sql("SELECT DISTINCT month_created FROM v2_customer_invoices ORDER BY month_created DESC", conne)
     
     if not months_df.empty:
         filter_month = st.selectbox("🎯 اختر الشهر لفرز وحساب المبيعات الخاصة به:", months_df['month_created'])
         
         # استعلام مخصص للفلتر المختار
-        filtered_invoices = pd.read_sql(f"SELECT * FROM customer_invoices WHERE month_created = '{filter_month}' ORDER BY invoice_id DESC", conne)
+        filtered_invoices = pd.read_sql(f"SELECT * FROM v2_customer_invoices WHERE month_created = '{filter_month}' ORDER BY invoice_id DESC", conne)
         
         st.dataframe(filtered_invoices, use_container_width=True)
         st.metric(label=f"📊 صافي أرباح شهر ({filter_month}) فقط:", value=f"{filtered_invoices['final_total'].sum():,.2f} DA")
@@ -213,3 +206,4 @@ elif choice == "🧼 مطهر ملفات المبيعات والرسوم الب�
 
 conne.close()
 
+  
