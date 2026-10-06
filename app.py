@@ -3,16 +3,32 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 import io
-# استدعاء دالة توليد الـ PDF من الملف الثاني pdf_helper
+# استدعاء دالة توليد الـ PDF من ملف pdf_helper.py
 from pdf_helper import generate_invoice_pdf
 
 # 🎨 إعدادات واجهة الموقع الأسطورية لتكون عريضة
 st.set_page_config(page_title="نظام المبيعات الأسطوري المتكامل", layout="wide")
 
-# 🖌️ الألوان السيبرانية الأسطورية المضيئة (Neon Cyberpunk)
+# 🖌️ الألوان السيبرانية الأسطورية المضيئة المحدثة بالكامل (Neon Cyberpunk)
 st.markdown("""
     <style>
+    /* 🌌 خلفية التطبيق العامة */
     .stApp { background-color: #0d1117; }
+    
+    /* 🛠️ تلوين لوحة التحكم الجانبية بالكامل وتحسين وضوحها */
+    [data-testid="stSidebar"] {
+        background-color: #161b22 !important;
+        border-right: 2px solid #30363d !important;
+    }
+    
+    /* تحسين النصوص والخيارات داخل القائمة الجانبية لتكون بيضاء وواضحة جداً */
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span {
+        color: #ffffff !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+    }
+    
+    /* تلوين العناوين الرئيسية بنظام النيون المشع */
     h1 {
         color: #00ffcc !important;
         font-family: 'Cairo', sans-serif;
@@ -24,6 +40,8 @@ st.markdown("""
         color: #ff007f !important;
         text-shadow: 0 0 5px rgba(255, 0, 127, 0.5);
     }
+    
+    /* 🚀 تحسين الأزرار بتأثير نيون تفاعلي */
     div.stButton > button:first-child {
         background: linear-gradient(45deg, #ff007f, #7f00ff);
         color: white; border-radius: 12px; border: none;
@@ -34,6 +52,8 @@ st.markdown("""
         background: linear-gradient(45deg, #00ffcc, #007fff);
         box-shadow: 0 0 25px #00ffcc; color: #0d1117;
     }
+    
+    /* 📥 صناديق إدخال متطابقة مع الوضع الداكن */
     .stTextInput>div>div>input, .stSelectbox>div>div>div, .stFileUploader>div {
         background-color: #161b22 !important; color: #ffffff !important;
         border: 2px solid #30363d !important; border-radius: 8px;
@@ -42,7 +62,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 🏛️ ربط قاعدة البيانات وتجهيز الجداول الإصدار الثالث المطور
+# 🏛️ ربط قاعدة البيانات وتجهيز الجداول
 conne = sqlite3.connect("invoices_master_v3.db")
 cursor = conne.cursor()
 cursor.execute('''
@@ -60,7 +80,7 @@ cursor.execute('''
 conne.commit()
 
 # --- القائمة الجانبية للتنقل بين الأدوات ---
-st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; text-shadow: 0 0 10px #00ffcc;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
+st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; text-shadow: 0 0 10px #00ffcc; font-size: 24px;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
 choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
     "✨ صانع الفواتير الاحترافي (PDF)", 
     "🧼 مطهر ملفات المبيعات والرسوم البيانية"
@@ -98,7 +118,6 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
         if not customer_name or not product_name:
             st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
         else:
-            # حفظ البيانات في SQLite3
             cursor.execute('''
                 INSERT INTO v3_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -106,17 +125,14 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
             conne.commit()
             st.success("💾 تم حفظ الفاتورة بنجاح في قاعدة البيانات المحدثة!")
 
-            # قراءة شعار اللوغو إذا قام المستخدم برفعه
             logo_data = uploaded_logo.read() if uploaded_logo is not None else None
 
-            # استدعاء دالة بناء الـ PDF الذكية من ملف pdf_helper.py
             pdf_data = generate_invoice_pdf(
                 shop_name, customer_name, customer_phone, customer_address,
                 product_name, price, quantity, product_total, shipping_cost, final_total,
                 current_date, logo_data
             )
             
-            # زر تحميل ملف الـ PDF الجاهز والمطهّر
             st.download_button(
                 label="📥 تحميل الفاتورة الرقمية الأسطورية (PDF)",
                 data=pdf_data,
@@ -124,7 +140,6 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
                 mime="application/pdf"
             )
 
-    # أرشيف ونظام الفرز الشهري الذكي
     st.markdown("---")
     st.subheader("🗄️ نظام أرشفة الفواتير المتقدم")
     months_df = pd.read_sql("SELECT DISTINCT month_created FROM v3_customer_invoices ORDER BY month_created DESC", conne)
@@ -184,4 +199,3 @@ elif choice == "🧼 مطهر ملفات المبيعات والرسوم الب�
         )
 
 conne.close()
-
