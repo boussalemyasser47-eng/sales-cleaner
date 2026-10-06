@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import sqlite3
@@ -6,45 +5,63 @@ from datetime import datetime
 from fpdf import FPDF
 
 # 🎨 إعدادات واجهة الموقع لتكون عريضة واحترافية
-st.set_page_config(page_title="نظام المبيعات الذكي المطور", layout="wide")
+st.set_page_config(page_title="نظام المبيعات الأسطوري الذكي", layout="wide")
 
-# 🖌️ إضافة كود التلوين والخلفيات باستخدام CSS المدمج
+# 🖌️ إضافة ألوان النيون السيبرانية الأسطورية باستخدام CSS المدمج
 st.markdown("""
     <style>
-    /* تلوين خلفية التطبيق العامة */
+    /* 🌌 خلفية الموقع السوداء الفخمة */
     .stApp {
-        background-color: #f4f6f9;
+        background-color: #0d1117;
     }
-    /* تلوين العناوين الرئيسية */
+    
+    /* ⚡ تلوين العناوين الرئيسية بنظام النيون المضيء */
     h1 {
-        color: #1e3a8a !important;
+        color: #00ffcc !important; /* لون فسفوري مشع */
         font-family: 'Cairo', sans-serif;
         text-align: center;
+        text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc;
+        font-weight: bold;
     }
     h2, h3 {
-        color: #2c3e50 !important;
+        color: #ff007f !important; /* لون بنفسجي ليزري مشع */
+        text-shadow: 0 0 5px rgba(255, 0, 127, 0.5);
     }
-    /* تحسين شكل الأزرار وتلوينها بالأزرق الاحترافي */
+    
+    /* 🚀 أزرار أسطورية بتأثير النيون التفاعلي */
     div.stButton > button:first-child {
-        background-color: #1e3a8a;
+        background: linear-gradient(45deg, #ff007f, #7f00ff);
         color: white;
-        border-radius: 8px;
+        border-radius: 12px;
         border: none;
-        padding: 10px 24px;
-        font-size: 16px;
+        padding: 12px 30px;
+        font-size: 18px;
         font-weight: bold;
-        transition: 0.3s;
+        box-shadow: 0 0 15px #ff007f;
+        transition: 0.4s;
         width: 100%;
     }
     div.stButton > button:first-child:hover {
-        background-color: #3b82f6;
-        color: white;
+        background: linear-gradient(45deg, #00ffcc, #007fff);
+        box-shadow: 0 0 25px #00ffcc;
+        color: #0d1117;
     }
-    /* تحسين صناديق الإدخال */
+    
+    /* 📥 صناديق إدخال متناسقة مع الوضع الداكن */
     .stTextInput>div>div>input {
-        background-color: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
+        background-color: #161b22 !important;
+        color: #ffffff !important;
+        border: 2px solid #30363d !important;
+        border-radius: 8px;
+    }
+    .stTextInput>div>div>input:focus {
+        border-color: #00ffcc !important;
+        box-shadow: 0 0 10px #00ffcc;
+    }
+    
+    /* 📋 نصوص عادية بيضاء واضحة */
+    p, label {
+        color: #c9d1d9 !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -66,7 +83,7 @@ cursor.execute('''
 conne.commit()
 
 # --- القائمة الجانبية للتنقل بين الأدوات ---
-st.sidebar.markdown("<h2 style='color: #1e3a8a; text-align: center;'>🛠️ لوحة التحكم</h2>", unsafe_allow_html=True)
+st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; text-shadow: 0 0 10px #00ffcc;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
 choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
     "✨ صانع الفواتير الملون (PDF)", 
     "🧼 مطهر ملفات المبيعات (حذف التكرار)"
@@ -76,13 +93,13 @@ choice = st.sidebar.radio("اختر الأداة التي تريد استخدا�
 # الميزة الأولى: صانع الفواتير وتوليد الـ PDF وحفظها
 # ========================================================
 if choice == "✨ صانع الفواتير الملون (PDF)":
-    st.write("<h1 style='font-size: 28px;'>📄 صانع الفواتير الرقمية الذكي 🇩🇿</h1>", unsafe_allow_html=True)
-    st.write("<p style='text-align: center; color: #64748b;'>اصنع فاتورتك الملونة، احفظها في قاعدة البيانات، وحمّلها لزبونك فوراً.</p>", unsafe_allow_html=True)
+    st.write("<h1 style='font-size: 32px;'>📄 صانع الفواتير الأسطوري الرقمي</h1>", unsafe_allow_html=True)
+    st.write("<p style='text-align: center; color: #8b949e;'>اصنع فاتورتك الفخمة، احفظها في قاعدة البيانات، وحمّلها لزبونك فوراً.</p>", unsafe_allow_html=True)
     
     col_left, col_right = st.columns(2)
     with col_left:
         st.subheader("🏪 معلومات المتجر والزبون")
-        shop_name = st.text_input("اسم متجرك الإلكتروني:", "DZ Store")
+        shop_name = st.text_input("اسم متجرك الإلكتروني:", "DZ Cyber Store")
         customer_name = st.text_input("اسم الزبون الكامل:")
         customer_phone = st.text_input("رقم هاتف الزبون:")
         customer_address = st.text_input("عنوان التوصيل والولاية:")
@@ -99,7 +116,7 @@ if choice == "✨ صانع الفواتير الملون (PDF)":
     current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     st.markdown("---")
-    if st.button("🚀 إصدار وحفظ الفاتورة الحالية"):
+    if st.button("🚀 إصدار وحفظ الفاتورة الأسطورية"):
         if not customer_name or not product_name:
             st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
         else:
@@ -108,7 +125,7 @@ if choice == "✨ صانع الفواتير الملون (PDF)":
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (shop_name, customer_name, customer_phone, product_name, final_total, current_date))
             conne.commit()
-            st.success("💾 تم حفظ الفاتورة بنجاح في الأرشيف الملون!")
+            st.success("💾 تم حفظ الفاتورة بنجاح في الأرشيف المشع!")
 
             # توليد ملف PDF
             pdf = FPDF()
@@ -146,7 +163,7 @@ if choice == "✨ صانع الفواتير الملون (PDF)":
 
     # عرض أرشيف الفواتير
     st.markdown("---")
-    st.subheader("📋 أرشيف الفواتير الفردية المحفوظة:")
+    st.subheader("📋 أرشيف الفواتير المحفوظة:")
     all_invoices = pd.read_sql("SELECT * FROM customer_invoices ORDER BY invoice_id DESC", conne)
     if not all_invoices.empty:
         st.dataframe(all_invoices, use_container_width=True)
@@ -156,7 +173,7 @@ if choice == "✨ صانع الفواتير الملون (PDF)":
 # الميزة الثانية: مطهر ملفات المبيعات المرفوعة من التكرار
 # ========================================================
 elif choice == "🧼 مطهر ملفات المبيعات (حذف التكرار)":
-    st.write("<h1 style='font-size: 28px;'>🧼 نظام فحص وتطهير ملفات المبيعات الجماعية</h1>", unsafe_allow_html=True)
+    st.write("<h1 style='font-size: 32px;'>🧼 نظام تطهير ملفات المبيعات</h1>", unsafe_allow_html=True)
     
     uploaded_file = st.file_uploader("اختر ملف المبيعات المراد تنظيفه (صيغة CSV)", type=["csv"])
     
@@ -179,7 +196,7 @@ elif choice == "🧼 مطهر ملفات المبيعات (حذف التكرار
             df['sale_date'] = pd.to_datetime(df['sale_date'], dayfirst=True, format='mixed', errors='coerce')
             df.dropna(subset=['sale_date'], inplace=True)
             
-        st.success("✅ تم تنظيف وتطهير الملف بنجاح من كافة الأخطاء والتكرارات!")
+        st.success("✅ تم تنظيف وتطهير الملف بنجاح!")
         
         col_clean, col_trash = st.columns(2)
         with col_clean:
@@ -206,3 +223,4 @@ elif choice == "🧼 مطهر ملفات المبيعات (حذف التكرار
         )
 
 conne.close()
+
