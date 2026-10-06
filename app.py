@@ -3,13 +3,10 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 import io
+# استدعاء دالة توليد الـ PDF من الملف الثاني pdf_helper
+from pdf_helper import generate_invoice_pdf
 
-# مكتبات معالجة وتصحيح الكتابة العربية في ملفات الـ PDF
-import arabic_reshaper
-from bidi.algorithm import get_display
-from reportlab.pdfgen import canvas
-
-# 🎨 إعدادات واجهة الموقع لتكون عريضة واحترافية
+# 🎨 إعدادات واجهة الموقع الأسطورية لتكون عريضة
 st.set_page_config(page_title="نظام المبيعات الأسطوري المتكامل", layout="wide")
 
 # 🖌️ الألوان السيبرانية الأسطورية المضيئة (Neon Cyberpunk)
@@ -37,7 +34,7 @@ st.markdown("""
         background: linear-gradient(45deg, #00ffcc, #007fff);
         box-shadow: 0 0 25px #00ffcc; color: #0d1117;
     }
-    .stTextInput>div>div>input, .stSelectbox>div>div>div {
+    .stTextInput>div>div>input, .stSelectbox>div>div>div, .stFileUploader>div {
         background-color: #161b22 !important; color: #ffffff !important;
         border: 2px solid #30363d !important; border-radius: 8px;
     }
@@ -45,11 +42,11 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 🏛️ ربط قاعدة البيانات المشتركة وتجهيز الجداول باسم جديد لتفادي التعارض القديم
-conne = sqlite3.connect("invoices_master_v2.db")
+# 🏛️ ربط قاعدة البيانات وتجهيز الجداول الإصدار الثالث المطور
+conne = sqlite3.connect("invoices_master_v3.db")
 cursor = conne.cursor()
 cursor.execute('''
-    CREATE TABLE IF NOT EXISTS v2_customer_invoices (
+    CREATE TABLE IF NOT EXISTS v3_customer_invoices (
         invoice_id INTEGER PRIMARY KEY AUTOINCREMENT,
         shop_name TEXT,
         customer_name TEXT,
@@ -65,23 +62,24 @@ conne.commit()
 # --- القائمة الجانبية للتنقل بين الأدوات ---
 st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; text-shadow: 0 0 10px #00ffcc;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
 choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
-    "✨ صانع الفواتير العربي (PDF)", 
+    "✨ صانع الفواتير الاحترافي (PDF)", 
     "🧼 مطهر ملفات المبيعات والرسوم البيانية"
 ])
 
 # ========================================================
-# الميزة الأولى: صانع الفواتير العربي وتوليد الـ PDF وفلاتر الداتا
+# الميزة الأولى: واجهة صانع الفواتير الفردية واختيار الشعار
 # ========================================================
-if choice == "✨ صانع الفواتير العربي (PDF)":
-    st.write("<h1 style='font-size: 32px;'>📄 صانع الفواتير الأسطوري بدعم كامل للعربية</h1>", unsafe_allow_html=True)
+if choice == "✨ صانع الفواتير الاحترافي (PDF)":
+    st.write("<h1 style='font-size: 32px;'>📄 صانع الفواتير الأسطوري مع الشعار ودعم العربية</h1>", unsafe_allow_html=True)
     
     col_left, col_right = st.columns(2)
     with col_left:
         st.subheader("🏪 معلومات المتجر والزبون")
         shop_name = st.text_input("اسم متجرك الإلكتروني:", "DZ Cyber Store")
-        customer_name = st.text_input("اسم الزبون الكامل (عربي أو إنجليزي):")
+        customer_name = st.text_input("اسم الزبون الكامل:")
         customer_phone = st.text_input("رقم هاتف الزبون:")
         customer_address = st.text_input("عنوان التوصيل والولاية:")
+        uploaded_logo = st.file_uploader("اختر لوغو متجرك لإضافته في الفاتورة (اختياري)", type=["png", "jpg", "jpeg"])
 
     with col_right:
         st.subheader("📦 تفاصيل السلعة والحسابات")
@@ -93,83 +91,68 @@ if choice == "✨ صانع الفواتير العربي (PDF)":
     product_total = price * quantity
     final_total = product_total + shipping_cost
     current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
-    current_month = datetime.now().strftime("%Y-%m") # فلتر الشهر لقاعدة البيانات
+    current_month = datetime.now().strftime("%Y-%m")
 
     st.markdown("---")
     if st.button("🚀 إصدار وحفظ الفاتورة الأسطورية"):
         if not customer_name or not product_name:
             st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
         else:
-            # 1. حفظ في قاعدة البيانات الجديدة v2
+            # حفظ البيانات في SQLite3
             cursor.execute('''
-                INSERT INTO v2_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created)
+                INSERT INTO v3_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
             conne.commit()
-            st.success("💾 تم حفظ الفاتورة بنجاح في نظام الأرشفة المحدث!")
+            st.success("💾 تم حفظ الفاتورة بنجاح في قاعدة البيانات المحدثة!")
 
-            # 2. توليد ملف PDF متطور
-            buffer = io.BytesIO()
-            p = canvas.Canvas(buffer)
-            p.drawString(100, 800, f"INVOICE - {shop_name.upper()}")
-            p.drawString(100, 780, "=========================================")
-            p.drawString(100, 750, f"Date: {current_date}")
-            p.drawString(100, 730, f"Customer: {customer_name}")
-            p.drawString(100, 710, f"Phone: {customer_phone}")
-            p.drawString(100, 690, f"Address: {customer_address}")
-            p.drawString(100, 660, "-----------------------------------------")
-            p.drawString(100, 640, f"Product: {product_name}")
-            p.drawString(100, 620, f"Price: {price:,} DA x Qty: {quantity}")
-            p.drawString(100, 600, f"Subtotal: {product_total:,} DA")
-            p.drawString(100, 580, f"Shipping: {shipping_cost:,} DA")
-            p.drawString(100, 550, "-----------------------------------------")
-            p.drawString(100, 520, f"TOTAL TO PAY: {final_total:,} DA")
-            p.showPage()
-            p.save()
+            # قراءة شعار اللوغو إذا قام المستخدم برفعه
+            logo_data = uploaded_logo.read() if uploaded_logo is not None else None
+
+            # استدعاء دالة بناء الـ PDF الذكية من ملف pdf_helper.py
+            pdf_data = generate_invoice_pdf(
+                shop_name, customer_name, customer_phone, customer_address,
+                product_name, price, quantity, product_total, shipping_cost, final_total,
+                current_date, logo_data
+            )
             
+            # زر تحميل ملف الـ PDF الجاهز والمطهّر
             st.download_button(
-                label="📥 تحميل الفاتورة الرقمية الحالية (PDF)",
-                data=buffer.getvalue(),
+                label="📥 تحميل الفاتورة الرقمية الأسطورية (PDF)",
+                data=pdf_data,
                 file_name=f"invoice_{customer_name}.pdf",
                 mime="application/pdf"
             )
 
-    # 🗄️ نظام الفلاتر الذكي لاستعلامات قاعدة البيانات شهرياً
+    # أرشيف ونظام الفرز الشهري الذكي
     st.markdown("---")
     st.subheader("🗄️ نظام أرشفة الفواتير المتقدم")
-    
-    # جلب قائمة الأشهر المتوفرة لتصفية البيانات بناءً عليها من الجدول الجديد
-    months_df = pd.read_sql("SELECT DISTINCT month_created FROM v2_customer_invoices ORDER BY month_created DESC", conne)
-    
+    months_df = pd.read_sql("SELECT DISTINCT month_created FROM v3_customer_invoices ORDER BY month_created DESC", conne)
     if not months_df.empty:
         filter_month = st.selectbox("🎯 اختر الشهر لفرز وحساب المبيعات الخاصة به:", months_df['month_created'])
-        
-        # استعلام مخصص للفلتر المختار
-        filtered_invoices = pd.read_sql(f"SELECT * FROM v2_customer_invoices WHERE month_created = '{filter_month}' ORDER BY invoice_id DESC", conne)
-        
+        filtered_invoices = pd.read_sql(f"SELECT * FROM v3_customer_invoices WHERE month_created = '{filter_month}' ORDER BY invoice_id DESC", conne)
         st.dataframe(filtered_invoices, use_container_width=True)
         st.metric(label=f"📊 صافي أرباح شهر ({filter_month}) فقط:", value=f"{filtered_invoices['final_total'].sum():,.2f} DA")
-    else:
-        st.info("الأرشيف خالي تماماً حالياً.")
 
 # ========================================================
-# الميزة الثانية: مطهر ملفات المبيعات والرسوم البيانية النيون المضيئة
+# الميزة الثانية: مطهر ملفات المبيعات والرسوم البيانية النيون
 # ========================================================
 elif choice == "🧼 مطهر ملفات المبيعات والرسوم البيانية":
-    st.write("<h1 style='font-size: 32px;'>🧼 نظام التطهير والإحصائيات البصرية النيون</h1>", unsafe_allow_html=True)
-    
-    uploaded_file = st.file_uploader("اختر ملف المبيعات الجماعي لمتجرك (صيغة CSV)", type=["csv"])
+    st.write("<h1 style='font-size: 32px;'>🧼 نظام تطهير ملفات المبيعات الجماعية (Excel & CSV)</h1>", unsafe_allow_html=True)
+    uploaded_file = st.file_uploader("اختر ملف المبيعات الجماعي لمتجرك (صيغة CSV أو Excel)", type=["csv", "xlsx"])
     
     if uploaded_file is not None:
-        df = pd.read_csv(uploaded_file)
-        
+        if uploaded_file.name.endswith('.csv'):
+            df = pd.read_csv(uploaded_file)
+        else:
+            df = pd.read_excel(uploaded_file)
+            
         st.subheader("📋 الملف المرفوع قبل الفحص:")
         st.dataframe(df.head())
         
         if 'item_price' in df.columns:
             df['item_price'] = df['item_price'].astype(str).str.replace(' DA', '').astype(float)
         
-        # حذف التكرار وتصحيح القيم
         duplicated_rows = df[df.duplicated(subset=['product_name'], keep='first')]
         df.drop_duplicates(subset=['product_name'], keep='first', inplace=True)
         
@@ -182,22 +165,16 @@ elif choice == "🧼 مطهر ملفات المبيعات والرسوم الب�
             
         st.success("✅ تم تنظيف الداتا وتجهيز المخططات المضيئة للمتجر!")
         
-        # 📈 قسم الرسوم البيانية المضيئة الجديد والمطور بالألوان الأسطورية (Neon Charts)
         st.subheader("📈 المخططات البيانية الملونة للمبيعات:")
         chart_col1, chart_col2 = st.columns(2)
-        
         with chart_col1:
             st.write("💰 حجم المبيعات الإجمالي الحقيقي لكل منتج (باللون الأخضر الفسفوري المشع):")
             df['total_row_sales'] = df['item_price'] * df['quantity_sold']
-            # استخدام اللون الأخضر الفسفوري المضيء للأعمدة المتوافقة مع السايبربانك
             st.bar_chart(data=df, x='product_name', y='total_row_sales', color='#00ffcc')
-            
         with chart_col2:
             st.write("📦 مجموع الكميات المستلمة والمباعة (باللون البنفسجي الليزري):")
-            # استخدام اللون البنفسجي المضيء للأعمدة المتوافقة مع أزرار التحكم
             st.bar_chart(data=df, x='product_name', y='quantity_sold', color='#ff007f')
             
-        # تحميل الملف النظيف
         csv_buffer = df.to_csv(index=False).encode('utf-8')
         st.download_button(
             label="📥 تحميل تقرير المبيعات المطهّر بالكامل",
