@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import sqlite3
@@ -5,7 +6,48 @@ from datetime import datetime
 from fpdf import FPDF
 
 # 🎨 إعدادات واجهة الموقع لتكون عريضة واحترافية
-st.set_page_config(page_title="نظام المبيعات والفواتير المتكامل", layout="wide")
+st.set_page_config(page_title="نظام المبيعات الذكي المطور", layout="wide")
+
+# 🖌️ إضافة كود التلوين والخلفيات باستخدام CSS المدمج
+st.markdown("""
+    <style>
+    /* تلوين خلفية التطبيق العامة */
+    .stApp {
+        background-color: #f4f6f9;
+    }
+    /* تلوين العناوين الرئيسية */
+    h1 {
+        color: #1e3a8a !important;
+        font-family: 'Cairo', sans-serif;
+        text-align: center;
+    }
+    h2, h3 {
+        color: #2c3e50 !important;
+    }
+    /* تحسين شكل الأزرار وتلوينها بالأزرق الاحترافي */
+    div.stButton > button:first-child {
+        background-color: #1e3a8a;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        padding: 10px 24px;
+        font-size: 16px;
+        font-weight: bold;
+        transition: 0.3s;
+        width: 100%;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #3b82f6;
+        color: white;
+    }
+    /* تحسين صناديق الإدخال */
+    .stTextInput>div>div>input {
+        background-color: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # 🏛️ ربط قاعدة البيانات المشتركة
 conne = sqlite3.connect("invoices_master.db")
@@ -24,18 +66,18 @@ cursor.execute('''
 conne.commit()
 
 # --- القائمة الجانبية للتنقل بين الأدوات ---
-st.sidebar.title("🛠️ لوحة التحكم الذكية")
+st.sidebar.markdown("<h2 style='color: #1e3a8a; text-align: center;'>🛠️ لوحة التحكم</h2>", unsafe_allow_html=True)
 choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
-    "✨ صانع الفواتير السريع (PDF)", 
+    "✨ صانع الفواتير الملون (PDF)", 
     "🧼 مطهر ملفات المبيعات (حذف التكرار)"
 ])
 
 # ========================================================
 # الميزة الأولى: صانع الفواتير وتوليد الـ PDF وحفظها
 # ========================================================
-if choice == "✨ صانع الفواتير السريع (PDF)":
-    st.title("📄 صانع الفواتير الرقمية وتوليد ملفات PDF 🇩🇿")
-    st.write("اصنع فاتورتك فردية، احفظها في قاعدة البيانات، وحمّلها لزبونك فوراً.")
+if choice == "✨ صانع الفواتير الملون (PDF)":
+    st.write("<h1 style='font-size: 28px;'>📄 صانع الفواتير الرقمية الذكي 🇩🇿</h1>", unsafe_allow_html=True)
+    st.write("<p style='text-align: center; color: #64748b;'>اصنع فاتورتك الملونة، احفظها في قاعدة البيانات، وحمّلها لزبونك فوراً.</p>", unsafe_allow_html=True)
     
     col_left, col_right = st.columns(2)
     with col_left:
@@ -66,7 +108,7 @@ if choice == "✨ صانع الفواتير السريع (PDF)":
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (shop_name, customer_name, customer_phone, product_name, final_total, current_date))
             conne.commit()
-            st.success("💾 تم حفظ الفاتورة بنجاح في الأرشيف!")
+            st.success("💾 تم حفظ الفاتورة بنجاح في الأرشيف الملون!")
 
             # توليد ملف PDF
             pdf = FPDF()
@@ -102,7 +144,7 @@ if choice == "✨ صانع الفواتير السريع (PDF)":
             except Exception as e:
                 st.error("💡 يرجى استخدام الحروف اللاتينية والأرقام لتوليد ملف الـ PDF بنجاح.")
 
-    # عرض أرشيف الفواتير الفردية
+    # عرض أرشيف الفواتير
     st.markdown("---")
     st.subheader("📋 أرشيف الفواتير الفردية المحفوظة:")
     all_invoices = pd.read_sql("SELECT * FROM customer_invoices ORDER BY invoice_id DESC", conne)
@@ -114,8 +156,7 @@ if choice == "✨ صانع الفواتير السريع (PDF)":
 # الميزة الثانية: مطهر ملفات المبيعات المرفوعة من التكرار
 # ========================================================
 elif choice == "🧼 مطهر ملفات المبيعات (حذف التكرار)":
-    st.title("🧼 نظام فحص وتطهير ملفات المبيعات الجماعية")
-    st.write("ارفع ملف الـ CSV الخاص بمتجرك لحذف التكرار وتطهير الأسعار السالبة والأخطاء فوراً.")
+    st.write("<h1 style='font-size: 28px;'>🧼 نظام فحص وتطهير ملفات المبيعات الجماعية</h1>", unsafe_allow_html=True)
     
     uploaded_file = st.file_uploader("اختر ملف المبيعات المراد تنظيفه (صيغة CSV)", type=["csv"])
     
@@ -125,21 +166,15 @@ elif choice == "🧼 مطهر ملفات المبيعات (حذف التكرار
         st.subheader("📋 الملف المرفوع (قبل التطهير):")
         st.dataframe(df.head())
         
-        # 🛡️ عملية فحص وتطهير التكرار والأخطاء
-        # 1. تنظيف الأسعار وتحويلها
         if 'item_price' in df.columns:
             df['item_price'] = df['item_price'].astype(str).str.replace(' DA', '').astype(float)
         
-        # 2. كشف وعزل الأسطر المكررة بناءً على اسم المنتج أو أرقام الهواتف
-        # قمنا بحذف التكرار والاحتفاظ بأول عملية بيع فقط لحماية البيانات
         duplicated_rows = df[df.duplicated(subset=['product_name'], keep='first')]
         df.drop_duplicates(subset=['product_name'], keep='first', inplace=True)
         
-        # 3. عزل الأسعار السالبة
         bad_prices = df[df['item_price'] <= 0]
         df = df[df['item_price'] > 0]
         
-        # 4. تنظيف التواريخ الناقصة
         if 'sale_date' in df.columns:
             df['sale_date'] = pd.to_datetime(df['sale_date'], dayfirst=True, format='mixed', errors='coerce')
             df.dropna(subset=['sale_date'], inplace=True)
@@ -160,9 +195,8 @@ elif choice == "🧼 مطهر ملفات المبيعات (حذف التكرار
                     st.error(f"تم حذف {len(bad_prices)} سطر يحتوي على قيم سالبة!")
                     st.dataframe(bad_prices)
             else:
-                st.info("الملف سليم تماماً ولا يحتوي على تكرارات أو أخطاء شاذة.")
+                st.info("الملف سليم تماماً ولا يحتوي على تكرارات.")
                 
-        # إمكانية تحميل الملف النظيف مجدداً كملف CSV
         csv_buffer = df.to_csv(index=False).encode('utf-8')
         st.download_button(
             label="📥 تحميل ملف المبيعات المطهّر (Cleaned CSV)",
@@ -172,4 +206,3 @@ elif choice == "🧼 مطهر ملفات المبيعات (حذف التكرار
         )
 
 conne.close()
-
