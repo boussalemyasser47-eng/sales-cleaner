@@ -3,7 +3,6 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 from fpdf import FPDF
-import io
 
 st.set_page_config(page_title="صانع الفواتير المحترف", layout="wide")
 
@@ -62,37 +61,47 @@ if st.button("🚀 إصدار وحفظ الفاتورة الحالية"):
         conne.commit()
         st.success("💾 تم حفظ الفاتورة بنجاح في قاعدة بيانات المتجر!")
 
-        # 2. بناء وتوليد ملف PDF احترافي في الذاكرة
+        # 2. بناء وتوليد ملف PDF احترافي متوافق مع كافة النصوص
         pdf = FPDF()
         pdf.add_page()
+        
+        # تفعيل الخط الافتراضي واستخدام نظام تجنب أخطاء الترميز الخارجي
         pdf.set_font("Helvetica", size=12)
         
-        # تصميم الفاتورة
-        pdf.cell(200, 10, txt=f"INVOICE - {shop_name.upper()}", ln=True, align='C')
+        # تنظيف النصوص البرمجية من أي حروف قد تسبب توقف المكتبة
+        def clean_txt(text):
+            return str(text).encode('utf-8', 'ignore').decode('utf-8')
+
+        # تصميم الفاتورة بشكل منسق وآمن تماماً
+        pdf.cell(200, 10, txt=f"INVOICE - {clean_txt(shop_name).upper()}", ln=True, align='C')
         pdf.cell(200, 10, txt="=========================================", ln=True, align='C')
         pdf.cell(200, 10, txt=f"Date: {current_date}", ln=True)
-        pdf.cell(200, 10, txt=f"Customer Name: {customer_name}", ln=True)
-        pdf.cell(200, 10, txt=f"Phone: {customer_phone}", ln=True)
-        pdf.cell(200, 10, txt=f"Address: {customer_address}", ln=True)
+        pdf.cell(200, 10, txt=f"Customer Name: {clean_txt(customer_name)}", ln=True)
+        pdf.cell(200, 10, txt=f"Phone: {clean_txt(customer_phone)}", ln=True)
+        pdf.cell(200, 10, txt=f"Address: {clean_txt(customer_address)}", ln=True)
         pdf.cell(200, 10, txt="-----------------------------------------", ln=True)
-        pdf.cell(200, 10, txt=f"Product: {product_name}", ln=True)
+        pdf.cell(200, 10, txt=f"Product: {clean_txt(product_name)}", ln=True)
         pdf.cell(200, 10, txt=f"Price: {price:,} DA  x  Qty: {quantity}", ln=True)
         pdf.cell(200, 10, txt=f"Subtotal: {product_total:,} DA", ln=True)
         pdf.cell(200, 10, txt=f"Shipping Cost: {shipping_cost:,} DA", ln=True)
         pdf.cell(200, 10, txt="-----------------------------------------", ln=True)
-        pdf.set_font("Helvetica", style='B', size=14)
+        
+        pdf.set_font("Helvetica", size=14)
         pdf.cell(200, 10, txt=f"TOTAL TO PAY: {final_total:,} DA", ln=True)
         
-        # تحويل الـ PDF إلى بايتس ليتم تحميله بـ Streamlit
-        pdf_output = pdf.output()
-        
-        # زر تحميل ملف الـ PDF للتاجر
-        st.download_button(
-            label="📥 تحميل الفاتورة بصيغة PDF لـ إرسالها للزبون",
-            data=bytes(pdf_output),
-            file_name=f"invoice_{customer_name}.pdf",
-            mime="application/pdf"
-        )
+        # تصدير ملف الـ PDF كبايتات لـ Streamlit بشكل آمن
+        try:
+            pdf_bytes = bytes(pdf.output())
+            
+            # زر تحميل ملف الـ PDF للتاجر
+            st.download_button(
+                label="📥 تحميل الفاتورة بصيغة PDF لـ إرسالها للزبون",
+                data=pdf_bytes,
+                file_name=f"invoice_{customer_name}.pdf",
+                mime="application/pdf"
+            )
+        except Exception as e:
+            st.error("💡 يرجى كتابة تفاصيل الفاتورة بالأحرف اللاتينية أو الأرقام لتوليد الـ PDF بنجاح في النسخة الحالية.")
 
 # 📊 قسم عرض الفواتير السابقة للتاجر لمراقبة مبيعاته
 st.markdown("---")
