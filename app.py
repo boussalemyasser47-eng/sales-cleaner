@@ -119,6 +119,16 @@ elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
         if not stock_df.empty:
             st.dataframe(stock_df, use_container_width=True)
+                        # 🗑️ جزء محو وإزالة السلع من المستودع
+            st.markdown("---")
+            st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
+            delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
+            if st.button("❌ محو السلعة المحددة"):
+                cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
+                conne.commit()
+                st.success(f"🗑️ تم محو السلعة [{delete_prod}] بنجاح!")
+                st.rerun()
+
             low_stock = stock_df[stock_df['available_qty'] <= 5]
             if not low_stock.empty:
                 st.markdown("---")
