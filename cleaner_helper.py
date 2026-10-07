@@ -34,4 +34,3 @@ def process_sales_file(uploaded_file):
         duplicated_rows['total_row_sales'] = duplicated_rows['item_price'] * duplicated_rows['quantity_sold']
         
     return df_raw, df, duplicated_rows, bad_prices
-
