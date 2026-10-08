@@ -9,13 +9,11 @@ import urllib.parse
 from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
 from cleaner_helper import process_sales_file
-from ai_helper import render_ai_chatbot # استدعاء منظومة الفقاعة المنبثقة الشاملة
+from ai_helper import get_ai_response # استدعاء دالة الرد الذكية الآمنة
 
-# تطبيق التنسيق والواجهة العريضة وحقن الألوان السيبرانية
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
 apply_neon_theme()
 
-# 🏛️ ربط قاعدة البيانات وتجهيز جداول المبيعات والمخزون الثابتة
 conne = sqlite3.connect("invoices_master_v4.db")
 cursor = conne.cursor()
 cursor.execute('''
@@ -32,7 +30,6 @@ cursor.execute('''
 ''')
 conne.commit()
 
-# --- القائمة الجانبية للتنقل بين الأدوات ---
 st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; font-size: 24px;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
 choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
     "✨ صانع الفواتير الاحترافي (PDF)", 
@@ -40,12 +37,6 @@ choice = st.sidebar.radio("اختر الأداة التي تريد استخدا�
     "🧼 مطهر ملفات المبيعات وإحصائيات الولايات"
 ])
 
-# 🤖 تشغيل واستدعاء منظومة الفقاعة العائمة المنبثقة تلقائياً
-render_ai_chatbot()
-
-# ========================================================
-# الميزة الأولى: صانع الفواتير والملصقات الحرارية والإحصائيات
-# ========================================================
 if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     st.write("<h1 style='font-size: 32px;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
     st.markdown("### 📊 إحصائيات متجرك الشاملة:")
@@ -54,10 +45,8 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     total_sales_db = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conne)
     total_stock_db = pd.read_sql("SELECT SUM(available_qty) as total_qty FROM store_stock", conne)
     
-    with stat_col1:
-        st.metric(label="💰 إجمالي مداخيل المبيعات", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
-    with stat_col2:
-        st.metric(label="🧾 عدد الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
+    with stat_col1: st.metric(label="💰 إجمالي مداخيل المبيعات", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
+    with stat_col2: st.metric(label="🧾 عدد الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
     with stat_col3:
         try: stock_val = int(total_stock_db['total_qty'].values) if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
         except: stock_val = 0
@@ -76,10 +65,8 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     with col_right:
         st.subheader("📦 تفاصيل السلعة والحسابات")
         stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
-        if not stock_products.empty: 
-            product_name = st.selectbox("اختر المنتج من المخزون:", stock_products['product_name'])
-        else: 
-            product_name = st.text_input("اسم المنتج (قم بإضافته للمخزون أولاً):")
+        if not stock_products.empty: product_name = st.selectbox("اختر المنتج من المخزون:", stock_products['product_name'])
+        else: product_name = st.text_input("اسم المنتج (قم بإضافته للمخزون أولاً):")
         price = st.number_input("سعر القطعة (DA):", min_value=0, value=1200)
         quantity = st.number_input("الكمية المبيعة:", min_value=1, value=1)
         shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600)
@@ -91,8 +78,7 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
 
     st.markdown("---")
     if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون"):
-        if not customer_name or not product_name: 
-            st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
+        if not customer_name or not product_name: st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
         else:
             check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
             if not check_stock.empty and check_stock['available_qty'].values < quantity:
@@ -111,8 +97,7 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
                 with col_btn1: st.download_button(label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", data=pdf_invoice, file_name=f"invoice_{customer_name}.pdf", mime="application/pdf")
                 with col_btn2: st.download_button(label="🖨️ تحميل ملصق الشحن الحراري 4x4 (PDF)", data=pdf_label, file_name=f"thermal_label_{customer_name}.pdf", mime="application/pdf")
 
-                if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة"): 
-                    st.components.v1.html("<script>window.print();</script>", height=0)
+                if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة"): st.components.v1.html("<script>window.print();</script>", height=0)
 
                 st.markdown("---")
                 st.subheader("📲 أزرار الإرسال السريع الفوري لزبونك:")
@@ -211,5 +196,24 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
             
         csv_buffer = df.to_csv(index=False).encode('utf-8')
         st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
+
+# ========================================================
+# 🤖 ✨ دمج تفعيل فقاعة ونافذة الدردشة الرسمية التفاعلية المستقرة 100% في الركن السفلي
+# ========================================================
+st.sidebar.markdown("---")
+# استخدام دالة البوب أوفر الفخمة لستريمليت وتلوينها بالنيون لتظهر كفقاعة دائرية عائمة حقيقية
+with st.sidebar.popover("🤖 افتح دردشة الروبوت العائم"):
+    st.markdown("<h3 style='color: #00ffcc; font-size: 14px; text-align: center;'>💬 مساعد المتاجر ومولد الإعلانات الذكي</h3>", unsafe_allow_html=True)
+    st.info("👋 مرحباً بك يا بطل في متجرك! اكتب سؤالك بالعامية أو طلب إعلانك في مستطيل الكتابة بالأسفل مباشرة وراح نجاوبك هنا فوراً! 🚀")
+    
+    # مستطيل الكتابة وزر الإرسال والردود مجتمعين معاً بداخل علبة الترحيب المنبثقة الرسمية بدقة مطلقة
+    user_prompt = st.text_input("✍️ اكتب سؤالك أو طلب الإعلان هنا للبوت:", key="ai_popover_final_perfect_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
+    
+    if user_prompt:
+        with st.spinner("🤖 جاري الصياغة والتحليل..."):
+            reply = get_ai_response(user_prompt)
+            st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
+            st.success(reply)
+            st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
 
 conne.close()
