@@ -32,33 +32,32 @@ def get_ai_response(prompt):
     except:
         return "🤖 اكتبلي واش راك حاب خويا العزيز وراح نجاوبك فوراً بالخطط التسويقية!"
 def render_ai_chatbot():
-    """ ✨ تحقيق الحلم: الفقاعة العائمة الحقيقية المنبثقة وبداخلها مستطيل الكتابة والردود في زاوية الشاشة """
+    """ ✨ تثبيت الفقاعة والنافذة المنبثقة بذكاء في الزاوية السفلية للشاشة تلقائياً """
     
-    # تفريغ القائمة الجانبية لإبقائها نظيفة
+    # تنظيف القائمة الجانبية وإبقائها نظيفة ومحترفة
     st.sidebar.markdown("---")
     st.sidebar.markdown("<h3 style='color: #00ffcc; font-size: 14px; text-align: center;'>🤖 تم تفعيل البوت العائم في الزاوية السفلية</h3>", unsafe_allow_html=True)
     
-    # 📥 استقبال النص برمجياً عبر الذاكرة المخفية لـ Streamlit للتفاعل مع واجهة الـ HTML الخارجيّة
     if "ai_chat_history" not in st.session_state:
         st.session_state["ai_chat_history"] = ""
         
     query_params = st.query_params
     if "ai_msg" in query_params:
         user_prompt = query_params["ai_msg"]
-        st.query_params.clear() # تنظيف الرابط فوراً
+        st.query_params.clear() 
         with st.spinner("🤖 جاري التفكير..."):
             reply = get_ai_response(user_prompt)
             st.session_state["ai_chat_history"] = reply
             st.rerun()
 
-    # 🎨 كود الـ HTML & CSS & JS الأسطوري لصنع الفقاعة التفاعلية الكاملة بدون قفز المتصفح
+    # 🎨 كود الـ CSS الخارق الذي يجبر الفقاعة على النزول والتثبيت أسفل الشاشة التامة
     chat_box_html = f"""
     <style>
-    /* 🤖 أيقونة الفقاعة الدائرية */
+    /* 🤖 أيقونة الفقاعة الدائرية المثبتة في الأسفل المطلق لشاشة المتصفح */
     .neon-bubble-launcher {{
-        position: fixed;
-        bottom: 25px;
-        right: 25px;
+        position: fixed !important;
+        bottom: 25px !important;
+        right: 25px !important;
         background: linear-gradient(45deg, #00ffcc, #ff007f);
         color: white;
         width: 60px;
@@ -69,22 +68,22 @@ def render_ai_chatbot():
         font-size: 30px;
         cursor: pointer;
         box-shadow: 0 0 15px #00ffcc, 0 0 25px #ff007f;
-        z-index: 999999 !important;
+        z-index: 999999999 !important;
         transition: 0.3s ease-in-out;
     }}
     .neon-bubble-launcher:hover {{ transform: scale(1.1); }}
     
-    /* 📋 علبة الدردشة المنبثقة الصغيرة الفخمة */
+    /* 📋 علبة الدردشة الصغيرة المنبثقة المثبتة بدقة فوق الفقاعة */
     .neon-chat-window {{
-        position: fixed;
-        bottom: 95px;
-        right: 25px;
+        position: fixed !important;
+        bottom: 95px !important;
+        right: 25px !important;
         width: 320px;
         background-color: #161b22;
         border: 2px solid #00ffcc;
         box-shadow: 0 0 25px rgba(0, 255, 204, 0.4);
         border-radius: 14px;
-        z-index: 999999 !important;
+        z-index: 999999999 !important;
         display: none;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         direction: rtl;
@@ -103,7 +102,7 @@ def render_ai_chatbot():
         padding: 12px;
         color: white;
         font-size: 12px;
-        max-height: 250px;
+        max-height: 200px;
         overflow-y: auto;
     }}
     .welcome-text {{
@@ -123,7 +122,6 @@ def render_ai_chatbot():
         margin-bottom: 10px;
         font-weight: bold;
     }}
-    /* ✍️ تنسيق مستطيل الكتابة وزر الإرسال داخل النافذة */
     .chat-input-wrapper {{
         display: flex;
         padding: 10px;
@@ -171,7 +169,6 @@ def render_ai_chatbot():
     </div>
 
     <script>
-    // جافا سكريبت تفاعلي لحفظ حالة الفتح والغلق منعاً لقفز الصفحة
     if(window.parent.document.getElementById('neon_widget')){{
         var state = window.parent.localStorage.getItem('widget_state') || 'none';
         window.parent.document.getElementById('neon_widget').style.display = state;
@@ -193,12 +190,11 @@ def render_ai_chatbot():
     function sendToStreamlit() {{
         var txt = document.getElementById('user_text').value;
         if(txt) {{
-            // إرسال النص للسيرفر بدون قفز الصفحة للأعلى
             window.parent.location.search = '?ai_msg=' + encodeURIComponent(txt);
         }}
     }}
     </script>
     """
     
-    # عرض المنظومة الأسطورية العائمة حية على المتصفح
-    st.components.v1.html(chat_box_html, height=400)
+    # دمج آمن ومخفي لحقن العناصر في زاوية الشاشة الكلية للمتصفح أونلاين
+    st.components.v1.html(chat_box_html, height=0)
