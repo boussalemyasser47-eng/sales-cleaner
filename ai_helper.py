@@ -4,7 +4,7 @@ import urllib.request
 import base64
 
 def get_ai_response(prompt):
-    """ دالة معالجة ذكية ومحشوة بتشفير آمن للمفتاح للاتصال بالذكاء الاصطناعي """
+    """ دالة معالجة ذكية ومحشوة بتشفير آمن للمفتاح للاتصال بالذكاء الاصطناعي السريع """
     try:
         system_instruction = (
             "You are an expert copywriter for Algerian e-commerce. Write highly engaging marketing text "
@@ -33,12 +33,10 @@ def get_ai_response(prompt):
         return "🤖 اكتبلي واش راك حاب خويا العزيز وراح نجاوبك فوراً بالخطط التسويقية!"
 
 def render_ai_chatbot():
-    """ ✨ تثبيت الفقاعة والنافذة المنبثقة الترحيبية في زاوية الشاشة السفلية بدقة مطلقة """
+    """ ميزة الفقاعة العائمة المتكاملة المدمجة فوق الفقاعة بدقة وبدون أخطاء تركيبية """
     
-    # تنظيف مساحة السايدبار السفلية
     st.sidebar.markdown("---")
     
-    # إدارة ذاكرة الدردشة المخفية للسيرفر لمنع الاهتزاز
     if "ai_widget_history" not in st.session_state:
         st.session_state["ai_widget_history"] = ""
         
@@ -51,10 +49,8 @@ def render_ai_chatbot():
             st.session_state["ai_widget_history"] = reply
             st.rerun()
 
-    # 🎨 كود الـ HTML & CSS & JS الأسطوري لحقن وتثبيت الفقاعة في الأسفل المطلق للمتصفح
     widget_html = f"""
     <style>
-    /* 🤖 أيقونة الروبوت العائمة المضيئة مجبرة ومثبتة في زاوية الشاشة السفلية اليمنى */
     .floating-launcher-bubble {{
         position: fixed !important;
         bottom: 25px !important;
@@ -74,7 +70,6 @@ def render_ai_chatbot():
     }}
     .floating-launcher-bubble:hover {{ transform: scale(1.1); }}
     
-    /* 📋 النافذة الصغيرة المنبثقة الترحيبية مثبتة بدقة فوق الفقاعة السفلية */
     .floating-chat-window {{
         position: fixed !important;
         bottom: 95px !important;
@@ -123,7 +118,6 @@ def render_ai_chatbot():
         margin-bottom: 10px;
         font-weight: bold;
     }}
-    /* ✍️ مستطيل الكتابة وزر الإرسال مدمجين في أسفل العلبة الصغيرة */
     .input-wrapper {{
         display: flex;
         padding: 10px;
@@ -198,4 +192,3 @@ def render_ai_chatbot():
     </script>
     """
     st.components.v1.html(widget_html, height=0)
-)
