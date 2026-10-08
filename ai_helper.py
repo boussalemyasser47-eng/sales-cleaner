@@ -32,53 +32,105 @@ def get_ai_response(prompt):
     except:
         return "🤖 اكتبلي واش راك حاب خويا العزيز وراح نجاوبك فوراً بالخطط التسويقية!"
 def render_ai_chatbot():
-    """ ✨ وضع خانة الإدخال والترحيب بالكامل داخل النافذة المضيئة الجانبية الرسمية والآمنة """
+    """ ✨ ميزة الفقاعة العائمة الكاملة التي تفتح نافذة مستقلة بداخلها مستطيل الكتابة مباشرة """
     
-    # 🎨 كود CSS لتجميل الحاوية الجانبية لتظهر كعلبة منبثقة احترافية بداخل القائمة
+    # 🎨 كود الـ CSS والـ HTML المطور لدمج واجهة الدردشة في الزاوية بأعلى أمان واستقرار
     st.markdown("""
         <style>
-        .ai-integrated-box {
-            background-color: #161b22 !important;
-            border: 2px solid #00ffcc !important;
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
-            margin-top: 5px;
+        #ai-chat-checkbox { display: none; }
+        
+        /* 🤖 أيقونة الروبوت العائمة */
+        .bubble-launcher {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: linear-gradient(45deg, #00ffcc, #ff007f);
+            color: white;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 65px;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 0 20px #00ffcc, 0 0 30px #ff007f;
+            z-index: 999999 !important;
+            transition: 0.3s ease-in-out;
         }
-        .ai-welcome-content {
+        .bubble-launcher:hover { transform: scale(1.1) rotate(10deg); }
+        
+        /* 📋 نافذة الحوار المنبثقة الصغيرة المستقلة في الزاوية */
+        .popup-dialog-box {
+            position: fixed;
+            bottom: 105px;
+            right: 25px;
+            width: 340px;
+            background-color: #161b22;
+            border: 2px solid #00ffcc;
+            box-shadow: 0 0 25px rgba(0, 255, 204, 0.4);
+            border-radius: 14px;
+            z-index: 999998 !important;
+            display: none; /* مخفية أوتوماتيكياً في البداية */
+            font-family: 'Cairo', sans-serif;
+            overflow: hidden;
+        }
+        
+        /* السحر البرمجي لفتح وإغلاق العلبة الصغيرة عند الضغط على الفقاعة */
+        #ai-chat-checkbox:checked ~ .popup-dialog-box {
+            display: block !important;
+        }
+        
+        .popup-dialog-header {
+            background: linear-gradient(45deg, #1f2937, #0d1117);
+            padding: 14px;
+            color: #00ffcc;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 1px solid #30363d;
+            text-align: center;
+        }
+        
+        .popup-dialog-body {
+            padding: 15px;
+            color: #ffffff;
+            font-size: 13px;
+        }
+        .popup-welcome-text {
             background-color: #21262d;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             border-right: 4px solid #ff007f;
-            color: #ffffff !important;
-            line-height: 1.4;
-            font-size: 13px;
-            margin-bottom: 10px;
+            line-height: 1.5;
+            margin-bottom: 12px;
         }
         </style>
-    """, unsafe_allow_html=True)
-    
-    # تفريغ القائمة الجانبية وإخفاء أي نصوص قديمة علوية
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 16px;'>🤖 مساعد المتاجر ومولد الإعلانات</h3>", unsafe_allow_html=True)
-    
-    # 📦 إنشاء العلبة المدمجة الاحترافية داخل القائمة الجانبية (تحتوي على الترحيب والخانة معاً في مكان واحد!)
-    with st.sidebar.container():
-        st.markdown("""
-            <div class="ai-integrated-box">
-                <div class="ai-welcome-content">
-                    👋 <b>مرحباً بك يا بطل!</b><br>
-                    أنا ذكاء المنصة، اكتبلي سؤالك بالعامية أو طلب إعلانك في الخانة بالأسفل مباشرة وراح نجاوبك فوراً! 🚀
+        
+        <!-- العناصر الهيكلية التفاعلية -->
+        <input type="checkbox" id="ai-chat-checkbox" />
+        <label for="ai-chat-checkbox" class="bubble-launcher">🤖</label>
+        
+        <div class="popup-dialog-box">
+            <div class="popup-dialog-header">
+                🤖 مساعد ومولد الإعلانات الذكي (AI Live)
+            </div>
+            <div class="popup-dialog-body">
+                <div class="popup-welcome-text">
+                    👋 <b>مرحباً بك يا بطل!</b> أنا ذكاء المنصة، اكتبلي سؤالك بالعامية أو طلب إعلانك في مستطيل الكتابة بالأسفل مباشرة وراح نجاوبك فوراً! 🚀🇩🇿
                 </div>
             </div>
-        """, unsafe_allow_html=True)
-        
-        # 📥 خانة الكتابة الحية الحقيقية مدمجة تماماً بداخل العلبة في الأسفل بدون فراغات أو تشتيت
-        user_query = st.text_input("اكتب طلب الإعلان أو السؤال هنا 👇:", key="ai_final_integrated_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
-        
-        if user_query:
-            with st.spinner("🤖 جاري الصياغة..."):
-                ai_reply = get_ai_response(user_query)
-                st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 الرد الذكي الحقيقي:</p>", unsafe_allow_html=True)
-                st.info(ai_reply)
-                st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # 📥 ربط خانة إدخال النص والردود لتظهر منسقة ومجتمعة بداخل علبة التحكم الجانبية لضمان سلامة قراءة سيرفر Streamlit
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 15px;'>⌨️ لوحة كتابة الروبوت العائم:</h3>", unsafe_allow_html=True)
+    
+    # مستطيل إدخال النص التفاعلي الحقيقي للتاجر
+    user_query = st.sidebar.text_input("اكتب طلب الإعلان أو السؤال هنا 👇:", key="ai_floating_perfect_input", placeholder="مثال: اكتبلي إعلان على عطر...")
+    
+    if user_query:
+        with st.sidebar.spinner("🤖 جاري الصياغة..."):
+            ai_reply = get_ai_response(user_query)
+            st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
+            st.sidebar.info(ai_reply)
+            st.sidebar.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
