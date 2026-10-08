@@ -32,169 +32,53 @@ def get_ai_response(prompt):
     except:
         return "🤖 اكتبلي واش راك حاب خويا العزيز وراح نجاوبك فوراً بالخطط التسويقية!"
 def render_ai_chatbot():
-    """ ✨ تثبيت الفقاعة والنافذة المنبثقة بذكاء في الزاوية السفلية للشاشة تلقائياً """
+    """ ✨ الحل الهندسي القاتل: تثبيت علبة الترحيب ومستطيل الكتابة والردود معاً في أسفل القائمة الجانبية بنظام النيون """
     
-    # تنظيف القائمة الجانبية وإبقائها نظيفة ومحترفة
+    # 🎨 كود الـ CSS الأسطوري لإجبار علبة الدردشة على الاستقرار أسفل القائمة الجانبية تماماً ومنع قفزها
+    st.markdown("""
+        <style>
+        /* تنسيق الصندوق السيبراني المدمج */
+        .ai-perfect-fixed-box {
+            background-color: #161b22 !important;
+            border: 2px solid #00ffcc !important;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+            margin-top: 15px;
+        }
+        .ai-fixed-welcome-text {
+            background-color: #21262d;
+            padding: 10px;
+            border-radius: 8px;
+            border-right: 4px solid #ff007f;
+            color: #ffffff !important;
+            line-height: 1.4;
+            font-size: 13px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    # تنظيف وتفريغ القائمة الجانبية بالكامل
     st.sidebar.markdown("---")
-    st.sidebar.markdown("<h3 style='color: #00ffcc; font-size: 14px; text-align: center;'>🤖 تم تفعيل البوت العائم في الزاوية السفلية</h3>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 16px; text-align: center;'>🤖 مساعد المتاجر ومولد الإعلانات</h3>", unsafe_allow_html=True)
     
-    if "ai_chat_history" not in st.session_state:
-        st.session_state["ai_chat_history"] = ""
-        
-    query_params = st.query_params
-    if "ai_msg" in query_params:
-        user_prompt = query_params["ai_msg"]
-        st.query_params.clear() 
-        with st.spinner("🤖 جاري التفكير..."):
-            reply = get_ai_response(user_prompt)
-            st.session_state["ai_chat_history"] = reply
-            st.rerun()
-
-    # 🎨 كود الـ CSS الخارق الذي يجبر الفقاعة على النزول والتثبيت أسفل الشاشة التامة
-    chat_box_html = f"""
-    <style>
-    /* 🤖 أيقونة الفقاعة الدائرية المثبتة في الأسفل المطلق لشاشة المتصفح */
-    .neon-bubble-launcher {{
-        position: fixed !important;
-        bottom: 25px !important;
-        right: 25px !important;
-        background: linear-gradient(45deg, #00ffcc, #ff007f);
-        color: white;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        text-align: center;
-        line-height: 60px;
-        font-size: 30px;
-        cursor: pointer;
-        box-shadow: 0 0 15px #00ffcc, 0 0 25px #ff007f;
-        z-index: 999999999 !important;
-        transition: 0.3s ease-in-out;
-    }}
-    .neon-bubble-launcher:hover {{ transform: scale(1.1); }}
-    
-    /* 📋 علبة الدردشة الصغيرة المنبثقة المثبتة بدقة فوق الفقاعة */
-    .neon-chat-window {{
-        position: fixed !important;
-        bottom: 95px !important;
-        right: 25px !important;
-        width: 320px;
-        background-color: #161b22;
-        border: 2px solid #00ffcc;
-        box-shadow: 0 0 25px rgba(0, 255, 204, 0.4);
-        border-radius: 14px;
-        z-index: 999999999 !important;
-        display: none;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        direction: rtl;
-    }}
-    .chat-header {{
-        background: linear-gradient(45deg, #1f2937, #0d1117);
-        padding: 12px;
-        color: #00ffcc;
-        font-weight: bold;
-        font-size: 13px;
-        border-bottom: 1px solid #30363d;
-        display: flex;
-        justify-content: space-between;
-    }}
-    .chat-body {{
-        padding: 12px;
-        color: white;
-        font-size: 12px;
-        max-height: 200px;
-        overflow-y: auto;
-    }}
-    .welcome-text {{
-        background-color: #21262d;
-        padding: 10px;
-        border-radius: 8px;
-        border-right: 4px solid #ff007f;
-        line-height: 1.4;
-        margin-bottom: 10px;
-    }}
-    .ai-response-area {{
-        background-color: #0d1117;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #30363d;
-        color: #00ffcc;
-        margin-bottom: 10px;
-        font-weight: bold;
-    }}
-    .chat-input-wrapper {{
-        display: flex;
-        padding: 10px;
-        border-top: 1px solid #30363d;
-        background-color: #0d1117;
-    }}
-    .chat-input-field {{
-        flex: 1;
-        background-color: #161b22;
-        border: 1px solid #30363d;
-        color: white;
-        padding: 8px;
-        border-radius: 6px;
-        font-size: 12px;
-    }}
-    .chat-send-btn {{
-        background: linear-gradient(45deg, #ff007f, #7f00ff);
-        color: white;
-        border: none;
-        padding: 0 12px;
-        margin-right: 5px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: bold;
-    }}
-    </style>
-
-    <div class="neon-bubble-launcher" onclick="toggleWidget()">🤖</div>
-
-    <div class="neon-chat-window" id="neon_widget">
-        <div class="chat-header">
-            <span>🤖 مساعد المتاجر الذكي</span>
-            <span style="cursor:pointer;color:#ff007f;" onclick="toggleWidget()">×</span>
-        </div>
-        <div class="chat-body">
-            <div class="welcome-text">
-                👋 <b>مرحباً بك يا بطل!</b> اكتب سؤالك أو طلب إعلانك في المستطيل بالأسفل مباشرة وراح نجاوبك هنا فوراً! 🚀
+    # 📦 بناء العلبة المدمجة بداخل السايدبار كونتينر ليجبر العناصر على البقاء مجتمعة في الأسفل بدقة 100%
+    with st.sidebar.container():
+        st.markdown("""
+            <div class="ai-perfect-fixed-box">
+                <div class="ai-fixed-welcome-text">
+                    👋 <b>مرحباً بك يا بطل في متجرك!</b><br>
+                    أنا ذكاء المنصة، اكتبلي سؤالك بالعامية أو طلب إعلانك في المستطيل بالأسفل مباشرة وراح نجاوبك هنا فوراً! 🚀
+                </div>
             </div>
-            {"<div class='ai-response-area'>🤖 الرد: <br>" + st.session_state["ai_chat_history"] + "</div>" if st.session_state["ai_chat_history"] else ""}
-        </div>
-        <div class="chat-input-wrapper">
-            <input type="text" id="user_text" class="chat-input-field" placeholder="اكتب هنا..." onkeypress="handleKey(event)">
-            <button class="chat-send-btn" onclick="sendToStreamlit()">إرسال</button>
-        </div>
-    </div>
-
-    <script>
-    if(window.parent.document.getElementById('neon_widget')){{
-        var state = window.parent.localStorage.getItem('widget_state') || 'none';
-        window.parent.document.getElementById('neon_widget').style.display = state;
-    }}
-    
-    function toggleWidget() {{
-        var win = document.getElementById('neon_widget');
-        if(win.style.display === 'none' || win.style.display === ''){{
-            win.style.display = 'block';
-            window.parent.localStorage.setItem('widget_state', 'block');
-        }} else {{
-            win.style.display = 'none';
-            window.parent.localStorage.setItem('widget_state', 'none');
-        }}
-    }}
-    function handleKey(e) {{
-        if(e.keyCode === 13) {{ sendToStreamlit(); }}
-    }}
-    function sendToStreamlit() {{
-        var txt = document.getElementById('user_text').value;
-        if(txt) {{
-            window.parent.location.search = '?ai_msg=' + encodeURIComponent(txt);
-        }}
-    }}
-    </script>
-    """
-    
-    # دمج آمن ومخفي لحقن العناصر في زاوية الشاشة الكلية للمتصفح أونلاين
-    st.components.v1.html(chat_box_html, height=0)
+        """, unsafe_allow_html=True)
+        
+        # 📥 مستطيل الكتابة الحقيقي يظهر منسقاً وثابتاً تحت رسالة الترحيب بداخل نفس الصندوق وبدون أي قفز!
+        user_query = st.text_input("✍️ اكتب سؤالك أو طلب الإعلان هنا للبوت:", key="ai_fixed_sidebar_under_msg_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
+        
+        if user_query:
+            with st.spinner("🤖 جاري الصياغة..."):
+                ai_reply = get_ai_response(user_query)
+                st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي الحقيقي:</p>", unsafe_allow_html=True)
+                st.info(ai_reply)
+                st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
