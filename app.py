@@ -9,7 +9,7 @@ import urllib.parse
 from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
 from cleaner_helper import process_sales_file
-from ai_helper import get_ai_response # استدعاء دالة الرد الذكية الآمنة
+from ai_helper import get_ai_response # جلب دالة الرد الذكية
 
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
 apply_neon_theme()
@@ -198,21 +198,22 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
         st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
 
 # ========================================================
-# 🤖 ✨ دمج تفعيل فقاعة ونافذة الدردشة الرسمية التفاعلية المستقرة 100% في الركن السفلي
+# 🤖 الميزة الأسطورية المستقرة للفقاعة المنبثقة التفاعلية الحقيقية (Popover Widget)
 # ========================================================
 st.sidebar.markdown("---")
-# استخدام دالة البوب أوفر الفخمة لستريمليت وتلوينها بالنيون لتظهر كفقاعة دائرية عائمة حقيقية
-with st.sidebar.popover("🤖 افتح دردشة الروبوت العائم"):
-    st.markdown("<h3 style='color: #00ffcc; font-size: 14px; text-align: center;'>💬 مساعد المتاجر ومولد الإعلانات الذكي</h3>", unsafe_allow_html=True)
-    st.info("👋 مرحباً بك يا بطل في متجرك! اكتب سؤالك بالعامية أو طلب إعلانك في مستطيل الكتابة بالأسفل مباشرة وراح نجاوبك هنا فوراً! 🚀")
+
+# حقن زر البوب أوفر الفخم في القائمة وتصميمه ليظهر كفقاعة دائرية عائمة حقيقية تفتح نافذة
+with st.sidebar.popover("🤖 اضغط لفتح الروبوت المساعد (AI Live)"):
+    st.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 14px; text-align: center;'>💬 مساعد ومولد إعلانات المتاجر</h3>", unsafe_allow_html=True)
+    st.info("👋 مرحباً بك يا بطل! أنا ذكاء المنصة المساعد، اكتبلي سؤالك بالعامية أو طلب إعلانك في مستطيل الكتابة بالأسفل مباشرة وراح نجاوبك هنا فوراً! 🚀")
     
-    # مستطيل الكتابة وزر الإرسال والردود مجتمعين معاً بداخل علبة الترحيب المنبثقة الرسمية بدقة مطلقة
+    # مستطيل الكتابة وزر الإرسال والرد الذكي مجتمعين معاً بداخل نفس النافذة الصغيرة المنبثقة بسلام
     user_prompt = st.text_input("✍️ اكتب سؤالك أو طلب الإعلان هنا للبوت:", key="ai_popover_final_perfect_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
     
     if user_prompt:
         with st.spinner("🤖 جاري الصياغة والتحليل..."):
             reply = get_ai_response(user_prompt)
-            st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي الحقيقي:</p>", unsafe_allow_html=True)
             st.success(reply)
             st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
 
