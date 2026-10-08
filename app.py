@@ -9,12 +9,13 @@ import urllib.parse
 from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
 from cleaner_helper import process_sales_file
-from ai_helper import get_ai_response 
+from ai_helper import get_ai_response # جلب دالة الرد الذكية لضمان سلامة الاتصال
 
+# تطبيق التنسيق والواجهة العريضة وحقن الألوان السيبرانية
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
 apply_neon_theme()
 
-# ✨ حقن وتطوير الستايل الليزري الأسطوري للزر المنبثق (Cyberpunk Glow Button)
+# ✨ حقن وتطوير الستايل الليزري الأسطوري للزر المنبثق ليظهر كفقاعة روبوت ترحيبية
 st.markdown("""
     <style>
     /* تنسيق زر البوب أوفر الرسمي لـ Streamlit ليصبح مشعاً وخارقاً */
@@ -132,7 +133,7 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
 
                 st.markdown("---")
                 st.subheader("📲 أزرار الإرسال السريع الفوري لزبونك:")
-                msg_text = f"مرحباً {customer_name}، تم تأكيد طلبيتك بنجاح من متجر {shop_name}. المنتج: {product_name}، الإجمالي للدفع هو: {final_total:,} DA."
+                msg_text = f"مرحباً {customer_name}، تم تأكيد طلبيتك بنجاح من متجر {shop_name}. المنتج: {product_name} wagons، الإجمالي للدفع هو: {final_total:,} DA."
                 encoded_msg = urllib.parse.quote(msg_text)
                 send_col1, send_col2 = st.columns(2)
                 with send_col1: st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{customer_phone}?text={encoded_msg}")
@@ -229,21 +230,24 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
         st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
 
 # ========================================================
-# 🤖 تفعيل البوب أوفر الرسمي والأنيق في أسفل السايدبار بالزر الليزري الجديد
+# 🤖 تحقيق الفكرة: زر ترحيب منبثق فخم + مستطيل كتابة مستقر في القائمة الجانبية
 # ========================================================
 st.sidebar.markdown("---")
 
-with st.sidebar.popover("🤖 اضغط لفتح الروبوت التفاعلي"):
-    st.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 14px; text-align: center;'>💬 مساعد ومولد إعلانات المتاجر (AI Live)</h3>", unsafe_allow_html=True)
-    st.info("👋 مرحباً بك يا بطل! أنا ذكاء المنصة المساعد، اكتبلي سؤالك بالعامية الجزائرية أو طلب إعلانك في مستطيل الكتابة بالأسفل مباشرة وراح نجاوبك هنا فوراً! 🚀")
-    
-    user_prompt = st.text_input("✍️ اكتب سؤالك أو طلب الإعلان هنا للبوت:", key="ai_popover_final_perfect_glow_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
-    
-    if user_prompt:
-        with st.spinner("🤖 جاري الصياغة والتحليل التجاري..."):
-            reply = get_ai_response(user_prompt)
-            st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي الحقيقي:</p>", unsafe_allow_html=True)
-            st.success(reply)
-            st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل الحصري عبر حساب بريدي موب للمطور.</p>", unsafe_allow_html=True)
+# 1. زر الفقاعة الترحيبية المضيئة في السايدبار
+with st.sidebar.popover("🤖 اضغط لفتح رسالة الروبوت"):
+    st.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 14px; text-align: center;'>💬 رسالة ترحيب المساعد الذكي</h3>", unsafe_allow_html=True)
+    st.info("👋 **مرحباً بك يا بطل في لوحة تحكم متجرك الأسطوري!**<br><br>أنا ذكاء المنصة المساعد، يمكنك كتابة سؤالك بالعامية الجزائرية أو طلب توليد إعلانك في الخانة المضيئة المخصصة بالأسفل مباشرة وراح نجاوبك فوراً! 🚀🇩🇿")
+
+# 2. مستطيل الكتابة الحقيقي والمستقر 100% يظهر في مكانه المعتاد تحت الزر مباشرة
+st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>✍️ مستطيل التكلم مع البوت:</p>", unsafe_allow_html=True)
+user_prompt = st.sidebar.text_input("اكتب طلب الإعلان أو سؤالك هنا 👇:", key="ai_final_split_stable_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
+
+if user_prompt:
+    with st.sidebar.spinner("🤖 جاري الصياغة والتحليل التجاري..."):
+        reply = get_ai_response(user_prompt)
+        st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
+        st.sidebar.success(reply)
+        st.sidebar.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل الحصري عبر حساب بريدي موب للمطور.</p>", unsafe_allow_html=True)
 
 conne.close()
