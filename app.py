@@ -7,9 +7,9 @@ import urllib.parse
 
 # استدعاء الدوال من الملفات الفرعية
 from styles import apply_neon_theme
-from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf # استدعاء الملصق الجديد
+from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
 from cleaner_helper import process_sales_file
-from ai_helper import render_ai_chatbot
+from ai_helper import get_ai_response # استدعاء دالة الرد مباشرة
 
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
 apply_neon_theme()
@@ -37,8 +37,6 @@ choice = st.sidebar.radio("اختر الأداة التي تريد استخدا�
     "🧼 مطهر ملفات المبيعات وإحصائيات الولايات"
 ])
 
-render_ai_chatbot()
-
 if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     st.write("<h1 style='font-size: 32px;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
     st.markdown("### 📊 إحصائيات متجرك الشاملة:")
@@ -47,10 +45,8 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     total_sales_db = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conne)
     total_stock_db = pd.read_sql("SELECT SUM(available_qty) as total_qty FROM store_stock", conne)
     
-    with stat_col1:
-        st.metric(label="💰 إجمالي مداخيل المبيعات", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
-    with stat_col2:
-        st.metric(label="🧾 عدد الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
+    with stat_col1: st.metric(label="💰 إجمالي مداخيل المبيعات", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
+    with stat_col2: st.metric(label="🧾 عدد الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
     with stat_col3:
         try: stock_val = int(total_stock_db['total_qty'].values) if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
         except: stock_val = 0
@@ -72,7 +68,7 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
         if not stock_products.empty: product_name = st.selectbox("اختر المنتج من المخزون:", stock_products['product_name'])
         else: product_name = st.text_input("اسم المنتج (قم بإضافته للمخزون أولاً):")
         price = st.number_input("سعر القطعة (DA):", min_value=0, value=1200)
-        quantity = st.number_input("الالكمية المبيعة:", min_value=1, value=1)
+        quantity = st.number_input("الكمية المبيعة:", min_value=1, value=1)
         shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600)
 
     product_total = price * quantity
@@ -97,7 +93,6 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
                 pdf_invoice = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, current_date, logo_data)
                 pdf_label = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
                 
-                # أزرار التحميل المزدوجة الجديدة الفخمة للتاجر
                 col_btn1, col_btn2 = st.columns(2)
                 with col_btn1: st.download_button(label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", data=pdf_invoice, file_name=f"invoice_{customer_name}.pdf", mime="application/pdf")
                 with col_btn2: st.download_button(label="🖨️ تحميل ملصق الشحن الحراري 4x4 (PDF)", data=pdf_label, file_name=f"thermal_label_{customer_name}.pdf", mime="application/pdf")
@@ -201,5 +196,75 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
             
         csv_buffer = df.to_csv(index=False).encode('utf-8')
         st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
+
+# ========================================================
+# ✨ حقن وتثبيت منظومة الفقاعة والعلبة والدردشة الحقيقية في زاوية الشاشة الكلية الكبرى
+# ========================================================
+if "ai_chat_history" not in st.session_state:
+    st.session_state["ai_chat_history"] = ""
+    
+query_params = st.query_params
+if "ai_msg" in query_params:
+    user_prompt = query_params["ai_msg"]
+    st.query_params.clear() 
+    reply = get_ai_response(user_prompt)
+    st.session_state["ai_chat_history"] = reply
+    st.rerun()
+
+chat_box_html = f"""
+<style>
+.neon-bubble-launcher {{
+    position: fixed !important; bottom: 25px !important; right: 25px !important;
+    background: linear-gradient(45deg, #00ffcc, #ff007f); color: white;
+    width: 60px; height: 60px; border-radius: 50%; text-align: center;
+    line-height: 60px; font-size: 30px; cursor: pointer;
+    box-shadow: 0 0 15px #00ffcc, 0 0 25px #ff007f; z-index: 999999999 !important;
+}}
+.neon-chat-window {{
+    position: fixed !important; bottom: 95px !important; right: 25px !important;
+    width: 320px; background-color: #161b22; border: 2px solid #00ffcc;
+    box-shadow: 0 0 25px rgba(0, 255, 204, 0.4); border-radius: 14px;
+    z-index: 999999999 !important; display: none; font-family: sans-serif; direction: rtl;
+}}
+.chat-header {{ background: linear-gradient(45deg, #1f2937, #0d1117); padding: 12px; color: #00ffcc; font-weight: bold; font-size: 13px; border-bottom: 1px solid #30363d; display: flex; justify-content: space-between; }}
+.chat-body {{ padding: 12px; color: white; font-size: 12px; max-height: 180px; overflow-y: auto; }}
+.welcome-text {{ background-color: #21262d; padding: 10px; border-radius: 8px; border-right: 4px solid #ff007f; line-height: 1.4; margin-bottom: 10px; }}
+.ai-response-area {{ background-color: #0d1117; padding: 10px; border-radius: 8px; border: 1px solid #30363d; color: #00ffcc; margin-bottom: 10px; font-weight: bold; }}
+.chat-input-wrapper {{ display: flex; padding: 10px; border-top: 1px solid #30363d; background-color: #0d1117; }}
+.chat-input-field {{ flex: 1; background-color: #161b22; border: 1px solid #30363d; color: white; padding: 8px; border-radius: 6px; font-size: 12px; }}
+.chat-send-btn {{ background: linear-gradient(45deg, #ff007f, #7f00ff); color: white; border: none; padding: 0 12px; margin-right: 5px; border-radius: 6px; cursor: pointer; font-weight: bold; }}
+</style>
+
+<div class="neon-bubble-launcher" onclick="toggleWidget()">🤖</div>
+<div class="neon-chat-window" id="neon_widget">
+    <div class="chat-header"><span>🤖 مساعد المتاجر الذكي</span><span style="cursor:pointer;color:#ff007f;" onclick="toggleWidget()">×</span></div>
+    <div class="chat-body">
+        <div class="welcome-text">👋 <b>مرحباً بك يا بطل!</b> اكتب سؤالك أو طلب إعلانك في المستطيل بالأسفل مباشرة وراح نجاوبك هنا فوراً! 🚀</div>
+        {"<div class='ai-response-area'>🤖 الرد: <br>" + st.session_state["ai_chat_history"] + "</div>" if st.session_state["ai_chat_history"] else ""}
+    </div>
+    <div class="chat-input-wrapper">
+        <input type="text" id="user_text" class="chat-input-field" placeholder="اكتب هنا..." onkeypress="handleKey(event)">
+        <button class="chat-send-btn" onclick="sendToStreamlit()">إرسال</button>
+    </div>
+</div>
+
+<script>
+if(window.parent.document.getElementById('neon_widget')){{
+    var state = window.parent.localStorage.getItem('widget_state') || 'none';
+    window.parent.document.getElementById('neon_widget').style.display = state;
+}}
+function toggleWidget() {{
+    var win = document.getElementById('neon_widget');
+    if(win.style.display === 'none' || win.style.display === ''){{ win.style.display = 'block'; window.parent.localStorage.setItem('widget_state', 'block'); }}
+    else {{ win.style.display = 'none'; window.parent.localStorage.setItem('widget_state', 'none'); }}
+}}
+function handleKey(e) {{ if(e.keyCode === 13) {{ sendToStreamlit(); }} }}
+function sendToStreamlit() {{
+    var txt = document.getElementById('user_text').value;
+    if(txt) {{ window.parent.location.search = '?ai_msg=' + encodeURIComponent(txt); }}
+}}
+</script>
+"""
+st.components.v1.html(chat_box_html, height=0)
 
 conne.close()
