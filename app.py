@@ -3,11 +3,13 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 import io
+import urllib.parse
 
-# استدعاء الدوال من الملفات الفرعية المخصصة
+# استدعاء الدوال من الملفات الفرعية المخصصة الثابتة
 from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf
-from cleaner_helper import process_sales_file # استدعاء ملف التطهير الجديد
+from cleaner_helper import process_sales_file
+from ai_helper import render_ai_chatbot
 
 # تطبيق التنسيق والواجهة العريضة
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
@@ -38,19 +40,40 @@ choice = st.sidebar.radio("اختر الأداة التي تريد استخدا�
     "🧼 مطهر ملفات المبيعات وإحصائيات الولايات"
 ])
 
+# تشغيل مساعد الذكاء الاصطناعي تلقائياً في أسفل القائمة الجانبية
+render_ai_chatbot()
+
 # ========================================================
-# الميزة الأولى: صانع الفواتير والطباعة وخصم المخزون
+# الميزة الأولى: صانع الفواتير والبطاقات والارسال السريع
 # ========================================================
 if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     st.write("<h1 style='font-size: 32px;'>📄 صانع الفواتير الأسطوري الذكي</h1>", unsafe_allow_html=True)
+    
+    # بطاقات الإحصائيات الفخمة (Neon Metric Cards)
+    st.markdown("### 📊 إحصائيات متجرك الشاملة:")
+    stat_col1, stat_col2, stat_col3 = st.columns(3)
+    
+    total_sales_db = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conne)
+    total_stock_db = pd.read_sql("SELECT SUM(available_qty) as total_qty FROM store_stock", conne)
+    
+    with stat_col1:
+        st.metric(label="💰 إجمالي مداخيل المبيعات", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
+    with stat_col2:
+        st.metric(label="🧾 عدد الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
+    with stat_col3:
+        stock_val = total_stock_db['total_qty'].values[0] if not total_stock_db.empty and total_stock_db['total_qty'].values[0] is not None else 0
+        st.metric(label="📦 قطع متوفرة بالمستودع", value=f"{int(stock_val)} حبة")
+        
+    st.markdown("---")
+    
     col_left, col_right = st.columns(2)
     with col_left:
         st.subheader("🏪 معلومات المتجر والزبون")
         shop_name = st.text_input("اسم متجرك الإلكتروني:", "DZ Cyber Store")
         customer_name = st.text_input("اسم الزبون الكامل:")
         customer_phone = st.text_input("رقم هاتف الزبون:")
-        customer_address = st.text_input("عنوان التوصيل والولاية (مثال: الجزائر العاصمة):")
-        uploaded_logo = st.file_uploader("اختر لوغو متجرك لإضافته في الفاتورة (اختياري)", type=["png", "jpg", "jpeg"])
+        customer_address = st.text_input("عنوان التوصيل والولاية:")
+        uploaded_logo = st.file_uploader("اختر لوغو متجرك لإضافته (اختياري)", type=["png", "jpg", "jpeg"])
 
     with col_right:
         st.subheader("📦 تفاصيل السلعة والحسابات")
@@ -74,8 +97,8 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
             st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
         else:
             check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
-            if not check_stock.empty and check_stock['available_qty'].values < quantity:
-                st.error(f"❌ خطأ: الكمية المطلوبة غير متوفرة في المستودع! المتبقي لديك هو: {check_stock['available_qty'].values} قطع فقط.")
+            if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
+                st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
             else:
                 cursor.execute(f"UPDATE store_stock SET available_qty = available_qty - {quantity} WHERE product_name = ?", (product_name,))
                 cursor.execute('''
@@ -83,7 +106,7 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 ''', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
                 conne.commit()
-                st.success("💾 تم تسجيل البيع، خصم المخزون، وحفظ الفاتورة بنجاح!")
+                st.success("💾 تم تسجيل البيع وحفظ الفاتورة بنجاح!")
 
                 logo_data = uploaded_logo.read() if uploaded_logo is not None else None
                 pdf_data = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, current_date, logo_data)
@@ -92,11 +115,21 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
                 with pdf_col1:
                     st.download_button(label="📥 تحميل الفاتورة الرسمية (PDF)", data=pdf_data, file_name=f"invoice_{customer_name}.pdf", mime="application/pdf")
                 with pdf_col2:
-                    if st.button("🖨️ فتح نافذة الطباعة المباشرة السريعة"):
+                    if st.button("🖨️ فتح نافذة الطباعة المباشرة"):
                         st.components.v1.html("<script>window.print();</script>", height=0)
 
+                st.markdown("---")
+                st.subheader("📲 أزرار الإرسال السريع الفوري لزبونك:")
+                msg_text = f"مرحباً {customer_name}، تم تأكيد طلبيتك بنجاح من متجر {shop_name}. المنتج: {product_name}، الإجمالي للدفع هو: {final_total:,} DA."
+                encoded_msg = urllib.parse.quote(msg_text)
+                
+                send_col1, send_col2 = st.columns(2)
+                with send_col1:
+                    st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{customer_phone}?text={encoded_msg}")
+                with send_col2:
+                    st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}")
 # ========================================================
-# الميزة الثانية: قسم إدارة المخزون السلعي والتنبيهات الحمراء
+# الميزة الثانية: قسم إدارة المخزون السلعي والتنبيهات
 # ========================================================
 elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
     st.write("<h1 style='font-size: 32px;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
@@ -104,63 +137,51 @@ elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
     with col_add:
         st.subheader("📝 إضافة سلعة للمستودع:")
         new_prod = st.text_input("اسم السلعة الجديدة:")
-        new_qty = st.number_input("الكمية الابتدائية المتوفرة:", min_value=1, value=50)
+        new_qty = st.number_input("الكمية المتوفرة:", min_value=1, value=50)
         if st.button("➕ حفظ في المستودع"):
             if new_prod:
                 try:
                     cursor.execute("INSERT INTO store_stock (product_name, available_qty) VALUES (?, ?)", (new_prod, new_qty))
                     conne.commit()
                     st.success(f"تم إضافة {new_prod} للمستودع!")
+                    st.rerun()
                 except:
-                    st.error("المنتج موجود مسبقاً، يمكنك تحديث كميته.")
+                    st.error("المنتج موجود مسبقاً في المخزون.")
                     
     with col_view:
-        st.subheader("📋 حالة السلع المتوفرة حالياً في متجرك:")
+        st.subheader("📋 حالة السلع المتوفرة حالياً:")
         stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
         if not stock_df.empty:
             st.dataframe(stock_df, use_container_width=True)
-                        # 🗑️ جزء محو وإزالة السلع من المستودع
-            st.markdown("---")
-            st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
-            delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
-            if st.button("❌ محو السلعة المحددة"):
-                cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
-                conne.commit()
-                st.success(f"🗑️ تم محو السلعة [{delete_prod}] بنجاح!")
-                st.rerun()
-
             low_stock = stock_df[stock_df['available_qty'] <= 5]
             if not low_stock.empty:
                 st.markdown("---")
-                st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تحذير أسطوري: سلع أوشكت على النفاذ من مستودعك!</h3>", unsafe_allow_html=True)
+                st.write("<h3 style='color: #ff007f !important;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
                 st.dataframe(low_stock)
         else:
-            st.info("مستودعك خالي تماماً حالياً، ابدأ بإضافة السلع.")
+            st.info("مستودعك خالي تماماً حالياً.")
 
 # ========================================================
-# الميزة الثالثة: مطهر ملفات المبيعات وعرض المقارنة (قبل وبعد)
+# الميزة الثالثة: مطهر ملفات المبيعات وإحصائيات الولايات
 # ========================================================
 elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
     st.write("<h1 style='font-size: 32px;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
-    uploaded_file = st.file_uploader("اختر ملف المبيعات الجماعي لمتجرك (صيغة CSV أو Excel)", type=["csv", "xlsx"])
+    uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
     
     if uploaded_file is not None:
-        # استدعاء دالة التطهير من الملف الجديد المفصل
         df_raw, df, duplicated_rows, bad_prices = process_sales_file(uploaded_file)
         
-        # 📋 1. عرض جدول البيانات الأصلي (قبل التطهير)
         st.subheader("📋 1. جدول البيانات الأصلي المرفوع (قبل التطهير):")
         st.dataframe(df_raw, use_container_width=True)
         st.success("✅ تم تنظيف الداتا بنجاح وتجهيز المقارنة البصرية!")
         
-        # 💎 2. عرض جدول البيانات النظيف وجدول المهملات جنباً إلى جنب
         col_clean, col_trash = st.columns(2)
         with col_clean:
-            st.subheader("💎 2. جدول البيانات النظيف والمصفى (بعد التطهير):")
+            st.subheader("💎 2. جدول البيانات النظيف (بعد التطهير):")
             st.dataframe(df, use_container_width=True)
-            st.metric(label="صافي الأرباح الحقيقية الصافية المتوقعة", value=f"{df['total_row_sales'].sum():,.2f} DA")
+            st.metric(label="صافي الأرباح الحقيقية المتوقعة", value=f"{df['total_row_sales'].sum():,.2f} DA")
         with col_trash:
-            st.subheader("⚠️ 3. التكرارات والأخطاء المعزولة والمحذوفة:")
+            st.subheader("⚠️ 3. التكرارات والأخطاء المحذوفة:")
             if not duplicated_rows.empty or not bad_prices.empty:
                 if not duplicated_rows.empty:
                     st.warning(f"تم حذف {len(duplicated_rows)} سطر مكرر!")
@@ -169,9 +190,8 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
                     st.error(f"تم حذف {len(bad_prices)} سطر أسعار سالبة!")
                     st.dataframe(bad_prices)
             else:
-                st.info("الملف سليم تماماً ولا يحتوي على أي أخطاء أو تكرار.")
+                st.info("الملف سليم تماماً ولا يحتوي على أخطاء.")
                 
-        # 📈 الرسوم البيانية الملونة والولايات
         st.markdown("---")
         st.subheader("📈 المخططات البيانية الملونة للولايات والمبيعات:")
         chart_col1, chart_col2 = st.columns(2)
@@ -185,12 +205,12 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
                     wilaya_col = col
                     break
             if wilaya_col:
-                st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية ({wilaya_col}):")
+                st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
                 st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
             else:
-                st.info("💡 نصيحة: لكي يظهر مخطط فرز الولايات، سمّ عمود السكن في ملفك باسم 'wilaya'.")
+                st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
             
         csv_buffer = df.to_csv(index=False).encode('utf-8')
-        st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل (CSV)", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
+        st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
 
 conne.close()
