@@ -9,7 +9,7 @@ import urllib.parse
 from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
 from cleaner_helper import process_sales_file
-from ai_helper import render_ai_chatbot
+from ai_helper import get_ai_response # جلب دالة الرد الذكية لضمان سلامة الاتصال
 
 # تطبيق التنسيق والواجهة العريضة وحقن الألوان السيبرانية
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
@@ -39,9 +39,6 @@ choice = st.sidebar.radio("اختر الأداة التي تريد استخدا�
     "📦 إدارة وتنبيهات المخزون السلعي",
     "🧼 مطهر ملفات المبيعات وإحصائيات الولايات"
 ])
-
-# 🤖 تشغيل واستدعاء منظومة الفقاعة العائمة والنافذة الترحيبية تلقائياً وبأمان كامل
-render_ai_chatbot()
 
 # ========================================================
 # الميزة الأولى: صانع الفواتير والملصقات الحرارية والإحصائيات
@@ -201,9 +198,29 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
             if wilaya_col:
                 st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
                 st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
-            else: st.info("💡 نصيحة: سمّ عمود السكن in ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
+            else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
             
         csv_buffer = df.to_csv(index=False).encode('utf-8')
         st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
+
+# ========================================================
+# 🤖 ✨ تفعيل وطباعة منظومة الانبثاق والفقاعة الرسمية الآمنة لستريمليت في أسفل السايدبار
+# ========================================================
+st.sidebar.markdown("---")
+
+# استخدام مكون الـ Popover الرسمي والأنيق لمنع الحظر الأمني نهائياً وثقب جدار الأمان
+with st.sidebar.popover("🤖 اضغط لفتح الروبوت المنبثق"):
+    st.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 14px; text-align: center;'>💬 مساعد ومولد إعلانات المتاجر (AI Live)</h3>", unsafe_allow_html=True)
+    st.info("👋 مرحباً بك يا بطل! أنا ذكاء المنصة المساعد، اكتبلي سؤالك بالعامية أو طلب إعلانك في مستطيل الكتابة بالأسفل مباشرة وراح نجاوبك هنا فوراً! 🚀")
+    
+    # مستطيل الكتابة الحقيقي والرد الذكي مجتمعين معاً بداخل نفس العلبة المنبثقة الرسمية بدقة مطلقة واستقرار 100%
+    user_prompt = st.text_input("✍️ اكتب سؤالك أو طلب الإعلان هنا للبوت:", key="ai_popover_final_perfect_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
+    
+    if user_prompt:
+        with st.spinner("🤖 جاري الصياغة والتحليل..."):
+            reply = get_ai_response(user_prompt)
+            st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي الحقيقي:</p>", unsafe_allow_html=True)
+            st.success(reply)
+            st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
 
 conne.close()
