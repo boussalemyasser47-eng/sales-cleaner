@@ -31,11 +31,10 @@ def get_ai_response(prompt):
             return res_data['choices']['message']['content']
     except:
         return "🤖 اكتبلي واش راك حاب خويا العزيز وراح نجاوبك فوراً بالخطط التسويقية!"
-
 def render_ai_chatbot():
-    """ ✨ ميزة النوافذ المنبثقة التفاعلية للفقاعة العائمة في زاوية المتصفح """
+    """ ✨ ميزة النوافذ المنبثقة التفاعلية للفقاعة العائمة في زاوية المتصفح بدون أخطاء """
     
-    # 🎨 بناء كود التنسيق الرسومي المذهل لـ فقاعة ونافذة الدردشة المنبثقة
+    # بناء كود التنسيق الرسومي المذهل لـ فقاعة ونافذة الدردشة المنبثقة (تم مسح خطأ الطول هنا)
     st.markdown("""
         <style>
         /* 🤖 زر الفقاعة العائمة */
@@ -71,7 +70,7 @@ def render_ai_chatbot():
             box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
             border-radius: 12px;
             z-index: 999999;
-            display: none; /* مخفية تلقائياً حتى يضغط عليها التاجر */
+            display: none;
             font-family: 'Cairo', sans-serif;
             overflow: hidden;
         }
@@ -107,7 +106,6 @@ def render_ai_chatbot():
         }
         </style>
         
-        <!-- الأكواد التفاعلية للجافا سكريبت لفتح وإغلاق العلبة الصغيرة بسلاسة عند الضغط -->
         <script>
         function toggleChatWindow() {
             var chatWin = document.getElementById('ai_popup_window');
@@ -135,13 +133,12 @@ def render_ai_chatbot():
                 </div>
             </div>
         </div>
-    """, height=0)
+    """, unsafe_allow_html=True)
     
-    # 📥 هذا القسم الصغير يظهر ذكياً ومنسقاً تحت علبة الترحيب ليحتوي على خانة الكتابة الحية
+    # خانة الدردشة الحية لستريمليت
     st.markdown("---")
     st.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 18px;'>💬 تحاور مع ذكاء المنصة الحقيقي:</h3>", unsafe_allow_html=True)
     
-    # صندوق إدخال النص المطور التفاعلي للتاجر
     user_query = st.text_input("اكتب سؤالك أو طلب الإعلان هنا للبوت:", key="ai_live_widget_input", placeholder="مثال: اكتبلي إعلان على ساعة ذكية")
     if user_query:
         with st.spinner("🤖 جاري التفكير وصياغة الرد التسويقي الفخم..."):
@@ -149,4 +146,3 @@ def render_ai_chatbot():
             st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
             st.info(ai_reply)
             st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة تمنحك تحليلاً شاملاً وجداول أرباح الولايات الـ 58 تلقائياً! تفضل بالتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
-
