@@ -1,7 +1,7 @@
 import streamlit as st
 
 def apply_neon_theme():
-    """ دالة لتطبيق ألوان السايبربانك الأسطورية وخلفية القائمة الجانبية الداكنة """
+    """ دالة لتطبيق ألوان السايبربانك الأسطورية وخلفية القائمة الجانبية والبطاقات المضيئة """
     st.markdown("""
         <style>
         /* 🌌 خلفية التطبيق العامة */
@@ -46,10 +46,21 @@ def apply_neon_theme():
         }
         
         /* 📥 صناديق إدخال متطابقة مع الوضع الداكن */
-        .stTextInput>div>div>input, .stSelectbox>div>div>div, .stFileUploader>div {
+        .stTextInput>div>div>input, .stSelectbox>div>div>div, .stFileUploader>div, .stNumberInput>div>div>input {
             background-color: #161b22 !important; color: #ffffff !important;
             border: 2px solid #30363d !important; border-radius: 8px;
         }
         p, label, th, td { color: #c9d1d9 !important; }
+        
+        /* 📊 صناديق الإحصائيات الفخمة المضيئة المحدثة */
+        div[data-testid="stMetricValue"] {
+            color: #00ffcc !important;
+            font-family: 'Cairo', sans-serif;
+            text-shadow: 0 0 5px #00ffcc;
+            font-weight: bold;
+        }
+        div[data-testid="stMetricLabel"] {
+            color: #ffffff !important;
+        }
         </style>
         """, unsafe_allow_html=True)
