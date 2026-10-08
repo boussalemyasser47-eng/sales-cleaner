@@ -5,15 +5,17 @@ from datetime import datetime
 import io
 import urllib.parse
 
-# استدعاء الدوال من الملفات الفرعية المخصصة الثابتة
+# استدعاء الدوال من الملفات الفرعية المخصصة الثابتة والموجودة في مشروعك
 from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
 from cleaner_helper import process_sales_file
-from ai_helper import get_ai_response # جلب دالة الرد الذكية
+from ai_helper import render_ai_chatbot # استدعاء المنظومة العائمة الرسمية المصححة
 
+# تطبيق التنسيق والواجهة العريضة وحقن الألوان السيبرانية
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
 apply_neon_theme()
 
+# 🏛️ ربط قاعدة البيانات وتجهيز جداول المبيعات والمخزون الثابتة
 conne = sqlite3.connect("invoices_master_v4.db")
 cursor = conne.cursor()
 cursor.execute('''
@@ -30,6 +32,7 @@ cursor.execute('''
 ''')
 conne.commit()
 
+# --- القائمة الجانبية للتنقل بين الأدوات ---
 st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; font-size: 24px;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
 choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
     "✨ صانع الفواتير الاحترافي (PDF)", 
@@ -37,6 +40,12 @@ choice = st.sidebar.radio("اختر الأداة التي تريد استخدا�
     "🧼 مطهر ملفات المبيعات وإحصائيات الولايات"
 ])
 
+# 🤖 تشغيل واستدعاء منظومة الفقاعة العائمة والنافذة الترحيبية تلقائياً وبأمان كامل
+render_ai_chatbot()
+
+# ========================================================
+# الميزة الأولى: صانع الفواتير والملصقات الحرارية والإحصائيات
+# ========================================================
 if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     st.write("<h1 style='font-size: 32px;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
     st.markdown("### 📊 إحصائيات متجرك الشاملة:")
@@ -50,7 +59,7 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     with stat_col3:
         try: stock_val = int(total_stock_db['total_qty'].values) if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
         except: stock_val = 0
-        st.metric(label="📦 قطع متوفرة بالمستودع", value=f"{stock_val} حبة")
+        st.metric(label="📦 قطع متوفرة بالمستودع", value=f"{stock_val} hba")
         
     st.markdown("---")
     col_left, col_right = st.columns(2)
@@ -196,25 +205,5 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
             
         csv_buffer = df.to_csv(index=False).encode('utf-8')
         st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
-
-# ========================================================
-# 🤖 الميزة الأسطورية المستقرة للفقاعة المنبثقة التفاعلية الحقيقية (Popover Widget)
-# ========================================================
-st.sidebar.markdown("---")
-
-# حقن زر البوب أوفر الفخم في القائمة وتصميمه ليظهر كفقاعة دائرية عائمة حقيقية تفتح نافذة
-with st.sidebar.popover("🤖 اضغط لفتح الروبوت المساعد (AI Live)"):
-    st.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 14px; text-align: center;'>💬 مساعد ومولد إعلانات المتاجر</h3>", unsafe_allow_html=True)
-    st.info("👋 مرحباً بك يا بطل! أنا ذكاء المنصة المساعد، اكتبلي سؤالك بالعامية أو طلب إعلانك في مستطيل الكتابة بالأسفل مباشرة وراح نجاوبك هنا فوراً! 🚀")
-    
-    # مستطيل الكتابة وزر الإرسال والرد الذكي مجتمعين معاً بداخل نفس النافذة الصغيرة المنبثقة بسلام
-    user_prompt = st.text_input("✍️ اكتب سؤالك أو طلب الإعلان هنا للبوت:", key="ai_popover_final_perfect_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
-    
-    if user_prompt:
-        with st.spinner("🤖 جاري الصياغة والتحليل..."):
-            reply = get_ai_response(user_prompt)
-            st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي الحقيقي:</p>", unsafe_allow_html=True)
-            st.success(reply)
-            st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
 
 conne.close()
