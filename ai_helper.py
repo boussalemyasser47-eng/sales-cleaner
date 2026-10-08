@@ -32,14 +32,14 @@ def get_ai_response(prompt):
     except:
         return "🤖 اكتبلي واش راك حاب خويا العزيز وراح نجاوبك فوراً بالخطط التسويقية!"
 def render_ai_chatbot():
-    """ ✨ ميزة الفقاعة العائمة الكاملة التي تفتح نافذة مستقلة بداخلها مستطيل الكتابة مباشرة """
+    """ ✨ ميزة النوافذ المنبثقة الأسطورية: وضع رسالة الترحيب ومستطيل الكتابة الحية معاً في زاوية الشاشة """
     
-    # 🎨 كود الـ CSS والـ HTML المطور لدمج واجهة الدردشة في الزاوية بأعلى أمان واستقرار
+    # 🎨 كود الـ CSS المطور لتحديد مكان النافذة والفقاعة العائمة في الركن السفلي الأيمن
     st.markdown("""
         <style>
         #ai-chat-checkbox { display: none; }
         
-        /* 🤖 أيقونة الروبوت العائمة */
+        /* 🤖 أيقونة الروبوت العائمة المضيئة */
         .bubble-launcher {
             position: fixed;
             bottom: 25px;
@@ -59,7 +59,7 @@ def render_ai_chatbot():
         }
         .bubble-launcher:hover { transform: scale(1.1) rotate(10deg); }
         
-        /* 📋 نافذة الحوار المنبثقة الصغيرة المستقلة في الزاوية */
+        /* 📋 العلبة الصغيرة المخصصة لرسالة الترحيب فقط */
         .popup-dialog-box {
             position: fixed;
             bottom: 105px;
@@ -70,12 +70,11 @@ def render_ai_chatbot():
             box-shadow: 0 0 25px rgba(0, 255, 204, 0.4);
             border-radius: 14px;
             z-index: 999998 !important;
-            display: none; /* مخفية أوتوماتيكياً في البداية */
+            display: none; /* مخفية حتى يضغط التاجر على البوت */
             font-family: 'Cairo', sans-serif;
             overflow: hidden;
         }
         
-        /* السحر البرمجي لفتح وإغلاق العلبة الصغيرة عند الضغط على الفقاعة */
         #ai-chat-checkbox:checked ~ .popup-dialog-box {
             display: block !important;
         }
@@ -101,11 +100,24 @@ def render_ai_chatbot():
             border-radius: 8px;
             border-right: 4px solid #ff007f;
             line-height: 1.5;
-            margin-bottom: 12px;
+        }
+        
+        /* 🛠️ تنسيق فخم ومخصص لجعل مستطيل الكتابة البرمجي يطفو ويظهر تحت علبة الترحيب مباشرة */
+        .floating-input-container {
+            position: fixed;
+            bottom: 105px; /* يطابق تماماً موضع نافذة الترحيب ليصبح بداخلها هندسياً */
+            right: 25px;
+            width: 340px;
+            z-index: 999997 !important;
+            padding: 15px;
+            background-color: #161b22;
+            border: 2px solid #00ffcc;
+            border-top: none; /* دمج هندسي لمنع التداخل */
+            border-radius: 0 0 14px 14px;
         }
         </style>
         
-        <!-- العناصر الهيكلية التفاعلية -->
+        <!-- الأكواد الهيكلية التفاعلية -->
         <input type="checkbox" id="ai-chat-checkbox" />
         <label for="ai-chat-checkbox" class="bubble-launcher">🤖</label>
         
@@ -115,22 +127,22 @@ def render_ai_chatbot():
             </div>
             <div class="popup-dialog-body">
                 <div class="popup-welcome-text">
-                    👋 <b>مرحباً بك يا بطل!</b> أنا ذكاء المنصة، اكتبلي سؤالك بالعامية أو طلب إعلانك في مستطيل الكتابة بالأسفل مباشرة وراح نجاوبك فوراً! 🚀🇩🇿
+                    👋 <b>مرحباً بك يا بطل!</b> أنا ذكاء المنصة، اكتبلي سؤالتك بالعامية أو طلب إعلانك في مستطيل الكتابة بالأسفل مباشرة وراح نجاوبك فوراً! 🚀🇩🇿
                 </div>
             </div>
         </div>
     """, unsafe_allow_html=True)
     
-    # 📥 ربط خانة إدخال النص والردود لتظهر منسقة ومجتمعة بداخل علبة التحكم الجانبية لضمان سلامة قراءة سيرفر Streamlit
+    # 📥 قفل وإلغاء الخانة القديمة في السايدبار، وجعل مستطيل الإدخال يظهر حياً تحت رسالة الترحيب هندسياً
     st.sidebar.markdown("---")
-    st.sidebar.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 15px;'>⌨️ لوحة كتابة الروبوت العائم:</h3>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h3 style='color: #00ffcc; font-size: 14px; text-align: center;'>🤖 تم دمج لوحة الروبوت في الزاوية السفلية</h3>", unsafe_allow_html=True)
     
-    # مستطيل إدخال النص التفاعلي الحقيقي للتاجر
-    user_query = st.sidebar.text_input("اكتب طلب الإعلان أو السؤال هنا 👇:", key="ai_floating_perfect_input", placeholder="مثال: اكتبلي إعلان على عطر...")
+    # وضع خانة إدخال النص والردود مباشرة تحت نافذة الترحيب في الشاشة الرئيسية لستريمليت
+    user_query = st.text_input("✍️ اكتب سؤالك أو طلب الإعلان هنا للبوت:", key="ai_perfect_under_welcome_input", placeholder="مثال: اكتبلي إعلان على عطر...")
     
     if user_query:
-        with st.sidebar.spinner("🤖 جاري الصياغة..."):
+        with st.spinner("🤖 جاري التفكير وصياغة الرد التسويقي الفخم..."):
             ai_reply = get_ai_response(user_query)
-            st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
-            st.sidebar.info(ai_reply)
-            st.sidebar.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 15px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي المطور:</p>", unsafe_allow_html=True)
+            st.info(ai_reply)
+            st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob المباشر.</p>", unsafe_allow_html=True)
