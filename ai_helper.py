@@ -32,17 +32,14 @@ def get_ai_response(prompt):
     except:
         return "🤖 اكتبلي واش راك حاب خويا العزيز وراح نجاوبك فوراً بالخطط التسويقية!"
 def render_ai_chatbot():
-    """ ✨ ميزة الفقاعة العائمة التفاعلية والنافذة المنبثقة بالاعتماد الكامل على النيون والـ CSS الآمن """
+    """ ✨ وضع خانة الإدخال والرد بداخل النافذة المنبثقة الصغيرة وإخفاء المستطيل القديم في الأعلى """
     
-    # 🎨 كود الـ CSS الأسطوري لصنع الفقاعة الدائرية والنافذة المنبثقة بالاعتماد على خيار مخفي (بدون JS)
+    # 🎨 كود الـ CSS الأسطوري لإخفاء الأسطر الزائدة وتجميل النافذة لتصبح العلبة كاملة في الزاوية
     st.markdown("""
         <style>
-        /* إخفاء التشيك بوكس الأصلي */
-        #ai-chat-toggle {
-            display: none;
-        }
+        #ai-chat-toggle { display: none; }
         
-        /* 🤖 تصميم الفقاعة الدائرية المضيئة المطفية في الزاوية */
+        /* 🤖 زر الفقاعة العائمة الدائرية */
         .ai-floating-bubble {
             position: fixed;
             bottom: 25px;
@@ -60,32 +57,29 @@ def render_ai_chatbot():
             z-index: 999999 !important;
             transition: 0.3s ease-in-out;
         }
-        .ai-floating-bubble:hover {
-            transform: scale(1.1) rotate(15deg);
-        }
+        .ai-floating-bubble:hover { transform: scale(1.1) rotate(15deg); }
         
-        /* 📋 نافذة الدردشة الصغيرة المنبثقة الفخمة المحاطة بالنيون */
+        /* 📋 نافذة الدردشة الصغيرة المنبثقة المحاطة بالنيون في الزاوية */
         .ai-popup-chat-window {
             position: fixed;
             bottom: 100px;
             right: 25px;
-            width: 320px;
+            width: 330px;
             background-color: #161b22;
             border: 2px solid #00ffcc;
             box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
             border-radius: 12px;
             z-index: 999998 !important;
-            display: none; /* مخفية تلقائياً */
+            display: none;
             font-family: 'Cairo', sans-serif;
             overflow: hidden;
         }
         
-        /* السحر البرمجي: عندما يضغط التاجر على الفقاعة (تفعيل التشيك بوكس)، تفتح النافذة فوراً! */
+        /* فتح النافذة فور الضغط على الروبوت */
         #ai-chat-toggle:checked ~ .ai-popup-chat-window {
             display: block !important;
         }
         
-        /* رأس علبة الترحيب */
         .ai-popup-header {
             background: linear-gradient(45deg, #1f2937, #0d1117);
             padding: 12px;
@@ -96,9 +90,8 @@ def render_ai_chatbot():
             text-align: center;
         }
         
-        /* صندوق الترحيب الداخلي للروبوت بالعامية */
         .ai-popup-body {
-            padding: 15px;
+            padding: 12px;
             color: #ffffff;
             font-size: 12px;
         }
@@ -108,38 +101,33 @@ def render_ai_chatbot():
             border-radius: 8px;
             border-right: 4px solid #ff007f;
             line-height: 1.4;
+            margin-bottom: 10px;
         }
         </style>
         
-        <!-- هيكل العناصر التفاعلية المشتركة -->
+        <!-- هيكل العناصر التفاعلية السحرية -->
         <input type="checkbox" id="ai-chat-toggle" />
-        
-        <!-- زر الفقاعة العائمة الدائرية -->
         <label for="ai-chat-toggle" class="ai-floating-bubble">🤖</label>
         
-        <!-- النافذة الصغيرة المنبثقة الترحيبية السيبرانية -->
         <div class="ai-popup-chat-window">
             <div class="ai-popup-header">
-                🤖 مساعد المتاجر ومولد الإعلانات الذكي
+                🤖 مساعد ومولد الإعلانات الذكي (AI Live)
             </div>
             <div class="ai-popup-body">
                 <div class="ai-welcome-msg">
-                    👋 <b>مرحباً بك يا بطل في متجرك الأسطوري!</b><br>
-                    أنا ذكاء المنصة، اكتبلي أي سؤال بالعامية أو قولي <b>"اكتبلي إعلان على [اسم السلعة]"</b> في الصندوق بالأسفل وراح نجاوبك فوراً! 🚀🇩🇿
+                    👋 <b>مرحباً بك يا بطل!</b> أنا ذكاء المنصة، اكتبلي سؤالك أو طلب إعلانك في الخانة المخصصة بالأسفل وراح نجاوبك فوراً! 🚀🇩🇿
                 </div>
             </div>
         </div>
     """, unsafe_allow_html=True)
     
-    # 📥 هذا الصندوق يظهر ذكياً ومنسقاً تحت علبة الترحيب ليحتوي على خانة الكتابة الحية المتوافقة مع السيرفر
-    st.markdown("---")
-    st.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 18px;'>💬 علبة الكتابة لذكاء المنصة (AI Live Mode):</h3>", unsafe_allow_html=True)
+    # 📥 وضع صندوق الكتابة لستريمليت أسفل لوحة الترحيب بشكل مدمج، مع إخفاء العناوين الكبيرة القديمة
+    st.sidebar.markdown("---")
+    user_query = st.sidebar.text_input("🤖 اكتب سؤالك أو طلب الإعلان للبوت هنا:", key="ai_live_widget_v6", placeholder="مثال: اكتبلي إعلان على عطر فخم")
     
-    # صندوق إدخال النص المطور التفاعلي للتاجر
-    user_query = st.text_input("اكتب سؤالك أو طلب الإعلان هنا للبوت:", key="ai_live_widget_input_v5", placeholder="مثال: اكتبلي إعلان على ساعة ذكية")
     if user_query:
-        with st.spinner("🤖 جاري التفكير وصياغة الرد التسويقي الفخم..."):
+        with st.sidebar.spinner("🤖 جاري صياغة الرد الفخم..."):
             ai_reply = get_ai_response(user_query)
-            st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
-            st.info(ai_reply)
-            st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة تمنحك تحليلاً شاملاً وجداول الولايات الـ 58 تلقائياً! تفضل بالتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
+            st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
+            st.sidebar.info(ai_reply)
+            st.sidebar.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
