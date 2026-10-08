@@ -9,7 +9,7 @@ import urllib.parse
 from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
 from cleaner_helper import process_sales_file
-from ai_helper import render_ai_chatbot # استدعاء المنظومة العائمة الرسمية المصححة
+from ai_helper import render_ai_chatbot
 
 # تطبيق التنسيق والواجهة العريضة وحقن الألوان السيبرانية
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
@@ -59,7 +59,7 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     with stat_col3:
         try: stock_val = int(total_stock_db['total_qty'].values) if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
         except: stock_val = 0
-        st.metric(label="📦 قطع متوفرة بالمستودع", value=f"{stock_val} hba")
+        st.metric(label="📦 قطع متوفرة بالمستودع", value=f"{stock_val} حبة")
         
     st.markdown("---")
     col_left, col_right = st.columns(2)
@@ -152,7 +152,7 @@ elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
             low_stock = stock_df[stock_df['available_qty'] <= 5]
             if not low_stock.empty:
                 st.markdown("---")
-                st.write("<h3 style='color: #ff007f !important;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
+                st.write("<h3 style='color: #ff007f !important;'>🚨 تحذير: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
                 st.dataframe(low_stock)
         else: st.info("مستودعك خالي تماماً حالياً.")
 
@@ -201,7 +201,7 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
             if wilaya_col:
                 st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
                 st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
-            else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
+            else: st.info("💡 نصيحة: سمّ عمود السكن in ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
             
         csv_buffer = df.to_csv(index=False).encode('utf-8')
         st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
