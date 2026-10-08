@@ -9,13 +9,12 @@ import urllib.parse
 from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
 from cleaner_helper import process_sales_file
-from ai_helper import render_ai_chatbot # استدعاء منظومة الفقاعة المنبثقة الشاملة
+from ai_helper import render_ai_chatbot, get_ai_response # استدعاء الدوال المصلحة والآمنة
 
 # تطبيق التنسيق والواجهة العريضة وحقن الألوان السيبرانية
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
 apply_neon_theme()
 
-# 🏛️ ربط قاعدة البيانات وتجهيز جداول المبيعات والمخزون الثابتة
 conne = sqlite3.connect("invoices_master_v4.db")
 cursor = conne.cursor()
 cursor.execute('''
@@ -40,7 +39,7 @@ choice = st.sidebar.radio("اختر الأداة التي تريد استخدا�
     "🧼 مطهر ملفات المبيعات وإحصائيات الولايات"
 ])
 
-# 🤖 تشغيل واستدعاء منظومة الفقاعة العائمة والنافذة الترحيبية المصلحة تلقائياً
+# 🤖 تشغيل واستدعاء منظومة الفقاعة العائمة الناجحة المسترجعة في زاوية المتصفح
 render_ai_chatbot()
 
 # ========================================================
@@ -207,13 +206,13 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
         st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
 
 # ========================================================
-# 🤖 لوحة كتابة ومستطيل الروبوت المستقرة والثابتة في القائمة الجانبية
+# ✍️ مستطيل ومكان الكتابة الآمن لذكاء المنصة في القائمة الجانبية (Sidebar)
 # ========================================================
-st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>✍️ مستطيل التكلم مع البوت:</p>", unsafe_allow_html=True)
-user_prompt = st.sidebar.text_input("اكتب طلب الإعلان أو سؤالك هنا 👇:", key="ai_final_clean_app_stable_input", placeholder="مثال: ساعة ذكية...")
+st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 15px; margin-bottom: 2px;'>✍️ مستطيل التكلم مع البوت:</p>", unsafe_allow_html=True)
+user_prompt = st.sidebar.text_input("اكتب طلب الإعلان أو سؤالك هنا 👇:", key="ai_final_split_stable_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
 
 if user_prompt:
-    with st.sidebar.spinner("🤖 جاري صياغة الرد التسويقي..."):
+    with st.sidebar.spinner("🤖 جاري الصياغة والتحليل التجاري..."):
         reply = get_ai_response(user_prompt)
         st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
         st.sidebar.success(reply)
