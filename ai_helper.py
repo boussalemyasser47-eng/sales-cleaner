@@ -1,17 +1,27 @@
-import streamlit as st
-
 def render_ai_chatbot():
-    """ ✨ تحقيق حلم الفقاعة المنبثقة: فقاعة عائمة تفتح نافذة نيون صغيرة ترحيبية وبداخلها زر التكلم المباشر """
+    """ ✨ تثبيت الفقاعة والنافذة المنبثقة الترحيبية في زاوية الشاشة السفلية وثقب حظر سيرفر ستريمليت """
     
-    # تنظيف القائمة الجانبية لإبقاء الموقع منسقاً واحترافياً
+    # تنظيف مساحة السايدبار السفلية
     st.sidebar.markdown("---")
-    st.sidebar.markdown("<h3 style='color: #00ffcc; font-size: 14px; text-align: center;'>🤖 تم تفعيل البوت العائم في الزاوية السفلية</h3>", unsafe_allow_html=True)
+    
+    # إدارة ذاكرة الدردشة المخفية للسيرفر لمنع الاهتزاز
+    if "ai_widget_history" not in st.session_state:
+        st.session_state["ai_widget_history"] = ""
+        
+    query_params = st.query_params
+    if "widget_msg" in query_params:
+        user_prompt = query_params["widget_msg"]
+        st.query_params.clear() 
+        with st.spinner("🤖 جاري التفكير..."):
+            reply = get_ai_response(user_prompt)
+            st.session_state["ai_widget_history"] = reply
+            st.rerun()
 
-    # 🎨 كود الـ HTML & CSS & JS الأسطوري لحقن الفقاعة والنافذة المنبثقة التفاعلية في زاوية المتصفح
-    widget_html = """
+    # 🎨 كود الـ HTML & CSS & JS الأسطوري المعدل لحقن وتثبيت الفقاعة في الأسفل المطلق للمتصفح (Fixed CSS Injection)
+    widget_html = f"""
     <style>
-    /* 🤖 أيقونة الروبوت العائمة المضيئة الثابتة أسفل يمين الشاشة */
-    .floating-launcher-bubble {
+    /* 🤖 أيقونة الروبوت العائمة المضيئة مجبرة ومثبتة في زاوية الشاشة السفلية اليمنى */
+    .floating-launcher-bubble {{
         position: fixed !important;
         bottom: 25px !important;
         right: 25px !important;
@@ -25,27 +35,27 @@ def render_ai_chatbot():
         font-size: 30px;
         cursor: pointer;
         box-shadow: 0 0 15px #00ffcc, 0 0 25px #ff007f;
-        z-index: 999999999 !important;
+        z-index: 999999999 !important; /* رفع الترتيب البصري فوق كل عناصر الواجهة */
         transition: 0.3s ease-in-out;
-    }
-    .floating-launcher-bubble:hover { transform: scale(1.1); }
+    }}
+    .floating-launcher-bubble:hover {{ transform: scale(1.1); }}
     
-    /* 📋 العلبة الصغيرة المنبثقة المتكاملة المدمجة فوق الفقاعة بدقة */
-    .floating-chat-window {
+    /* 📋 النافذة الصغيرة المنبثقة الترحيبية مثبتة بدقة فوق الفقاعة السفلية */
+    .floating-chat-window {{
         position: fixed !important;
         bottom: 95px !important;
         right: 25px !important;
         width: 320px;
         background-color: #161b22;
         border: 2px solid #00ffcc;
-        box-shadow: 0 0 25px rgba(0, 255, 204, 0.4);
+        box-shadow: 0 0 25px rgba(0, 255, 204, 0.5);
         border-radius: 14px;
         z-index: 999999999 !important;
-        display: none; /* مخفية تلقائياً حتى يتم الضغط */
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        display: none;
+        font-family: sans-serif;
         direction: rtl;
-    }
-    .chat-header {
+    }}
+    .chat-header {{
         background: linear-gradient(45deg, #1f2937, #0d1117);
         padding: 12px;
         color: #00ffcc;
@@ -54,73 +64,106 @@ def render_ai_chatbot():
         border-bottom: 1px solid #30363d;
         display: flex;
         justify-content: space-between;
-    }
-    .chat-body {
-        padding: 15px;
+    }}
+    .chat-body {{
+        padding: 12px;
         color: white;
         font-size: 12px;
-    }
-    .welcome-card {
+        max-height: 180px;
+        overflow-y: auto;
+    }}
+    .welcome-card {{
         background-color: #21262d;
-        padding: 12px;
+        padding: 10px;
         border-radius: 8px;
         border-right: 4px solid #ff007f;
-        line-height: 1.5;
-        margin-bottom: 12px;
-        color: #ffffff;
-    }
-    /* 🚀 زر التواصل السريع الليزري المطور للتكلم المباشر مع المطور */
-    .chat-action-btn {
-        display: block;
-        background: linear-gradient(45deg, #ff007f, #7f00ff);
-        color: white !important;
-        text-align: center;
-        padding: 12px;
+        line-height: 1.4;
+        margin-bottom: 10px;
+    }}
+    .response-area {{
+        background-color: #0d1117;
+        padding: 10px;
         border-radius: 8px;
+        border: 1px solid #30363d;
+        color: #00ffcc;
+        margin-bottom: 10px;
         font-weight: bold;
-        text-decoration: none;
-        box-shadow: 0 0 10px #ff007f;
-        transition: 0.3s;
-        font-size: 13px;
-    }
-    .chat-action-btn:hover {
-        background: linear-gradient(45deg, #00ffcc, #007fff);
-        box-shadow: 0 0 15px #00ffcc;
-        color: #0d1117 !important;
-    }
+    }}
+    /* ✍️ مستطيل الكتابة وزر الإرسال مدمجين في أسفل العلبة الصغيرة */
+    .input-wrapper {{
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid #30363d;
+        background-color: #0d1117;
+    }}
+    .input-field {{
+        flex: 1;
+        background-color: #161b22;
+        border: 1px solid #30363d;
+        color: white;
+        padding: 8px;
+        border-radius: 6px;
+        font-size: 12px;
+    }}
+    .send-btn {{
+        background: linear-gradient(45deg, #ff007f, #7f00ff);
+        color: white;
+        border: none;
+        padding: 0 12px;
+        margin-right: 5px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+    }}
     </style>
 
-    <!-- أيقونة الروبوت العائمة -->
     <div class="floating-launcher-bubble" onclick="toggleWidgetWindow()">🤖</div>
 
-    <!-- نافذة الدردشة المستقلة بالكامل في الزاوية -->
     <div class="floating-chat-window" id="movable_ai_widget">
         <div class="chat-header">
-            <span>🤖 مساعد ومولد الإعلانات (AI Live)</span>
-            <span style="cursor:pointer;color:#ff007f;font-size:16px;" onclick="toggleWidgetWindow()">×</span>
+            <span>🤖 مساعد المتاجر الذكي</span>
+            <span style="cursor:pointer;color:#ff007f;" onclick="toggleWidgetWindow()">×</span>
         </div>
-        <div class="chat-body">
+        <div class="win-body">
             <div class="welcome-card">
-                👋 <b>مرحباً بك يا بطل في لوحة تحكم متجرك!</b><br><br>
-                أنا ذكاء المنصة المساعد، يمكنك استخدام باقة الذكاء الاصطناعي الكاملة لتوليد نصوص إعلانية بالعامية الجزائرية وصياغة حملات Facebook Ads لمتجرك حياً!
+                👋 <b>مرحباً بك يا بطل في متجرك!</b> اكتب سؤالك أو طلب إعلانك في المستطيل بالأسفل مباشرة وراح نجاوبك هنا فوراً! 🚀
             </div>
-            <!-- زر التكلم المباشر المدمج تحت رسالة الترحيب -->
-            <a href="https://wa.me" target="_parent" class="chat-action-btn">💬 اضغط هنا للتكلم معي وتفعيل البوت الكامل 🚀</a>
+            {"<div class='response-area'>🤖 الرد: <br>" + st.session_state["ai_widget_history"] + "</div>" if st.session_state["ai_widget_history"] else ""}
+        </div>
+        <div class="input-wrapper">
+            <input type="text" id="widget_text" class="input-field" placeholder="اكتب سؤالك هنا..." onkeypress="checkEnterKey(event)">
+            <button class="send-btn" onclick="sendDataToStreamlit()">إرسال</button>
         </div>
     </div>
 
     <script>
-    function toggleWidgetWindow() {
+    // الحفاظ على حالة الفتح والإغلاق في جذور الصفحة لمنع القفز للأعلى
+    if(window.parent.document.getElementById('movable_ai_widget')){{
+        var savedState = window.parent.localStorage.getItem('floating_widget_state') || 'none';
+        window.parent.document.getElementById('movable_ai_widget').style.display = savedState;
+    }}
+    
+    function toggleWidgetWindow() {{
         var myWin = document.getElementById('movable_ai_widget');
-        if(myWin.style.display === 'none' || myWin.style.display === '') {
+        if(myWin.style.display === 'none' || myWin.style.display === ''){{
             myWin.style.display = 'block';
-        } else {
+            window.parent.localStorage.setItem('floating_widget_state', 'block');
+        }} else {{
             myWin.style.display = 'none';
-        }
-    }
+            window.parent.localStorage.setItem('floating_widget_state', 'none');
+        }}
+    }}
+    function checkEnterKey(event) {{
+        if(event.keyCode === 13) {{ sendDataToStreamlit(); }}
+    }}
+    function sendDataToStreamlit() {{
+        var clientText = document.getElementById('widget_text').value;
+        if(clientText) {{
+            window.parent.location.search = '?widget_msg=' + encodeURIComponent(clientText);
+        }}
+    }}
     </script>
     """
-    # حقن المنظومة العائمة لتظهر وتطير وتفتح بسلام أونلاين
-    st.components.v1.html(widget_html, height=120)
-
-
+    
+    # حيلة الـ iFrame المطلق لفرض حقن ونزول الفقاعة أسفل يمين الشاشة الكلية للموقع
+    st.components.v1.html(widget_html, height=0)
