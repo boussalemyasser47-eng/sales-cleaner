@@ -9,7 +9,7 @@ import urllib.parse
 from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
 from cleaner_helper import process_sales_file
-from ai_helper import render_ai_chatbot, get_ai_response # استدعاء الدوال المصلحة والآمنة
+from ai_helper import render_marketing_hub, render_data_insights, render_sidebar_helper
 
 # تطبيق التنسيق والواجهة العريضة وحقن الألوان السيبرانية
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
@@ -36,11 +36,12 @@ st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; font-size: 2
 choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
     "✨ صانع الفواتير الاحترافي (PDF)", 
     "📦 إدارة وتنبيهات المخزون السلعي",
-    "🧼 مطهر ملفات المبيعات وإحصائيات الولايات"
+    "🧼 مطهر ملفات المبيعات وإحصائيات الولايات",
+    "🚀 مولّد الحملات والتخطيط التسويقي (AI)"
 ])
 
-# 🤖 تشغيل واستدعاء منظومة الفقاعة العائمة الناجحة المسترجعة في زاوية المتصفح
-render_ai_chatbot()
+# 🤖 تشغيل الميزة الثالثة: بوت خدمة العملاء والمساعد الفوري في الجنب
+render_sidebar_helper()
 
 # ========================================================
 # الميزة الأولى: صانع الفواتير والملصقات الحرارية والإحصائيات
@@ -73,8 +74,10 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     with col_right:
         st.subheader("📦 تفاصيل السلعة والحسابات")
         stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
-        if not stock_products.empty: product_name = st.selectbox("اختر المنتج من المخزون:", stock_products['product_name'])
-        else: product_name = st.text_input("اسم المنتج (قم بإضافته للمخزون أولاً):")
+        if not stock_products.empty: 
+            product_name = st.selectbox("اختر المنتج من المخزون:", stock_products['product_name'])
+        else: 
+            product_name = st.text_input("اسم المنتج (قم بإضافته للمخزون أولاً):")
         price = st.number_input("سعر القطعة (DA):", min_value=0, value=1200)
         quantity = st.number_input("الكمية المبيعة:", min_value=1, value=1)
         shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600)
@@ -186,6 +189,10 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
             else: st.info("الملف سليم تماماً ولا يحتوي على أخطاء.")
                 
         st.markdown("---")
+        # 🤖 الميزة الثانية: المستشار الذكي لقراءة الجداول تلقائياً بداخل نفس القسم!
+        render_data_insights(df)
+        
+        st.markdown("---")
         st.subheader("📈 المخططات البيانية الملونة للولايات والمبيعات:")
         chart_col1, chart_col2 = st.columns(2)
         with chart_col1:
@@ -206,16 +213,9 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
         st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
 
 # ========================================================
-# ✍️ مستطيل ومكان الكتابة الآمن لذكاء المنصة في القائمة الجانبية (Sidebar)
+# 🚀 الميزة الجديدة: تشغيل قسم مولد الحملات الإعلانية الذكي
 # ========================================================
-st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 15px; margin-bottom: 2px;'>✍️ مستطيل التكلم مع البوت:</p>", unsafe_allow_html=True)
-user_prompt = st.sidebar.text_input("اكتب طلب الإعلان أو سؤالك هنا 👇:", key="ai_final_split_stable_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
-
-if user_prompt:
-    with st.sidebar.spinner("🤖 جاري الصياغة والتحليل التجاري..."):
-        reply = get_ai_response(user_prompt)
-        st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
-        st.sidebar.success(reply)
-        st.sidebar.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل الحصري عبر حساب بريدي موب للمطور.</p>", unsafe_allow_html=True)
+elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
+    render_marketing_hub()
 
 conne.close()
