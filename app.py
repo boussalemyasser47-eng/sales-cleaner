@@ -9,13 +9,13 @@ import urllib.parse
 from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
 from cleaner_helper import process_sales_file
-from ai_helper import get_ai_response # استدعاء دالة الرد الذكية
+from ai_helper import render_ai_chatbot # استدعاء منظومة الفقاعة المنبثقة الشاملة
 
-# تطبيق التنسيق والواجهة العريضة وحقن الفقاعة المتحركة
+# تطبيق التنسيق والواجهة العريضة وحقن الألوان السيبرانية
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
 apply_neon_theme()
 
-# 🏛️ ربط قاعدة البيانات وتجهيز جداول المبيعات والمخزون
+# 🏛️ ربط قاعدة البيانات وتجهيز جداول المبيعات والمخزون الثابتة
 conne = sqlite3.connect("invoices_master_v4.db")
 cursor = conne.cursor()
 cursor.execute('''
@@ -39,6 +39,9 @@ choice = st.sidebar.radio("اختر الأداة التي تريد استخدا�
     "📦 إدارة وتنبيهات المخزون السلعي",
     "🧼 مطهر ملفات المبيعات وإحصائيات الولايات"
 ])
+
+# 🤖 تشغيل واستدعاء منظومة الفقاعة العائمة المنبثقة تلقائياً
+render_ai_chatbot()
 
 # ========================================================
 # الميزة الأولى: صانع الفواتير والملصقات الحرارية والإحصائيات
@@ -208,21 +211,5 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
             
         csv_buffer = df.to_csv(index=False).encode('utf-8')
         st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
-
-# ========================================================
-# 🤖 تشغيل واستقبال الرسائل لشريط محادثة ومولد الإعلانات
-# ========================================================
-st.sidebar.markdown("---")
-st.sidebar.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 15px; text-align: center;'>⌨️ لوحة كتابة الروبوت العائم:</h3>", unsafe_allow_html=True)
-
-# خانة الكتابة الحقيقية والمستقرة 100% لاستقبال طلبات التاجر بالسايدبار
-user_prompt = st.sidebar.text_input("اكتب طلب الإعلان أو سؤالك هنا 👇:", key="ai_draggable_perfect_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
-
-if user_prompt:
-    with st.sidebar.spinner("🤖 جاري التفكير وصياغة الرد التسويقي..."):
-        reply = get_ai_response(user_prompt)
-        st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
-        st.sidebar.info(reply)
-        st.sidebar.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob المباشر.</p>", unsafe_allow_html=True)
 
 conne.close()
