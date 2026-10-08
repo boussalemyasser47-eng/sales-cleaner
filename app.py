@@ -61,8 +61,15 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     with stat_col2:
         st.metric(label="🧾 عدد الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
     with stat_col3:
-        stock_val = total_stock_db['total_qty'].values if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
-        st.metric(label="📦 قطع متوفرة بالمستودع", value=f"{int(stock_val)} حبة")
+        # 🛠️ تصحيح وحل مشكلة الـ TypeError نهائياً هنا:
+        try:
+            if not total_stock_db.empty and total_stock_db['total_qty'].values[0] is not None:
+                stock_val = int(total_stock_db['total_qty'].values[0])
+            else:
+                stock_val = 0
+        except:
+            stock_val = 0
+        st.metric(label="📦 قطع متوفرة بالمستودع", value=f"{stock_val} حبة")
         
     st.markdown("---")
     
@@ -97,10 +104,10 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
             st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
         else:
             check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
-            if not check_stock.empty and check_stock['available_qty'].values < quantity:
-                st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values} قطع فقط.")
+            if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
+                st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
             else:
-                cursor.execute(f"UPDATE store_stock SET available_qty = available_qty - {quantity} WHERE product_name = ?", (product_name,))
+                cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
                 cursor.execute('''
                     INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -154,7 +161,7 @@ elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         if not stock_df.empty:
             st.dataframe(stock_df, use_container_width=True)
             
-            # 🗑️ ميزة محو (حذف) سلعة من المخزون التفاعلية المضافة بنجاح
+            # 🗑️ ميزة محو سلعة من المخزون التفاعلية المحمية
             st.markdown("---")
             st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
             delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
