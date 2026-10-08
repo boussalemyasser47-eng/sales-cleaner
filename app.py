@@ -5,11 +5,11 @@ from datetime import datetime
 import io
 import urllib.parse
 
-# استدعاء الدوال من الملفات الفرعية
+# استدعاء الدوال من الملفات الفرعية المخصصة الثابتة
 from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
 from cleaner_helper import process_sales_file
-from ai_helper import get_ai_response # استدعاء دالة الرد مباشرة
+from ai_helper import get_ai_response # استدعاء دالة الرد الذكية الآمنة
 
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
 apply_neon_theme()
@@ -198,73 +198,23 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
         st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
 
 # ========================================================
-# ✨ حقن وتثبيت منظومة الفقاعة والعلبة والدردشة الحقيقية في زاوية الشاشة الكلية الكبرى
+# 🤖 تشغيل شريط محادثة الذكاء الاصطناعي المثبت بالأسفل (المكون الرسمي لـ Streamlit)
 # ========================================================
-if "ai_chat_history" not in st.session_state:
-    st.session_state["ai_chat_history"] = ""
-    
-query_params = st.query_params
-if "ai_msg" in query_params:
-    user_prompt = query_params["ai_msg"]
-    st.query_params.clear() 
-    reply = get_ai_response(user_prompt)
-    st.session_state["ai_chat_history"] = reply
-    st.rerun()
+st.sidebar.markdown("---")
+st.sidebar.markdown("<h3 style='color: #00ffcc; text-align: center; font-size: 14px;'>🤖 شريط الدردشة مثبت في أسفل الشاشة الرئيسية</h3>", unsafe_allow_html=True)
 
-chat_box_html = f"""
-<style>
-.neon-bubble-launcher {{
-    position: fixed !important; bottom: 25px !important; right: 25px !important;
-    background: linear-gradient(45deg, #00ffcc, #ff007f); color: white;
-    width: 60px; height: 60px; border-radius: 50%; text-align: center;
-    line-height: 60px; font-size: 30px; cursor: pointer;
-    box-shadow: 0 0 15px #00ffcc, 0 0 25px #ff007f; z-index: 999999999 !important;
-}}
-.neon-chat-window {{
-    position: fixed !important; bottom: 95px !important; right: 25px !important;
-    width: 320px; background-color: #161b22; border: 2px solid #00ffcc;
-    box-shadow: 0 0 25px rgba(0, 255, 204, 0.4); border-radius: 14px;
-    z-index: 999999999 !important; display: none; font-family: sans-serif; direction: rtl;
-}}
-.chat-header {{ background: linear-gradient(45deg, #1f2937, #0d1117); padding: 12px; color: #00ffcc; font-weight: bold; font-size: 13px; border-bottom: 1px solid #30363d; display: flex; justify-content: space-between; }}
-.chat-body {{ padding: 12px; color: white; font-size: 12px; max-height: 180px; overflow-y: auto; }}
-.welcome-text {{ background-color: #21262d; padding: 10px; border-radius: 8px; border-right: 4px solid #ff007f; line-height: 1.4; margin-bottom: 10px; }}
-.ai-response-area {{ background-color: #0d1117; padding: 10px; border-radius: 8px; border: 1px solid #30363d; color: #00ffcc; margin-bottom: 10px; font-weight: bold; }}
-.chat-input-wrapper {{ display: flex; padding: 10px; border-top: 1px solid #30363d; background-color: #0d1117; }}
-.chat-input-field {{ flex: 1; background-color: #161b22; border: 1px solid #30363d; color: white; padding: 8px; border-radius: 6px; font-size: 12px; }}
-.chat-send-btn {{ background: linear-gradient(45deg, #ff007f, #7f00ff); color: white; border: none; padding: 0 12px; margin-right: 5px; border-radius: 6px; cursor: pointer; font-weight: bold; }}
-</style>
+# تفعيل مستطيل الكتابة الرسمي الذكي لستريمليت ليثبت في الحافة السفلية للموقع 100% وبشكل دائم
+user_prompt = st.chat_input("✍️ اسأل مساعد المتاجر ومولد الإعلانات الذكي هنا...")
 
-<div class="neon-bubble-launcher" onclick="toggleWidget()">🤖</div>
-<div class="neon-chat-window" id="neon_widget">
-    <div class="chat-header"><span>🤖 مساعد المتاجر الذكي</span><span style="cursor:pointer;color:#ff007f;" onclick="toggleWidget()">×</span></div>
-    <div class="chat-body">
-        <div class="welcome-text">👋 <b>مرحباً بك يا بطل!</b> اكتب سؤالك أو طلب إعلانك في المستطيل بالأسفل مباشرة وراح نجاوبك هنا فوراً! 🚀</div>
-        {"<div class='ai-response-area'>🤖 الرد: <br>" + st.session_state["ai_chat_history"] + "</div>" if st.session_state["ai_chat_history"] else ""}
-    </div>
-    <div class="chat-input-wrapper">
-        <input type="text" id="user_text" class="chat-input-field" placeholder="اكتب هنا..." onkeypress="handleKey(event)">
-        <button class="chat-send-btn" onclick="sendToStreamlit()">إرسال</button>
-    </div>
-</div>
-
-<script>
-if(window.parent.document.getElementById('neon_widget')){{
-    var state = window.parent.localStorage.getItem('widget_state') || 'none';
-    window.parent.document.getElementById('neon_widget').style.display = state;
-}}
-function toggleWidget() {{
-    var win = document.getElementById('neon_widget');
-    if(win.style.display === 'none' || win.style.display === ''){{ win.style.display = 'block'; window.parent.localStorage.setItem('widget_state', 'block'); }}
-    else {{ win.style.display = 'none'; window.parent.localStorage.setItem('widget_state', 'none'); }}
-}}
-function handleKey(e) {{ if(e.keyCode === 13) {{ sendToStreamlit(); }} }}
-function sendToStreamlit() {{
-    var txt = document.getElementById('user_text').value;
-    if(txt) {{ window.parent.location.search = '?ai_msg=' + encodeURIComponent(txt); }}
-}}
-</script>
-"""
-st.components.v1.html(chat_box_html, height=0)
+if user_prompt:
+    # 1. عرض ترحيب الروبوت أولاً كرسالة دردشة فخمة
+    with st.chat_message("assistant", avatar="🤖"):
+        st.write("👋 **مرحباً بك يا بطل!** جاري صياغة وتحليل طلبك تسويقياً بالعامية الجزائرية...")
+        
+    # 2. جلب الرد الحقيقي الفوري وعرضه داخل صندوق المحادثة المستقر
+    with st.chat_message("assistant", avatar="✨"):
+        reply = get_ai_response(user_prompt)
+        st.write(reply)
+        st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة تمنحك بوت مخصص يدرس ملفاتك بدون قيود! تفضل بالتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
 
 conne.close()
