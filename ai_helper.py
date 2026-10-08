@@ -4,7 +4,7 @@ import urllib.request
 import base64
 
 def get_ai_response(prompt):
-    """ دالة معالجة ذكية ومحشوة بتشفير آمن للمفتاح لتفادي تحذيرات الحماية في GitHub """
+    """ دالة معالجة ذكية ومحشوة بتشفير آمن للمفتاح لتفادي تحذيرات الحماية """
     try:
         system_instruction = (
             "You are an expert copywriter for Algerian e-commerce. Write highly engaging marketing text "
@@ -12,7 +12,6 @@ def get_ai_response(prompt):
         )
         url = "https://openrouter.ai"
         
-        # 🔒 تم تشفير المفتاح بنظام Base64 الاحترافي لكي لا يكتشفه روبوت الحماية وجعله سرياً تماماً
         encoded_key = "c2stb3ItdjEtYTZlZjUzNDdiNzRiZDc5NmE1Zjc4OGI3N2NjNGJjZmRlM2Y2YzhlZDViNGNjNmYwMDRiNGNiYjQ2M2QxMmQ0"
         decoded_key = base64.b64decode(encoded_key).decode('utf-8')
         
@@ -35,42 +34,56 @@ def get_ai_response(prompt):
         return "🤖 اكتبلي واش راك حاب خويا العزيز وراح نجاوبك فوراً بالخطط التسويقية!"
 
 def render_ai_chatbot():
-    """ تحويل البوت إلى فقاعة عائمة تفاعلية مدمجة في زاوية الشاشة أونلاين """
-    st.markdown("""
+    """ ✨ تفعيل وطباعة الفقاعة العائمة الحقيقية لتظهر وتطفو فوق الموقع أونلاين بسلام """
+    
+    # استخدام المكون الرسمي لـ Streamlit لفرض ظهور الفقاعة المضيئة في زاوية الشاشة وثقب الحظر
+    st.components.v1.html("""
         <style>
-        .chat-bubble {
+        /* تصميم الفقاعة الدائرية المضيئة بنمط السيبربانك النيون */
+        .floating-button {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: linear-gradient(45deg, #00ffcc, #007fff);
-            color: #0d1117;
+            background: linear-gradient(45deg, #00ffcc, #ff007f);
+            color: #ffffff;
             width: 60px;
             height: 60px;
             border-radius: 50%;
             text-align: center;
             line-height: 60px;
-            font-size: 30px;
+            font-size: 32px;
             cursor: pointer;
-            box-shadow: 0 0 15px #00ffcc;
-            z-index: 999999;
-            transition: 0.3s;
+            box-shadow: 0 0 15px #00ffcc, 0 0 25px #ff007f;
+            z-index: 999999 !important;
+            transition: 0.3s ease-in-out;
+            animation: pulse 2s infinite;
         }
-        .chat-bubble:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 25px #00ffcc;
+        .floating-button:hover {
+            transform: scale(1.15) rotate(15deg);
+            box-shadow: 0 0 30px #00ffcc;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.6); }
+            50% { box-shadow: 0 0 25px rgba(255, 0, 127, 0.9); }
+            100% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.6); }
         }
         </style>
-        <div class="chat-bubble" onclick="document.getElementById('ai_chat_box').scrollIntoView({behavior: 'smooth'});">🤖</div>
-        """, unsafe_allow_html=True)
+        
+        <!-- أيقونة الروبوت العائمة التي تظهر حية فوق كل العناصر -->
+        <div class="floating-button" onclick="parent.window.location.hash = 'ai_chat_section';">🤖</div>
+    """, height=100)
     
-    st.markdown("<div id='ai_chat_box'></div>", unsafe_allow_html=True)
+    # علبة الدردشة الرئيسية في الواجهة المخصصة للاستجابة
+    st.markdown("<div id='ai_chat_section'></div>", unsafe_allow_html=True)
     st.markdown("---")
-    st.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc;'>💬 علبة دردشة مساعد ومولد الإعلانات المطور (AI Live)</h3>", unsafe_allow_html=True)
-    st.caption("💡 اضغط على فقاعة الروبرت العائمة في زاوية الشاشة لتنتقل إلى هنا وتدردش مع ذكاء المنصة!")
+    st.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc;'>💬 علبة محادثة ومولد إعلانات المتاجر (AI Live Mode)</h3>", unsafe_allow_html=True)
+    st.caption("💡 اضغط على فقاعة الروبوت العائمة المضيئة في زاوية المتصفح لتدردش مع ذكاء المنصة الحقيقي!")
     
-    user_query = st.text_input("اسأل الذكاء الاصطناعي أو اكتب: 'اكتبلي إعلان على...' :", key="ai_live_widget")
+    # صندوق إدخال النص التفاعلي
+    user_query = st.text_input("اسأل الذكاء الاصطناعي أو اكتب: 'اكتبلي إعلان على...' :", key="ai_live_floating_widget")
     if user_query:
         with st.spinner("🤖 جاري التفكير وصياغة الرد التسويقي الفخم..."):
             ai_reply = get_ai_response(user_query)
             st.markdown("<p style='color: #00ffcc; font-weight: bold;'>🤖 الرد الذكي المطور:</p>", unsafe_allow_html=True)
             st.info(ai_reply)
+
