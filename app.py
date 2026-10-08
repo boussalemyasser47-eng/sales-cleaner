@@ -9,43 +9,13 @@ import urllib.parse
 from styles import apply_neon_theme
 from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
 from cleaner_helper import process_sales_file
-from ai_helper import get_ai_response # جلب دالة الرد الذكية لضمان سلامة الاتصال
+from ai_helper import render_ai_chatbot # استدعاء منظومة الفقاعة المنبثقة الشاملة
 
 # تطبيق التنسيق والواجهة العريضة وحقن الألوان السيبرانية
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
 apply_neon_theme()
 
-# ✨ حقن وتطوير الستايل الليزري الأسطوري للزر المنبثق ليظهر كفقاعة روبوت ترحيبية
-st.markdown("""
-    <style>
-    /* تنسيق زر البوب أوفر الرسمي لـ Streamlit ليصبح مشعاً وخارقاً */
-    div[data-testid="stPopover"] > button:first-child {
-        background: linear-gradient(45deg, #00ffcc, #ff007f) !important;
-        color: #ffffff !important;
-        border-radius: 14px !important;
-        border: 2px solid #00ffcc !important;
-        padding: 14px 28px !important;
-        font-size: 16px !important;
-        font-weight: bold !important;
-        box-shadow: 0 0 15px #00ffcc, 0 0 25px #ff007f !important;
-        transition: 0.4s ease-in-out !important;
-        width: 100% !important;
-        animation: neonGlow 2.5s infinite alternate !important;
-    }
-    /* تأثير التحويم والضغط الأسطوري الفوسفوري */
-    div[data-testid="stPopover"] > button:first-child:hover {
-        background: linear-gradient(45deg, #7f00ff, #ff007f) !important;
-        box-shadow: 0 0 30px #ff007f, 0 0 50px #7f00ff !important;
-        transform: scale(1.04) !important;
-        color: #ffffff !important;
-    }
-    @keyframes neonGlow {
-        0% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.6), 0 0 25px rgba(255, 0, 127, 0.6); }
-        100% { box-shadow: 0 0 30px rgba(0, 255, 204, 0.9), 0 0 45px rgba(255, 0, 127, 0.9); }
-    }
-    </style>
-""", unsafe_allow_html=True)
-
+# 🏛️ ربط قاعدة البيانات وتجهيز جداول المبيعات والمخزون الثابتة
 conne = sqlite3.connect("invoices_master_v4.db")
 cursor = conne.cursor()
 cursor.execute('''
@@ -62,6 +32,7 @@ cursor.execute('''
 ''')
 conne.commit()
 
+# --- القائمة الجانبية للتنقل بين الأدوات ---
 st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; font-size: 24px;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
 choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
     "✨ صانع الفواتير الاحترافي (PDF)", 
@@ -69,6 +40,12 @@ choice = st.sidebar.radio("اختر الأداة التي تريد استخدا�
     "🧼 مطهر ملفات المبيعات وإحصائيات الولايات"
 ])
 
+# 🤖 تشغيل واستدعاء منظومة الفقاعة العائمة والنافذة الترحيبية المصلحة تلقائياً
+render_ai_chatbot()
+
+# ========================================================
+# الميزة الأولى: صانع الفواتير والملصقات الحرارية والإحصائيات
+# ========================================================
 if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     st.write("<h1 style='font-size: 32px;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
     st.markdown("### 📊 إحصائيات متجرك الشاملة:")
@@ -133,7 +110,7 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
 
                 st.markdown("---")
                 st.subheader("📲 أزرار الإرسال السريع الفوري لزبونك:")
-                msg_text = f"مرحباً {customer_name}، تم تأكيد طلبيتك بنجاح من متجر {shop_name}. المنتج: {product_name} wagons، الإجمالي للدفع هو: {final_total:,} DA."
+                msg_text = f"مرحباً {customer_name}، تم تأكيد طلبيتك بنجاح من متجر {shop_name}. المنتج: {product_name}، الإجمالي للدفع هو: {final_total:,} DA."
                 encoded_msg = urllib.parse.quote(msg_text)
                 send_col1, send_col2 = st.columns(2)
                 with send_col1: st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{customer_phone}?text={encoded_msg}")
@@ -175,7 +152,7 @@ elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
             low_stock = stock_df[stock_df['available_qty'] <= 5]
             if not low_stock.empty:
                 st.markdown("---")
-                st.write("<h3 style='color: #ff007f !important;'>🚨 تحذير: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
+                st.write("<h3 style='color: #ff007f !important;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
                 st.dataframe(low_stock)
         else: st.info("مستودعك خالي تماماً حالياً.")
 
@@ -230,21 +207,13 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
         st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
 
 # ========================================================
-# 🤖 تحقيق الفكرة: زر ترحيب منبثق فخم + مستطيل كتابة مستقر في القائمة الجانبية
+# 🤖 لوحة كتابة ومستطيل الروبوت المستقرة والثابتة في القائمة الجانبية
 # ========================================================
-st.sidebar.markdown("---")
-
-# 1. زر الفقاعة الترحيبية المضيئة في السايدبار
-with st.sidebar.popover("🤖 اضغط لفتح رسالة الروبوت"):
-    st.markdown("<h3 style='color: #00ffcc; text-shadow: 0 0 5px #00ffcc; font-size: 14px; text-align: center;'>💬 رسالة ترحيب المساعد الذكي</h3>", unsafe_allow_html=True)
-    st.info("👋 **مرحباً بك يا بطل في لوحة تحكم متجرك الأسطوري!**<br><br>أنا ذكاء المنصة المساعد، يمكنك كتابة سؤالك بالعامية الجزائرية أو طلب توليد إعلانك في الخانة المضيئة المخصصة بالأسفل مباشرة وراح نجاوبك فوراً! 🚀🇩🇿")
-
-# 2. مستطيل الكتابة الحقيقي والمستقر 100% يظهر في مكانه المعتاد تحت الزر مباشرة
 st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>✍️ مستطيل التكلم مع البوت:</p>", unsafe_allow_html=True)
-user_prompt = st.sidebar.text_input("اكتب طلب الإعلان أو سؤالك هنا 👇:", key="ai_final_split_stable_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
+user_prompt = st.sidebar.text_input("اكتب طلب الإعلان أو سؤالك هنا 👇:", key="ai_final_clean_app_stable_input", placeholder="مثال: ساعة ذكية...")
 
 if user_prompt:
-    with st.sidebar.spinner("🤖 جاري الصياغة والتحليل التجاري..."):
+    with st.sidebar.spinner("🤖 جاري صياغة الرد التسويقي..."):
         reply = get_ai_response(user_prompt)
         st.sidebar.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
         st.sidebar.success(reply)
