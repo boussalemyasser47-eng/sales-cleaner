@@ -135,7 +135,7 @@ def render_ai_chatbot():
     
     # 📥 قفل وإلغاء الخانة القديمة في السايدبار، وجعل مستطيل الإدخال يظهر حياً تحت رسالة الترحيب هندسياً
     st.sidebar.markdown("---")
-    st.sidebar.markdown("<h3 style='color: #00ffcc; font-size: 14px; text-align: center;'>🤖 تم دمج لوحة الروبوت في الزاوية السفلية</h3>", unsafe_allow_html=True)
+  
     
     # وضع خانة إدخال النص والردود مباشرة تحت نافذة الترحيب في الشاشة الرئيسية لستريمليت
     user_query = st.text_input("✍️ اكتب سؤالك أو طلب الإعلان هنا للبوت:", key="ai_perfect_under_welcome_input", placeholder="مثال: اكتبلي إعلان على عطر...")
