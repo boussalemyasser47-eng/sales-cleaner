@@ -61,7 +61,7 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     with stat_col2:
         st.metric(label="🧾 عدد الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
     with stat_col3:
-        stock_val = total_stock_db['total_qty'].values[0] if not total_stock_db.empty and total_stock_db['total_qty'].values[0] is not None else 0
+        stock_val = total_stock_db['total_qty'].values if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
         st.metric(label="📦 قطع متوفرة بالمستودع", value=f"{int(stock_val)} حبة")
         
     st.markdown("---")
@@ -97,8 +97,8 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
             st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
         else:
             check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
-            if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
-                st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
+            if not check_stock.empty and check_stock['available_qty'].values < quantity:
+                st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values} قطع فقط.")
             else:
                 cursor.execute(f"UPDATE store_stock SET available_qty = available_qty - {quantity} WHERE product_name = ?", (product_name,))
                 cursor.execute('''
@@ -129,7 +129,7 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
                 with send_col2:
                     st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}")
 # ========================================================
-# الميزة الثانية: قسم إدارة المخزون السلعي والتنبيهات
+# الميزة الثانية: قسم إدارة المخزون السلعي والتنبيهات وزر المحو
 # ========================================================
 elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
     st.write("<h1 style='font-size: 32px;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
@@ -153,6 +153,17 @@ elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
         if not stock_df.empty:
             st.dataframe(stock_df, use_container_width=True)
+            
+            # 🗑️ ميزة محو (حذف) سلعة من المخزون التفاعلية المضافة بنجاح
+            st.markdown("---")
+            st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
+            delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
+            if st.button("❌ محو السلعة المحددة"):
+                cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
+                conne.commit()
+                st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!")
+                st.rerun()
+            
             low_stock = stock_df[stock_df['available_qty'] <= 5]
             if not low_stock.empty:
                 st.markdown("---")
