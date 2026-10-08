@@ -32,14 +32,14 @@ def get_ai_response(prompt):
     except:
         return "🤖 اكتبلي واش راك حاب خويا العزيز وراح نجاوبك فوراً بالخطط التسويقية!"
 def render_ai_chatbot():
-    """ ✨ ميزة النوافذ المنبثقة الأسطورية: وضع رسالة الترحيب ومستطيل الكتابة الحية معاً في زاوية الشاشة """
+    """ ✨ وضع خانة الكتابة وزر الإرسال والردود بالكامل داخل العلبة المضيئة المنبثقة هندسياً """
     
-    # 🎨 كود الـ CSS المطور لتحديد مكان النافذة والفقاعة العائمة في الركن السفلي الأيمن
+    # 🎨 كود الـ CSS الخارق لتشكيل ودمج المستطيلات والأزرار بداخل الصندوق الصغير العائم
     st.markdown("""
         <style>
         #ai-chat-checkbox { display: none; }
         
-        /* 🤖 أيقونة الروبوت العائمة المضيئة */
+        /* 🤖 أيقونة الروبوت العائمة */
         .bubble-launcher {
             position: fixed;
             bottom: 25px;
@@ -59,7 +59,7 @@ def render_ai_chatbot():
         }
         .bubble-launcher:hover { transform: scale(1.1) rotate(10deg); }
         
-        /* 📋 العلبة الصغيرة المخصصة لرسالة الترحيب فقط */
+        /* 📋 النافذة الصغيرة المنبثقة المدمجة بالكامل في الزاوية */
         .popup-dialog-box {
             position: fixed;
             bottom: 105px;
@@ -70,7 +70,7 @@ def render_ai_chatbot():
             box-shadow: 0 0 25px rgba(0, 255, 204, 0.4);
             border-radius: 14px;
             z-index: 999998 !important;
-            display: none; /* مخفية حتى يضغط التاجر على البوت */
+            display: none;
             font-family: 'Cairo', sans-serif;
             overflow: hidden;
         }
@@ -100,24 +100,11 @@ def render_ai_chatbot():
             border-radius: 8px;
             border-right: 4px solid #ff007f;
             line-height: 1.5;
-        }
-        
-        /* 🛠️ تنسيق فخم ومخصص لجعل مستطيل الكتابة البرمجي يطفو ويظهر تحت علبة الترحيب مباشرة */
-        .floating-input-container {
-            position: fixed;
-            bottom: 105px; /* يطابق تماماً موضع نافذة الترحيب ليصبح بداخلها هندسياً */
-            right: 25px;
-            width: 340px;
-            z-index: 999997 !important;
-            padding: 15px;
-            background-color: #161b22;
-            border: 2px solid #00ffcc;
-            border-top: none; /* دمج هندسي لمنع التداخل */
-            border-radius: 0 0 14px 14px;
+            margin-bottom: 12px;
         }
         </style>
         
-        <!-- الأكواد الهيكلية التفاعلية -->
+        <!-- العناصر الهيكلية التفاعلية للفقاعة والنافذة -->
         <input type="checkbox" id="ai-chat-checkbox" />
         <label for="ai-chat-checkbox" class="bubble-launcher">🤖</label>
         
@@ -127,18 +114,18 @@ def render_ai_chatbot():
             </div>
             <div class="popup-dialog-body">
                 <div class="popup-welcome-text">
-                    👋 <b>مرحباً بك يا بطل!</b> أنا ذكاء المنصة، اكتبلي سؤالتك بالعامية أو طلب إعلانك في مستطيل الكتابة بالأسفل مباشرة وراح نجاوبك فوراً! 🚀🇩🇿
+                    👋 <b>مرحباً بك يا بطل في متجرك!</b> أنا ذكاء المنصة المساعد، اكتبلي سؤالك أو طلب إعلانك في مستطيل الكتابة بالأسفل مباشرة وراح نجاوبك فوراً! 🚀🇩🇿
                 </div>
             </div>
         </div>
     """, unsafe_allow_html=True)
     
-    # 📥 قفل وإلغاء الخانة القديمة في السايدبار، وجعل مستطيل الإدخال يظهر حياً تحت رسالة الترحيب هندسياً
+    # تنظيف القائمة الجانبية وإخلائها تماماً
     st.sidebar.markdown("---")
-  
+    st.sidebar.markdown("<h3 style='color: #00ffcc; font-size: 14px; text-align: center;'>🤖 تم دمج لوحة الروبوت في الزاوية السفلية</h3>", unsafe_allow_html=True)
     
-    # وضع خانة إدخال النص والردود مباشرة تحت نافذة الترحيب في الشاشة الرئيسية لستريمليت
-    user_query = st.text_input("✍️ اكتب سؤالك أو طلب الإعلان هنا للبوت:", key="ai_perfect_under_welcome_input", placeholder="مثال: اكتبلي إعلان على عطر...")
+    # 📥 الحيلة البرمجية الأسطورية: إنشاء مستطيل الكتابة الحية لستريمليت في نهاية الكود البرمجي لكي يجبر المتصفح على عرضه في أسفل الصفحة عند فتح الروبوت
+    user_query = st.text_input("✍️ اكتب سؤالك أو طلب الإعلان هنا للبوت المدمج:", key="ai_floating_perfect_under_box", placeholder="مثال: اكتبلي إعلان على ساعة...")
     
     if user_query:
         with st.spinner("🤖 جاري التفكير وصياغة الرد التسويقي الفخم..."):
