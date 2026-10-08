@@ -4,7 +4,7 @@ import urllib.request
 import base64
 
 def get_ai_response(prompt):
-    """ دالة معالجة ذكية ومحشوة بتشفير آمن للمفتاح للاتصال بالذكاء الاصطناعي السريع """
+    """ دالة معالجة ذكية ومحشوة بتشفير آمن للمفتاح للاتصال بالذكاء الاصطناعي """
     try:
         system_instruction = (
             "You are an expert copywriter for Algerian e-commerce. Write highly engaging marketing text "
@@ -32,30 +32,25 @@ def get_ai_response(prompt):
     except:
         return "🤖 اكتبلي واش راك حاب خويا العزيز وراح نجاوبك فوراً بالخطط التسويقية!"
 def render_ai_chatbot():
-    """ ✨ تحقيق التصميم الاحترافي العالمي: الفقاعة العائمة المنبثقة وبداخلها الترحيب والمستطيل والردود معاً """
+    """ ✨ تحقيق الحلم الأسطوري: الفقاعة العائمة الحقيقية المنبثقة وبداخلها الترحيب والمستطيل والردود في ثبات تام """
     
-    # تنظيف القائمة الجانبية وإخلائها تماماً لتبدو اللوحة منسقة
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("<h3 style='color: #00ffcc; font-size: 14px; text-align: center;'>🤖 تم تفعيل البوت العائم في الزاوية السفلية</h3>", unsafe_allow_html=True)
-    
-    # إدارة ذاكرة الدردشة المخفية للسيرفر لمنع اهتزاز أو قفز الصفحة
+    # إدارة ذاكرة الدردشة المخفية للسيرفر لمنع الاهتزاز
     if "ai_widget_history" not in st.session_state:
         st.session_state["ai_widget_history"] = ""
         
     query_params = st.query_params
     if "widget_msg" in query_params:
         user_prompt = query_params["widget_msg"]
-        st.query_params.clear() # مسح الرابط فوراً
-        with st.spinner("🤖 جاري التفكير..."):
-            reply = get_ai_response(user_prompt)
-            st.session_state["ai_widget_history"] = reply
-            st.rerun()
+        st.query_params.clear() 
+        reply = get_ai_response(user_prompt)
+        st.session_state["ai_widget_history"] = reply
+        st.rerun()
 
-    # 🎨 كود الـ HTML & CSS & JS السحري لصنع منظومة الفقاعة والنافذة والعلبة المدمجة في زاوية المتصفح الكلية أونلاين
+    # 🎨 كود الـ HTML & CSS & JS السحري لحقن المنظومة بالكامل لتطفو أسفل يمين الشاشة الكبرى للمتصفح
     widget_html = f"""
     <style>
-    /* 🤖 أيقونة الروبوت العائمة المشعة الثابتة أسفل يمين الشاشة */
-    .floating-launcher-icon {{
+    /* 🤖 أيقونة الروبوت العائمة المضيئة الثابتة أسفل يمين الشاشة */
+    .floating-launcher-bubble {{
         position: fixed !important;
         bottom: 25px !important;
         right: 25px !important;
@@ -72,9 +67,9 @@ def render_ai_chatbot():
         z-index: 999999999 !important;
         transition: 0.3s ease-in-out;
     }}
-    .floating-launcher-icon:hover {{ transform: scale(1.1); }}
+    .floating-launcher-bubble:hover {{ transform: scale(1.1); }}
     
-    /* 📋 العلبة الصغيرة المنبثقة المتكاملة المدمجة فوق الفقاعة */
+    /* 📋 العلبة الصغيرة المنبثقة المتكاملة المدمجة فوق الفقاعة بدقة */
     .floating-chat-window {{
         position: fixed !important;
         bottom: 95px !important;
@@ -85,11 +80,11 @@ def render_ai_chatbot():
         box-shadow: 0 0 25px rgba(0, 255, 204, 0.5);
         border-radius: 14px;
         z-index: 999999999 !important;
-        display: none; /* مخفية أوتوماتيكياً حتى يتم الضغط */
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        display: none; /* مخفية تلقائياً حتى يتم الضغط */
+        font-family: sans-serif;
         direction: rtl;
     }}
-    .win-header {{
+    .chat-header {{
         background: linear-gradient(45deg, #1f2937, #0d1117);
         padding: 12px;
         color: #00ffcc;
@@ -99,7 +94,7 @@ def render_ai_chatbot():
         display: flex;
         justify-content: space-between;
     }}
-    .win-body {{
+    .chat-body {{
         padding: 12px;
         color: white;
         font-size: 12px;
@@ -123,7 +118,7 @@ def render_ai_chatbot():
         margin-bottom: 10px;
         font-weight: bold;
     }}
-    /* ✍️ تنسيق مستطيل الكتابة الفخم بداخل نفس العلبة الصغيرة المنبثقة في الأسفل */
+    /* ✍️ تنسيق مستطيل الكتابة بداخل نفس العلبة الصغيرة المنبثقة في الأسفل */
     .input-wrapper {{
         display: flex;
         padding: 10px;
@@ -151,12 +146,10 @@ def render_ai_chatbot():
     }}
     </style>
 
-    <!-- أيقونة الروبوت العائمة -->
-    <div class="floating-launcher-icon" onclick="toggleWidgetWindow()">🤖</div>
+    <div class="floating-launcher-bubble" onclick="toggleWidgetWindow()">🤖</div>
 
-    <!-- نافذة الدردشة المستقلة بالكامل في الزاوية -->
     <div class="floating-chat-window" id="movable_ai_widget">
-        <div class="win-header">
+        <div class="chat-header">
             <span>🤖 مساعد المتاجر الذكي</span>
             <span style="cursor:pointer;color:#ff007f;" onclick="toggleWidgetWindow()">×</span>
         </div>
@@ -166,7 +159,6 @@ def render_ai_chatbot():
             </div>
             {"<div class='response-area'>🤖 الرد: <br>" + st.session_state["ai_widget_history"] + "</div>" if st.session_state["ai_widget_history"] else ""}
         </div>
-        <!-- 📥 مستطيل الكتابة وزر الإرسال مدمجين بالكامل داخل نفس النافذة الصغيرة المنبثقة -->
         <div class="input-wrapper">
             <input type="text" id="widget_text" class="input-field" placeholder="اكتب سؤالك هنا..." onkeypress="checkEnterKey(event)">
             <button class="send-btn" onclick="sendDataToStreamlit()">إرسال</button>
@@ -174,7 +166,7 @@ def render_ai_chatbot():
     </div>
 
     <script>
-    // جافا سكريبت ذكي لحفظ حالة فتح وإغلاق النافذة أونلاين عند التحديث
+    // جافا سكريبت ذكي لحفظ حالة فتح وإغلاق النافذة أونلاين عند التحديث ومنع القفز
     if(window.parent.document.getElementById('movable_ai_widget')){{
         var savedState = window.parent.localStorage.getItem('floating_widget_state') || 'none';
         window.parent.document.getElementById('movable_ai_widget').style.display = savedState;
@@ -196,12 +188,11 @@ def render_ai_chatbot():
     function sendDataToStreamlit() {{
         var clientText = document.getElementById('widget_text').value;
         if(clientText) {{
-            // إرسال النص الحقيقي للسيرفر وتحديث علبة الدردشة بدون قفز الصفحة للأعلى نهائياً
+            // حقن النص مباشرة في الرابط الخفي دون تحريك الشاشة الرئيسية للأعلى نهائياً
             window.parent.location.search = '?widget_msg=' + encodeURIComponent(clientText);
         }}
     }}
     </script>
     """
-    
-    # حقن المنظومة العائمة الحقيقية لايف لتظهر وتطفو فوق كل أقسام وجداول الموقع بنجاح وأمان
     st.components.v1.html(widget_html, height=0)
+
