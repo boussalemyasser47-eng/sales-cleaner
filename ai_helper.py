@@ -32,104 +32,52 @@ def get_ai_response(prompt):
     except:
         return "🤖 اكتبلي واش راك حاب خويا العزيز وراح نجاوبك فوراً بالخطط التسويقية!"
 def render_ai_chatbot():
-    """ ✨ وضع خانة الكتابة وزر الإرسال والردود بالكامل داخل العلبة المضيئة المنبثقة هندسياً """
+    """ ✨ الحل النهائي والعبقري: دالة بناء واجهة دردشة مدمجة ومستقرة تماماً داخل السايدبار بدون أخطاء قفز """
     
-    # 🎨 كود الـ CSS الخارق لتشكيل ودمج المستطيلات والأزرار بداخل الصندوق الصغير العائم
+    # 🎨 كود الـ CSS الأسطوري المطور لتنسيق العلبة بداخل القائمة الجانبية بنمط النيون السيبراني
     st.markdown("""
         <style>
-        #ai-chat-checkbox { display: none; }
-        
-        /* 🤖 أيقونة الروبوت العائمة */
-        .bubble-launcher {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background: linear-gradient(45deg, #00ffcc, #ff007f);
-            color: white;
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 65px;
-            font-size: 32px;
-            cursor: pointer;
-            box-shadow: 0 0 20px #00ffcc, 0 0 30px #ff007f;
-            z-index: 999999 !important;
-            transition: 0.3s ease-in-out;
-        }
-        .bubble-launcher:hover { transform: scale(1.1) rotate(10deg); }
-        
-        /* 📋 النافذة الصغيرة المنبثقة المدمجة بالكامل في الزاوية */
-        .popup-dialog-box {
-            position: fixed;
-            bottom: 105px;
-            right: 25px;
-            width: 340px;
-            background-color: #161b22;
-            border: 2px solid #00ffcc;
-            box-shadow: 0 0 25px rgba(0, 255, 204, 0.4);
-            border-radius: 14px;
-            z-index: 999998 !important;
-            display: none;
-            font-family: 'Cairo', sans-serif;
-            overflow: hidden;
-        }
-        
-        #ai-chat-checkbox:checked ~ .popup-dialog-box {
-            display: block !important;
-        }
-        
-        .popup-dialog-header {
-            background: linear-gradient(45deg, #1f2937, #0d1117);
-            padding: 14px;
-            color: #00ffcc;
-            font-weight: bold;
-            font-size: 14px;
-            border-bottom: 1px solid #30363d;
-            text-align: center;
-        }
-        
-        .popup-dialog-body {
-            padding: 15px;
-            color: #ffffff;
-            font-size: 13px;
-        }
-        .popup-welcome-text {
-            background-color: #21262d;
+        .ai-perfect-box {
+            background-color: #161b22 !important;
+            border: 2px solid #00ffcc !important;
+            border-radius: 12px;
             padding: 12px;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+            margin-bottom: 10px;
+        }
+        .ai-welcome-msg-text {
+            background-color: #21262d;
+            padding: 10px;
             border-radius: 8px;
             border-right: 4px solid #ff007f;
-            line-height: 1.5;
-            margin-bottom: 12px;
+            color: #ffffff !important;
+            line-height: 1.4;
+            font-size: 13px;
         }
         </style>
-        
-        <!-- العناصر الهيكلية التفاعلية للفقاعة والنافذة -->
-        <input type="checkbox" id="ai-chat-checkbox" />
-        <label for="ai-chat-checkbox" class="bubble-launcher">🤖</label>
-        
-        <div class="popup-dialog-box">
-            <div class="popup-dialog-header">
-                🤖 مساعد ومولد الإعلانات الذكي (AI Live)
-            </div>
-            <div class="popup-dialog-body">
-                <div class="popup-welcome-text">
-                    👋 <b>مرحباً بك يا بطل في متجرك!</b> أنا ذكاء المنصة المساعد، اكتبلي سؤالك أو طلب إعلانك في مستطيل الكتابة بالأسفل مباشرة وراح نجاوبك فوراً! 🚀🇩🇿
-                </div>
-            </div>
-        </div>
     """, unsafe_allow_html=True)
     
-    # تنظيف القائمة الجانبية وإخلائها تماماً
+    # تفريغ وتنظيف مساحة القائمة الجانبية في الأسفل
     st.sidebar.markdown("---")
-    st.sidebar.markdown("<h3 style='color: #00ffcc; font-size: 14px; text-align: center;'>🤖 تم دمج لوحة الروبوت في الزاوية السفلية</h3>", unsafe_allow_html=True)
     
-    # 📥 الحيلة البرمجية الأسطورية: إنشاء مستطيل الكتابة الحية لستريمليت في نهاية الكود البرمجي لكي يجبر المتصفح على عرضه في أسفل الصفحة عند فتح الروبوت
-    user_query = st.text_input("✍️ اكتب سؤالك أو طلب الإعلان هنا للبوت المدمج:", key="ai_floating_perfect_under_box", placeholder="مثال: اكتبلي إعلان على ساعة...")
-    
-    if user_query:
-        with st.spinner("🤖 جاري التفكير وصياغة الرد التسويقي الفخم..."):
-            ai_reply = get_ai_response(user_query)
-            st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 15px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي المطور:</p>", unsafe_allow_html=True)
-            st.info(ai_reply)
-            st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob المباشر.</p>", unsafe_allow_html=True)
+    # 📦 المكون الرسمي المستقر: صندوق منسدل فخم يفتح ويغلق بلمسة تاجر احترافية
+    with st.sidebar.expander("🤖 افتح مساعد ومولد الإعلانات الذكي (AI Live)"):
+        # عرض رسالة الترحيب بداخل الصندوق الجانبي بقمة الأناقة
+        st.markdown("""
+            <div class="ai-perfect-box">
+                <div class="ai-welcome-msg-text">
+                    👋 <b>مرحباً بك يا بطل في متجرك!</b><br>
+                    أنا ذكاء المنصة المساعد، اكتبلي سؤالك أو طلب إعلانك في المستطيل بالأسفل مباشرة وراح نجاوبك هنا فوراً! 🚀🇩🇿
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # 📥 مستطيل الكتابة الحقيقي والمستقر 100% يظهر تحت رسالة الترحيب مباشرة في نفس الصندوق!
+        user_query = st.text_input("✍️ اكتب سؤالك أو طلب الإعلان هنا:", key="ai_final_perfect_sidebar_input", placeholder="مثال: اكتبلي إعلان على ساعة...")
+        
+        if user_query:
+            with st.spinner("🤖 جاري الصياغة والتحليل..."):
+                ai_reply = get_ai_response(user_query)
+                st.markdown("<p style='color: #00ffcc; font-weight: bold; margin-top: 10px; margin-bottom: 2px;'>🤖 رد الروبوت الذكي:</p>", unsafe_allow_html=True)
+                st.info(ai_reply)
+                st.markdown("<p style='font-size: 11px; color: #8b949e; text-align: center;'>🔒 النسخة السنوية الكاملة متوفرة للتفعيل عبر BaridiMob.</p>", unsafe_allow_html=True)
