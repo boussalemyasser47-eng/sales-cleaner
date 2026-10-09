@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول: الأنماط البصرية والمجموعات الأولى (ai_helper.py)
+# الجزء الأول: الهندسة البصرية المتقدمة وتجميل الأزرار (ai_helper.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
@@ -8,9 +8,10 @@ import sqlite3
 def render_sidebar_helper():
     st.sidebar.markdown("---")
     
-    # 1. حقن كود الـ CSS الأسطوري المخصص لتحسين شكل الزر وشريط الكتابة ومنع التداخل
+    # 1. حقن كود الـ CSS الأسطوري المخصص لتحسين شكل الزر وشريط الكتابة ومنع التداخل وحجب النصوص
     st.sidebar.markdown("""
         <style>
+        /* 🛑 ترقية شكل الزر الفيروزي ليصبح بتأثير الحواف الزجاجية المشعة الخلابة */
         div[data-testid="stCheckbox"] {
             background: linear-gradient(135deg, #0a0a12 0%, #101020 100%) !important;
             border: 2px solid #00fff0 !important;
@@ -18,9 +19,11 @@ def render_sidebar_helper():
             padding: 14px !important;
             text-align: right !important;
             box-shadow: 0px 0px 18px rgba(0, 255, 240, 0.4), inset 0px 0px 8px rgba(0, 255, 240, 0.2) !important;
+            transition: all 0.4s ease-in-out !important;
         }
         div[data-testid="stCheckbox"]:hover { box-shadow: 0px 0px 28px #00fff0 !important; }
         
+        /* تصميم صندوق الترحيب الداخلي المنسق بدقة */
         .ai-cyber-legendary-panel {
             background: linear-gradient(135deg, #090911 0%, #111124 100%);
             border-right: 4px solid #00fff0;
@@ -28,12 +31,17 @@ def render_sidebar_helper():
             border-radius: 12px;
             padding: 18px;
             text-align: right;
+            box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.4);
+            margin-top: 15px;
+            margin-bottom: 15px;
             direction: rtl;
+            animation: cyberPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         .ai-title-text { color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 16px; font-weight: bold; }
-        .ai-body-text { color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; }
-        .ai-pink-neon { color: #ff00ff; font-weight: bold; }
+        .ai-body-text { color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; line-height: 1.6; }
+        .ai-pink-neon { color: #ff00ff; font-weight: bold; text-shadow: 0 0 8px #ff00ff; }
         
+        /* 🚨 تحسين وتثبيت شكل مستطيل الكتابة الوردي الأسطوري الخاص بصورتك دون أي تغيير مظهر */
         div[data-testid="stTextInput"] input {
             border: 2px solid #ff00ff !important;
             background-color: #10101b !important;
@@ -46,10 +54,22 @@ def render_sidebar_helper():
             box-shadow: 0px 0px 15px rgba(255, 0, 255, 0.3) !important;
         }
         
-        div[data-testid="stTextInput"] p, div[data-testid="stTextInput"] small, 
-        div[data-testid="stTextInput"] label, div[data-testid="stTextInput"] [data-testid="stWidgetInstructions"],
-        .st-emotion-cache-16idsys p, .st-emotion-cache-q3uqly p {
-            display: none !important; opacity: 0 !important; visibility: hidden !important; height: 0px !important;
+        /* 🌌 الشفرة الصارمة: إخفاء وإبادة نص التلميح الإنجليزي والتعليمات والكلمات المزعجة نهائياً */
+        div[data-testid="stTextInput"] p, 
+        div[data-testid="stTextInput"] small, 
+        div[data-testid="stTextInput"] label,
+        div[data-testid="stTextInput"] [data-testid="stWidgetInstructions"],
+        div[data-testid="stTextInput"] span,
+        div[data-testid="stTextInput"] div:not(:first-child) p,
+        .st-emotion-cache-16idsys p,
+        .st-emotion-cache-q3uqly p,
+        .st-emotion-cache-1pxscv7 p {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !hidden;
+            height: 0px !important;
+            margin: 0px !important;
+            padding: 0px !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -60,27 +80,32 @@ def render_sidebar_helper():
         st.sidebar.markdown("""
             <div class="ai-cyber-legendary-panel">
                 <h3 class="ai-title-text">🔮 المستشار اللاسلكي المطور</h3>
-                <p class="ai-body-text">مرحباً بك يا <span class="ai-pink-neon">مدير محمد</span>! تم دمج الـ 8 خلايا الاستراتيجية بنجاح لمراقبة الفواتير والمخزن والمخاطر لحظياً.</p>
+                <p class="ai-body-text">مرحباً بك مجدداً يا <span class="ai-pink-neon">مدير محمد</span>! أنظمتي مستقرة، اختر أحد الاقتراحات السريعة بالأسفل أو اكتب استفسارك.</p>
             </div>
         """, unsafe_allow_html=True)
 
         if "suggested_click" not in st.session_state:
             st.session_state.suggested_click = ""
 
+        # 🚨 [المجموعة 1]: الاقتراحات الحسابية والسلعية الكلاسيكية
         st.sidebar.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 11px; text-align: right; margin:0;'>💡 جرد الحسابات والمخزن الأساسي:</p>", unsafe_allow_html=True)
         col1, col2 = st.sidebar.columns(2)
         with col1:
             if st.button("📊 تقرير الأرباح"):
                 st.session_state.suggested_click = "تقرير الأرباح"
-                st.session_state.cyber_v7_pro_query = ""
+                st.session_state.cyber_v7_pro_query = ""  # تصفية أوتوماتيكية
         with col2:
             if st.button("📦 جرد المخزن"):
                 st.session_state.suggested_click = "جرد المخزن"
-                st.session_state.cyber_v7_pro_query = ""
+                st.session_state.cyber_v7_pro_query = ""  # تصفية أوتوماتيكية
+# ========================================================
+# الجزء الثاني: بقية الأزرار وميكانيكية المسح الآلي الحركية (ai_helper.py)
+# ========================================================
         if st.sidebar.button("⚠️ المنتجات القريبة من النفاذ"):
             st.session_state.suggested_click = "قطع المستودع"
             st.session_state.cyber_v7_pro_query = ""
-        
+
+        # [المجموعة 2]: تحليلات الـ AI المتقدمة للنمو
         st.sidebar.markdown("<p style='color: #ff00ff; font-family: Cairo; font-size: 11px; text-align: right; margin:5px 0 0 0;'>🚀 تحليلات الـ AI المتقدمة للنمو:</p>", unsafe_allow_html=True)
         col3, col4 = st.sidebar.columns(2)
         with col3:
@@ -91,13 +116,12 @@ def render_sidebar_helper():
             if st.button("🗺️ مستشار الولايات"):
                 st.session_state.suggested_click = "مستشار الولايات"
                 st.session_state.cyber_v7_pro_query = ""
-# ========================================================
-# الجزء الثاني: بقية الأزرار وميكانيكية المسح الآلي (ai_helper.py)
-# ========================================================
+                
         if st.sidebar.button("💰 متوسط الأرباح المتوقعة"):
             st.session_state.suggested_click = "متوسط الأرباح"
             st.session_state.cyber_v7_pro_query = ""
             
+        # [المجموعة 3]: دروع الأمن وقيادة الميزانيات السيبرانية الخارقة
         st.sidebar.markdown("<p style='color: #00ffcc; font-family: Cairo; font-size: 11px; text-align: right; margin:5px 0 0 0;'>🛡️ القيادة التكتيكية وأمن الـ COD:</p>", unsafe_allow_html=True)
         col5, col6 = st.sidebar.columns(2)
         with col5:
@@ -110,8 +134,11 @@ def render_sidebar_helper():
                 st.session_state.cyber_v7_pro_query = ""
 
         st.sidebar.markdown("---")
+        
+        # شريط الأسئلة الاحترافي الوردي الثابت لمتجرك بحواف ناصعة
         user_query = st.sidebar.text_input("💬 اكتب سؤالك للمساعد هنا:", key="cyber_v7_pro_query")
         
+        # ربط وإعادة تشغيل الميكانيكية التلقائية لإفراغ وتصفية المستطيل أوتوماتيكياً
         if user_query:
             st.session_state.suggested_click = ""
             final_query = user_query
@@ -121,6 +148,7 @@ def render_sidebar_helper():
         if final_query:
             evaluate_logic_response(final_query)
 
+# دالتان وهميتان لحجز مكان الميزات الأخرى في ملفك الرئيسي لمنع الأخطاء للموقع
 def render_marketing_hub(): pass
 def render_data_insights(conn): pass
 # ========================================================
@@ -130,23 +158,26 @@ def render_data_insights(conn): pass
 def evaluate_logic_response(query):
     conn = sqlite3.connect("invoices_master_v4.db")
     
+    # أ. تقرير الأرباح والحسابات الشاملة بـ DA
     if query == "تقرير الأرباح" or "ربح" in query or "حساب" in query:
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
         count_inv = len(df_sales)
         if count_inv > 0:
             total_da = df_sales['final_total'].sum()
+            avg_invoice = total_da / count_inv
             st.sidebar.markdown(f"""
                 <div style="background: linear-gradient(135deg, #0d0614 0%, #1c092b 100%); border: 1px solid #ff00ff; box-shadow: 0 0 15px #ff00ff; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
                     <h4 style="color: #ff00ff; font-family: 'Cairo'; font-size: 14px; margin: 0 0 6px 0;">🤖 التشخيص المالي للـ AI:</h4>
-                    <p style="color: #ffffff; font-family: 'Cairo'; font-size: 13px; margin: 0;">
+                    <p style="color: #ffffff; font-family: 'Cairo'; font-size: 13px; margin: 0; line-height: 1.6;">
                         💰 إجمالي المداخيل الحالية: <span style="color: #00fff0; font-weight: bold;">{total_da:,.2f} DA</span><br>
-                        📊 عدد الفواتير المسجلة: <span style="color: #00ffcc;">{count_inv} فاتورة</span>
+                        📈 متوسط قيمة الطلب: <span style="color: #00ffcc;">{avg_invoice:,.2f} DA</span>
                     </p>
                 </div>
             """, unsafe_allow_html=True)
-        else: st.sidebar.info("📊 لا توجد فواتير مسجلة حالياً.")
+        else: st.sidebar.info("📊 لا توجد فواتير مسجلة حالياً لبدء التحليل.")
         
-    elif query == "جرد المخزن" or query == "قطع المستودع" or "mخزن" in query or "سلع" in query or "قطع" in query:
+    # ب. جرد المخزن الكلي والتحذير من النفاذ السريع للسلع
+    elif query == "جرد المخزن" or query == "قطع المستودع" or "مخزن" in query or "سلع" in query or "قطع" in query:
         df_stock = pd.read_sql("SELECT product_name, available_qty FROM store_stock", conn)
         if not df_stock.empty:
             total_qty = df_stock['available_qty'].sum()
@@ -156,11 +187,11 @@ def evaluate_logic_response(query):
                 low_stock_text = "<br>🚨 <b>تحذير النفاذ السريع:</b><br>"
                 for idx, row in low_stock_df.iterrows():
                     low_stock_text += f"⚠️ المنتج [ {row['product_name']} ] متبقي منه {row['available_qty']} قطع فقط!<br>"
-            else: low_stock_text = "<br>✅ <b>مؤشر الأمان:</b> جميع الكميات مستقرة."
+            else: low_stock_text = "<br>✅ <b>مؤشر الأمان:</b> الكميات مستقرة."
 
             st.sidebar.markdown(f"""
                 <div style="background: linear-gradient(135deg, #051214 0%, #09262b 100%); border: 1px solid #00fff0; box-shadow: 0 0 15px #00fff0; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
-                    <h4 style="color: #00fff0; font-family: 'Cairo'; font-size: 14px; margin: 0 0 6px 0;">🔮 تقرير الجرد اللاسلكي للتنبؤ:</h4>
+                    <h4 style="color: #00fff0; font-family: 'Cairo'; font-size: 14px; margin: 0 0 6px 0;">🔮 تقرير الجرد والتنبؤ الفوري:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo'; font-size: 13px; margin: 0; line-height: 1.6;">
                         مجموع القطع بالمستودع: <span style="color: #ff00ff; font-weight: bold;">{total_qty} حبة</span>
                         {low_stock_text}
@@ -169,6 +200,7 @@ def evaluate_logic_response(query):
             """, unsafe_allow_html=True)
         else: st.sidebar.info("📦 مستودعك فارغ حالياً.")
 
+    # ج. تحليل نمو المبيعات شهرياً بـ DA
     elif query == "نمو المبيعات":
         df_sales = pd.read_sql("SELECT month_created, final_total FROM v4_customer_invoices", conn)
         if not df_sales.empty:
@@ -222,18 +254,18 @@ def evaluate_logic_response(query):
             st.sidebar.markdown(f"""
                 <div style="background: linear-gradient(135deg, #1a0505 0%, #3a0a0a 100%); border: 2px solid #ff0055; box-shadow: 0 0 20px #ff0055; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
                     <h4 style="color: #ff0055; font-family: 'Cairo'; font-size: 14px; margin: 0 0 6px 0;">🚨 نظام درع مكافحة الخسائر الماليّة:</h4>
-                    <p style="color: #ffffff; font-family: 'Cairo'; font-size: 13px; margin: 0; line-height: 1.6;">⚠️ <b>تم استكشاف ثغرة شحن:</b> العثور على <b>{fraud_count} أرقام مكررة الهاتف</b> في الفواتير v4! اتصل بهم لتفادي مصاريف الـ Retour.</p>
+                    <p style="color: #ffffff; font-family: 'Cairo'; font-size: 13px; margin: 0; line-height: 1.6;">⚠️ <b>تم استكشاف ثغرة شحن:</b> تم العثور على <b>{fraud_count} زبائن كرروا طلبياتهم بنفس رقم الهاتف</b> في الفواتير v4! اتصل بهم لتفادي مصاريف الـ Retour.</p>
                 </div>
             """, unsafe_allow_html=True)
         else:
             st.sidebar.markdown("""
                 <div style="background: linear-gradient(135deg, #05140b 0%, #0a3a18 100%); border: 2px solid #00ff66; box-shadow: 0 0 15px #00ff66; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
                     <h4 style="color: #00ff66; font-family: 'Cairo'; font-size: 14px; margin: 0 0 6px 0;">🛡️ درع الأمان السيبراني للـ COD:</h4>
-                    <p style="color: #ffffff; font-family: 'Cairo'; font-size: 13px; margin: 0; line-height: 1.6;">✅ <b>مؤشر أمن المبيعات:</b> 100% الصفقات آمنة ونظيفة.</p>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">✅ <b>مؤشر أمن المبيعات:</b> 100% الصفقات آمنة ونظيفة.</p>
                 </div>
             """, unsafe_allow_html=True)
 
-    elif query == "قيانية Mيزانية":
+    elif query == "قيانية الميزانية":
         df_invoices = pd.read_sql("SELECT product_name, SUM(final_total) as revenue FROM v4_customer_invoices GROUP BY product_name ORDER BY revenue DESC LIMIT 1", conn)
         if not df_invoices.empty:
             top_product = df_invoices['product_name'].values
@@ -241,7 +273,7 @@ def evaluate_logic_response(query):
             st.sidebar.markdown(f"""
                 <div style="background: linear-gradient(135deg, #051214 0%, #0a2d33 100%); border: 2px solid #00fff0; box-shadow: 0 0 20px #00fff0; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
                     <h4 style="color: #00fff0; font-family: 'Cairo'; font-size: 14px; margin: 0 0 6px 0;">🎯 مركز القيادة وتوجيه الميزانيات:</h4>
-                    <p style="color: #ffffff; font-family: 'Cairo'; font-size: 13px; margin: 0; line-height: 1.6;">📦 المنتج الأعلى طلباً: <b>[ {top_product} ]</b> بمداخل بلغت <span style="color:#ff00ff; font-weight:bold;">{top_revenue:,.2f} DA</span>.</p>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">📦 المنتج الأعلى طلباً: <b>[ {top_product} ]</b> بمداخل بلغت <span style="color:#ff00ff; font-weight:bold;">{top_revenue:,.2f} DA</span>.</p>
                 </div>
             """, unsafe_allow_html=True)
         else: st.sidebar.info("🎯 قم بتسجيل بعض المبيعات أولاً.")
@@ -249,7 +281,7 @@ def evaluate_logic_response(query):
     else:
         st.sidebar.markdown("""
             <div style="border-right: 3px solid #ffffff; padding-right: 10px; margin-top: 12px; text-align: right; direction: rtl;">
-                <p style="color: #ffffff; font-family: 'Cairo'; font-size: 12.5px; margin: 0;">الأنظمة السيبرانية v4 متصلة بكفاءة. اضغط على خيارات التحكم الـ 8 لاستدعاء بطاقات جرد الأرقام والولايات فوراً بـ **DA**.</p>
+                <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 12.5px; margin: 0;">الأنظمة السيبرانية v4 متصلة بكفاءة. اضغط على خيارات التحكم الـ 8 لاستدعاء بطاقات جرد الأرقام والولايات فوراً بـ **DA**.</p>
             </div>
         """, unsafe_allow_html=True)
     conn.close()
