@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول: هندسة وتوسيع شريط الكتابة ومنع اختلاط النص (ai_helper.py)
+# الجزء الأول: الهندسة البصرية المتقدمة وتجميل الأزرار (ai_helper.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
@@ -8,20 +8,28 @@ import sqlite3
 def render_sidebar_helper():
     st.sidebar.markdown("---")
     
-    # 1. حقن حزمة CSS الأسطورية لإصلاح شريط الكتابة وتجميله كلياً
+    # 1. حقن كود الـ CSS الأسطوري المخصص لتحسين شكل الزر وشريط الكتابة فقط
     st.sidebar.markdown("""
         <style>
-        /* التنسيق المستقر والإطار المشع الفيروزي لزر التفعيل الحالي في صورتك */
+        /* 🛑 ترقية شكل الزر الفيروزي ليصبح بتأثير الحواف الزجاجية المشعة الخلابة */
         div[data-testid="stCheckbox"] {
-            background-color: #0c0c14 !important;
+            background: linear-gradient(135deg, #0a0a12 0%, #101020 100%) !important;
             border: 2px solid #00fff0 !important;
-            border-radius: 12px !important;
-            padding: 15px !important;
+            border-radius: 14px !important;
+            padding: 14px !important;
             text-align: right !important;
-            box-shadow: 0px 0px 20px #00fff0, inset 0px 0px 10px rgba(0, 255, 240, 0.3) !important;
+            box-shadow: 0px 0px 18px rgba(0, 255, 240, 0.4), inset 0px 0px 8px rgba(0, 255, 240, 0.2) !important;
+            transition: all 0.4s ease-in-out !important;
         }
         
-        /* لوحة المساعد السيبرانية الأسطورية المتطابقة تماماً مع لقطة شاشتك */
+        /* زيادة كثافة التوهج المشع حول الزر عند مرور مؤشر الماوس */
+        div[data-testid="stCheckbox"]:hover {
+            box-shadow: 0px 0px 28px #00fff0, 0px 0px 35px rgba(0, 255, 240, 0.5) !important;
+            transform: translateY(-1px) !important;
+            cursor: pointer !important;
+        }
+        
+        /* تصميم صندوق الترحيب الداخلي المنسق بدقة */
         .ai-cyber-legendary-panel {
             background: linear-gradient(135deg, #090911 0%, #111124 100%);
             border-right: 4px solid #00fff0;
@@ -33,8 +41,10 @@ def render_sidebar_helper():
             margin-top: 15px;
             margin-bottom: 15px;
             direction: rtl;
+            animation: cyberPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         
+        /* مؤشر النبض الرقمي الحي */
         .ai-pulse-status {
             display: inline-flex;
             align-items: center;
@@ -57,36 +67,35 @@ def render_sidebar_helper():
             box-shadow: 0 0 10px #00fff0;
             animation: pulse-animation 1.5s infinite alternate;
         }
+        
         @keyframes pulse-animation {
             0% { opacity: 0.4; transform: scale(0.9); }
             100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 15px #00fff0; }
         }
+        @keyframes cyberPopIn {
+            0% { transform: translateY(15px) scale(0.97); opacity: 0; filter: blur(3px); }
+            100% { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+        }
         
-        .ai-title-text { color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 16px; margin: 5px 0 8px 0; font-weight: bold; }
+        .ai-title-text { color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 16px; margin: 5px 0 8px 0; font-weight: bold; text-shadow: 0 0 10px #00fff0; }
         .ai-body-text { color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; line-height: 1.6; margin: 0; }
-        .ai-pink-neon { color: #ff00ff; font-weight: bold; }
+        .ai-pink-neon { color: #ff00ff; font-weight: bold; text-shadow: 0 0 8px #ff00ff; }
         
-        /* 🚨 تحسين وتفكيك شريط الكتابة: معالجة شاملة لمنع اختلاط الكلمات واختفائها */
+        /* 🚨 تحسين وتجميل شكل شريط كتابة السؤال ليصبح أسطورياً ومحترفاً بالكامل */
         div[data-testid="stTextInput"] input {
             border: 2px solid #00fff0 !important;
             background-color: #07070d !important;
             color: #ffffff !important;
             border-radius: 10px !important;
-            padding: 14px 16px !important; /* زيادة المساحة الداخلية لحماية الحروف من الاختناق */
+            padding: 12px !important;
             font-family: 'Cairo', sans-serif !important;
-            font-size: 14px !important;
             text-align: right !important;
             direction: rtl !important;
             box-shadow: 0px 0px 12px rgba(0, 255, 240, 0.2) !important;
             transition: all 0.4s ease-in-out !important;
         }
         
-        /* إخفاء نص التلميح الإنجليزي المعطل (Press Enter to apply) تماماً لمنع التشوه */
-        div[data-testid="stTextInput"] p {
-            display: none !important;
-        }
-        
-        /* تحويل الإطار إلى توهج أرجواني سيبراني خلاب ومحترف بمجرد وضع الفأرة أو بدء الكتابة */
+        /* تأثير التوهج الأرجواني السيبراني الخلاب اللحظي بمجرد الضغط داخل حقل الكتابة */
         div[data-testid="stTextInput"] input:focus {
             border-color: #ff00ff !important;
             box-shadow: 0px 0px 22px #ff00ff, inset 0px 0px 6px rgba(255, 0, 255, 0.4) !important;
@@ -95,10 +104,11 @@ def render_sidebar_helper():
         </style>
     """, unsafe_allow_html=True)
     
-    # 2. زر تشغيل المساعد ذو التظهير الميكانيكي المستقر والآمن
-    ai_activate = st.sidebar.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v8_pro_activate")
+    # 2. زر التفعيل الميكانيكي المطور بشكله الجديد الخلاب
+    ai_activate = st.sidebar.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v7_pro_activate")
     
     if ai_activate:
+        # انطلاق لوحة التحكم التلقائية والترحيب الفوري الموجه للمدير محمد
         st.sidebar.markdown("""
             <div class="ai-cyber-legendary-panel">
                 <div class="ai-pulse-status"><span class="pulse-dot"></span>NEXUS AI: ONLINE</div>
@@ -107,8 +117,8 @@ def render_sidebar_helper():
             </div>
         """, unsafe_allow_html=True)
 
-        # شريط الأسئلة الاحترافي الجديد الخالي تماماً من تداخل النصوص والكلمات الإنجليزية
-        user_query = st.sidebar.text_input("💬 اكتب سؤالك للمساعد هنا:", key="cyber_v8_pro_query")
+        # شريط الأسئلة الاحترافي الجديد والمعدل كلياً بمظهر خلاب
+        user_query = st.sidebar.text_input("💬 اكتب سؤالك للمساعد هنا:", key="cyber_v7_pro_query")
         
         if user_query:
             evaluate_logic_response(user_query)
@@ -126,7 +136,7 @@ def evaluate_logic_response(query):
         total_da = df_sales['final_total'].sum()
         count_inv = len(df_sales)
         st.sidebar.markdown(f"""
-            <div style="background: linear-gradient(135deg, #0d0614 0%, #1c092b 100%); border: 1px solid #ff00ff; box-shadow: 0 0 15px #ff00ff, inset 0 0 5px rgba(255, 0, 255, 0.3); padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
+            <div style="background: linear-gradient(135deg, #0d0614 0%, #1c092b 100%); border: 1px solid #ff00ff; box-shadow: 0 0 15px #ff00ff, inset 0 0 5px rgba(255, 0, 255, 0.3); padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px; animation: cyberPopIn 0.4s ease;">
                 <h4 style="color: #ff00ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 5px #ff00ff;">📊 تقرير الخزينة الحقيقي:</h4>
                 <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.5;">بناءً على <b>{count_inv} فاتورة صادرة</b>، مداخيل المتجر الصافية هي:<br><span style="color: #00fff0; font-weight: bold; font-size: 15px; text-shadow: 0 0 5px #00fff0;">{total_da:,.2f} DA</span></p>
             </div>
@@ -138,7 +148,7 @@ def evaluate_logic_response(query):
         try: qty = int(df_stock['total_qty'].values) if not df_stock.empty else 0
         except: qty = 0
         st.sidebar.markdown(f"""
-            <div style="background: linear-gradient(135deg, #051214 0%, #09262b 100%); border: 1px solid #00fff0; box-shadow: 0 0 15px #00fff0, inset 0 0 5px rgba(0, 255, 240, 0.3); padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
+            <div style="background: linear-gradient(135deg, #051214 0%, #09262b 100%); border: 1px solid #00fff0; box-shadow: 0 0 15px #00fff0, inset 0 0 5px rgba(0, 255, 240, 0.3); padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px; animation: cyberPopIn 0.4s ease;">
                 <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 5px #00fff0;">📦 جرد مستودع الـ COD:</h4>
                 <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.5;">متوفر حالياً في المخزن السلعي جاهزاً للشحن والتوصيل:<br><span style="color: #ff00ff; font-weight: bold; font-size: 15px; text-shadow: 0 0 5px #ff00ff;">{qty} قطعة ونظام</span></p>
             </div>
@@ -153,8 +163,10 @@ def evaluate_logic_response(query):
         """, unsafe_allow_html=True)
     conn.close()
 
+# ضمان حجز مكان الميزتين الثالثة والرابعة في مشروعك لمنع أي خطأ تعطل
 def render_marketing_hub():
     pass
 
 def render_data_insights(conn):
     pass
+
