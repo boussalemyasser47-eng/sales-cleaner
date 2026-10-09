@@ -8,7 +8,7 @@ import sqlite3
 def render_sidebar_helper():
     st.sidebar.markdown("---")
     
-    # 1. حقن كود الـ CSS الأسطوري المخصص لتحسين شكل الزر وشريط الكتابة فقط
+    # 1. حقن كود الـ CSS الأسطوري المخصص لتحسين شكل الزر وشريط الكتابة ومنع التداخل
     st.sidebar.markdown("""
         <style>
         /* 🛑 ترقية شكل الزر الفيروزي ليصبح بتأثير الحواف الزجاجية المشعة الخلابة */
@@ -81,41 +81,46 @@ def render_sidebar_helper():
         .ai-body-text { color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; line-height: 1.6; margin: 0; }
         .ai-pink-neon { color: #ff00ff; font-weight: bold; text-shadow: 0 0 8px #ff00ff; }
         
-        /* 🚨 التحديث المطلوب: تحويل خلفية المستطيل إلى بيضاء والكتابة بداخلها سوداء بالكامل */
+        /* 🚨 تحسين وتثبيت شكل مستطيل الكتابة ليطابق المثال الفعلي في صورتك تماماً الحواف الوردية والخلفية الداكنة */
         div[data-testid="stTextInput"] input {
-            border: 2px solid #00fff0 !important;
-            background-color: #ffffff !important; /* 👈 جعل المستطيل أبيض بالكامل */
-            color: #000000 !important;            /* 👈 جعل خط الكتابة داخله أسود */
-            border-radius: 10px !important;
-            padding: 12px !important;
+            border: 2px solid #ff00ff !important; /* 👈 حدود وردية مضيئة مطابقة للمثال الفعلي */
+            background-color: #10101b !important; /* 👈 خلفية داكنة صافية بنظام لوحة تحكمك */
+            color: #ffffff !important;            /* 👈 خط عربي أبيض نقي */
+            border-radius: 12px !important;
+            padding: 14px 16px !important;        /* زيادة المساحة لحماية الحروف العربية من الالتصاق */
             font-family: 'Cairo', sans-serif !important;
             text-align: right !important;
             direction: rtl !important;
-            box-shadow: 0px 0px 12px rgba(0, 255, 240, 0.2) !important;
+            box-shadow: 0px 0px 15px rgba(255, 0, 255, 0.3) !important;
             transition: all 0.4s ease-in-out !important;
         }
         
-        /* 🔥 مسح وحظر نص التلميح الإنجليزي تماماً حتى لا يختلط بالكتابة السوداء */
+        /* 🌌 الشفرة السرية: حجب وإبادة التلميح الإنجليزي المعطل (Press Enter to apply) والتعليمات تماماً لمنع الاختلاط */
         div[data-testid="stTextInput"] p, 
         div[data-testid="stTextInput"] small, 
         div[data-testid="stTextInput"] label,
-        div[data-testid="stTextInput"] [data-testid="stWidgetInstructions"] {
+        div[data-testid="stTextInput"] [data-testid="stWidgetInstructions"],
+        div[data-testid="stTextInput"] span,
+        div[data-testid="stTextInput"] div:not(:first-child) p,
+        .st-emotion-cache-16idsys p,
+        .st-emotion-cache-q3uqly p {
             display: none !important;
             opacity: 0 !important;
             visibility: hidden !important;
             height: 0px !important;
+            margin: 0px !important;
+            padding: 0px !important;
         }
         
-        /* الحفاظ على تأثير التوهج الفخم عند تفعيل المؤشر داخل الحقل */
+        /* تأثير زيادة التوهج السيبراني عند النقر والبدء في تدوين الكلمات */
         div[data-testid="stTextInput"] input:focus {
-            border-color: #ff00ff !important;
-            box-shadow: 0px 0px 22px #ff00ff, inset 0px 0px 6px rgba(255, 0, 255, 0.2) !important;
-            transform: scale(1.01) !important;
+            border-color: #00fff0 !important;
+            box-shadow: 0px 0px 25px #00fff0, inset 0px 0px 6px rgba(0, 255, 240, 0.4) !important;
         }
         </style>
     """, unsafe_allow_html=True)
     
-    # 2. زر التفعيل الميكانيكي المطور بشكله الجديد الخلاب
+    # 2. زر التفعيل الميكانيكي المطور لمتجرك الحالي دون تعديل ميكانيكي
     ai_activate = st.sidebar.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v7_pro_activate")
     
     if ai_activate:
@@ -179,4 +184,3 @@ def render_marketing_hub():
 
 def render_data_insights(conn):
     pass
-
