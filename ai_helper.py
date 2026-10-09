@@ -8,10 +8,10 @@ import sqlite3
 def render_sidebar_helper():
     st.sidebar.markdown("---")
     
-    # 1. حقن كود الـ CSS الأسطوري المخصص لتحسين شكل الزر وشريط الكتابة فقط
+    # حقن كود الـ CSS المطور لحظر النص الإنجليزي تماماً ومنع اختلاطه
     st.sidebar.markdown("""
         <style>
-        /* 🛑 ترقية شكل الزر الفيروزي ليصبح بتأثير الحواف الزجاجية المشعة الخلابة */
+        /* تنسيق زر التفعيل الحالي الخاص بك دون أي تغيير */
         div[data-testid="stCheckbox"] {
             background: linear-gradient(135deg, #0a0a12 0%, #101020 100%) !important;
             border: 2px solid #00fff0 !important;
@@ -21,8 +21,6 @@ def render_sidebar_helper():
             box-shadow: 0px 0px 18px rgba(0, 255, 240, 0.4), inset 0px 0px 8px rgba(0, 255, 240, 0.2) !important;
             transition: all 0.4s ease-in-out !important;
         }
-        
-        /* زيادة كثافة التوهج المشع حول الزر عند مرور مؤشر الماوس */
         div[data-testid="stCheckbox"]:hover {
             box-shadow: 0px 0px 28px #00fff0, 0px 0px 35px rgba(0, 255, 240, 0.5) !important;
             transform: translateY(-1px) !important;
@@ -44,7 +42,6 @@ def render_sidebar_helper():
             animation: cyberPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         
-        /* مؤشر النبض الرقمي الحي */
         .ai-pulse-status {
             display: inline-flex;
             align-items: center;
@@ -67,7 +64,6 @@ def render_sidebar_helper():
             box-shadow: 0 0 10px #00fff0;
             animation: pulse-animation 1.5s infinite alternate;
         }
-        
         @keyframes pulse-animation {
             0% { opacity: 0.4; transform: scale(0.9); }
             100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 15px #00fff0; }
@@ -81,7 +77,7 @@ def render_sidebar_helper():
         .ai-body-text { color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; line-height: 1.6; margin: 0; }
         .ai-pink-neon { color: #ff00ff; font-weight: bold; text-shadow: 0 0 8px #ff00ff; }
         
-        /* 🚨 تحسين وتجميل شكل شريط كتابة السؤال ليصبح أسطورياً ومحترفاً بالكامل */
+        /* تحسين شريط الكتابة وتوسيع الحواف لمنع اختناق وتراكب الكلمات */
         div[data-testid="stTextInput"] input {
             border: 2px solid #00fff0 !important;
             background-color: #07070d !important;
@@ -95,7 +91,7 @@ def render_sidebar_helper():
             transition: all 0.4s ease-in-out !important;
         }
         
-        /* 🔥 حقن الأسطر الإضافية لحظر التداخل الإنجليزي نهائياً دون تغيير أي كود برميجي */
+        /* 🚨 الحل الحاسم: مسح وحظر نص التلميح الإنجليزي والتعليمات نهائياً ومنع ظهورها */
         div[data-testid="stTextInput"] p, 
         div[data-testid="stTextInput"] small, 
         div[data-testid="stTextInput"] label,
@@ -107,7 +103,6 @@ def render_sidebar_helper():
             margin: 0px !important;
         }
         
-        /* تأثير التوهج الأرجواني السيبراني الخلاب اللحظي بمجرد الضغط داخل حقل الكتابة */
         div[data-testid="stTextInput"] input:focus {
             border-color: #ff00ff !important;
             box-shadow: 0px 0px 22px #ff00ff, inset 0px 0px 6px rgba(255, 0, 255, 0.4) !important;
@@ -116,11 +111,10 @@ def render_sidebar_helper():
         </style>
     """, unsafe_allow_html=True)
     
-    # 2. زر التفعيل الميكانيكي المطور بشكله الجديد الخلاب (بدون أي تغيير)
+    # 2. زر التفعيل الميكانيكي المطور لمتجرك الحالي دون تعديل
     ai_activate = st.sidebar.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v7_pro_activate")
     
     if ai_activate:
-        # انطلاق لوحة التحكم التلقائية والترحيب الفوري الموجه للمدير محمد
         st.sidebar.markdown("""
             <div class="ai-cyber-legendary-panel">
                 <div class="ai-pulse-status"><span class="pulse-dot"></span>NEXUS AI: ONLINE</div>
@@ -129,7 +123,6 @@ def render_sidebar_helper():
             </div>
         """, unsafe_allow_html=True)
 
-        # شريط الأسئلة الاحترافي الجديد والمعدل كلياً بمظهر خلاب
         user_query = st.sidebar.text_input("💬 اكتب سؤالك للمساعد هنا:", key="cyber_v7_pro_query")
         
         if user_query:
@@ -175,7 +168,6 @@ def evaluate_logic_response(query):
         """, unsafe_allow_html=True)
     conn.close()
 
-# الحفاظ على حجز بيئة العمل للدوال الفرعية الثابتة لمشروعك لضمان عدم حدوث أي خطأ تعطل
 def render_marketing_hub():
     pass
 
