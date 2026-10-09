@@ -9,7 +9,7 @@ import time
 def render_sidebar_helper():
     st.sidebar.markdown("---")
     
-    # 1. حقن كود الـ CSS الأسطوري المطور لتشغيل الأنميشن الموحد لكافة الفئات اللونية المختلفة بالتساوي
+    # 1. حقن كود الـ CSS الأسطوري الثابت لمتجرك لحماية وتوحيد صعود الحواف الملونة بالتساوي
     st.sidebar.markdown("""
         <style>
         /* 🛑 ترقية شكل الزر الفيروزي ليصبح بتأثير الحواف الزجاجية المشعة الخلابة */
@@ -24,7 +24,7 @@ def render_sidebar_helper():
         }
         div[data-testid="stCheckbox"]:hover { box-shadow: 0px 0px 28px #00fff0 !important; }
         
-        /* 🚨 هندسة الحواف الملونة الموحدة حركياً: إجبار المتصفح على بدء أنيميشن الصعود الناعم بالتساوي */
+        /* 🚨 هندسة الحواف الملونة الموحدة حركياً: تطبيق الأنميشن بالتساوي لمنع الفجائية عند تغير الألوان */
         .ai-cyber-legendary-panel, .card-pink-style, .card-cyan-style, .card-green-style {
             background: linear-gradient(135deg, #090911 0%, #111124 100%) !important;
             border-left: 1px solid rgba(0, 255, 240, 0.2) !important;
@@ -34,6 +34,8 @@ def render_sidebar_helper():
             margin-top: 15px !important;
             margin-bottom: 15px !important;
             direction: rtl !important;
+            
+            /* إجبار المتصفح على تطبيق حركة الصعود التدريجي لأي إطار ملون ينبثق حديثاً */
             animation: cyberPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
             opacity: 0;
         }
@@ -149,7 +151,7 @@ def render_sidebar_helper():
         if st.session_state.active_query:
             if st.session_state.active_query != st.session_state.old_query:
                 response_placeholder.empty()
-                time.sleep(0.06) # تأخير خفيف لإبراز حركة الصعود التدريجي
+                time.sleep(0.06) # تأخير خفيف لإبراز حركة الصعود التدريجي الميكانيكي
                 st.session_state.old_query = st.session_state.active_query
                 
             evaluate_logic_response(st.session_state.active_query, response_placeholder)
@@ -157,7 +159,7 @@ def render_sidebar_helper():
 def render_marketing_hub(): pass
 def render_data_insights(conn): pass
 # ========================================================
-# الجزء الثالث: عقل المساعد والتخصيص اللوني الداخلي (ai_helper.py)
+# الجزء الثالث: عقل المساعد والاستجابات الميكانيكية الملوّنة (ai_helper.py)
 # ========================================================
 
 def evaluate_logic_response(query, placeholder):
@@ -212,7 +214,7 @@ def evaluate_logic_response(query, placeholder):
             monthly_summary = df_sales.groupby('month_created')['final_total'].sum()
             summary_text = ""
             for month, total in monthly_summary.items():
-                summary_text += f"<span style='color: #ffffff;'>📅 الشهر [ {month} ]:</span> <span style="color:#ff00ff; font-weight:bold;">{total:,.2f} DA</span><br>"
+                summary_text += f"<span style='color: #ffffff;'>📅 الشهر [ {month} ]:</span> <span style='color:#ff00ff; font-weight:bold;'>{total:,.2f} DA</span><br>"
             placeholder.markdown(f"""
                 <div class="card-pink-style" style="border-right: 4px solid #ff00ff; box-shadow: 0 0 15px #ff00ff;">
                     <h4 style="color: #ff00ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #ff00ff;">🌸 تحليل نمو المبيعات الشهري للـ AI:</h4>
@@ -221,7 +223,7 @@ def evaluate_logic_response(query, placeholder):
             """, unsafe_allow_html=True)
         else: placeholder.info("📈 لا توجد بيانات كافية.")
 # ========================================================
-# الجزء الرابع: مستشار الولايات والأمن وقفل الاتصال (ai_helper.py)
+# الجزء الرابع: مستشار الولايات والأمن وقفل الاتصال الصافي (ai_helper.py)
 # ========================================================
     # د. مستشار الولايات ومناطق الشحن الأكثر طلباً: 💎 [إطار فيروزي + تخصيص داخلي فيروزي سيبراني مشع]
     elif query == "مستشار الولايات":
@@ -233,7 +235,7 @@ def evaluate_logic_response(query, placeholder):
                     <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #00fff0;">💎 مستشار توجيه الحملات الجزائريّ:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         <span style="color: #00fff0; font-weight: bold;">حجم حركة فواتير الـ COD الفعليّة:</span> <b>{count_inv} طلبيّة نشطة</b>.<br>
-                        🎯 <span style="color: #00fff0; font-weight: bold;">توصية خريطة الـ AI:</span> بناءً على قواعد البيانات v4، نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <span style="color: #ffffff; font-weight: bold;">(الجزائر العاصمة، وهران، سطيف، قسنطينة)</span> لضمان أعلى معدل تسليم (Delivery Rate).
+                        🎯 <span style="color: #00fff0; font-weight: bold;">توصية خريطة الـ AI:</span> بناءً على قواعد البيانات v4، نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <span style="color: #ffffff; font-weight: bold;">(الجزائر العاصمة، وهران، سطيف، قسنطينة)</span> لضمان أعلى معدل تسليم.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
@@ -252,7 +254,7 @@ def evaluate_logic_response(query, placeholder):
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         <span style="color: #ff00ff; font-weight: bold;">معدل القيمة الفردية لكل فاتورة صادرة:</span><br>
                         💸 <span style="color: #ff00ff; font-weight: bold; text-shadow: 0 0 5px #ff00ff;">المتوسط الكلي المحقق: {avg_profit:,.2f} DA</span><br>
-                        💡 <span style="color: #ff00ff;">رؤية النظام ماليًا:</span> يمكنك زيادة هذا المعدل عبر تفعيل استراتيجية الـ Upsell وعرض قطع إضافية على الزبون أثناء التأكيد الهاتفي.
+                        💡 <span style="color: #ff00ff;">رؤية النظام ماليًا:</span> يمكنك زيادة هذا معدل عبر تفعيل استراتيجية الـ Upsell وعرض قطع إضافية على الزبون أثناء التأكيد الهاتفي.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
