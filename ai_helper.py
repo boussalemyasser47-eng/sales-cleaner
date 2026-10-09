@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول: تصاميم النيون الحركية ومؤشر الحالة الحي (ai_helper.py)
+# الجزء الأول: تجميل وترقية شريط الكتابة السيبراني الأسطوري (ai_helper.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
@@ -8,10 +8,10 @@ import sqlite3
 def render_sidebar_helper():
     st.sidebar.markdown("---")
     
-    # 1. حقن أقوى حزمة CSS سيبرانية لترقية الواجهة الرسومية بشكل خارق
+    # 1. حقن حزمة CSS أسطورية لترقية وتعديل مظهر شريط الكتابة بالكامل ليصبح محترفاً
     st.sidebar.markdown("""
         <style>
-        /* تنسيق زر التفعيل ليطابق لقطة شاشتك مع توهج نيون مستقر */
+        /* تنسيق زر التفعيل المتوهج الفيروزي لمتجرك الحالي */
         div[data-testid="stCheckbox"] {
             background-color: #0c0c14;
             border: 2px solid #00fff0;
@@ -19,15 +19,9 @@ def render_sidebar_helper():
             padding: 15px;
             text-align: right;
             box-shadow: 0px 0px 20px #00fff0, inset 0px 0px 10px rgba(0, 255, 240, 0.3);
-            transition: all 0.4s ease-in-out;
-        }
-        div[data-testid="stCheckbox"]:hover {
-            box-shadow: 0px 0px 30px #00fff0, 0px 0px 40px rgba(0, 255, 240, 0.5);
-            transform: scale(1.02);
-            cursor: pointer;
         }
         
-        /* لوحة المساعد الأسطورية مع خلفية متدرجة متحركة وانبثاق تلقائي خلاب */
+        /* لوحة المساعد السيبرانية الأسطورية المتوافقة مع صورتك */
         .ai-cyber-legendary-panel {
             background: linear-gradient(135deg, #090911 0%, #111124 100%);
             border: 2px solid transparent;
@@ -44,7 +38,7 @@ def render_sidebar_helper():
             animation: cyberPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         
-        /* مؤشر الحالة الرقمي النبضي */
+        /* مؤشر النبض الرقمي الحي */
         .ai-pulse-status {
             display: inline-flex;
             align-items: center;
@@ -81,28 +75,34 @@ def render_sidebar_helper():
         .ai-body-text { color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13.5px; line-height: 1.6; margin: 0; }
         .ai-pink-neon { color: #ff00ff; font-weight: bold; text-shadow: 0 0 8px #ff00ff; }
         
-        /* ترقية وتجميل شريط إدخال الأسئلة المحترف */
+        /* 🚨 التعديل الأسطوري لشريط الكتابة: تحويله إلى مظهر سيبراني احترافي متوهج */
         div[data-testid="stTextInput"] input {
-            border: 2px solid rgba(0, 255, 240, 0.2) !important;
-            background-color: #07070d !important;
+            border: 2px solid #00fff0 !important;
+            background-color: #090911 !important;
             color: #ffffff !important;
-            border-radius: 8px !important;
-            padding: 10px !important;
+            border-radius: 10px !important;
+            padding: 12px !important;
             font-family: 'Cairo', sans-serif !important;
-            transition: all 0.3s ease-in-out !important;
+            text-align: right !important;
+            direction: rtl !important;
+            box-shadow: 0px 0px 10px rgba(0, 255, 240, 0.2) !important;
+            transition: all 0.4s ease-in-out !important;
         }
+        
+        /* تأثير التوهج الأرجواني الخلاب بمجرد الضغط والكتابة داخل الحقل */
         div[data-testid="stTextInput"] input:focus {
             border-color: #ff00ff !important;
-            box-shadow: 0 0 18px rgba(255, 0, 255, 0.6) !important;
+            box-shadow: 0px 0px 20px #ff00ff, inset 0px 0px 5px rgba(255, 0, 255, 0.4) !important;
+            transform: scale(1.01);
         }
         </style>
     """, unsafe_allow_html=True)
     
-    # 2. توليد زر التفعيل المطابق تماماً لأبعاد صورتك الحالية
-    ai_activate = st.sidebar.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v5_pro_activate")
+    # 2. توليد زر التفعيل المتناسق مع الهوية البصرية لمتجرك
+    ai_activate = st.sidebar.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v6_pro_activate")
     
     if ai_activate:
-        # انطلاق لوحة التحكم السيبرانية الفخمة والترحيب التلقائي
+        # انطلاق لوحة التحكم التلقائية والترحيب الأسطوري للمدير محمد
         st.sidebar.markdown("""
             <div class="ai-cyber-legendary-panel">
                 <div class="ai-pulse-status"><span class="pulse-dot"></span>NEXUS AI: ONLINE</div>
@@ -111,8 +111,8 @@ def render_sidebar_helper():
             </div>
         """, unsafe_allow_html=True)
 
-        # شريط الأسئلة الاحترافي المتوهج تدريجياً
-        user_query = st.sidebar.text_input("💬 اكتب سؤالك للمساعد هنا:", key="cyber_v5_pro_query")
+        # شريط الأسئلة الاحترافي الجديد والمعدل كلياً بمظهر خلاب
+        user_query = st.sidebar.text_input("💬 اكتب سؤالك للمساعد هنا:", key="cyber_v6_pro_query")
         
         if user_query:
             evaluate_logic_response(user_query)
@@ -121,7 +121,7 @@ def render_sidebar_helper():
 # ========================================================
 
 def evaluate_logic_response(query):
-    # الاتصال المباشر بقاعدة الحسابات v4 لقراءة سجلات المتجر الفعلية
+    # الاتصال المباشر بقاعدة البيانات الرابعة v4 لقراءة سجلات المتجر الحقيقية
     conn = sqlite3.connect("invoices_master_v4.db")
     
     # أ. جرد وحساب الأرباح وعرضها داخل بطاقة نيونية بنفسجية مشعة منفصلة
@@ -148,7 +148,7 @@ def evaluate_logic_response(query):
             </div>
         """, unsafe_allow_html=True)
         
-    # ج. الإجابة الذكية الافتراضية السيبرانية
+    # ج. الإجابة الذكية الافتراضية
     else:
         st.sidebar.markdown("""
             <div style="border-right: 3px solid #ffffff; padding-right: 10px; margin-top: 12px; text-align: right; direction: rtl;">
@@ -157,7 +157,7 @@ def evaluate_logic_response(query):
         """, unsafe_allow_html=True)
     conn.close()
 
-# الحفاظ على حجز مكان الميزتين 3 و 4 في مشروعك لضمان عدم حدوث أي خطأ تعطل
+# ضمان حجز مكان الميزتين الثالثة والرابعة في سكريبت تطبيقك لمنع أي خطأ تعطل
 def render_marketing_hub():
     pass
 
