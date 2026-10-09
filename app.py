@@ -1,3 +1,6 @@
+# ========================================================
+# الجزء الأول: المكتبات، قواعد البيانات المتقدمة والقائمة الجانبية (v4)
+# ========================================================
 import streamlit as st
 import pandas as pd
 import sqlite3
@@ -15,6 +18,7 @@ from ai_helper import render_marketing_hub, render_data_insights, render_sidebar
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
 apply_neon_theme()
 
+# الاتصال بالإصدار المطور الرابع من قاعدة البيانات Master
 conne = sqlite3.connect("invoices_master_v4.db")
 cursor = conne.cursor()
 cursor.execute('''
@@ -31,7 +35,7 @@ cursor.execute('''
 ''')
 conne.commit()
 
-# --- القائمة الجانبية للتنقل بين الأدوات ---
+# --- القائمة الجانبية للتنقل بين الأدوات الذكية للمتجر ---
 st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; font-size: 24px;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
 choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
     "✨ صانع الفواتير الاحترافي (PDF)", 
@@ -42,10 +46,10 @@ choice = st.sidebar.radio("اختر الأداة التي تريد استخدا�
 
 # 🤖 تشغيل الميزة الثالثة: بوت خدمة العملاء والمساعد الفوري في الجنب
 render_sidebar_helper()
+# ========================================================
+# الجزء الثاني: منطق واجهة إصدار الفواتير والملصقات الذكية
+# ========================================================
 
-# ========================================================
-# الميزة الأولى: صانع الفواتير والملصقات الحرارية والإحصائيات
-# ========================================================
 if choice == "✨ صانع الفواتير الاحترافي (PDF)":
     st.write("<h1 style='font-size: 32px;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
     st.markdown("### 📊 إحصائيات متجرك الشاملة:")
@@ -118,8 +122,9 @@ if choice == "✨ صانع الفواتير الاحترافي (PDF)":
                 with send_col1: st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{customer_phone}?text={encoded_msg}")
                 with send_col2: st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}")
 # ========================================================
-# الميزة الثانية: قسم إدارة المخزون السلعي والتنبيهات وزر المحو
+# الجزء الثالث: إدارة المخزون، والمميزات الثالثة والرابعة بعد اكتمالها
 # ========================================================
+
 elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
     st.write("<h1 style='font-size: 32px;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
     col_add, col_view = st.columns(2)
@@ -141,81 +146,20 @@ elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
         if not stock_df.empty:
             st.dataframe(stock_df, use_container_width=True)
-            
             st.markdown("---")
-            st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
-            delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
-            if st.button("❌ محو السلعة المحددة"):
-                cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
-                conne.commit()
-                st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!")
-                st.rerun()
-            
-            low_stock = stock_df[stock_df['available_qty'] <= 5]
-            if not low_stock.empty:
-                st.markdown("---")
-                st.write("<h3 style='color: #ff007f !important;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
-                st.dataframe(low_stock)
-        else: st.info("مستودعك خالي تماماً حالياً.")
 
-# ========================================================
-# الميزة الثالثة: مطهر ملفات المبيعات وإحصائيات الولايات
-# ========================================================
+# --- الميزة الثالثة بعد تفعيلها بالحرف: مطهر ملفات المبيعات وإحصائيات الولايات ---
 elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
-    st.write("<h1 style='font-size: 32px;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
-    uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
+    st.write("<h1 style='font-size: 32px;'>🧼 مطهر ملفات المبيعات وإحصائيات الولايات الذكي</h1>", unsafe_allow_html=True)
+    st.info("👋 مرحباً بك في قسم التطهير المتقدم للبيانات وتوزيع المبيعات على الولايات الجزائريّة.")
     
-    if uploaded_file is not None:
-        df_raw, df, duplicated_rows, bad_prices = process_sales_file(uploaded_file)
-        
-        st.subheader("📋 1. جدول البيانات الأصلي المرفوع (قبل التطهير):")
-        st.dataframe(df_raw, use_container_width=True)
-        st.success("✅ تم تنظيف الداتا بنجاح وتجهيز المقارنة البصرية!")
-        
-        col_clean, col_trash = st.columns(2)
-        with col_clean:
-            st.subheader("💎 2. جدول البيانات النظيف (بعد التطهير):")
-            st.dataframe(df, use_container_width=True)
-            st.metric(label="صافي الأرباح الحقيقية المتوقعة", value=f"{df['total_row_sales'].sum():,.2f} DA")
-        with col_trash:
-            st.subheader("⚠️ 3. التكرارات والأخطاء المحذوفة:")
-            if not duplicated_rows.empty or not bad_prices.empty:
-                if not duplicated_rows.empty:
-                    st.warning(f"تم حذف {len(duplicated_rows)} سطر مكرر!")
-                    st.dataframe(duplicated_rows)
-                if not bad_prices.empty:
-                    st.error(f"تم حذف {len(bad_prices)} سطر أسعار سالبة!")
-                    st.dataframe(bad_prices)
-            else: st.info("الملف سليم تماماً ولا يحتوي على أخطاء.")
-                
-        st.markdown("---")
-        # 🤖 الميزة الثانية: المستشار الذكي لقراءة الجداول تلقائياً بداخل نفس القسم!
-        render_data_insights(df)
-        
-        st.markdown("---")
-        st.subheader("📈 المخططات البيانية الملونة للولايات والمبيعات:")
-        chart_col1, chart_col2 = st.columns(2)
-        with chart_col1:
-            st.write("💰 حجم المبيعات الإجمالي الحقيقي لكل منتج:")
-            st.bar_chart(data=df, x='product_name', y='total_row_sales', color='#00ffcc')
-        with chart_col2:
-            wilaya_col = None
-            for col in df.columns:
-                if 'address' in col.lower() or 'wilaya' in col.lower() or 'ولاية' in col:
-                    wilaya_col = col
-                    break
-            if wilaya_col:
-                st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
-                st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
-            else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
-            
-        csv_buffer = df.to_csv(index=False).encode('utf-8')
-        st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
+    # تشغيل خوارزمية تصفية الملفات المرفوعة وحساب إحصائيات التوصيل
+    process_sales_file(conne)
 
-# ========================================================
-# 🚀 الميزة الجديدة: تشغيل قسم مولد الحملات الإعلانية الذكي
-# ========================================================
+# --- الميزة الرابعة بعد تفعيلها بالحرف: مولّد الحملات والتخطيط التسويقي (AI) ---
 elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
+    st.write("<h1 style='font-size: 32px;'>🚀 مركز التسويق الذكي وتوليد الحملات بالإستعانة بالـ AI</h1>", unsafe_allow_html=True)
+    
+    # تفعيل واجهة الـ AI التسويقية وتحليل البيانات الاستقصائية
     render_marketing_hub()
-
-conne.close()
+    render_data_insights(conne)
