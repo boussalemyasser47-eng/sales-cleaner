@@ -8,7 +8,7 @@ import sqlite3
 def render_sidebar_helper():
     st.sidebar.markdown("---")
     
-    # 1. حقن كود الـ CSS الأسطوري المخصص لتحسين شكل الزر وشريط الكتابة فقط
+    # 1. حقن كود الـ CSS الأسطوري والمعدل لحجب نصوص التداخل تماماً ومنع الاختلاط
     st.sidebar.markdown("""
         <style>
         /* 🛑 ترقية شكل الزر الفيروزي ليصبح بتأثير الحواف الزجاجية المشعة الخلابة */
@@ -81,13 +81,13 @@ def render_sidebar_helper():
         .ai-body-text { color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; line-height: 1.6; margin: 0; }
         .ai-pink-neon { color: #ff00ff; font-weight: bold; text-shadow: 0 0 8px #ff00ff; }
         
-        /* 🚨 تحسين وتجميل شكل شريط كتابة السؤال ليصبح أسطورياً ومحترفاً بالكامل */
+        /* 🚨 تحسين شامل لشريط الكتابة: توسيع الحواف لمنع اختناق وتراكب الكلمات */
         div[data-testid="stTextInput"] input {
             border: 2px solid #00fff0 !important;
             background-color: #07070d !important;
             color: #ffffff !important;
             border-radius: 10px !important;
-            padding: 14px 16px !important; /* زيادة الحشو لحماية وتوسيع مساحة الرؤية للحروف */
+            padding: 14px 16px !important;
             font-family: 'Cairo', sans-serif !important;
             text-align: right !important;
             direction: rtl !important;
@@ -95,9 +95,14 @@ def render_sidebar_helper():
             transition: all 0.4s ease-in-out !important;
         }
         
-        /* ✨ إخفاء نص التلميح الإنجليزي الخلفي التلقائي (Press Enter to apply) تماماً لمنع التشوه */
-        div[data-testid="stTextInput"] p {
+        /* 🔥 مسح وحظر نص التلميح الإنجليزي المعطل (Press Enter to apply) والكلمات الملتصقة نهائياً */
+        div[data-testid="stTextInput"] p, 
+        div[data-testid="stTextInput"] small, 
+        div[data-testid="stTextInput"] div[data-testid="stWidgetInstructions"] {
             display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            height: 0px !important;
         }
         
         /* تأثير التوهج الأرجواني السيبراني الخلاب اللحظي بمجرد الضغط داخل حقل الكتابة */
