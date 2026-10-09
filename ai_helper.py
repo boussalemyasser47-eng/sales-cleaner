@@ -87,12 +87,17 @@ def render_sidebar_helper():
             background-color: #07070d !important;
             color: #ffffff !important;
             border-radius: 10px !important;
-            padding: 12px !important;
+            padding: 14px 16px !important; /* زيادة الحشو لحماية وتوسيع مساحة الرؤية للحروف */
             font-family: 'Cairo', sans-serif !important;
             text-align: right !important;
             direction: rtl !important;
             box-shadow: 0px 0px 12px rgba(0, 255, 240, 0.2) !important;
             transition: all 0.4s ease-in-out !important;
+        }
+        
+        /* ✨ إخفاء نص التلميح الإنجليزي الخلفي التلقائي (Press Enter to apply) تماماً لمنع التشوه */
+        div[data-testid="stTextInput"] p {
+            display: none !important;
         }
         
         /* تأثير التوهج الأرجواني السيبراني الخلاب اللحظي بمجرد الضغط داخل حقل الكتابة */
@@ -163,10 +168,9 @@ def evaluate_logic_response(query):
         """, unsafe_allow_html=True)
     conn.close()
 
-# ضمان حجز مكان الميزتين الثالثة والرابعة في مشروعك لمنع أي خطأ تعطل
+# الحفاظ على حجز بيئة العمل للدوال الفرعية الثابتة لمشروعك لضمان عدم حدوث أي خطأ تعطل
 def render_marketing_hub():
     pass
 
 def render_data_insights(conn):
     pass
-
