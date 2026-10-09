@@ -87,12 +87,24 @@ def render_sidebar_helper():
             background-color: #07070d !important;
             color: #ffffff !important;
             border-radius: 10px !important;
-            padding: 12px !important;
+            padding: 14px 16px !important;
             font-family: 'Cairo', sans-serif !important;
             text-align: right !important;
             direction: rtl !important;
             box-shadow: 0px 0px 12px rgba(0, 255, 240, 0.2) !important;
             transition: all 0.4s ease-in-out !important;
+        }
+        
+        /* 🔥 حقن الأسطر الإضافية لحظر التداخل الإنجليزي نهائياً دون تغيير أي كود برميجي */
+        div[data-testid="stTextInput"] p, 
+        div[data-testid="stTextInput"] small, 
+        div[data-testid="stTextInput"] label,
+        div[data-testid="stTextInput"] [data-testid="stWidgetInstructions"] {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            height: 0px !important;
+            margin: 0px !important;
         }
         
         /* تأثير التوهج الأرجواني السيبراني الخلاب اللحظي بمجرد الضغط داخل حقل الكتابة */
@@ -104,7 +116,7 @@ def render_sidebar_helper():
         </style>
     """, unsafe_allow_html=True)
     
-    # 2. زر التفعيل الميكانيكي المطور بشكله الجديد الخلاب
+    # 2. زر التفعيل الميكانيكي المطور بشكله الجديد الخلاب (بدون أي تغيير)
     ai_activate = st.sidebar.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v7_pro_activate")
     
     if ai_activate:
@@ -163,7 +175,7 @@ def evaluate_logic_response(query):
         """, unsafe_allow_html=True)
     conn.close()
 
-# ضمان حجز مكان الميزتين الثالثة والرابعة في مشروعك لمنع أي خطأ تعطل
+# الحفاظ على حجز بيئة العمل للدوال الفرعية الثابتة لمشروعك لضمان عدم حدوث أي خطأ تعطل
 def render_marketing_hub():
     pass
 
