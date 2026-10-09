@@ -125,7 +125,7 @@ def render_sidebar_helper():
 def render_marketing_hub(): pass
 def render_data_insights(conn): pass
 # ========================================================
-# الجزء الثالث: عقل المساعد والشروحات المفصلة الملوّنة (ai_helper.py)
+# الجزء الثالث: عقل المساعد والاستجابات التفصيلية للمنتجات (ai_helper.py)
 # ========================================================
 
 def evaluate_logic_response(query, placeholder):
@@ -144,28 +144,35 @@ def evaluate_logic_response(query, placeholder):
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         • <b>تحليل المداخيل الكلية:</b> تم جرد الفواتير الصادرة بنجاح، وبلغ إجمالي التدفق المالي الصافي <span style="color: #ff00ff; font-weight: bold; text-shadow: 0 0 5px #ff00ff;">{total_da:,.2f} DA</span> عبر <b>{count_inv} عملية بيع</b> مسجلة.<br>
                         • <b>معدل سلة المبيعات:</b> متوسط الإنفاق الفردي للزبون الواحد هو <span style="color: #00fff0; font-weight: bold;">{avg_invoice:,.2f} DA</span> لكل طلبيّة.<br>
-                        • <b>التشخيص التكتيكي:</b> هذا المعدل يشير إلى استجابة شرائية قوية في المتجر، وننصح بتقديم عروض شحن مجاني عند شراء قطعتين لزيادة حجم التدفق النقدي بالخزينة.
+                        • <b>التشخيص التكتيكي:</b> هذا المعدل يشير إلى استجابة شرائية قوية في المتجر.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
         else: placeholder.info("📊 لا توجد فواتير مسجلة حالياً لبدء التحليل المالي.")
         
-    # 2️⃣ زر جرد المخزن الكلي: 💎 [إطار فيروزي + شرح مستودع تفصيلي وموسع لـ صورتك]
+    # 2️⃣ زر جرد المخزن المطور: 💎 [إطار فيروزي + جرد تفصيلي مفكك لكل منتوج باسمه وقطعته الفردية]
     elif query == "جرد المخزن" or "مخزن" in query or "سلع" in query:
         df_stock = pd.read_sql("SELECT product_name, available_qty FROM store_stock", conn)
         if not df_stock.empty:
             total_qty = df_stock['available_qty'].sum()
+            
+            # 🚨 حقن حلقة التكرار الاستقصائية لتفكيك المنتجات حبة حبة وعرض تفاصيلها الميكانيكية
+            products_detailed_text = ""
+            for idx, row in df_stock.iterrows():
+                products_detailed_text += f"📦 <b>المنتوج:</b> [ <span style='color: #00fff0; font-weight:bold;'>{row['product_name']}</span> ] ⬅️ <b>الكمية المتوفرة:</b> <span style='color: #ffffff; font-weight:bold;'>{row['available_qty']} حبة جاهزة</span><br>"
+                
             placeholder.markdown(f"""
                 <div class="card-btn2" style="box-shadow: 0 0 15px #00fff0;">
-                    <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #00fff0;">💎 الشرح التفصيلي لجرد المستودع والـ COD:</h4>
-                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
-                        • <b>الطاقة الاستيعابية النشطة:</b> مجموع القطع والسلع الكلية الجاهزة للشحن والتوصيل الفوري حالياً يبلغ <span style="color: #00fff0; font-weight: bold; text-shadow: 0 0 5px #00fff0;">{total_qty} حبة ونظام</span> مخزنة بالـ SQL.<br>
-                        • <b>جاهزية التوزيع:</b> كافة هذه السلع مفحوصة ومربوطة بمسارات لوحة تحكم الشحن الخاصة بمتجرك الإلكتروني v4 لتسليمها فوراً للموزعين في جميع الولايات الجزائرية.<br>
-                        • <b>رؤية الـ AI:</b> مخزونك الحالي مستقر ويغطي معدل مبيعات الـ 14 يوماً القادمة بكفاءة عالية دون قلق.
+                    <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #00fff0;">💎 تقرير تفكيك سلع المستودع (Product Breakdown):</h4>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.8;">
+                        • <b>حالة الجرد التفصيلي للسلع الحية:</b><br>
+                        {products_detailed_text}
+                        <hr style="border-color: rgba(0, 255, 240, 0.2); margin: 10px 0;">
+                        📊 <b>مجموع القطع الكلية في الديبو:</b> <span style="color: #00fff0; font-weight: bold; text-shadow: 0 0 5px #00fff0;">{total_qty} قطعة شحن إجمالية</span>.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
-        else: placeholder.info("📦 مستودعك فارغ حالياً.")
+        else: placeholder.info("📦 مستودعك فارغ حالياً لبدء الجرد المفكك.")
 
     # 3️⃣ زر المنتجات القريبة من النفاذ: 🪙 [إطار أصفر ذهبي + شرح تحذيري تفصيلي موسع للمخازن]
     elif query == "قطع المستودع" or "قطع" in query:
@@ -179,21 +186,22 @@ def evaluate_logic_response(query, placeholder):
                 low_stock_text = "<br><span style='color: #ffcc00; font-weight:bold;'>🚨 تحذير النفاذ السريع الفوري لقائمة السلع:</span><br>"
                 for idx, row in low_stock_df.iterrows():
                     low_stock_text += f"<span style='color: #ffffff;'>⚠️ المنتج [ {row['product_name']} ] متبقي منه {row['available_qty']} قطع فقط في المخزن!</span><br>"
-            else: low_stock_text = "<br><span style='color: #00ff66; font-weight:bold;'>✅ مؤشر أمان المستودع: جميع السلع والمنتجات متوفرة بكميات آمنة وفوق عتبة الخطر (10 قطع).</span>"
+            else: low_stock_text = "<br><span style='color: #00ff66; font-weight:bold;'>✅ مؤشر أمان المستودع: جميع السلع متوفرة بكميات آمنة.</span>"
 
             placeholder.markdown(f"""
                 <div class="card-btn3" style="box-shadow: 0 0 15px #ffcc00;">
                     <h4 style="color: #ffcc00; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #ffcc00;">🪙 تقرير استباق استمرارية شحن المنتجات:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
-                        • <b>رادار المسح التلقائي:</b> يقوم النظام بفحص دوري حي للحد الأدنى من كميات قطع السلع لتفادي توقف حملات Facebook و TikTok المموّلة فجأة.<br>
-                        {low_stock_text}<br>
-                        • <b>توصية الإمداد:</b> يرجى مراجعة الموردين لإعادة شحن المنتجات المتأثرة لتفادي إلغاء طلبيات الزبائن المشحونة.
+                        • <b>رادار المسح التلقائي:</b> فحص دوري حي للحد الأدنى من كميات قطع السلع.<br>
+                        {low_stock_text}
                     </p>
                 </div>
             """, unsafe_allow_html=True)
         else: placeholder.info("📦 لا توجد سلع بالمخزن.")
-
-    # 4️⃣ زر نمو المبيعات: 🍏 [إطار أخضر نيون + شرح تحليلي تفصيلي موسع لحركة السوق الشهري]
+# ========================================================
+# الجزء الرابع: مستشار الولايات والأمن وقفل الاتصال الصافي (ai_helper.py)
+# ========================================================
+    # 4️⃣ زر نمو المبيعات: 🍏 [إطار أخضر نيون + شرح تحليلي تفصيلي موسع لحركة السوق]
     elif query == "نمو المبيعات":
         df_sales = pd.read_sql("SELECT month_created, final_total FROM v4_customer_invoices", conn)
         if not df_sales.empty:
@@ -204,18 +212,12 @@ def evaluate_logic_response(query, placeholder):
             placeholder.markdown(f"""
                 <div class="card-btn4" style="box-shadow: 0 0 15px #00ff66;">
                     <h4 style="color: #00ff66; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #00ff66;">🍏 التحليل الاستقصائي لنمو مبيعات المتجر:</h4>
-                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
-                        • <b>تتبع المنحنى البياني الشهري للفواتير الصادرة:</b><br>
-                        {summary_text}<br>
-                        • <b>رؤية نمو أعمال القائد محمد:</b> يوضح تحليل البيانات استقرار حجم المعاملات المالية، وننصح بجدولة ميزانية ترويجية تصاعدية مع بداية كل شهر بالتزامن مع فترات توزيع الأجور لرفع العوائد الصافية.
-                    </p>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">{summary_text}</p>
                 </div>
             """, unsafe_allow_html=True)
         else: placeholder.info("📈 لا توجد بيانات كافية لحساب معدلات النمو.")
-# ========================================================
-# الجزء الرابع: مستشار الولايات والأمن الحركي الملوّن وقفل الاتصال (ai_helper.py)
-# ========================================================
-    # 5️⃣ زر مستشار الولايات: 🛑 [إطار أحمر سيبراني + شرح تفصيلي موسع وموجه للشحن الجزائري]
+
+    # 5️⃣ زر مستشار الولايات: 🛑 [إطار أحمر سيبراني + شرح تفصيلي موسع للشحن الجزائري]
     elif query == "مستشار الولايات":
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
         count_inv = len(df_sales)
@@ -225,14 +227,13 @@ def evaluate_logic_response(query, placeholder):
                     <h4 style="color: #ff3333; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #ff3333;">🛑 الخطة الاستراتيجية لشحن وتوصيل الولايات:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         • <b>تحليل حركة الـ COD الفعليّة:</b> يمتلك المتجر حالياً قاعدة مبيعات نشطة تبلغ <b>{count_inv} طلبية وعميل</b> مسجلين بنظام الحسابات الرابعة v4.<br>
-                        • <b>توجيه الميزانية الإعلانية (Facebook Ads Targeting):</b> لضمان أعلى معدلات تسليم (Delivery Rate) وتقليل الشحنات المرتجعة (Retour)، نوصي بتخصيص 65% من ميزانية الإعلانات نحو ولايات: <span style="color: #ff3333; font-weight: bold;">(الجزائر العاصمة، وهران، سطيف، قسنطينة، البليدة)</span>.<br>
-                        • <b>الهدف التجاري:</b> هذه المناطق تمتلك أعلى كثافة شرائية وسرعة استجابة للموزعين حالياً في الجزائر.
+                        • <b>توجيه الميزانية الإعلانية (Facebook Ads Targeting):</b> نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <b>(الجزائر العاصمة، وهران، سطيف، قسنطينة، البليدة)</b> لضمان أعلى معدل تسليم.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
         else: placeholder.info("🗺️ قم بإصدار الفواتير أولاً لتنشيط خريطة الولايات الذكية.")
 
-    # 6️⃣ زر متوسط الأرباح المتوقعة: 🔵 [إطار أزرق ملكي + شرح مالي تفصيلي موسع للـ Upsell]
+    # 6️⃣ زر متوسط الأرباح المتوقعة لكل فاتورة صادرة: 🔵 [إطار أزرق ملكي + شرح للـ Upsell]
     elif query == "متوسط الأرباح":
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
         count_inv = len(df_sales)
@@ -240,12 +241,11 @@ def evaluate_logic_response(query, placeholder):
             total_da = df_sales['final_total'].sum()
             avg_profit = total_da / count_inv
             placeholder.markdown(f"""
-                <div class="card-btn6" style="box-shadow: 0 0 15px #3333ff;">
+                <div class="card-pink-style" style="box-shadow: 0 0 15px #3333ff; border-right-color: #3333ff !important;">
                     <h4 style="color: #3333ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #3333ff;">🔵 التقييم المالي المتوقع لصافي التدفقات النقدية:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
-                        • <b>حساب قيمة الصفقة المتوسطة المحققة:</b> معدل القيمة الشرائية الصافية المودعة بالخزينة لكل فاتورة صادرة حالياً يثبت عند <span style="color: #3333ff; font-weight: bold; text-shadow: 0 0 5px #3333ff;">{avg_profit:,.2f} DA</span>.<br>
-                        • <b>خطة التطوير المالي وعتبة الربح:</b> لرفع هذا المتوسط بـ 30% إضافية دون زيادة مصاريف الإعلانات، نوصي فريق خدمة العملاء وتأكيد الطلبيات بتطبيق استراتيجية الـ (Upsell) وعرض سلع تكميلية أو إكسسوارات مخصصة للمنتج على الزبون مباشرة أثناء المكالمة الهاتفية.<br>
-                        • <b>رؤية الـ AI:</b> القوة الشرائية الحالية ممتازة وتسمح برفع الأرباح بيسر وسهولة.
+                        💸 <span style="color: #3333ff; font-weight: bold; text-shadow: 0 0 5px #3333ff;">المتوسط الكلي المحقق: {avg_profit:,.2f} DA</span><br>
+                        💡 <b>رؤية النظام ماليًا:</b> يمكنك زيادة هذا المعدل عبر تفعيل استراتيجية الـ Upsell وعرض قطع إضافية على الزبون أثناء التأكيد الهاتفي.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
@@ -256,9 +256,7 @@ def evaluate_logic_response(query, placeholder):
         placeholder.markdown("""
             <div class="card-welcome" style="box-shadow: 0 0 15px #00fff0;">
                 <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #00fff0;">🛡️ درع الأمان السيبراني لـ COD الجزائر:</h4>
-                <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
-                    ✅ <b>مؤشر أمن واستقرار المبيعات الفعليّة:</b> الأنظمة السيبرانية v4 مربوطة ومستقرة، وجميع البيانات آمنة ومحمية بالكامل ضد ثغرات التكرار وأخطاء شحن الولايات لضمان أعلى عوائد أرباح لمتجرك الإلكتروني.
-                </p>
+                <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">✅ <span style="color: #00fff0; font-weight: bold;">مؤشر أمن المبيعات:</span> 100% الصفقات آمنة ونظيفة وضد أخطاء الولايات الجزائريّة.</p>
             </div>
         """, unsafe_allow_html=True)
     conn.close()
