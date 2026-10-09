@@ -133,15 +133,28 @@ def render_sidebar_helper():
             </div>
         """, unsafe_allow_html=True)
 
+        # 🚨 [إضافة الفكرة التفاعلية]: أزرار الاقتراحات السريعة أسفل الترحيب مباشرة
+        st.sidebar.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 12px; margin: 10px 0 5px 0; text-align: right;'>💡 اقتراحات الأسئلة السريعة:</p>", unsafe_allow_html=True)
+        suggested_click = ""
+        
+        col1, col2 = st.sidebar.columns(2)
+        with col1:
+            if st.button("📊 تقرير الأرباح"): suggested_click = "تقرير الأرباح"
+        with col2:
+            if st.button("📦 جرد المخزن"): suggested_click = "جرد المخزن"
+            
+        if st.sidebar.button("⚠️ المنتجات القريبة من النفاذ"): suggested_click = "قطع المستودع"
+        
+        st.sidebar.markdown("---")
+
         # شريط الأسئلة الاحترافي الجديد والمعدل كلياً بمظهر خلاب
         user_query = st.sidebar.text_input("💬 اكتب سؤالك للمساعد هنا:", key="cyber_v7_pro_query")
         
-        if user_query:
-            evaluate_logic_response(user_query)
-# ========================================================
-# الجزء الثاني: بطاقات التقارير النيونية المنفصلة بـ DA (ai_helper.py)
-# ========================================================
-
+        # دمج استعلام الأزرار المقترحة مع مستطيل البحث
+        final_query = user_query if user_query else suggested_click
+        
+        if final_query:
+            evaluate_logic_response(final_query)
 # ========================================================
 # الجزء الثاني: عقل المساعد المطور وطريقة الإجابة الذكية (ai_helper.py)
 # ========================================================
@@ -180,11 +193,9 @@ def evaluate_logic_response(query):
         
         if not df_stock.empty:
             total_qty = df_stock['available_qty'].sum()
-            # فحص وتصفية السلع القريبة من النفاذ (أقل من 10 قطع)
             low_stock_df = df_stock[df_stock['available_qty'] <= 10]
             low_stock_count = len(low_stock_df)
             
-            # صياغة استجابة تحذيرية أوتوماتيكية أسطورية
             low_stock_text = ""
             if low_stock_count > 0:
                 low_stock_text = "<br>🚨 <b>تحذير النفاذ السريع:</b><br>"
@@ -203,20 +214,18 @@ def evaluate_logic_response(query):
                 </div>
             """, unsafe_allow_html=True)
         else:
-            st.sidebar.info("📦 مستودعك فارغ حالياً، قم بإضافة السلع أولاً لتشغيل نظام الرادار.")
-        
-    # 3. 🧠 الإجابة الذكية الافتراضية التفاعلية للترحيب العام
+            st.sidebar.info("📦 مستودعك فارغ حالياً.")
+            
+    # 3. الإجابة الذكية الافتراضية
     else:
         st.sidebar.markdown("""
             <div style="border-right: 3px solid #ffffff; padding-right: 10px; margin-top: 12px; text-align: right; direction: rtl;">
-                <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 12.5px; margin: 0; line-height: 1.5;">
-                    أنا شريكتك الرقمية المتطورة v4 يا مدير محمد. أنظمتي تحلل الآن جداول الـ SQL بشكل حي. يمكنك سؤالي بكلمات مثل (الأرباح، حساباتي، مخزن السلع، قطع المستودع) لأمنحك تقارير استباقية ذكية فوراً.
-                </p>
+                <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 12.5px; margin: 0;">أنا متصلة بقواعد بيانات v4 بنجاح يا مدير محمد، اسألني عن الفواتير أو المخزون لإعطائك أرقاماً منطقية.</p>
             </div>
         """, unsafe_allow_html=True)
     conn.close()
 
-# الحفاظ على حجز بيئة العمل للدوال الفرعية الثابتة لمشروعك لضمان عدم حدوث أي خطأ تعطل
+# دالتان وهميتان لحجز مكان الميزات الأخرى المذكورة في ملفك الرئيسي لمنع أي خطأ تعطل للموقع
 def render_marketing_hub():
     pass
 
