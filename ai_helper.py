@@ -186,7 +186,7 @@ def render_sidebar_helper():
 def render_marketing_hub(): pass
 def render_data_insights(conn): pass
 # ========================================================
-# الجزء الثالث: عقل المساعد وبداية الاستجابات الذكية (ai_helper.py)
+# الجزء الثالث: عقل المساعد وبداية الاستجابات الذكية الميكانيكية (ai_helper.py)
 # ========================================================
 
 def evaluate_logic_response(query):
@@ -267,7 +267,7 @@ def evaluate_logic_response(query):
                     <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">🗺️ مستشار توجيه الحملات الجزائريّ:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         حجم حركة فواتير الـ COD الفعليّة: <b>{count_inv} طلبية نشطة</b>.<br>
-                        🎯 <b>توصية خريطة الـ AI:</b> نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <b>(الجزائر العاصمة، وهران، سطيف، قسنطينة)</b> لضمان أعلى معدل تسليم.
+                        🎯 <b>توصية خريطة الـ AI:</b> نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <b>(الجزائر العاصمة, وهران, سطيف, قسنطينة)</b> لضمان أعلى معدل تسليم.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
@@ -320,14 +320,14 @@ def evaluate_logic_response(query):
             top_revenue = df_invoices['revenue'].values
             st.sidebar.markdown(f"""
                 <div style="background: linear-gradient(135deg, #051214 0%, #0a2d33 100%); border: 2px solid #00fff0; box-shadow: 0 0 20px #00fff0; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px; animation: cyberPopIn 0.4s ease;">
-                    <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 5px #00fff0;">🎯 مركز القيادة وتوجيه Mيزانيات:</h4>
+                    <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 5px #00fff0;">🎯 مركز القيادة وتوجيه الميزانيات:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">📦 المنتج الأعلى طلباً: <b>[ {top_product} ]</b> بمداخل بلغت <span style="color:#ff00ff; font-weight:bold;">{top_revenue:,.2f} DA</span>.</p>
                 </div>
             """, unsafe_allow_html=True)
         else:
             st.sidebar.info("🎯 قم بتسجيل بعض المبيعات أولاً لتفعيل مركز القيادة.")
             
-    # 8. الإجابة الذكية الافتراضية السيبرانية لحماية التظهير الميكانيكي
+    # 8. التظهير الميكانيكي الحاسم: البطاقة الافتراضية الخضراء تظهر "فقط" عند بداية فتح الأداة وغياب أي ضغط
     else:
         st.sidebar.markdown("""
             <div style="background: linear-gradient(135deg, #0c0c14 0%, #10101b 100%); border: 2px solid #00ff66; box-shadow: 0 0 15px #00ff66; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px; animation: cyberPopIn 0.4s ease;">
