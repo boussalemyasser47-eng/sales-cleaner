@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول: الهندسة البصرية المتقدمة ونظام الاقتراحات الستة (ai_helper.py)
+# الجزء الأول: الهندسة البصرية المتقدمة وتلوين الخلفيات (ai_helper.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
@@ -9,7 +9,7 @@ import time
 def render_sidebar_helper():
     st.sidebar.markdown("---")
     
-    # 1. حقن كود الـ CSS الأسطوري الثابت لمتجرك لحماية وتوحيد صعود الحواف الملونة بالتساوي
+    # 1. حقن كود الـ CSS الأسطوري المطور لتلوين خلفية كل بطاقة من الداخل بلون مخصص متناسق مع إطارها
     st.sidebar.markdown("""
         <style>
         /* 🛑 ترقية شكل الزر الفيروزي ليصبح بتأثير الحواف الزجاجية المشعة الخلابة */
@@ -24,9 +24,25 @@ def render_sidebar_helper():
         }
         div[data-testid="stCheckbox"]:hover { box-shadow: 0px 0px 28px #00fff0 !important; }
         
-        /* 🚨 هندسة الحواف الملونة الموحدة حركياً: تطبيق الأنميشن بالتساوي لمنع الفجائية عند تغير الألوان */
-        .ai-cyber-legendary-panel, .card-pink-style, .card-cyan-style, .card-green-style {
-            background: linear-gradient(135deg, #090911 0%, #111124 100%) !important;
+        /* 🌸 تخصيص بطاقات اللون الوردي: إطار وردي مشع + تلوين داخلي داكن مائل للأرجواني السيبراني */
+        .card-pink-style {
+            background: linear-gradient(135deg, #0f0414 0%, #1a082b 100%) !important; /* 👈 تلوين مخصص من الداخل */
+            border-right: 4px solid #ff00ff !important;
+            border-left: 1px solid rgba(255, 0, 255, 0.2) !important;
+            border-radius: 12px !important;
+            padding: 18px !important;
+            text-align: right !important;
+            margin-top: 15px !important;
+            margin-bottom: 15px !important;
+            direction: rtl !important;
+            animation: cyberPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+            opacity: 0;
+        }
+        
+        /* 💎 تخصيص بطاقات اللون الفيروزي: إطار فيروزي مشع + تلوين داخلي داكن مائل للزرقة النيونية */
+        .card-cyan-style {
+            background: linear-gradient(135deg, #020f14 0%, #062330 100%) !important; /* 👈 تلوين مخصص من الداخل */
+            border-right: 4px solid #00fff0 !important;
             border-left: 1px solid rgba(0, 255, 240, 0.2) !important;
             border-radius: 12px !important;
             padding: 18px !important;
@@ -34,38 +50,36 @@ def render_sidebar_helper():
             margin-top: 15px !important;
             margin-bottom: 15px !important;
             direction: rtl !important;
-            
-            /* إجبار المتصفح على تطبيق حركة الصعود التدريجي لأي إطار ملون ينبثق حديثاً */
             animation: cyberPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
             opacity: 0;
         }
         
-        .ai-pulse-status {
-            display: inline-flex;
-            align-items: center;
-            background: rgba(0, 255, 240, 0.1);
-            border: 1px solid #00fff0;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            color: #00fff0;
-            font-family: 'Cairo', sans-serif;
-            margin-bottom: 10px;
-            font-weight: bold;
+        /* 🍏 تخصيص بطاقة الحالة الافتراضية: إطار أخضر آمن + تلوين داخلي داكن مائل للخضار الرقمي */
+        .card-green-style {
+            background: linear-gradient(135deg, #021408 0%, #062e12 100%) !important; /* 👈 تلوين مخصص من الداخل */
+            border-right: 4px solid #00ff66 !important;
+            border-left: 1px solid rgba(0, 255, 102, 0.2) !important;
+            border-radius: 12px !important;
+            padding: 18px !important;
+            text-align: right !important;
+            margin-top: 15px !important;
+            margin-bottom: 15px !important;
+            direction: rtl !important;
+            animation: cyberPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+            opacity: 0;
         }
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #00fff0;
-            border-radius: 50%;
-            margin-left: 6px;
-            box-shadow: 0 0 10px #00fff0;
-            animation: pulse-animation 1.5s infinite alternate;
+        
+        /* لوحة الترحيب العلوية المستقرة بنظامك الحالي */
+        .ai-cyber-legendary-panel {
+            background: linear-gradient(135deg, #090911 0%, #111124 100%) !important;
+            border-right: 4px solid #00fff0 !important;
+            border-left: 1px solid rgba(0, 255, 240, 0.2) !important;
+            border-radius: 12px !important;
+            padding: 18px !important;
+            text-align: right !important;
+            direction: rtl !important;
         }
-        @keyframes pulse-animation {
-            0% { opacity: 0.4; transform: scale(0.9); }
-            100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 15px #00fff0; }
-        }
+        
         @keyframes cyberPopIn {
             0% { transform: translateY(14px) scale(0.98); opacity: 0; filter: blur(3px); }
             100% { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
@@ -79,9 +93,6 @@ def render_sidebar_helper():
             border-radius: 12px !important;
             padding: 14px 16px !important;
             font-family: 'Cairo', sans-serif !important;
-            text-align: right !important;
-            direction: rtl !important;
-            box-shadow: 0px 0px 15px rgba(255, 0, 255, 0.3) !important;
         }
         div[data-testid="stTextInput"] p, div[data-testid="stTextInput"] small, 
         div[data-testid="stTextInput"] label, div[data-testid="stTextInput"] [data-testid="stWidgetInstructions"],
@@ -97,7 +108,6 @@ def render_sidebar_helper():
     if ai_activate:
         st.sidebar.markdown("""
             <div class="ai-cyber-legendary-panel">
-                <div class="ai-pulse-status"><span class="pulse-dot"></span>NEXUS AI: ONLINE</div>
                 <h3 style="color:#00fff0; font-family:'Cairo'; font-size:16px; margin:0; font-weight:bold;">🔮 المستشار اللاسلكي المطور</h3>
                 <p style="color:#fff; font-family:'Cairo'; font-size:13px; margin:5px 0 0 0;">مرحباً بك مجدداً يا <span style="color:#ff00ff; font-weight:bold;">مدير محمد</span>! أنظمتي مستقرة ومربوطة بـ v4 بنجاح.</p>
             </div>
@@ -145,13 +155,12 @@ def render_sidebar_helper():
         if user_query:
             st.session_state.active_query = user_query
 
-        # إنشاء حاوية الرؤية المستقلة لمسح وتحديث الأنميشن ميكانيكياً في نفس اللحظة
         response_placeholder = st.sidebar.empty()
         
         if st.session_state.active_query:
             if st.session_state.active_query != st.session_state.old_query:
                 response_placeholder.empty()
-                time.sleep(0.06) # تأخير خفيف لإبراز حركة الصعود التدريجي الميكانيكي
+                time.sleep(0.06) # تأخير خفيف لإبراز حركة الصعود الحركي الميكانيكي الملوّن من الداخل والخارج
                 st.session_state.old_query = st.session_state.active_query
                 
             evaluate_logic_response(st.session_state.active_query, response_placeholder)
@@ -159,13 +168,13 @@ def render_sidebar_helper():
 def render_marketing_hub(): pass
 def render_data_insights(conn): pass
 # ========================================================
-# الجزء الثالث: عقل المساعد والاستجابات الميكانيكية الملوّنة (ai_helper.py)
+# الجزء الثالث: عقل المساعد والتخصيص اللوني الداخلي (ai_helper.py)
 # ========================================================
 
 def evaluate_logic_response(query, placeholder):
     conn = sqlite3.connect("invoices_master_v4.db")
     
-    # أ. جرد تقرير الأرباح والحسابات الكلية: 🌸 [إطار وردي + تخصيص داخلي وردي نيون متوهج]
+    # أ. جرد تقرير الأرباح والحسابات الكلية: 🌸 [إطار وردي + خلفية أرجوانية داكنة من الداخل]
     if query == "تقرير الأرباح" or "ربح" in query or "مبيعات" in query or "حساب" in query:
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
         count_inv = len(df_sales)
@@ -173,7 +182,7 @@ def evaluate_logic_response(query, placeholder):
             total_da = df_sales['final_total'].sum()
             avg_invoice = total_da / count_inv
             placeholder.markdown(f"""
-                <div class="card-pink-style" style="border-right: 4px solid #ff00ff; box-shadow: 0 0 15px #ff00ff;">
+                <div class="card-pink-style" style="box-shadow: 0 0 15px #ff00ff;">
                     <h4 style="color: #ff00ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #ff00ff;">🌸 التشخيص المالي الذكي للـ AI:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         <span style="color: #ff00ff; font-weight: bold;">💰 إجمالي المداخيل الحالية:</span> <span style="color: #ff00ff; font-weight: bold; text-shadow: 0 0 5px #ff00ff;">{total_da:,.2f} DA</span><br>
@@ -183,7 +192,7 @@ def evaluate_logic_response(query, placeholder):
             """, unsafe_allow_html=True)
         else: placeholder.info("📊 لا توجد فواتير مسجلة حالياً لبدء التحليل.")
         
-    # ب. جرد المخزن الكلي والتحذير من النفاذ السريع: 💎 [إطار فيروزي + تخصيص داخلي فيروزي سيبراني مشع]
+    # b. جرد المخزن الكلي والتحذير من النفاذ السريع: 💎 [إطار فيروزي + خلفية نيونية داكنة من الداخل]
     elif query == "جرد المخزن" or query == "قطع المستودع" or "مخزن" in query or "سلع" in query or "قطع" in query:
         df_stock = pd.read_sql("SELECT product_name, available_qty FROM store_stock", conn)
         if not df_stock.empty:
@@ -197,7 +206,7 @@ def evaluate_logic_response(query, placeholder):
             else: low_stock_text = "<br><span style='color: #00fff0;'>✅ مؤشر الأمان: جميع الكميات مستقرة بالكامل.</span>"
 
             placeholder.markdown(f"""
-                <div class="card-cyan-style" style="border-right: 4px solid #00fff0; box-shadow: 0 0 15px #00fff0;">
+                <div class="card-cyan-style" style="box-shadow: 0 0 15px #00fff0;">
                     <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #00fff0;">💎 تقرير الجرد اللاسلكي للتنبؤ:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         <span style="color: #00fff0; font-weight: bold;">📦 مجموع القطع الكلية الجاهزة للشحن:</span> <span style="color: #00fff0; font-weight: bold; text-shadow: 0 0 5px #00fff0;">{total_qty} حبة</span>
@@ -207,7 +216,7 @@ def evaluate_logic_response(query, placeholder):
             """, unsafe_allow_html=True)
         else: placeholder.info("📦 مستودعك فارغ حالياً.")
 
-    # ج. تحليل نمو مبيعات المتجر شهرياً: 🌸 [إطار وردي + تخصيص داخلي وردي نيون متوهج]
+    # ج. تحليل نمو مبيعات المتجر شهرياً: 🌸 [إطار وردي + خلفية أرجوانية داكنة من الداخل]
     elif query == "نمو المبيعات":
         df_sales = pd.read_sql("SELECT month_created, final_total FROM v4_customer_invoices", conn)
         if not df_sales.empty:
@@ -216,32 +225,32 @@ def evaluate_logic_response(query, placeholder):
             for month, total in monthly_summary.items():
                 summary_text += f"<span style='color: #ffffff;'>📅 الشهر [ {month} ]:</span> <span style='color:#ff00ff; font-weight:bold;'>{total:,.2f} DA</span><br>"
             placeholder.markdown(f"""
-                <div class="card-pink-style" style="border-right: 4px solid #ff00ff; box-shadow: 0 0 15px #ff00ff;">
+                <div class="card-pink-style" style="box-shadow: 0 0 15px #ff00ff;">
                     <h4 style="color: #ff00ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #ff00ff;">🌸 تحليل نمو المبيعات الشهري للـ AI:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">{summary_text}</p>
                 </div>
             """, unsafe_allow_html=True)
         else: placeholder.info("📈 لا توجد بيانات كافية.")
 # ========================================================
-# الجزء الرابع: مستشار الولايات والأمن وقفل الاتصال الصافي (ai_helper.py)
+# الجزء الرابع: مستشار الولايات والأمن وقفل الاتصال (ai_helper.py)
 # ========================================================
-    # د. مستشار الولايات ومناطق الشحن الأكثر طلباً: 💎 [إطار فيروزي + تخصيص داخلي فيروزي سيبراني مشع]
-    elif query == "مستشار الولايات":
+    # د. مستشار الولايات ومناطق الشحن الأكثر طلباً: 💎 [إطار فيروزي + خلفية نيونية داكنة من الداخل]
+    elif query == "mستشار الولايات" or query == "مستشار الولايات":
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
         count_inv = len(df_sales)
         if count_inv > 0:
             placeholder.markdown(f"""
-                <div class="card-cyan-style" style="border-right: 4px solid #00fff0; box-shadow: 0 0 15px #00fff0;">
+                <div class="card-cyan-style" style="box-shadow: 0 0 15px #00fff0;">
                     <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #00fff0;">💎 مستشار توجيه الحملات الجزائريّ:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         <span style="color: #00fff0; font-weight: bold;">حجم حركة فواتير الـ COD الفعليّة:</span> <b>{count_inv} طلبيّة نشطة</b>.<br>
-                        🎯 <span style="color: #00fff0; font-weight: bold;">توصية خريطة الـ AI:</span> بناءً على قواعد البيانات v4، نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <span style="color: #ffffff; font-weight: bold;">(الجزائر العاصمة، وهران، سطيف، قسنطينة)</span> لضمان أعلى معدل تسليم.
+                        🎯 <span style="color: #00fff0; font-weight: bold;">توصية خريطة الـ AI:</span> نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <span style="color: #ffffff; font-weight: bold;">(الجزائر العاصمة، وهران، سطيف, قسنطينة)</span> لضمان أعلى معدل تسليم.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
         else: placeholder.info("🗺️ قم بإصدار الفواتير أولاً لتنشيط خريطة الولايات الذكية.")
 
-    # هـ. حساب متوسط الأرباح المتوقعة لكل فاتورة صادرة: 🌸 [إطار وردي + تخصيص داخلي وردي نيون متوهج]
+    # هـ. حساب متوسط الأرباح المتوقعة لكل فاتورة صادرة: 🌸 [إطار وردي + خلفية أرجوانية داكنة من الداخل]
     elif query == "متوسط الأرباح":
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
         count_inv = len(df_sales)
@@ -249,21 +258,21 @@ def evaluate_logic_response(query, placeholder):
             total_da = df_sales['final_total'].sum()
             avg_profit = total_da / count_inv
             placeholder.markdown(f"""
-                <div class="card-pink-style" style="border-right: 4px solid #ff00ff; box-shadow: 0 0 15px #ff00ff;">
+                <div class="card-pink-style" style="box-shadow: 0 0 15px #ff00ff;">
                     <h4 style="color: #ff00ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #ff00ff;">🌸 متوسط مداخيل الطلبيات الصافي لمتجرك:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         <span style="color: #ff00ff; font-weight: bold;">معدل القيمة الفردية لكل فاتورة صادرة:</span><br>
                         💸 <span style="color: #ff00ff; font-weight: bold; text-shadow: 0 0 5px #ff00ff;">المتوسط الكلي المحقق: {avg_profit:,.2f} DA</span><br>
-                        💡 <span style="color: #ff00ff;">رؤية النظام ماليًا:</span> يمكنك زيادة هذا معدل عبر تفعيل استراتيجية الـ Upsell وعرض قطع إضافية على الزبون أثناء التأكيد الهاتفي.
+                        💡 <b>رؤية النظام ماليًا:</b> استخدم استراتيجية الـ Upsell لرفع قيم الفواتير للزبائن أثناء التأكيد.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
         else: placeholder.info("💰 لا توجد فواتير صادرة لتقييم المتوسط المالي.")
             
-    # و. بطاقة الحالة الافتراضية المستقرة عند فتح الأداة: 🍏 [إطار أخضر + تخصيص داخلي أخضر آمن ضد أخطاء الولايات]
+    # و. بطاقة الحالة الافتراضية المستقرة عند فتح الأداة: 🍏 [إطار أخضر + خلفية داكنة مائلة للخضار الرقمي من الداخل]
     else:
         placeholder.markdown("""
-            <div class="card-green-style" style="border-right: 4px solid #00ff66; box-shadow: 0 0 15px #00ff66;">
+            <div class="card-green-style" style="box-shadow: 0 0 15px #00ff66;">
                 <h4 style="color: #00ff66; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #00ff66;">🍏 درع الأمان السيبراني لـ COD:</h4>
                 <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                     ✅ <span style="color: #00ff66; font-weight: bold;">مؤشر أمن المبيعات:</span> <span style="color: #ffffff; font-weight: bold;">100% الصفقات آمنة ونظيفة وضد أخطاء الولايات الجزائريّة.</span>
