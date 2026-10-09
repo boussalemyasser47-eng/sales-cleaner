@@ -1,6 +1,3 @@
-# ========================================================
-# كود الحجب القاطع والنهائي للأخطاء البصرية (ai_helper.py)
-# ========================================================
 import streamlit as st
 import pandas as pd
 import sqlite3
@@ -32,7 +29,7 @@ def render_sidebar_helper():
             direction: rtl;
         }
         
-        /* 🚨 تحسين وتجميل شكل شريط كتابة السؤال ليصبح أسطورياً ومحترفاً بالكامل */
+        /* تحسين وتجميل شكل شريط كتابة السؤال ليصبح أسطورياً ومحترفاً بالكامل */
         div[data-testid="stTextInput"] input {
             border: 2px solid #00fff0 !important;
             background-color: #07070d !important;
@@ -45,12 +42,14 @@ def render_sidebar_helper():
             box-shadow: 0px 0px 12px rgba(0, 255, 240, 0.2) !important;
         }
         
-        /* 🌌 الخدعة القاطعة: مسح التلميحات وتعليمات الإدخال وكافة عناصر التداخل النصي نهائياً */
+        /* 🌌 حظر التلميحات وتعليمات الإدخال وكافة عناصر التداخل النصي نهائياً */
         div[data-testid="stTextInput"] p, 
         div[data-testid="stTextInput"] small, 
         div[data-testid="stTextInput"] label,
         div[data-testid="stTextInput"] [data-testid="stWidgetInstructions"],
-        div[data-testid="stTextInput"] .st-emotion-cache-16idsys p {
+        div[data-testid="stTextInput"] div,
+        .st-emotion-cache-16idsys p,
+        .st-emotion-cache-q3uqly p {
             display: none !important;
             opacity: 0 !important;
             visibility: hidden !important;
@@ -81,3 +80,17 @@ def render_sidebar_helper():
         
         if user_query:
             evaluate_logic_response(user_query)
+
+def evaluate_logic_response(query):
+    conn = sqlite3.connect("invoices_master_v4.db")
+    if "ربح" in query or "مبيعات" in query or "حساب" in query:
+        df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
+        total_da = df_sales['final_total'].sum()
+        st.sidebar.write(f"إجمالي الأرباح: {total_da:,.2f} DA")
+    conn.close()
+
+def render_marketing_hub():
+    pass
+
+def render_data_insights(conn):
+    pass
