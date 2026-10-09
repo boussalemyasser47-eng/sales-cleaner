@@ -133,25 +133,38 @@ def render_sidebar_helper():
             </div>
         """, unsafe_allow_html=True)
 
-        # 🚨 [إضافة الفكرة التفاعلية]: أزرار الاقتراحات السريعة أسفل الترحيب مباشرة
+        # تهيئة حالة جلسة لحفظ السؤال المقترح المختار
+        if "suggested_click" not in st.session_state:
+            st.session_state.suggested_click = ""
+
+        # أزرار الاقتراحات السريعة أسفل الترحيب مباشرة
         st.sidebar.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 12px; margin: 10px 0 5px 0; text-align: right;'>💡 اقتراحات الأسئلة السريعة:</p>", unsafe_allow_html=True)
-        suggested_click = ""
         
         col1, col2 = st.sidebar.columns(2)
         with col1:
-            if st.button("📊 تقرير الأرباح"): suggested_click = "تقرير الأرباح"
+            if st.button("📊 تقرير الأرباح"):
+                st.session_state.suggested_click = "تقرير الأرباح"
+                st.session_state.cyber_v7_pro_query = "" # 🚨 تصفية ومسح الحقل أوتوماتيكياً فوراً
         with col2:
-            if st.button("📦 جرد المخزن"): suggested_click = "جرد المخزن"
+            if st.button("📦 جرد المخزن"):
+                st.session_state.suggested_click = "جرد المخزن"
+                st.session_state.cyber_v7_pro_query = "" # 🚨 تصفية ومسح الحقل أوتوماتيكياً فوراً
             
-        if st.sidebar.button("⚠️ المنتجات القريبة من النفاذ"): suggested_click = "قطع المستودع"
+        if st.sidebar.button("⚠️ المنتجات القريبة من النفاذ"):
+            st.session_state.suggested_click = "قطع المستودع"
+            st.session_state.cyber_v7_pro_query = "" # 🚨 تصفية ومسح الحقل أوتوماتيكياً فوراً
         
         st.sidebar.markdown("---")
 
-        # شريط الأسئلة الاحترافي الجديد والمعدل كلياً بمظهر خلاب
+        # شريط الأسئلة الاحترافي المثبت كلياً بصور الهوية البصرية لمتجرك
         user_query = st.sidebar.text_input("💬 اكتب سؤالك للمساعد هنا:", key="cyber_v7_pro_query")
         
-        # دمج استعلام الأزرار المقترحة مع مستطيل البحث
-        final_query = user_query if user_query else suggested_click
+        # إذا قام المدير بالكتابة مجدداً، نقوم بمسح تفعيل الزر القديم ليعمل النظام بتناسق ذكي
+        if user_query:
+            st.session_state.suggested_click = ""
+            final_query = user_query
+        else:
+            final_query = st.session_state.suggested_click
         
         if final_query:
             evaluate_logic_response(final_query)
@@ -225,7 +238,6 @@ def evaluate_logic_response(query):
         """, unsafe_allow_html=True)
     conn.close()
 
-# دالتان وهميتان لحجز مكان الميزات الأخرى المذكورة في ملفك الرئيسي لمنع أي خطأ تعطل للموقع
 def render_marketing_hub():
     pass
 
