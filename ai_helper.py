@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول: الهندسة البصرية المتقدمة ونظام الاقتراحات الستة (ai_helper.py)
+# الجزء الأول: الهندسة البصرية المتقدمة ونظام الاقتراحات (ai_helper.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
@@ -99,7 +99,8 @@ def render_sidebar_helper():
         div[data-testid="stTextInput"] span,
         div[data-testid="stTextInput"] div:not(:first-child) p,
         .st-emotion-cache-16idsys p,
-        .st-emotion-cache-q3uqly p {
+        .st-emotion-cache-q3uqly p,
+        .st-emotion-cache-1pxscv7 p {
             display: none !important;
             opacity: 0 !important;
             visibility: hidden !important;
@@ -115,7 +116,6 @@ def render_sidebar_helper():
         </style>
     """, unsafe_allow_html=True)
     
-    # 2. زر التفعيل الميكانيكي المطور لمتجرك الحالي دون تعديل ميكانيكي
     ai_activate = st.sidebar.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v7_pro_activate")
     
     if ai_activate:
@@ -130,9 +130,8 @@ def render_sidebar_helper():
         if "suggested_click" not in st.session_state:
             st.session_state.suggested_click = ""
 
-        st.sidebar.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 12px; margin: 10px 0 5px 0; text-align: right;'>💡 اقتراحات الأسئلة السريعة (المجموعة 1):</p>", unsafe_allow_html=True)
+        st.sidebar.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 11px; margin: 10px 0 5px 0; text-align: right;'>💡 اقتراحات الأسئلة السريعة (المجموعة 1):</p>", unsafe_allow_html=True)
         
-        # السطر الأول من الاقتراحات القديمة
         col1, col2 = st.sidebar.columns(2)
         with col1:
             if st.button("📊 تقرير الأرباح"):
@@ -146,10 +145,10 @@ def render_sidebar_helper():
         if st.sidebar.button("⚠️ المنتجات القريبة من النفاذ"):
             st.session_state.suggested_click = "قطع المستودع"
             st.session_state.cyber_v7_pro_query = ""
-        
-        # 🚨 [حقن الأزرار الاقتراحية الجديدة]: المجموعة الثانية المتطورة والمحترفة
-        st.sidebar.markdown("<p style='color: #ff00ff; font-family: Cairo; font-size: 12px; margin: 10px 0 5px 0; text-align: right;'>🚀 تحليلات الـ AI المتقدمة (المجموعة 2):</p>", unsafe_allow_html=True)
-        
+# ========================================================
+# الجزء الثاني: إدخال بقية الأزرار وميكانيكية المسح الآلي (ai_helper.py)
+# ========================================================
+        st.sidebar.markdown("<p style='color: #ff00ff; font-family: Cairo; font-size: 11px; margin: 10px 0 5px 0; text-align: right;'>🚀 تحليلات الـ AI المتقدمة (المجموعة 2):</p>", unsafe_allow_html=True)
         col3, col4 = st.sidebar.columns(2)
         with col3:
             if st.button("📈 نمو المبيعات"):
@@ -163,10 +162,22 @@ def render_sidebar_helper():
         if st.sidebar.button("💰 متوسط الأرباح المتوقعة"):
             st.session_state.suggested_click = "متوسط الأرباح"
             st.session_state.cyber_v7_pro_query = ""
+            
+        # إضافة المجموعة الثالثة: دروع الأمان التكتيكية ومكافحة ثغرات الشحن
+        st.sidebar.markdown("<p style='color: #00ffcc; font-family: Cairo; font-size: 11px; margin: 5px 0 2px 0; text-align: right;'>🛡️ القيادة التكتيكية وأمن الـ COD:</p>", unsafe_allow_html=True)
+        col5, col6 = st.sidebar.columns(2)
+        with col5:
+            if st.button("🛡️ درع حماية الـ COD"):
+                st.session_state.suggested_click = "درع حماية الـ COD"
+                st.session_state.cyber_v7_pro_query = ""
+        with col6:
+            if st.button("🎯 قيادة الميزانية"):
+                st.session_state.suggested_click = "قيادة الميزانية"
+                st.session_state.cyber_v7_pro_query = ""
 
         st.sidebar.markdown("---")
 
-        # شريط الأسئلة الاحترافي المثبت كلياً بصور الهوية البصرية لمتجرك
+        # شريط الأسئلة الاحترافي الوردي الثابت لمتجرك بحواف ناصعة
         user_query = st.sidebar.text_input("💬 اكتب سؤالك للمساعد هنا:", key="cyber_v7_pro_query")
         
         if user_query:
@@ -177,60 +188,65 @@ def render_sidebar_helper():
         
         if final_query:
             evaluate_logic_response(final_query)
+
+# حجز دوال الواجهات الرئيسية لمتجرك لضمان عدم حدوث خطأ تعطل
+def render_marketing_hub(): pass
+def render_data_insights(conn): pass
 # ========================================================
-# الجزء الثاني: عقل المساعد المطور وطريقة الإجابة الذكية (ai_helper.py)
+# الجزء الثالث: عقل المساعد وبداية الاستجابات الذكية (ai_helper.py)
 # ========================================================
 
 def evaluate_logic_response(query):
     # الاتصال المباشر بقاعدة البيانات الرابعة v4 لقراءة سجلات المتجر الفعليّة
     conn = sqlite3.connect("invoices_master_v4.db")
     
-    # 1. 📊 تقرير الأرباح والحسابات الشاملة بـ DA
+    # أ. تقرير الأرباح والحسابات الشاملة بـ DA
     if query == "تقرير الأرباح" or "ربح" in query or "حساب" in query:
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
         count_inv = len(df_sales)
+        
         if count_inv > 0:
             total_da = df_sales['final_total'].sum()
             avg_invoice = total_da / count_inv
+            
             st.sidebar.markdown(f"""
                 <div style="background: linear-gradient(135deg, #0d0614 0%, #1c092b 100%); border: 1px solid #ff00ff; box-shadow: 0 0 15px #ff00ff; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
                     <h4 style="color: #ff00ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">🤖 التشخيص المالي الذكي للـ AI:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         💰 إجمالي المداخيل الحالية: <span style="color: #00fff0; font-weight: bold;">{total_da:,.2f} DA</span><br>
-                        📊 عدد الفواتير: <span style="color: #00ffcc;">{count_inv} فاتورة</span>
+                        📈 متوسط قيمة الفاتورة الواحدة: <span style="color: #00ffcc;">{avg_invoice:,.2f} DA</span>
                     </p>
                 </div>
             """, unsafe_allow_html=True)
-        else:
-            st.sidebar.info("📊 لا توجد فواتير مسجلة حالياً.")
+        else: st.sidebar.info("📊 لا توجد فواتير مسجلة حالياً.")
         
-    # 2. 🔮 جرد المخزن الكلي والتحذير من النفاذ السريع
+    # ب. جرد المخزن الكلي والتحذير من النفاذ السريع للسلع
     elif query == "جرد المخزن" or query == "قطع المستودع" or "مخزن" in query or "سلع" in query or "قطع" in query:
         df_stock = pd.read_sql("SELECT product_name, available_qty FROM store_stock", conn)
+        
         if not df_stock.empty:
             total_qty = df_stock['available_qty'].sum()
             low_stock_df = df_stock[df_stock['available_qty'] <= 10]
+            
             low_stock_text = ""
             if len(low_stock_df) > 0:
                 low_stock_text = "<br>🚨 <b>تحذير النفاذ السريع:</b><br>"
                 for idx, row in low_stock_df.iterrows():
                     low_stock_text += f"⚠️ المنتج [ {row['product_name']} ] متبقي منه {row['available_qty']} قطع فقط!<br>"
-            else:
-                low_stock_text = "<br>✅ <b>مؤشر الأمان:</b> جميع السلع متوفرة بكميات آمنة."
+            else: low_stock_text = "<br>✅ <b>مؤشر الأمان:</b> جميع الكميات مستقرة."
 
             st.sidebar.markdown(f"""
                 <div style="background: linear-gradient(135deg, #051214 0%, #09262b 100%); border: 1px solid #00fff0; box-shadow: 0 0 15px #00fff0; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
                     <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">🔮 تقرير الجرد اللاسلكي للتنبؤ:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
-                        مجموع القطع بالمستودع: <span style="color: #ff00ff; font-weight: bold;">{total_qty} حبة</span>
+                        مجموع القطع الكلية الجاهزة للشحن: <span style="color: #ff00ff; font-weight: bold;">{total_qty} حبة</span>
                         {low_stock_text}
                     </p>
                 </div>
             """, unsafe_allow_html=True)
-        else:
-            st.sidebar.info("📦 مستودعك فارغ حالياً.")
+        else: st.sidebar.info("📦 مستودعك فارغ حالياً.")
 
-    # 3. 📈 [منطق الـ AI الجديد]: تحليل نمو مبيعات المتجر الإلكتروني
+    # ج. تحليل نمو مبيعات المتجر الإلكتروني
     elif query == "نمو المبيعات":
         df_sales = pd.read_sql("SELECT month_created, final_total FROM v4_customer_invoices", conn)
         if not df_sales.empty:
@@ -241,18 +257,15 @@ def evaluate_logic_response(query):
             st.sidebar.markdown(f"""
                 <div style="background: linear-gradient(135deg, #0d0614 0%, #1c092b 100%); border: 1px solid #ff00ff; box-shadow: 0 0 15px #ff00ff; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
                     <h4 style="color: #ff00ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">📈 تحليل نمو المبيعات الشهري:</h4>
-                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
-                        {summary_text}
-                        💡 <b>توصية الـ AI:</b> استهدف تكثيف حملات الـ COD في فترات ذروة الطلب اليومية الملاحظة.
-                    </p>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">{summary_text}</p>
                 </div>
             """, unsafe_allow_html=True)
-        else:
-            st.sidebar.info("📈 لا توجد بيانات كافية لحساب معدلات النمو.")
-
-    # 4. 🗺️ [منطق الـ AI الجديد]: مستشار الولايات والـ COD الجزائري الفريد
+        else: st.sidebar.info("📈 لا توجد بيانات كافية لحساب معدلات النمو.")
+# ========================================================
+# الجزء الرابع: مستشار الولايات والأمن وقفل الاتصال (ai_helper.py)
+# ========================================================
+    # د. مستشار الولايات ومناطق الشحن الأكثر طلباً لـ COD الجزائر
     elif query == "مستشار الولايات":
-        # قمنا بإنشاء هذا السجل لقراءة العناوين المخزنة واقتناص الولايات الأكثر طلباً منطقياً
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
         count_inv = len(df_sales)
         if count_inv > 0:
@@ -261,14 +274,13 @@ def evaluate_logic_response(query):
                     <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">🗺️ مستشار توجيه الحملات الجزائريّ:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         حجم حركة فواتير الـ COD الفعليّة: <b>{count_inv} طلبية نشطة</b>.<br>
-                        🎯 <b>توصية خريطة الـ AI:</b> بناءً على قواعد البيانات v4، نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <b>(الجزائر العاصمة، وهران، سطيف، قسنطينة)</b> لضمان أعلى معدل تسليم (Delivery Rate).
+                        🎯 <b>توصية خريطة الـ AI:</b> نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <b>(الجزائر العاصمة، وهران، سطيف، قسنطينة)</b> لضمان أعلى معدل تسليم.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
-        else:
-            st.sidebar.info("🗺️ قم بإصدار الفواتير أولاً لتنشيط خريطة الولايات الذكية.")
+        else: st.sidebar.info("🗺️ قم بإصدار الفواتير أولاً لتنشيط خريطة الولايات الذكية.")
 
-    # 5. 💰 [منطق الـ AI الجديد]: تقييم متوسط الأرباح المتوقعة بـ DA
+    # هـ. متوسط الأرباح المتوقعة لكل فاتورة صادرة
     elif query == "متوسط الأرباح":
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
         count_inv = len(df_sales)
@@ -278,27 +290,49 @@ def evaluate_logic_response(query):
             st.sidebar.markdown(f"""
                 <div style="background: linear-gradient(135deg, #0d0614 0%, #1c092b 100%); border: 1px solid #ff00ff; box-shadow: 0 0 15px #ff00ff; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
                     <h4 style="color: #ff00ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">💰 متوسط مداخيل الطلبيات الصافي:</h4>
-                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
-                        معدل القيمة الفردية لكل فاتورة صادرة:<br>
-                        💸 <b>المتوسط الكلي المحقق:</b> <span style="color: #00fff0; font-weight: bold; font-size: 15px;">{avg_profit:,.2f} DA</span><br>
-                        💡 <b>رؤية النظام ماليًا:</b> يمكنك زيادة هذا المعدل عبر تفعيل استراتيجية الـ Upsell وعرض قطع إضافية على الزبون أثناء التأكيد الهاتفي.
-                    </p>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">💸 <b>المتوسط المحقق:</b> <span style="color: #00fff0; font-weight: bold; font-size: 15px;">{avg_profit:,.2f} DA</span></p>
+                </div>
+            """, unsafe_allow_html=True)
+        else: st.sidebar.info("💰 لا توجد فواتير صادرة لتقييم المتوسط المالي.")
+
+    # و. خوارزمية درع حماية الـ COD ومكافحة الخسائر الماليّة المشبوهة
+    elif query == "درع حماية الـ COD":
+        df_sales = pd.read_sql("SELECT customer_phone, COUNT(*) as order_count FROM v4_customer_invoices GROUP BY customer_phone HAVING order_count > 1", conn)
+        if not df_sales.empty:
+            fraud_count = len(df_sales)
+            st.sidebar.markdown(f"""
+                <div style="background: linear-gradient(135deg, #1a0505 0%, #3a0a0a 100%); border: 2px solid #ff0055; box-shadow: 0 0 20px #ff0055; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
+                    <h4 style="color: #ff0055; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">🚨 نظام درع مكافحة الخسائر الماليّة:</h4>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">⚠️ <b>تم استكشاف ثغرة شحن:</b> تم العثور على <b>{fraud_count} زبائن كرروا طلبياتهم بنفس رقم الهاتف</b> في الفواتير v4! اتصل بهم لتفادي مصاريف الـ Retour.</p>
                 </div>
             """, unsafe_allow_html=True)
         else:
-            st.sidebar.info("💰 لا توجد فواتير صادرة لتقييم المتوسط المالي.")
+            st.sidebar.markdown("""
+                <div style="background: linear-gradient(135deg, #05140b 0%, #0a3a18 100%); border: 2px solid #00ff66; box-shadow: 0 0 15px #00ff66; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
+                    <h4 style="color: #00ff66; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">🛡️ درع الأمان السيبراني للـ COD:</h4>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">✅ <b>مؤشر أمن المبيعات:</b> 100% الصفقات آمنة ونظيفة.</p>
+                </div>
+            """, unsafe_allow_html=True)
 
-    # 6. الإجابة الذكية الافتراضية
+    # ز. مركز قيادة الميزانية وتحديد المنتجات الأعلى دخلاً
+    elif query == "قيادة الميزانية":
+        df_invoices = pd.read_sql("SELECT product_name, SUM(final_total) as revenue FROM v4_customer_invoices GROUP BY product_name ORDER BY revenue DESC LIMIT 1", conn)
+        if not df_invoices.empty:
+            top_product = df_invoices['product_name'].values
+            top_revenue = df_invoices['revenue'].values
+            st.sidebar.markdown(f"""
+                <div style="background: linear-gradient(135deg, #051214 0%, #0a2d33 100%); border: 2px solid #00fff0; box-shadow: 0 0 20px #00fff0; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; margin-top: 12px;">
+                    <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">🎯 مركز القيادة وتوجيه الميزانيات:</h4>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">📦 المنتج الأعلى طلباً: <b>[ {top_product} ]</b> بمداخل بلغت <span style="color:#ff00ff; font-weight:bold;">{top_revenue:,.2f} DA</span>.</p>
+                </div>
+            """, unsafe_allow_html=True)
+        else: st.sidebar.info("🎯 قم بتسجيل بعض المبيعات أولاً لتفعيل مركز القيادة.")
+            
+    # الإجابة الذكية الافتراضية السيبرانية لحماية النظام
     else:
         st.sidebar.markdown("""
             <div style="border-right: 3px solid #ffffff; padding-right: 10px; margin-top: 12px; text-align: right; direction: rtl;">
-                <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 12.5px; margin: 0;">الأنظمة السيبرانية v4 متصلة بكفاءة يا مدير محمد. اضغط على أزرار الاقتراحات الستة لاستدعاء بطاقات جرد الأرقام والولايات فوراً بـ **DA**.</p>
+                <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 12.5px; margin: 0;">الأنظمة السيبرانية v4 متصلة بكفاءة. اضغط على خيارات التحكم الـ 8 لاستدعاء بطاقات جرد الأرقام والولايات فوراً بـ **DA**.</p>
             </div>
         """, unsafe_allow_html=True)
     conn.close()
-
-def render_marketing_hub():
-    pass
-
-def render_data_insights(conn):
-    pass
