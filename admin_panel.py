@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول: الهندسة البصرية المتقدمة وإصلاح أزرار التحكم (admin_panel.py)
+# الجزء الأول: الهندسة البصرية المتقدمة وتلوين الواجهات (admin_panel.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
@@ -23,7 +23,7 @@ st.markdown("""
         font-family: 'Cairo', sans-serif !important;
     }
     
-    /* [إصلاح المستطيلات البيضاء الحاسم]: طمس الخلفية البيضاء وجعل الأزرار داكنة ونيونية زجاجية */
+    /* إصلاح المستطيلات البيضاء الحاسم: طمس الخلفية البيضاء وجعل الأزرار داكنة ونيونية زجاجية */
     div[data-testid="stVerticalBlock"] button, div.stButton button, .stButton > button {
         width: 100% !important;
         min-height: 48px !important;
@@ -93,7 +93,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: شاشة الدخول المصلحة وتأسيس خزانة الأمان (admin_panel.py)
+# الجزء الثاني: شاشة الدخول وبوابة التحقق والتأسيس (admin_panel.py)
 # ========================================================
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
@@ -110,7 +110,7 @@ if not st.session_state.admin_authenticated:
         st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#fff; text-align:center; margin:0 0 15px 0;'>تسجيل الدخول الإداري المعزول</h3>", unsafe_allow_html=True)
         input_user = st.text_input("👤 اسم المستخدم الخاص بالقائد:")
-        input_pass = st.text_input("🔑 كلمة المرور السرية الخارقة:", type="password")
+        input_pass = st.text_input("🔑 ﻛﻠﻤﺔ المرور السرية الخارقة:", type="password")
         st.markdown("</div>", unsafe_allow_html=True)
         
         if st.button("⚡ تفعيل وصعود خادم الإدارة"):
@@ -123,7 +123,7 @@ if not st.session_state.admin_authenticated:
                 st.error("🚨 محاولة دخول مشبوهة! تم تأمين قفل الخادم بنجاح.")
     st.stop()
 
-# 🚨 [العلاج الجذري للـ OperationalError]: بناء وتأسيس جدول التحكم معزولاً في ملف الأمان المستقل
+# تأسيس وتحديث جدول التحكم معزولاً في ملف الأمان المستقل لمنع الاصطدامات
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
@@ -133,14 +133,14 @@ db_cursor.execute("""
         package TEXT
     )
 """)
-# حقن الحسابات الرسمية الحية بجدول الأمان للتأكد من المزامنة مع متصفحات التجار عن بعد
+# حقن الحسابات الرسمية الحية بجدول الأمان لضمان استقرار السيرفر المركزي
 db_cursor.execute("INSERT OR IGNORE INTO saas_users_status VALUES ('daymaabdaalhmdllh@gmail.com', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة (65k)')")
 db_cursor.execute("INSERT OR IGNORE INTO saas_users_status VALUES ('test_merchant@saas.com', '🟢 مفعّل ونشط', 'الباقة الاحترافية المتوسطة (45k)')")
 db_cursor.execute("INSERT OR IGNORE INTO saas_users_status VALUES ('algiers_cod_store@gmail.com', '🔒 تم قفل ومصادرة الصلاحيات', 'الباقة الأساسية المبتدئة (29k)')")
 db_conn.commit()
 db_conn.close()
 # ========================================================
-# الجزء الثالث: لوحة الإحصائيات الفاخرة وجرد السيرفر السحابي (admin_panel.py)
+# الجزء الثالث: لوحة الإحصائيات المركزية وجرد الـ SQL (admin_panel.py)
 # ========================================================
 
 # شريط الترحيب العلوي الأنيق المحدث بالكامل للمدير محمد
@@ -148,7 +148,7 @@ st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; tex
 st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600;'>الأنظمة مستقرة، ومتصلة بملف أمان الـ SQL المستقل حياً وبدون تعليق.</p>", unsafe_allow_html=True)
 st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
 
-# قراءة مداخيل الـ COD في الجزائر لعام 2026 من جدول المبيعات الفعلي
+# قراءة إجمالي التدفقات المالية من قاعدة الفواتير v4 لـ صورتك الأولى
 try:
     conn = sqlite3.connect("invoices_master_v4.db")
     df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
@@ -159,7 +159,7 @@ except:
     total_platform_revenue = 4580000.00  
     total_invoices_count = 142
 
-# جلب هويات وحالات الحسابات الحية من ملف الأمان المنفصل تماماً saas_security_vault.db
+# جلب هويات وحالات الحسابات الحية من ملف الأمان المنفصل تماماً
 conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
 df_merchants = pd.read_sql("SELECT * FROM saas_users_status", conn_vault)
 conn_vault.close()
@@ -189,12 +189,12 @@ with col_stat3:
         <small style='color:#00ff66; font-weight:bold;'>مجموع السلع المشحونة والمؤكدة هاتفياً للولايات</small>
     </div>""", unsafe_allow_html=True)
 # ========================================================
-# الجزء الرابع: رادار رصد المشتركين وتحديث الـ SQL السحابي (admin_panel.py)
+# الجزء الرابع: رادار رصد المشتركين وأوامر الحظر الصافية (admin_panel.py)
 # ========================================================
 st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 st.markdown("<h3 style='color: #00fff0; font-weight:900; text-shadow: 0 0 8px rgba(0,255,240,0.3); text-align:right;'>📡 رادار مسح وفحص هويات التجار المسجلين لاسلكياً:</h3>", unsafe_allow_html=True)
 
-# قراءة صفوف التجار حياً وتوليد بطاقات الألوان المانعة للمستطيلات البيضاء كلياً
+# قراءة صفوف التجار حياً وتوليد بطاقات الألوان المانعة للمستطيلات البيضاء كلياً لقواعد بيانات v4
 if not df_merchants.empty:
     for idx, row in df_merchants.iterrows():
         email = row["email"]
@@ -222,25 +222,25 @@ if not df_merchants.empty:
         
         with col_act1:
             if st.button("⚡ تفعيل ومنح الصلاحيات الـ 9 كاملة", key=f"activate_{email}"):
-                # 🚨 [المزامنة السحابية المصلحة]: الكتابة والحفظ بملف الأمان المستقل لفك الحظر فوراً بالثانية
+                # 🚨 [إصلاح البنية البرمجية الصافية 100%]: الاتصال وتنشيط باقة التاجر بالـ SQL بدون أي كلمة زائدة
                 conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-                cursor = conn.columns_auth = conn.cursor()
+                cursor = conn.cursor()
                 cursor.execute("UPDATE saas_users_status SET status = '🟢 مفعّل ونشط' WHERE email = ?", (email,))
                 conn.commit()
                 conn.close()
-                st.success(f"🟢 تم تنشيط التاجر [ {email} ] لاسلكياً بملف الأمان!")
+                st.success(f"🟢 تم تنشيط باقة التاجر [ {email} ] لاسلكياً وفك الحظر بنجاح!")
                 time.sleep(0.3)
                 st.rerun()
                 
         with col_act2:
             if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"lock_{email}"):
-                # 🚨 [المقصلة الرقمية السحابية]: الكتابة والحفظ بملف الأمان المستقل لقفل جهاز التاجر عن بعد
+                # 🚨 [إصلاح البنية البرمجية الصافية 100%]: الاتصال وإطلاق المقصلة الرقمية لحظر متصفح العميل عن بعد
                 conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-                cursor = conn.columns_auth = conn.cursor()
+                cursor = conn.cursor()
                 cursor.execute("UPDATE saas_users_status SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,))
                 conn.commit()
                 conn.close()
-                st.success(f"🔒 تم حظر وقفل حساب التاجر [ {email} ] سحابياً في جدول الأمان!")
+                st.success(f"🔒 تم حظر وقفل حساب التاجر [ {email} ] سحابياً وتجميد أدواته الـ 9!")
                 time.sleep(0.3)
                 st.rerun()
                 
@@ -249,9 +249,10 @@ else:
     st.info("📡 رادار البحث فارغ، لا يوجد تجار مسجلين حالياً.")
 
 st.markdown("---")
-# زر تسجيل الخروج الآمن لمالك المنصة لقفل السيرفر
+# زر تسجيل الخروج الآمن لمالك المنصة لقفل السيرفر وحمايته
 if st.button("🚪 تسجيل الخروج الآمن وقفل لوحة القيادة العليا"):
     st.session_state.admin_authenticated = False
     st.success("🔒 تم قفل نظام السيرفر المركزي بنجاح وتأمين الحسابات. تحياتي يا سيادة المدير المحترم!")
     time.sleep(0.4)
     st.rerun()
+
