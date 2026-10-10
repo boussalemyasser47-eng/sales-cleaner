@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول: الهندسة البصرية المتقدمة وتلوين الواجهات الـ 9 (ai_helper.py)
+# الجزء الأول: الهندسة البصرية المتقدمة ونظام التحقق (ai_helper.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
@@ -9,7 +9,7 @@ import time
 def render_sidebar_helper():
     st.sidebar.markdown("---")
     
-    # حقن كود الـ CSS الأسطوري المطور لتشغيل الأنميشن الموحد للـ 9 فئات الملونة بشكل مستقل
+    # 1. حقن كود الـ CSS الأسطوري المطور لتشغيل الأنميشن الموحد للـ 9 فئات الملونة وخلفياتها الداكنة
     st.sidebar.markdown("""
         <style>
         /* شكل الزر الفيروزي المطور لمتجرك الحالي دون تعديل ميكانيكي */
@@ -24,7 +24,7 @@ def render_sidebar_helper():
         }
         div[data-testid="stCheckbox"]:hover { box-shadow: 0px 0px 28px #00fff0 !important; }
         
-        /* هندسة الحواف والألوان الداخلية للـ 9 بطاقات وتأثير صعود موحد لمنع الفجائية */
+        /* هندسة الحواف والألوان الداخلية للـ 9 بطاقات مع تأثير صعود موحد لمنع الفجائية */
         .ai-cyber-legendary-panel, .card-btn1, .card-btn2, .card-btn3, .card-btn4, .card-btn5, .card-btn6, .card-btn7, .card-btn8, .card-btn9, .card-welcome {
             border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 12px !important;
@@ -63,11 +63,20 @@ def render_sidebar_helper():
     ai_activate = st.sidebar.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v7_pro_activate")
     
     if ai_activate:
-        st.sidebar.markdown("""
+        # 🚨 خطوة الاختبار الحاسم: إدخال البريد الإلكتروني للتحقق من الصلاحيات التلقائية
+        st.sidebar.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 11px; text-align: right; margin:0;'>🔑 أدخل بريد الحساب لاختبار حركة القفل:</p>", unsafe_allow_html=True)
+        merchant_email = st.sidebar.text_input("البريد الإلكتروني للتاجر:", value="test_merchant@saas.com", key="cyber_merchant_email_auth")
+        
+        # تهيئة قاعدة بيانات المحاكاة المؤقتة في الذاكرة لتتبع الإيميل الجديد
+        if "saas_user_status" not in st.session_state:
+            st.session_state.saas_user_status = "🟢 نشط حالياً"
+            st.session_state.saas_email = "test_merchant@saas.com"
+
+        st.sidebar.markdown(f"""
             <div class="ai-cyber-legendary-panel">
                 <div class="ai-pulse-status"><span class="pulse-dot"></span>NEXUS AI: ONLINE</div>
                 <h3 style="color:#00fff0; font-family:'Cairo'; font-size:16px; margin:0; font-weight:bold;">🔮 المستشار اللاسلكي المطور</h3>
-                <p style="color:#fff; font-family:'Cairo'; font-size:13px; margin:5px 0 0 0;">مرحباً بك مجدداً يا <span style="color:#ff00ff; font-weight:bold;">المدير المحترم</span>! أنظمتي مستقرة ومربوطة بـ v4 بنجاح.</p>
+                <p style="color:#fff; font-family:'Cairo'; font-size:13px; margin:5px 0 0 0;">الحساب الحالي: <span style="color:#ff00ff; font-weight:bold;">{merchant_email}</span><br>الحالة البرمجية: <b>{st.session_state.saas_user_status}</b></p>
             </div>
         """, unsafe_allow_html=True)
 # ========================================================
@@ -121,8 +130,7 @@ def render_sidebar_helper():
         st.sidebar.markdown("---")
         user_query = st.sidebar.text_input("💬 اكتب سؤالك للمساعد هنا:", key="cyber_v7_pro_query")
         
-        if user_query:
-            st.session_state.active_query = user_query
+        if user_query: st.session_state.active_query = user_query
 
         response_placeholder = st.sidebar.empty()
         
@@ -132,7 +140,16 @@ def render_sidebar_helper():
                 time.sleep(0.06)  
                 st.session_state.old_query = st.session_state.active_query
                 
-            evaluate_logic_response(st.session_state.active_query, response_placeholder)
+            # 🚨 تفعيل نظام فحص الصلاحيات الفوري للإيميل قبل طباعة أي بطاقة جرد
+            if "🔒 تم قفل" in st.session_state.saas_user_status:
+                response_placeholder.markdown("""
+                    <div style="background: linear-gradient(135deg, #1c0202 0%, #3d0505 100%); border-right: 4px solid #ff3333; padding: 15px; border-radius: 10px; text-align: right; direction: rtl;">
+                        <h4 style="color: #ff3333; font-family: 'Cairo'; font-size: 14px; margin:0;">🚨 تنبيه الأمان السيبراني للحساب (SaaS Block):</h4>
+                        <p style="color: #ffffff; font-family: 'Cairo'; font-size: 12.5px; margin: 5px 0 0 0;">عذراً، هذا البريد الإلكتروني مقفل حالياً ومحجوب من الصلاحيات لعدم سداد الاشتراك السنوي الصافي. يرجى الاتصال بمدير المنصة للتفعيل.</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            else:
+                evaluate_logic_response(st.session_state.active_query, response_placeholder)
 
 def render_marketing_hub(): pass
 def render_data_insights(conn): pass
@@ -143,7 +160,7 @@ def render_data_insights(conn): pass
 def evaluate_logic_response(query, placeholder):
     conn = sqlite3.connect("invoices_master_v4.db")
     
-    # 1️⃣ زر تقرير الأرباح
+    # 1️⃣ زر تقرير الأرباح: 🌸 [وردي نيون + خلفية أرجوانية داكنة]
     if query == "ميزانية الأرباح" or "ربح" in query or "حساب" in query:
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
         count_inv = len(df_sales)
@@ -155,13 +172,13 @@ def evaluate_logic_response(query, placeholder):
                     <h4 style="color: #ff00ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #ff00ff;">🌸 الشرح التفصيلي لتقرير الأرباح (AI Finance):</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         • <b>تحليل المداخيل الكلية:</b> تم جرد فواتير v4 بنجاح، وبلغ إجمالي التدفق المالي الصافي <span style="color: #ff00ff; font-weight: bold; text-shadow: 0 0 5px #ff00ff;">{total_da:,.2f} DA</span> عبر <b>{count_inv} عملية بيع</b>.<br>
-                        • <b>معدل سلة المبيعات:</b> متوسط الإنفاق الفردي للزبون هو <span style="color: #00fff0; font-weight: bold;">{avg_invoice:,.2f} DA</span>.
+                        • <b>معدل سلة مبيعات التاجر:</b> متوسط قيمة الإنفاق هو <span style="color: #00fff0; font-weight: bold;">{avg_invoice:,.2f} DA</span>.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
-        else: placeholder.info("📊 لا توجد فواتير مسجلة حالياً.")
+        else: placeholder.info("📊 لا توجد فواتير مسجلة حالياً لبدء التحليل المالي.")
         
-    # 2️⃣ زر جرد المخزن المطور (مفكك منتوج منتوج)
+    # 2️⃣ زر جرد المخزن المطور: 💎 [فيروزي مشع + جرد مفكك سلعة سلعة بالتفصيل]
     elif query == "جرد المخزن" or "مخزن" in query or "سلع" in query:
         df_stock = pd.read_sql("SELECT product_name, available_qty FROM store_stock", conn)
         if not df_stock.empty:
@@ -182,7 +199,7 @@ def evaluate_logic_response(query, placeholder):
             """, unsafe_allow_html=True)
         else: placeholder.info("📦 مستودعك فارغ حالياً.")
 
-    # 3️⃣ زر المنتجات القريبة من النفاذ
+    # 3️⃣ زر المنتجات القريبة من النفاذ: 🪙 [أصفر ذهبي ناصع]
     elif query == "قطع المستودع" or "قطع" in query:
         df_stock = pd.read_sql("SELECT product_name, available_qty FROM store_stock", conn)
         if not df_stock.empty:
@@ -191,7 +208,7 @@ def evaluate_logic_response(query, placeholder):
             if len(low_stock_df) > 0:
                 low_stock_text = "<br><span style='color: #ffcc00; font-weight:bold;'>🚨 تحذير النفاذ السريع الفوري لقائمة السلع:</span><br>"
                 for idx, row in low_stock_df.iterrows():
-                    low_stock_text += f"<span style='color: #ffffff;'>⚠️ المنتج [ {row['product_name']} ] متبقي منه {row['available_qty']} قطع فقط!</span><br>"
+                    low_stock_text += f"<span style='color: #ffffff;'>⚠️ المنتج [ {row['product_name']} ] متبقي منه {row['available_qty']} قطع فقط في المخزن!</span><br>"
             else: low_stock_text = "<br><span style='color: #00ff66; font-weight:bold;'>✅ مؤشر أمان المستودع: جميع السلع متوفرة بكميات آمنة.</span>"
             placeholder.markdown(f"""
                 <div class="card-btn3" style="box-shadow: 0 0 15px #ffcc00;">
@@ -201,14 +218,14 @@ def evaluate_logic_response(query, placeholder):
             """, unsafe_allow_html=True)
         else: placeholder.info("📦 لا توجد سلع بالمخزن.")
 
-    # 4️⃣ زر نمو المبيعات
+    # 4️⃣ زر نمو المبيعات: 🍏 [أخضر نيون + خلفية خضراء]
     elif query == "نمو المبيعات":
         df_sales = pd.read_sql("SELECT month_created, final_total FROM v4_customer_invoices", conn)
         if not df_sales.empty:
             monthly_summary = df_sales.groupby('month_created')['final_total'].sum()
             summary_text = ""
             for month, total in monthly_summary.items():
-                summary_text += f"<span style='color: #ffffff;'>📅 الشهر [ {month} ]:</span> <span style='color:#00ff66; font-weight:bold;'>{total:,.2f} DA</span><br>"
+                summary_text += f"<span style='color: #ffffff;'>📅 حركة مبيعات الشهر [ {month} ]:</span> <span style='color:#00ff66; font-weight:bold;'>{total:,.2f} DA</span><br>"
             placeholder.markdown(f"""
                 <div class="card-btn4" style="box-shadow: 0 0 15px #00ff66;">
                     <h4 style="color: #00ff66; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #00ff66;">🍏 التحليل الاستقصائي لنمو مبيعات المتجر:</h4>
@@ -229,7 +246,7 @@ def evaluate_logic_response(query, placeholder):
                     <h4 style="color: #ff3333; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #ff3333;">🛑 الخطة الاستراتيجية لشحن وتوصيل الولايات:</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
                         • <b>تحليل حركة الـ COD الفعليّة:</b> يمتلك المتجر حالياً قاعدة مبيعات نشطة تبلغ <b>{count_inv} طلبية وعميل</b> مسجلين بنظام v4.<br>
-                        • <b>توجيه الإعلانات:</b> نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <b>(الجزائر العاصمة، وهران، سطيف، قسنطينة)</b> لضمان أعلى معدل تسليم.
+                        • <b>توجيه الإعلانات:</b> نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <b>(الجزائر العاصمة، وهران، سطيف، قسنطينة، البليدة)</b> لضمان أعلى معدل تسليم.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
@@ -245,10 +262,7 @@ def evaluate_logic_response(query, placeholder):
             placeholder.markdown(f"""
                 <div class="card-btn6" style="box-shadow: 0 0 15px #3333ff;">
                     <h4 style="color: #3333ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #3333ff;">🔵 متوسط مداخيل الطلبيات الصافي لمتجرك:</h4>
-                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
-                        💸 <b>المتوسط الكلي المحقق: {avg_profit:,.2f} DA</b><br>
-                        💡 <b>رؤية النظام ماليًا:</b> يمكنك زيادة هذا معدل عبر تفعيل استراتيجية الـ Upsell للزبون أثناء التأكيد الهاتفي.
-                    </p>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">💸 <b>المتوسط الكلي المحقق: {avg_profit:,.2f} DA</b></p>
                 </div>
             """, unsafe_allow_html=True)
         else: placeholder.info("💰 لا توجد فواتير صادرة لتقييم المتوسط المالي.")
@@ -263,12 +277,12 @@ def evaluate_logic_response(query, placeholder):
                 <div class="card-btn7" style="box-shadow: 0 0 15px #ffaa00;">
                     <h4 style="color: #ffaa00; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #ffaa00;">🏆 رادار السلعة الذهبية الأكثر ربحاً (Winning Product):</h4>
                     <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
-                        • <b>بطل السوق الحالي:</b> المنتج الأعلى تحقيقاً للمداخيل الصافية هو [ <span style='color: #ffaa00; font-weight:bold;'>{top_product}</span> ].<br>
+                        • <b>بطل السوق الحالي:</b> المنتج الأعلى تحقيقاً للمداخيل هو [ <span style='color: #ffaa00; font-weight:bold;'>{top_product}</span> ].<br>
                         • <b>العائد المالي المحقق:</b> حقق وحده مداخل إجمالية بلغت <span style='color: #00fff0; font-weight:bold;'>{top_revenue:,.2f} DA</span>.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
-        else: placeholder.info("🏆 قم بتسجيل مبيعات أولاً لتفعيل رادار السلعة الذهبية.")
+        else: placeholder.info("🏆 قم بتسجيل مبيعات أولاً.")
 
     # 8️⃣ درع حماية الـ COD والـ Retour
     elif query == "درع الـ COD":
@@ -278,10 +292,7 @@ def evaluate_logic_response(query, placeholder):
             placeholder.markdown(f"""
                 <div class="card-btn8" style="box-shadow: 0 0 15px #ff0055;">
                     <h4 style="color: #ff0055; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #ff0055;">🛡️ درع الأمن ومكافحة طلبيات الـ COD المكررة عشوائياً:</h4>
-                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
-                        🚨 <b>تنبيه أمن شحن الولايات:</b> تم رصد <b>{fraud_count} زبائن كرروا طلبياتهم بنفس رقم الهاتف</b> في فواتير v4!<br>
-                        🧭 <b>أمر الحماية لـ المدير المحترم:</b> نوصي فريق خدمة العملاء بالاتصال الفوري بهؤلاء الزبائن لتأكيد الجدية يدوياً وتفادي تكبد مصاريف المرتجعات (Retour).
-                    </p>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">🚨 <b>تنبيه أمن شحن الولايات:</b> تم رصد <b>{fraud_count} زبائن كرروا طلبياتهم بنفس رقم الهاتف</b> في فواتير v4!</p>
                 </div>
             """, unsafe_allow_html=True)
         else:
@@ -314,21 +325,29 @@ def evaluate_logic_response(query, placeholder):
         """, unsafe_allow_html=True)
     conn.close()
 
-# لوحة تحكم إدارة حسابات وصلاحيات التجار المشتركين - SaaS Admin Hub
+# 🚨 [لوحة التحكم المحدثة المربوطة بالإيميل الجديد لاختبار حظر وقفل الصلاحيات لحظياً]:
 def render_saas_management_hub():
     st.markdown("---")
     st.markdown("<h3 style='color: #00fff0; font-family: Cairo; font-size: 18px; text-align: center; text-shadow: 0 0 10px #00fff0;'>⚙️ مركز التحكم والقيادة السيبرانية للمشتركين (SaaS Hub)</h3>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #ffffff; font-family: Cairo; font-size: 13px; text-align: center; opacity: 0.8;'>تفعيل، تجميد وقفل حسابات وصلاحيات التجار بلمحة بصر وبميكانيكية تحكم تامة.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #ffffff; font-family: Cairo; font-size: 13px; text-align: center; opacity: 0.8;'>قفل وتفعيل صلاحيات الحساب المكتوب في خانة التحقق الجانبية بلمحة بصر.</p>", unsafe_allow_html=True)
     
-    col_t1, col_t2, col_t3 = st.columns(3)
+    # محاكاة الحساب الاختباري الجديد الذي أدخلته للتأكد من ميكانيكية القفل التام
+    col_t1, col_t2 = st.columns(2)
     with col_t1:
-        st.markdown("<div style='background:#10101b; padding:12px; border-radius:8px; border-top:3px solid #00ff66; text-align:center;'><span style='color:#00ff66; font-size:11px; font-weight:bold;'>🟢 نشط حالياً</span><br><b style='color:#fff; font-size:13px;'>متجر التاجر 1</b><br><small style='color:#aaa;'>باقة سيبرانية (65k)</small></div>", unsafe_allow_html=True)
-        if st.button("قفل الحساب 🔒", key="lock_t1"): st.success("🔒 تم قفل صلاحيات متجر التاجر 1 ميكانيكياً!")
+        st.markdown(f"""<div style='background:#10101b; padding:12px; border-radius:8px; border-top:3px solid #00ff66; text-align:center;'>
+            <span style='color:#00ff66; font-size:11px; font-weight:bold;'>حالة الحساب المكتوب حالياً:</span><br>
+            <b style='color:#fff; font-size:12px; font-family: monospace;'>{st.session_state.cyber_merchant_email_auth}</b><br>
+            <small style='color:#aaa;'>الوضع الحالي: {st.session_state.saas_user_status}</small>
+        </div>""", unsafe_allow_html=True)
         
     with col_t2:
-        st.markdown("<div style='background:#10101b; padding:12px; border-radius:8px; border-top:3px solid #ff3333; text-align:center;'><span style='color:#ff3333; font-size:11px; font-weight:bold;'>🔴 منتهي الصلاحية</span><br><b style='color:#fff; font-size:13px;'>متجر التاجر 2</b><br><small style='color:#aaa;'>باقة احترافية (45k)</small></div>", unsafe_allow_html=True)
-        if st.button("تفعيل فوري ⚡", key="activate_t2"): st.success("⚡ تم تمديد وتنشيط اشتراك متجر التاجر 2 ميكانيكياً!")
-        
-    with col_t3:
-        st.markdown("<div style='background:#10101b; padding:12px; border-radius:8px; border-top:3px solid #ffcc00; text-align:center;'><span style='color:#ffcc00; font-size:11px; font-weight:bold;'>🟡 مجمد مؤقتاً</span><br><b style='color:#fff; font-size:13px;'>متجر التاجر 3</b><br><small style='color:#aaa;'>باقة أساسية (29k)</small></div>", unsafe_allow_html=True)
-        if st.button("إعادة تشغيل ▶️", key="resume_t3"): st.success("▶️ تم إلغاء تجميد حساب متجر التاجر 3 وإعادته للخدمة فوراً!")
+        st.markdown("<p style='color:#fff; font-family:Cairo; font-size:12px; margin:0; text-align:right;'>🎮 أدوات التحكم الاختباري للإيميل المكتوب:</p>", unsafe_allow_html=True)
+        col_b1, col_b2 = st.columns(2)
+        with col_b1:
+            if st.button("🔒 حظر الحساب", key="lock_dynamic_email"):
+                st.session_state.saas_user_status = "🚨 تم قفل ومصادرة الصلاحيات"
+                st.success("🔒 تم قفل الحساب بنجاح! جرب النقر على أزرار شريط الجنب لمعاينة الحجب.")
+        with col_b2:
+            if st.button("⚡ تفعيل الحساب", key="activate_dynamic_email"):
+                st.session_state.saas_user_status = "🟢 نشط ومفعل حالياً"
+                st.success("⚡ تم فك الحظر وتفعيل الإيميل الجديد ميكانيكياً! انقر أزرار الجنب لتستمتع بالتقارير.")
