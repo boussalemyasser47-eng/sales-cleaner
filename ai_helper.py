@@ -78,43 +78,31 @@ def render_sidebar_helper():
         </style>
     """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: جدار التحقق المعزول لحظر الأعطال المشتركة (ai_helper.py)
+# الجزء الثاني: نبضات الأمان اللاسلكية والطرد الآلي للتاجر (ai_helper.py)
 # ========================================================
-    ai_activate = st.sidebar.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v7_pro_activate")
+    ai_activate = st.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v7_pro_activate")
     
     if ai_activate:
         if "current_session_email" not in st.session_state:
             st.session_state.current_session_email = "daymaabdaalhmdllh@gmail.com"
 
-        # حقل إدخال البريد الإلكتروني في الشريط الجانبي ليتعرف المتصفح على المشترك تلقائياً
-        st.sidebar.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 11px; text-align: right; margin:0;'>🔑 سجل بريدك الإلكتروني لاستدعاء باقتك السنوية:</p>", unsafe_allow_html=True)
-        user_email_input = st.sidebar.text_input("البريد الإلكتروني للتاجر:", value=st.session_state.current_session_email, key="saas_user_email_input_field")
+        st.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 11px; text-align: right; margin:0;'>🔑 سجل بريدك الإلكتروني لاستدعاء باقتك السنوية:</p>", unsafe_allow_html=True)
+        user_email_input = st.text_input("البريد الإلكتروني للتاجر:", value=st.session_state.current_session_email, key="saas_user_email_input_field")
         st.session_state.current_session_email = user_email_input.strip()
 
-        # 🚨 [إصلاح هندسي حاسم]: العزل داخل قاعدة بيانات أمان مستقلة وصغيرة لمنع تجمد السيرفر
+        # 🚨 [نبضات التحقق الفوري الحية]: القراءة المباشرة من خزانة الأمان المعزولة بالـ SQL
         conn_auth = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor_auth = conn_auth.cursor()
-        cursor_auth.execute("""
-            CREATE TABLE IF NOT EXISTS saas_users_status (
-                email TEXT PRIMARY KEY,
-                status TEXT,
-                package TEXT
-            )
-        """)
-        cursor_auth.execute("INSERT OR IGNORE INTO saas_users_status VALUES ('daymaabdaalhmdllh@gmail.com', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة (65k)')")
-        conn_auth.commit()
-        
-        # قراءة حالة الحساب الفورية للتاجر الحالي بنظام الفصل اللاسلكي
         cursor_auth.execute("SELECT status FROM saas_users_status WHERE email = ?", (st.session_state.current_session_email,))
         db_status_row = cursor_auth.fetchone()
-        conn_auth.close() # إغلاق فوري في أجزاء من الثانية لمنع تعليق قاعدة البيانات
+        conn_auth.close()
 
         if db_status_row:
             current_status = db_status_row[0]
         else:
-            current_status = "🟢 مفعّل ونشط"  # الحالة الافتراضية لأي تاجر جديد
+            current_status = "🟢 مفعّل ونشط"
 
-        st.sidebar.markdown(f"""
+        st.markdown(f"""
             <div class="ai-cyber-legendary-panel">
                 <div class="ai-pulse-status"><span class="pulse-dot"></span>NEXUS AI: ONLINE</div>
                 <h3 style="color:#00fff0; font-family:'Cairo'; font-size:16px; margin:0; font-weight:bold;">🔮 المستشار اللاسلكي المطور</h3>
@@ -125,8 +113,8 @@ def render_sidebar_helper():
         if "active_query" not in st.session_state: st.session_state.active_query = ""
         if "old_query" not in st.session_state: st.session_state.old_query = ""
 
-        st.sidebar.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 11px; text-align: right; margin:0;'>💼 جرد الحسابات والمخزن الأساسي (المجموعة 1):</p>", unsafe_allow_html=True)
-        col1, col2 = st.sidebar.columns(2)
+        st.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 11px; text-align: right; margin:0;'>💼 جرد الحسابات والمخزن الأساسي (المجموعة 1):</p>", unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
         with col1:
             if st.button("📊 تقرير الأرباح"):
                 st.session_state.active_query = "ميزانية الأرباح"
@@ -136,14 +124,14 @@ def render_sidebar_helper():
                 st.session_state.active_query = "جرد المخزن"
                 st.session_state.cyber_v7_pro_query = ""
 # ========================================================
-# الجزء الثالث: مصفوفة خيارات التحكم وبوابات الحجب المباشر (ai_helper.py)
+# الجزء الثالث: مصفوفة بقية الأزرار وجدار الحجب المركزي (ai_helper.py)
 # ========================================================
-        if st.sidebar.button("⚠️ المنتجات القريبة من النفاذ"):
+        if st.button("⚠️ المنتجات القريبة من النفاذ"):
             st.session_state.active_query = "قطع المستودع"
             st.session_state.cyber_v7_pro_query = ""
         
-        st.sidebar.markdown("<p style='color: #ff00ff; font-family: Cairo; font-size: 11px; text-align: right; margin:5px 0 0 0;'>🚀 تحليلات الـ AI المتقدمة للنمو (المجموعة 2):</p>", unsafe_allow_html=True)
-        col3, col4 = st.sidebar.columns(2)
+        st.markdown("<p style='color: #ff00ff; font-family: Cairo; font-size: 11px; text-align: right; margin:5px 0 0 0;'>🚀 تحليلات الـ AI المتقدمة للنمو (المجموعة 2):</p>", unsafe_allow_html=True)
+        col3, col4 = st.columns(2)
         with col3:
             if st.button("📈 نمو المبيعات"):
                 st.session_state.active_query = "نمو المبيعات"
@@ -152,12 +140,12 @@ def render_sidebar_helper():
             if st.button("🗺️ مستشار الولايات"):
                 st.session_state.active_query = "مستشار الولايات"
                 st.session_state.cyber_v7_pro_query = ""
-        if st.sidebar.button("💰 متوسط الأرباح المتوقعة"):
+        if st.button("💰 متوسط الأرباح المتوقعة"):
             st.session_state.active_query = "متوسط الأرباح"
             st.session_state.cyber_v7_pro_query = ""
             
-        st.sidebar.markdown("<p style='color: #00ffcc; font-family: Cairo; font-size: 11px; text-align: right; margin:5px 0 0 0;'>🛡️ مركز القيادة والأمن التكتيكي (المجموعة 3):</p>", unsafe_allow_html=True)
-        col5, col6 = st.sidebar.columns(2)
+        st.markdown("<p style='color: #00ffcc; font-family: Cairo; font-size: 11px; text-align: right; margin:5px 0 0 0;'>🛡️ مركز القيادة والأمن التكتيكي (المجموعة 3):</p>", unsafe_allow_html=True)
+        col5, col6 = st.columns(2)
         with col5:
             if st.button("🏆 السلعة الذهبية"):
                 st.session_state.active_query = "السلعة الذهبية"
@@ -166,16 +154,16 @@ def render_sidebar_helper():
             if st.button("🛡️ درع الـ COD"):
                 st.session_state.active_query = "درع الـ COD"
                 st.session_state.cyber_v7_pro_query = ""
-        if st.sidebar.button("📅 ساعات الذروة الشرائية"):
+        if st.button("📅 ساعات الذروة الشرائية"):
             st.session_state.active_query = "ساعات الذروة"
             st.session_state.cyber_v7_pro_query = ""
 
-        st.sidebar.markdown("---")
-        user_query = st.sidebar.text_input("💬 اكتب سؤالك للمساعد هنا:", key="cyber_v7_pro_query")
+        st.markdown("---")
+        user_query = st.text_input("💬 اكتب سؤالك للمساعد هنا:", key="cyber_v7_pro_query")
         
         if user_query: st.session_state.active_query = user_query
 
-        response_placeholder = st.sidebar.empty()
+        response_placeholder = st.empty()
         
         if st.session_state.active_query:
             if st.session_state.active_query != st.session_state.old_query:
@@ -183,12 +171,12 @@ def render_sidebar_helper():
                 time.sleep(0.06)  
                 st.session_state.old_query = st.session_state.active_query
                 
-            # 🚨 [المقصلة الرقمية المعزولة]: حجب وتجميد فوري للوصول إذا تم تفعيل قفل الحساب من جدول السيرفر
+            # 🚨 [المقصلة الرقمية السحابية المباشرة]: طرد فوري وحجب كلي لشاشة التاجر إذا كان الحساب مقفلاً
             if current_status and "🔒 تم قفل" in current_status:
                 response_placeholder.markdown(f"""
                     <div style="background: linear-gradient(135deg, #1c0202 0%, #3d0505 100%); border-right: 4px solid #ff3333; padding: 15px; border-radius: 10px; text-align: right; direction: rtl; box-shadow: 0 0 15px rgba(255,51,51,0.3);">
-                        <h4 style="color: #ff3333; font-family: 'Cairo'; font-size: 14px; margin:0; text-shadow: 0 0 5px #ff3333;">🚨 حجب الصلاحيات للحساب (SaaS Vault Block):</h4>
-                        <p style="color: #ffffff; font-family: 'Cairo'; font-size: 12.5px; margin: 5px 0 0 0;">عذراً، البريد الإلكتروني [ <b>{st.session_state.current_session_email}</b> ] مقفل ومحجوب حالياً من قراءة السجلات لعدم سداد الاشتراك السنوي. يرجى مراجعة إدارة المنصة لرفع الحظر.</p>
+                        <h4 style="color: #ff3333; font-family: 'Cairo'; font-size: 14px; margin:0; text-shadow: 0 0 5px #ff3333;">🚨 حجب الصلاحيات للحساب (SaaS Database Block):</h4>
+                        <p style="color: #ffffff; font-family: 'Cairo'; font-size: 12.5px; margin: 5px 0 0 0;">عذراً، البريد الإلكتروني [ <b>{st.session_state.current_session_email}</b> ] مقفل ومحجوب حالياً من قراءة السجلات لعدم سداد الاشتراك السنوي. يرجى الاتصال بمدير المنصة لرفع الحظر الفوري وتنشيط الباقة السنوية.</p>
                     </div>
                 """, unsafe_allow_html=True)
             else:
@@ -197,7 +185,7 @@ def render_sidebar_helper():
 def render_marketing_hub(): pass
 def render_data_insights(conn): pass
 # ========================================================
-# الجزء الرابع: عقل المساعد وجرد السلع بـ قاعدة البيانات (ai_helper.py)
+# الجزء الرابع: محرك الردود والتحليلات الأساسية (ai_helper.py)
 # ========================================================
 def evaluate_logic_response(query, placeholder):
     conn = sqlite3.connect("invoices_master_v4.db")
@@ -221,10 +209,10 @@ def evaluate_logic_response(query, placeholder):
         else: placeholder.info("📊 لا توجد فواتير مسجلة لبدء التحليل.")
         
     # 2️⃣ جرد المخزن الكلي المفكك منتوجاً منتوجاً بالتفصيل لـ صورتك الأولى لقواعد البيانات
-    elif query == "جرد المخزن" or "mخزن" in query or "سلع" in query:
+    elif query == "جرد المخزن" or "مخزن" in query or "سلع" in query:
         df_stock = pd.read_sql("SELECT product_name, available_qty FROM store_stock", conn)
         if not df_stock.empty:
-            total_qty = db_stock = df_stock['available_qty'].sum()
+            total_qty = df_stock['available_qty'].sum()
             products_detailed_text = ""
             for idx, row in df_stock.iterrows():
                 products_detailed_text += f"📦 <b>المنتوج:</b> [ <span style='color: #00fff0; font-weight:bold;'>{row['product_name']}</span> ] ⬅️ <b>الكمية:</b> <span style='color: #ffffff; font-weight:bold;'>{row['available_qty']} حبة</span><br>"
