@@ -9,7 +9,7 @@ import time
 def render_sidebar_helper():
     st.sidebar.markdown("---")
     
-    # 1. حقن كود الـ CSS الأسطوري المطور لتثبيت الهوية السيبرانية وإخفاء الأزرار الافتراضية المزعجة
+    # 1. حقن كود الـ CSS الأسطوري المطور لتوسيع الأزرار ومنع تداخل الحروف (...) الظاهر في شاشات التجار
     st.sidebar.markdown("""
         <style>
         /* شكل الزر الفيروزي المطور لمتجرك الحالي دون تعديل ميكانيكي */
@@ -71,73 +71,96 @@ def render_sidebar_helper():
         @keyframes pulse-animation { 0% { opacity: 0.4; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 15px #00fff0; } }
         @keyframes cyberPopIn { 0% { transform: translateY(14px) scale(0.98); opacity: 0; filter: blur(3px); } 100% { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); } }
         
-        /* تثبيت مستطيل الكتابة الوردي الفخم المطابق لـ لقطة شاشتك وعزله كلياً */
         div[data-testid="stTextInput"] input { border: 2px solid #ff00ff !important; background-color: #10101b !important; color: #ffffff !important; border-radius: 12px !important; padding: 14px 16px !important; font-family: 'Cairo', sans-serif !important; }
         div[data-testid="stTextInput"] p, div[data-testid="stTextInput"] small, div[data-testid="stTextInput"] label, div[data-testid="stTextInput"] [data-testid="stWidgetInstructions"], div[data-testid="stTextInput"] span, div[data-testid="stTextInput"] div:not(:first-child) p, .st-emotion-cache-16idsys p, .st-emotion-cache-q3uqly p, .st-emotion-cache-1pxscv7 p { display: none !important; opacity: 0 !important; visibility: hidden !important; height: 0px !important; margin: 0px !important; padding: 0px !important; }
         </style>
     """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: بوابة تسجيل الدخول المشفر والتحقق من الـ SQL (ai_helper.py)
+# الجزء الثاني: بوابة التسجيل الحر وإنشاء الحسابات الجديدة (ai_helper.py)
 # ========================================================
     ai_activate = st.sidebar.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v7_pro_activate")
     
     if ai_activate:
-        # تهيئة متغيرات الجلسة الآمنة لتتبع ومنع التداخل اللاسلكي
         if "merchant_logged_in" not in st.session_state: st.session_state.merchant_logged_in = False
         if "current_session_email" not in st.session_state: st.session_state.current_session_email = ""
 
-        # شاشة تسجيل الدخول المباشرة داخل شريط الجنب للتأمين المطلق
+        # تأسيس اتصال الأمان الموحد للتخزين السحابي الفوري
+        conn_init = sqlite3.connect("saas_security_vault.db", timeout=10)
+        cursor_init = conn_init.cursor()
+        cursor_init.execute("""
+            CREATE TABLE IF NOT EXISTS saas_users_auth (
+                email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT
+            )
+        """)
+        conn_init.commit()
+        conn_init.close()
+
+        # جدار التوجيه المفتوح للزوار الجدد والتجار القدامى بالتوازي
         if not st.session_state.merchant_logged_in:
-            st.sidebar.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 11px; text-align: right; margin:0;'>🔐 بوابة حماية فصِل الحسابات المشتركة لـ الـ SaaS:</p>", unsafe_allow_html=True)
-            input_email = st.sidebar.text_input("البريد الإلكتروني للتاجر:", value="", key="saas_login_email_field")
-            input_password = st.sidebar.text_input("كلمة المرور السرية للحساب:", type="password", key="saas_login_password_field")
+            st.sidebar.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 13px; font-weight:bold; text-align: right; margin:0;'>🔐 بوابة سحابية مفتوحة لتأجيل حسابات التجار لعام 2026:</p>", unsafe_allow_html=True)
             
-            if st.sidebar.button("🔓 دخول آمن للمستودع"):
-                clean_email = input_email.strip()
-                clean_pass = input_password.strip()
+            # تبديل النمط حركياً بين تدوين الدخول المعتاد أو تفريغ حساب جديد كلياً
+            auth_mode = st.sidebar.radio("اختر العملية المطلوبة كـ فيسبوك:", ["تسجيل الدخول للحساب", "إنشاء حساب تاجر جديد فريش"])
+            
+            input_email = st.sidebar.text_input("أدخل البريد الإلكتروني الخاص بك:", value="", key="saas_login_email_field")
+            input_password = st.sidebar.text_input("أدخل كلمة المرور السرية من عندك:", type="password", key="saas_login_password_field")
+            
+            clean_email = input_email.strip()
+            clean_pass = input_password.strip()
+
+            if auth_mode == "إنشاء حساب تاجر جديد فريش":
+                user_package_choice = st.sidebar.selectbox("اختر باقة متجرك السنوية:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
                 
-                # فتح فحص سحابي سريع داخل قاعدة بيانات الأمان المركزية
-                conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
-                cursor_vault = conn_vault.cursor()
-                cursor_vault.execute("""
-                    CREATE TABLE IF NOT EXISTS saas_users_auth (
-                        email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT
-                    )
-                """)
-                # حقن الحسابات الرسمية وكلمات سرها الافتراضية لمنع سرقة الفواتير بـ DA
-                cursor_vault.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة (65k)')")
-                cursor_vault.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('test_merchant@saas.com', 'pass2026', '🟢 مفعّل ونشط', 'الباقة الاحترافية (45k)')")
-                conn_vault.commit()
-                
-                # فحص مطابقة الهوية وكلمة السر حياً في السيرفر لمنع القرصنة
-                cursor_vault.execute("SELECT status, password FROM saas_users_auth WHERE email = ?", (clean_email,))
-                db_row = cursor_vault.fetchone()
-                conn_vault.close()
-                
-                if db_row and db_row[1] == clean_pass:
-                    if "🔒 تم قفل" in db_row[0] or "🔴" in db_row[0]:
-                        st.sidebar.error("🚨 حسابك مقفل ومحجوب حالياً من طرف مالك المنصة لعدم سداد الباقة!")
+                if st.sidebar.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
+                    if clean_email == "" or clean_pass == "":
+                        st.sidebar.error("⚠️ يرجى ملء الخانات أولاً ببريد وكلمة سر من اختيارك!")
                     else:
-                        st.session_state.merchant_logged_in = True
-                        st.session_state.current_session_email = clean_email
-                        st.sidebar.success("⚡ تم التوثيق بنجاح! جاري فرز خلايا المخزن...")
-                        time.sleep(0.3)
-                        st.rerun()
-                else:
-                    st.sidebar.error("❌ البريد أو كلمة السر غير مطابقة! تم تسجيل محاولة الاختراق.")
-            st.stop() # إيقاف فوري يمنع صعود الأزرار والبيانات للغرباء تماماً كطلبك!
+                        conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
+                        cursor_reg = conn_reg.cursor()
+                        try:
+                            # ⏳ حقن حساب التاجر حياً بوضعية تعليق آمنة بانتظار تفعيلك وموافقتك بموقع الإدارة
+                            cursor_reg.execute("INSERT INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, user_package_choice))
+                            conn_reg.commit()
+                            st.sidebar.success("✅ تم تسجيل حسابك بنظام الـ SaaS الأسطوري بنجاح! بانتظار موافقة المدير وتفعيل اشتراكك حياً.")
+                        except sqlite3.IntegrityError:
+                            st.sidebar.error("🚨 هذا البريد الإلكتروني مسجل مسبقاً! جرب خيار تسجيل الدخول.")
+                        conn_reg.close()
+            
+            elif auth_mode == "تسجيل الدخول للحساب":
+                if st.sidebar.button("🔓 دخول آمن للمستودع"):
+                    conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_login = conn_login.cursor()
+                    cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
+                    db_row = cursor_login.fetchone()
+                    conn_login.close()
+                    
+                    if db_row:
+                        user_status = db_row[0]
+                        if "⏳" in user_status or "انتظار" in user_status:
+                            st.sidebar.warning("⏳ حسابك قيد المراجعة حالياً! يرجى التواصل مع المدير لتنشيط باقتك السنوية.")
+                        elif "🔒" in user_status or "حظر" in user_status or "مقفل" in user_status:
+                            st.sidebar.error("🚨 عذراً، هذا الحساب مقفل ومحجوب كلياً من لوحة القيادة العليا لعدم سداد المستحقات!")
+                        else:
+                            st.session_state.merchant_logged_in = True
+                            st.session_state.current_session_email = clean_email
+                            st.sidebar.success("⚡ تم التوثيق بنجاح! جاري جلب خلايا المخزن...")
+                            time.sleep(0.3)
+                            st.rerun()
+                    else:
+                        st.sidebar.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي!")
+            st.stop() # تجميد تام يمنع صعود الأزرار والبيانات للغرباء تماماً كطلبك وحماية لخصوصية فواتيرك!
 # ========================================================
 # الجزء الثالث: مصفوفة الأزرار الاستراتيجية للحساب النشط (ai_helper.py)
 # ========================================================
-        # جلب حالة الباقة الحالية حياً للتأكيد الإضافي المتزامن من السيرفر
+        # [نبضات الطرد اللاسلكي الحية]: رادار فحص دوري دائم يقرأ حالة البريد من الـ SQL بالثانية
         conn_check = sqlite3.connect("saas_security_vault.db")
         cursor_check = conn_check.cursor()
-        cursor_check.execute("SELECT status, package FROM saas_users_auth WHERE email = ?", (st.session_state.current_session_email,))
+        cursor_check.execute("SELECT status FROM saas_users_auth WHERE email = ?", (st.session_state.current_session_email,))
         check_row = cursor_check.fetchone()
         conn_check.close()
         
-        # طرد وتصفير الجلسة لاسلكياً وفوراً إذا قمت بالنقر على حظر من موقع إدارتك
-        if check_row and ("🔒 تم قفل" in check_row[0] or "🔴" in check_row[0]):
+        # طرد وتصفير الجلسة في أجزاء من الثانية إذا قمت بالنقر على حظر من موقع إدارتك الخارجي
+        if check_row and ("🔒" in check_row[0] or "حظر" in check_row[0] or "مقفل" in check_row[0]):
             st.session_state.merchant_logged_in = False
             st.rerun()
 
@@ -145,7 +168,7 @@ def render_sidebar_helper():
             <div class="ai-cyber-legendary-panel">
                 <div class="ai-pulse-status"><span class="pulse-dot"></span>NEXUS ACCOUNT</div>
                 <h3 style="color:#00fff0; font-family:'Cairo'; font-size:16px; margin:0; font-weight:bold;">🔮 المستشار اللاسلكي المطور</h3>
-                <p style="color:#fff; font-family:'Cairo'; font-size:13px; margin:5px 0 0 0;">المشترك: <span style="color:#ff00ff; font-weight:bold;">{st.session_state.current_session_email}</span><br>الصلاحية: <b>🟢 نشط ومفعل حياً</b></p>
+                <p style="color:#fff; font-family:'Cairo'; font-size:13px; margin:5px 0 0 0;">المشترك: <span style="color:#ff00ff; font-weight:bold;">{st.session_state.current_session_email}</span><br>الصلاحية: <b>🟢 مفعّل ونشط حياً 🛡️</b></p>
             </div>
         """, unsafe_allow_html=True)
 
@@ -219,7 +242,7 @@ def render_sidebar_helper():
 def evaluate_logic_response(query, placeholder):
     conn = sqlite3.connect("invoices_master_v4.db")
     
-    # أ. تقرير الأرباح والحسابات الصافية بالـ DA
+    # 1️⃣ تقرير الأرباح والحسابات الصافية بالـ DA
     if query == "ميزانية الأرباح" or "ربح" in query or "حساب" in query:
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
         count_inv = len(df_sales)
@@ -236,6 +259,44 @@ def evaluate_logic_response(query, placeholder):
                 </div>
             """, unsafe_allow_html=True)
         else: placeholder.info("📊 لا توجد فواتير مسجلة لبدء التحليل.")
+# ========================================================
+# الجزء الخامس: بقية تحليلات الأزرار وقفل الاتصال الصافي ودالات الاستدعاء (ai_helper.py)
+# ========================================================
+    # 2️⃣ جرد المخزن الكلي المفكك منتوجاً منتوجاً بالتفصيل لـ صورتك الأولى
+    elif query == "جرد المخزن" or "مخزن" in query or "سلع" in query:
+        df_stock = pd.read_sql("SELECT product_name, available_qty FROM store_stock", conn)
+        if not df_stock.empty:
+            total_qty = df_stock['available_qty'].sum()
+            products_detailed_text = ""
+            for idx, row in df_stock.iterrows():
+                products_detailed_text += f"📦 <b>المنتوج:</b> [ <span style='color: #00fff0; font-weight:bold;'>{row['product_name']}</span> ] ⬅️ <b>الكمية:</b> <span style='color: #ffffff; font-weight:bold;'>{row['available_qty']} حبة</span><br>"
+            placeholder.markdown(f"""
+                <div class="card-btn2" style="box-shadow: 0 0 15px #00fff0;">
+                    <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">💎 تقرير تفكيك سلع المستودع (Product Breakdown):</h4>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.8;">{products_detailed_text}<hr style="border-color: rgba(0, 255, 240, 0.2); margin: 10px 0;">📊 <b>مجموع القطع الكلية في الديبو:</b> <span style="color: #00fff0; font-weight: bold;">{total_qty} قطعة شحن إجمالية</span>.</p>
+                </div>
+            """, unsafe_allow_html=True)
+        else: placeholder.info("📦 مستودعك فارغ حالياً لبدء الجرد.")
+
+    # 3️⃣ المنتجات القريبة من النفاذ وعتبات خطر المستودع
+    elif query == "قطع المستودع" or "قطع" in query:
+        df_stock = pd.read_sql("SELECT product_name, available_qty FROM store_stock", conn)
+        if not df_stock.empty:
+            low_stock_df = df_stock[df_stock['available_qty'] <= 10]
+            low_stock_text = ""
+            if len(low_stock_df) > 0:
+                low_stock_text = "<br><span style='color: #ffcc00; font-weight:bold;'>🚨 تحذير النفاذ السريع الفوري لقائمة السلع:</span><br>"
+                for idx, row in low_stock_df.iterrows():
+                    low_stock_text += f"<span style='color: #ffffff;'>⚠️ المنتج [ {row['product_name']} ] متبقي منه {row['available_qty']} قطع!</span><br>"
+            else: low_stock_text = "<br><span style='color: #00ff66; font-weight:bold;'>✅ مؤشر أمان المستودع: جميع الكميات متوفرة بكميات آمنة.</span>"
+            placeholder.markdown(f"""
+                <div class="card-btn3" style="box-shadow: 0 0 15px #ffcc00;">
+                    <h4 style="color: #ffcc00; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">🪙 تقرير استباق استمرارية شحن المنتجات:</h4>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">{low_stock_text}</p>
+                </div>
+            """, unsafe_allow_html=True)
+        else: placeholder.info("📦 لا توجد سلع بالمخزن حالياً.")
+
     # 4️⃣ نمو المبيعات شهرياً والمنحنى المالي بـ DA
     elif query == "نمو المبيعات":
         df_sales = pd.read_sql("SELECT month_created, final_total FROM v4_customer_invoices", conn)
@@ -260,7 +321,7 @@ def evaluate_logic_response(query, placeholder):
             placeholder.markdown(f"""
                 <div class="card-btn5" style="box-shadow: 0 0 15px #ff3333;">
                     <h4 style="color: #ff3333; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">🛑 الخطة الاستراتيجية لشحن وتوصيل الولايات:</h4>
-                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">🎯 <b>توصية خريطة الـ AI لـ المدير المحترم:</b> نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <b>(الجزائر العاصمة، وهران، سطيف، قسنطينة)</b> لضمان أعلى معدل تسليم للـ COD وتفادي الـ Retour والخسائر النقدية.</p>
+                    <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">🎯 <b>توصية خريطة الـ AI لـ المدير المحترم:</b> نوصي بتوجيه وتكثيف الميزانيات الترويجية نحو ولايات <b>(الجزائر العاصمة، وهران، سطيف، قسنطينة)</b> لضمان أعلى معدل تسليم للـ COD وتفادي الـ Retour.</p>
                 </div>
             """, unsafe_allow_html=True)
         else: placeholder.info("🗺️ قم بإصدار الفواتير أولاً لتنشيط الخريطة.")
@@ -279,13 +340,13 @@ def evaluate_logic_response(query, placeholder):
                 </div>
             """, unsafe_allow_html=True)
         else: placeholder.info("💰 لا توجد فواتير صادرة لتقييم المتوسط المالي.")
+
     # 7️⃣ رادار السلعة الذهبية الأكثر ربحاً لجميع التجار
-      # 7️⃣ رادار السلعة الذهبية الأكثر ربحاً لجميع التجار
     elif query == "السلعة الذهبية":
         df_invoices = pd.read_sql("SELECT product_name, SUM(final_total) as revenue FROM v4_customer_invoices GROUP BY product_name ORDER BY revenue DESC LIMIT 1", conn)
         if not df_invoices.empty:
-            top_product = df_invoices['product_name'].values[0]
-            top_revenue = df_invoices['revenue'].values[0]
+            top_product = df_invoices['product_name'].values
+            top_revenue = df_invoices['revenue'].values
             placeholder.markdown(f"""
                 <div class="card-btn7" style="box-shadow: 0 0 15px #ffaa00;">
                     <h4 style="color: #ffaa00; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">🏆 رادار السلعة الذهبية الأكثر ربحاً (Winning Product):</h4>
@@ -314,30 +375,16 @@ def evaluate_logic_response(query, placeholder):
             """, unsafe_allow_html=True)
 
     # 9️⃣ ساعات الذروة الشرائية للـ COD الجزائر
-    elif query == "sاعات الذروة" or query == "ساعات الذروة":
+    elif query == "ساعات الذروة":
         placeholder.markdown("""
             <div class="card-btn9" style="box-shadow: 0 0 15px #9900ff;">
                 <h4 style="color: #9900ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">📅 مستشار أوقات ذروة نشاط زبائن المتجر الإلكتروني:</h4>
                 <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">• <b>مسح السلوك الميكانيكي للـ COD الجزائر:</b> يوضح التحليل الزمني أن ذروة طلب الزبائن تشتد بقوة بين <b>الساعة 8:00 مساءً والساعة 11:30 ليلاً</b> لتعظيم الأرباح بـ <span style='color: #00fff0;'>DA</span>.</p>
             </div>
         """, unsafe_allow_html=True)
-            
-    # بطاقة الحالة الافتراضية المستقرة الترحيبية لـ المدير المحترم
-    else:
-        placeholder.markdown("""
-            <div class="card-welcome" style="box-shadow: 0 0 15px #00fff0;">
-                <h4 style="color: #00fff0; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">🛡️ درع الأمان السيبراني لـ COD الجزائر:</h4>
-                <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">✅ <b>مؤشر أمن واستقرار المبيعات الفعليّة:</b> الأنظمة السيبرانية v4 مربوطة ومستقرة، وجميع البيانات آمنة ومحمية بالكامل لضمان أعلى عوائد أرباح لـ المدير المحترم لمتجرك الإلكتروني.</p>
-            </div>
-        """, unsafe_allow_html=True)
     conn.close()
 
-# 🚨 [الحقن التكتيكي الحاسم]: تعريف الدالات المفقودة لإنهاء خطأ الـ ImportError فوراً
-def render_marketing_hub():
-    pass
-
-def render_data_insights(conn=None):
-    pass
-
-def render_saas_management_hub():
-    pass
+# تعريف الدالات المفقودة لإنهاء خطأ الـ ImportError فوراً بملف app.py
+def render_marketing_hub(): pass
+def render_data_insights(conn=None): pass
+def render_saas_management_hub(): pass
