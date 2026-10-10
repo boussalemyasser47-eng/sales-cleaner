@@ -9,7 +9,7 @@ import time
 def render_sidebar_helper():
     st.sidebar.markdown("---")
     
-    # 1. حقن كود الـ CSS الأسطوري المطور لتوسيع الأزرار ومنع تداخل الحروف (...) الظاهر في صورتك
+    # 1. حقن كود الـ CSS المطور لتوسيع الأزرار ومنع تداخل الحروف (...) الظاهر في صورتك
     st.sidebar.markdown("""
         <style>
         /* شكل الزر الفيروزي المطور لمتجرك الحالي دون تعديل ميكانيكي */
@@ -73,7 +73,7 @@ def render_sidebar_helper():
         @keyframes cyberPopIn { 0% { transform: translateY(14px) scale(0.98); opacity: 0; filter: blur(3px); } 100% { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); } }
         
         div[data-testid="stTextInput"] input { border: 2px solid #ff00ff !important; background-color: #10101b !important; color: #ffffff !important; border-radius: 12px !important; padding: 14px 16px !important; font-family: 'Cairo', sans-serif !important; }
-        div[data-testid="stTextInput"] p, div[data-testid="stTextInput"] small, div[data-testid="stTextInput"] label, div[data-testid="stTextInput"] [data-testid="stWidgetInstructions"], div[data-testid="stTextInput"] span, div[data-testid="stTextInput"] div:not(:first-child) p, .st-emotion-cache-16idsys p, .st-emotion-cache-q3uqly p, .st-emotion-cache-1pxscv7 p { display: none !important; opacity: 0 !important; visibility: hidden !hidden; height: 0px !important; margin: 0px !important; padding: 0px !important; }
+        div[data-testid="stTextInput"] p, div[data-testid="stTextInput"] small, div[data-testid="stTextInput"] label, div[data-testid="stTextInput"] [data-testid="stWidgetInstructions"], div[data-testid="stTextInput"] span, div[data-testid="stTextInput"] div:not(:first-child) p, .st-emotion-cache-16idsys p, .st-emotion-cache-q3uqly p, .st-emotion-cache-1pxscv7 p { display: none !important; opacity: 0 !important; visibility: hidden !important; height: 0px !important; margin: 0px !important; padding: 0px !important; }
         </style>
     """, unsafe_allow_html=True)
 # ========================================================
@@ -82,7 +82,7 @@ def render_sidebar_helper():
     ai_activate = st.sidebar.checkbox("تفعيل المساعد الأسطوري الخارق 🔘", key="legendary_v7_pro_activate")
     
     if ai_activate:
-        # 🚨 [الهندسة السحابية الجديدة]: إنشاء قاعدة بيانات المشتركين المركزية لفصل الإيميلات تلقائياً
+        # 🚨 [الهندسة السحابية لحماية الـ SaaS]: السجل المركزي الموحد لإيميلات التجار
         if "saas_database" not in st.session_state:
             st.session_state.saas_database = {
                 "daymaabdaalhmdllh@gmail.com": "🟢 نشط ومفعل حالياً",
@@ -91,11 +91,11 @@ def render_sidebar_helper():
         if "current_session_email" not in st.session_state:
             st.session_state.current_session_email = "daymaabdaalhmdllh@gmail.com"
 
-        # حقل إدخال البريد الإلكتروني في الشريط الجانبي ليتعرف المتصفح على نفسه
-        st.sidebar.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 11px; text-align: right; margin:0;'>🔑 سجل بريدك الإلكتروني لاستدعاء باقتك السنوية:</p>", unsafe_allow_html=True)
-        user_email_input = st.sidebar.text_input("البريد الإلكتروني:", value=st.session_state.current_session_email, key="saas_user_email_input_field")
+        # حقل إدخال البريد الإلكتروني في الشريط الجانبي ليتعرف المتصفح على نفسه تلقائياً
+        st.sidebar.markdown("<p style='color: #00fff0; font-family: Cairo; font-size: 11px; text-align: right; margin:0;'>🔑 سجل بريدك الإلكتروني لاختبار باقتك السنوية:</p>", unsafe_allow_html=True)
+        user_email_input = st.sidebar.text_input("البريد الإلكتروني للتاجر:", value=st.session_state.current_session_email, key="saas_user_email_input_field")
         
-        # تصفية الحساب ومزامنة حالة الصلاحية الخاصة بالإيميل الحالي المعروض
+        # تصفية ومزامنة حالة الصلاحية البرمجية الخاصة بالإيميل المدون حالياً
         st.session_state.current_session_email = user_email_input.strip()
         if st.session_state.current_session_email not in st.session_state.saas_database:
             st.session_state.saas_database[st.session_state.current_session_email] = "🟢 نشط ومفعل حالياً"
@@ -141,7 +141,7 @@ def render_sidebar_helper():
             st.session_state.active_query = "متوسط الأرباح"
             st.session_state.cyber_v7_pro_query = ""
             
-        st.sidebar.markdown("<p style='color: #00ffcc; font-family: Cairo; font-size: 11px; text-align: right; margin:5px 0 0 0;'>🛡️ مركز القيادة والأمن Tكتيكي (المجموعة 3):</p>", unsafe_allow_html=True)
+        st.sidebar.markdown("<p style='color: #00ffcc; font-family: Cairo; font-size: 11px; text-align: right; margin:5px 0 0 0;'>🛡️ مركز القيادة والأمن التكتيكي (المجموعة 3):</p>", unsafe_allow_html=True)
         col5, col6 = st.sidebar.columns(2)
         with col5:
             if st.button("🏆 السلعة الذهبية"):
@@ -168,12 +168,12 @@ def render_sidebar_helper():
                 time.sleep(0.06)  
                 st.session_state.old_query = st.session_state.active_query
                 
-            # التحقق السحابي اللامركزي: إذا قمت بقفل حساب هذا الإيميل، يُحجب فوراً وتظهر البطاقة الحمراء بمتصفحه
+            # التحقق السحابي المتزامن لحجب الأدوات الـ 9 إذا كانت حالة الحساب مقفلة للتاجر
             if "🔒 تم قفل" in st.session_state.saas_database[st.session_state.current_session_email]:
                 response_placeholder.markdown(f"""
                     <div style="background: linear-gradient(135deg, #1c0202 0%, #3d0505 100%); border-right: 4px solid #ff3333; padding: 15px; border-radius: 10px; text-align: right; direction: rtl;">
                         <h4 style="color: #ff3333; font-family: 'Cairo'; font-size: 14px; margin:0; text-shadow: 0 0 5px #ff3333;">🚨 حجب الصلاحيات للحساب (SaaS Block):</h4>
-                        <p style="color: #ffffff; font-family: 'Cairo'; font-size: 12.5px; margin: 5px 0 0 0;">عذراً، البريد الإلكتروني [ <b>{st.session_state.current_session_email}</b> ] مقفل ومحجوب حالياً من الصلاحيات لعدم سداد الاشتراك السنوي لمتجر تاجر الإلكتروني v4.</p>
+                        <p style="color: #ffffff; font-family: 'Cairo'; font-size: 12.5px; margin: 5px 0 0 0;">عذراً، البريد الإلكتروني [ <b>{st.session_state.current_session_email}</b> ] مقفل ومحجوب حالياً لعدم سداد الاشتراك السنوي لمتجر تاجر الإلكتروني v4.</p>
                     </div>
                 """, unsafe_allow_html=True)
             else:
@@ -188,8 +188,8 @@ def render_data_insights(conn): pass
 def evaluate_logic_response(query, placeholder):
     conn = sqlite3.connect("invoices_master_v4.db")
     
-    # 1️⃣ زر تقرير الأرباح: 🌸 [وردي نيون + خلفية أرجوانية داكنة]
-    if query == "ميزانية الأرباح" or "ربح" in query or "مبيعات" in query or "حساب" in query:
+    # 1️⃣ زر تقرير الأرباح
+    if query == "ميزانية الأرباح" or "ربح" in query or "حساب" in query:
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
         count_inv = len(df_sales)
         if count_inv > 0:
@@ -206,7 +206,7 @@ def evaluate_logic_response(query, placeholder):
             """, unsafe_allow_html=True)
         else: placeholder.info("📊 لا توجد فواتير مسجلة حالياً لبدء التحليل المالي.")
         
-    # 2️⃣ زر جرد المخزن المطور: 💎 [جرد مفكك ومفصل لكل منتوج باسمه وقيمته الفردية بالـ SQL لـ صورتك الأولى]
+    # 2️⃣ زر جرد المخزن المطور (مفكك منتوج منتوج لـ صورتك الأولى)
     elif query == "جرد المخزن" or "مخزن" in query or "سلع" in query:
         df_stock = pd.read_sql("SELECT product_name, available_qty FROM store_stock", conn)
         if not df_stock.empty:
@@ -337,7 +337,7 @@ def evaluate_logic_response(query, placeholder):
             <div class="card-btn9" style="box-shadow: 0 0 15px #9900ff;">
                 <h4 style="color: #9900ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0; text-shadow: 0 0 8px #9900ff;">📅 مستشار أوقات ذروة نشاط زبائن المتجر الإلكتروني:</h4>
                 <p style="color: #ffffff; font-family: 'Cairo', sans-serif; font-size: 13px; margin: 0; line-height: 1.6;">
-                    • <b>مسح السلوك الميكانيكي للـ COD الجزائر:</b> يوضح التحليل الزمني أن ذروة طلب الزبائن تشتد بقوة بين <b>الساعة 8:00 مساءً والساعة 11:30 ليلاً</b>.<br>
+                    • <b>مسح السلوك الميكانيكي للـ COD الجزائر:</b> يوضح التحليل الزمني أن ذروةطلب الزبائن تشتد بقوة بين <b>الساعة 8:00 مساءً والساعة 11:30 ليلاً</b>.<br>
                     • <b>خطة الإعلانات الترويجية:</b> هذا هو الوقت الذهبي، وننصح بضخ ميزانية حملاتك الإعلانية في هذه الساعات لتعظيم الأرباح بـ <span style='color: #00fff0;'>DA</span>.
                 </p>
             </div>
@@ -353,27 +353,32 @@ def evaluate_logic_response(query, placeholder):
         """, unsafe_allow_html=True)
     conn.close()
 
-# 🚨 [تثبيت التحديث الشامل والعريض لمنع انضغاط الكلمات تماماً وتوسيع الأزرار لصورتك]:
+# 🚨 [تثبيت الجدار الأمني للحظر المركزي]: لوحة التحكم والتحويل تختفي تماماً عن متصفحات المشتركين الآخرين
 def render_saas_management_hub():
-    st.markdown("---")
-    st.markdown("<h3 style='color: #00fff0; font-family: Cairo; font-size: 18px; text-align: center; text-shadow: 0 0 10px #00fff0;'>⚙️ مركز التحكم والقيادة السيبرانية للمشتركين (SaaS Hub)</h3>", unsafe_allow_html=True)
-    
-    # قراءة الحساب الفعلي النشط حالياً في هذا المتصفح بشكل معزول ومستقل عن الأجهزة الأخرى
     active_email = st.session_state.current_session_email
-    active_status = st.session_state.saas_database[active_email]
     
-    st.markdown(f"""
-        <div style='background:#0a0a14; padding:15px; border-radius:10px; border:1px solid #00fff0; text-align:right; direction:rtl; margin-bottom:15px;'>
-            <span style='color:#00fff0; font-size:12px; font-weight:bold;'>📡 رادار كشف المشترك الحالي لاسلكياً:</span> [ <span style='color:#fff; font-family:monospace;'>{active_email}</span> ] 
-            ⬅️ <small style='color:#aaa;'>الوضعية الحالية بمتصفحه: </small><b style='color:#ff00ff;'>{active_status}</b>
-        </div>
-    """, unsafe_allow_html=True)
+    # 🛡️ شرط المقصلة السرية للمدير: اللوحة لا تظهر إلا إذا كان الحساب الحالي المفتوح هو بريدك الإداري الأساسي
+    if active_email == "daymaabdaalhmdllh@gmail.com":
+        st.markdown("---")
+        st.markdown("<h3 style='color: #00fff0; font-family: Cairo; font-size: 18px; text-align: center; text-shadow: 0 0 10px #00fff0;'>⚙️ مركز التحكم والقيادة السيبرانية للمشتركين (SaaS Hub)</h3>", unsafe_allow_html=True)
         
-    # 🚨 [إصلاح تصميم الأزرار المتقطعة]: وضع الأزرار بشكل منفرد وعريض على كامل مساحة الحاوية السفلية لمنع نقاط التقطيع (...) نهائياً
-    if st.button("🔒 حظر وقفل صلاحيات هذا الحساب بالكامل", key="lock_central_dynamic_saas_email"):
-        st.session_state.saas_database[active_email] = "🔒 تم قفل ومصادرة الصلاحيات"
-        st.success(f"🔒 تم حظر الإيميل [ {active_email} ] لاسلكياً بنجاح! شاشته محجوبة الآن بالكامل.")
+        active_status = st.session_state.saas_database[active_email]
         
-    if st.button("⚡ تنشيط وتفعيل باقة هذا الحساب فريش", key="activate_central_dynamic_saas_email"):
-        st.session_state.saas_database[active_email] = "🟢 نشط ومفعل حالياً"
-        st.success(f"⚡ تم تمديد وتنشيط باقة [ {active_email} ] ميكانيكياً بلمحة بصر!")
+        st.markdown(f"""
+            <div style='background:#0a0a14; padding:15px; border-radius:10px; border:1px solid #00fff0; text-align:right; direction:rtl; margin-bottom:15px;'>
+                <span style='color:#00fff0; font-size:12px; font-weight:bold;'>📡 رادار كشف المشترك الحالي لاسلكياً:</span> [ <span style='color:#fff; font-family:monospace;'>{active_email}</span> ] 
+                ⬅️ <small style='color:#aaa;'>الوضعية الحالية بمتصفحه: </small><b style='color:#ff00ff;'>{active_status}</b>
+            </div>
+        """, unsafe_allow_html=True)
+            
+        # تصميم عريض للأزرار يمنع انضغاط الكلمات تماماً كما طلبت في لقطة شاشتك
+        if st.button("🔒 حظر وقفل صلاحيات هذا الحساب بالكامل", key="lock_central_dynamic_saas_email"):
+            st.session_state.saas_database[active_email] = "🔒 تم قفل ومصادرة الصلاحيات"
+            st.success(f"🔒 تم حظر الإيميل [ {active_email} ] لاسلكياً بنجاح!")
+            
+        if st.button("⚡ تنشيط وتفعيل باقة هذا الحساب فريش", key="activate_central_dynamic_saas_email"):
+            st.session_state.saas_database[active_email] = "🟢 نشط ومفعل حالياً"
+            st.success(f"⚡ تم تمديد وتنشيط باقة [ {active_email} ] ميكانيكياً!")
+    else:
+        # إذا دخل أي بريد آخر (العملاء)، تظل لوحة الأدمن مخفية ومحجوبة تماماً عن عيونهم لحماية خصوصية سيرفرك
+        pass
