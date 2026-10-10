@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول: الهندسة البصرية المتقدمة وإصلاح أزرار التحكم (admin_panel.py)
+# الجزء الأول: الهندسة البصرية المتقدمة وتلوين الواجهات (admin_panel.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
@@ -23,7 +23,7 @@ st.markdown("""
         font-family: 'Cairo', sans-serif !important;
     }
     
-    /* [إصلاح المستطيلات البيضاء الحاسم]: طمس الخلفية البيضاء وجعل الأزرار داكنة ونيونية زجاجية */
+    /* إصلاح المستطيلات البيضاء الحاسم: طمس الخلفية البيضاء وجعل الأزرار داكنة ونيونية زجاجية */
     div[data-testid="stVerticalBlock"] button, div.stButton button, .stButton > button {
         width: 100% !important;
         min-height: 48px !important;
@@ -123,7 +123,7 @@ if not st.session_state.admin_authenticated:
                 st.error("🚨 محاولة دخول مشبوهة! تم تأمين قفل الخادم بنجاح.")
     st.stop()
 
-# 🚨 [ربط الخزانة المفتوحة]: تأسيس ومزامنة جدول كلمات سر المشتركين في قاعدة بيانات الأمان المستقلة
+# مزامنة وتأسيس جدول الـ Auth لقراءة المشتركين من المتصفحات الخارجية حياً
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
@@ -134,9 +134,6 @@ db_cursor.execute("""
         package TEXT
     )
 """)
-# حقن حسابك الإداري والتاجر الملتزم لعام 2026 بشكل تلقائي في الـ SQL
-db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة (65k)')")
-db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('test_merchant@saas.com', 'pass2026', '🟢 مفعّل ونشط', 'الباقة الاحترافية المتوسطة (45k)')")
 db_conn.commit()
 db_conn.close()
 # ========================================================
@@ -148,7 +145,7 @@ st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; tex
 st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600;'>الأنظمة مستقرة، ومتصلة بجدول التسجيل الحر لـ فيسبوك حياً وبدون تداخل.</p>", unsafe_allow_html=True)
 st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
 
-# قراءة إجمالي مداخيل الفواتير v4 لـ صورتك الأولى
+# قراءة إجمالي مداخيل الفواتير v4 لـ صورتك الأولى لفرز عوائد الـ DA
 try:
     conn = sqlite3.connect("invoices_master_v4.db")
     df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
@@ -159,7 +156,7 @@ except:
     total_platform_revenue = 4580000.00  
     total_invoices_count = 142
 
-# جلب قائمة طلبات التجار الجديدة حياً من خزانة الأمان
+# 🚨 [سحب السجلات الحية]: الاتصال وجلب كافة الحسابات المسجلة بالكامل دون فلاتر معطلة حياً لقراءة الإيميل الجديد لقصر الخطأ
 conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
 df_merchants = pd.read_sql("SELECT * FROM saas_users_auth", conn_vault)
 conn_vault.close()
@@ -199,14 +196,14 @@ if not df_merchants.empty:
         email = row["email"]
         status = row["status"]
         package = row["package"]
-        password = row["password"] # قراءة الباسورد الذي اختاره التاجر بنفسه لتطلع عليه لحمايته
+        password = row["password"]
         
         if "🟢" in status:
             card_class = "premium-card-cyan"
             badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"
             border_override = "border-right: 4px solid #00ff66 !important;"
-        elif "⏳" in status:
-            # 🚨 تلوين البطاقة باللون الأصفر النيوني التكتيكي المضيء لفرز الحسابات الجديدة فوراً كطلبك
+        elif "⏳" in status or "انتظار" in status:
+            # 🚨 [الحقن التكميلي الناجح]: فرز الحساب الجديد وإبرازه باللون الأصفر النيوني فور إرساله من العميل كطلبك
             card_class = "premium-card-pink"
             badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"
             border_override = "border-right: 4px solid #ffcc00 !important;"
@@ -228,7 +225,6 @@ if not df_merchants.empty:
         
         with col_act1:
             if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"activate_{email}"):
-                # قبول وتفعيل حساب التاجر حياً بجدول الأمان السحابي المشترك
                 conn = sqlite3.connect("saas_security_vault.db", timeout=10)
                 cursor = conn.cursor()
                 cursor.execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (email,))
@@ -240,7 +236,6 @@ if not df_merchants.empty:
                 
         with col_act2:
             if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"lock_{email}"):
-                # إطلاق المقصلة الرقمية لطرد وقفل حساب التاجر كلياً بالـ SQL عن بعد
                 conn = sqlite3.connect("saas_security_vault.db", timeout=10)
                 cursor = conn.cursor()
                 cursor.execute("UPDATE saas_users_auth SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,))
@@ -255,11 +250,8 @@ else:
     st.info("📡 رادار البحث فارغ، لا يوجد تجار مسجلين حالياً.")
 
 st.markdown("---")
-# زر تسجيل الخروج الآمن لمالك المنصة لقفل السيرفر وحمايته من المتطفلين
 if st.button("🚪 تسجيل الخروج الآمن وقفل لوحة القيادة العليا"):
     st.session_state.admin_authenticated = False
     st.success("🔒 تم قفل نظام السيرفر المركزي بنجاح وتأمين الحسابات. تحياتي يا سيادة المدير المحترم!")
     time.sleep(0.4)
     st.rerun()
-
-
