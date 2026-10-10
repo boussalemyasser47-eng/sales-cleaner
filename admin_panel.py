@@ -23,7 +23,7 @@ st.markdown("""
         font-family: 'Cairo', sans-serif !important;
     }
     
-    /* 🚨 [إصلاح المستطيلات البيضاء الحاسم]: طمس الخلفية البيضاء وجعل الأزرار داكنة ونيونية زجاجية */
+    /* إصلاح المستطيلات البيضاء الحاسم: طمس الخلفية البيضاء وجعل الأزرار داكنة ونيونية زجاجية */
     div[data-testid="stVerticalBlock"] button, div.stButton button, .stButton > button {
         width: 100% !important;
         min-height: 48px !important;
@@ -55,7 +55,7 @@ st.markdown("""
         transform: translateY(-2px) !important;
     }
     
-    /* 🚨 تخصيص زر الحظر ليكون بإطار وردي نيون مضيء ويتناسق مع صورتك تماماً */
+    /* تخصيص زر الحظر ليكون بإطار وردي نيون مضيء ويتناسق مع صورتك تماماً */
     div.stButton button[key*="lock"] {
         border: 2px solid #ff00ff !important;
         box-shadow: 0px 0px 12px rgba(255, 0, 255, 0.3) !important;
@@ -66,7 +66,7 @@ st.markdown("""
         box-shadow: 0px 0px 22px #ff00ff !important;
     }
     
-    /* [تصميم البطاقة الوردية المشعة]: تأثير زجاجي نيون فاخر للأرباح بـ DA */
+    /* تصميم البطاقة الوردية المشعة: تأثير زجاجي نيون فاخر للأرباح بـ DA */
     .premium-card-pink {
         background: linear-gradient(135deg, rgba(25, 4, 34, 0.65) 0%, rgba(15, 2, 20, 0.85) 100%) !important;
         border: 2px solid #ff00ff !important;
@@ -79,7 +79,7 @@ st.markdown("""
         backdrop-filter: blur(10px) !important;
     }
     
-    /* [تصميم البطاقة الفيروزية المشعة]: تأثير زجاجي نيون للمخازن والمشتركين */
+    /* تصميم البطاقة الفيروزية المشعة: تأثير زجاجي نيون للمخازن والمشتركين */
     .premium-card-cyan {
         background: linear-gradient(135deg, rgba(4, 25, 34, 0.65) 0%, rgba(2, 14, 20, 0.85) 100%) !important;
         border: 2px solid #00fff0 !important;
@@ -96,18 +96,20 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: بوابة التحقق وشاشة الدخول المقفلة (admin_panel.py)
+# الجزء الثاني: بوابة التحقق وشاشة الدخول المقفلة المصلحة (admin_panel.py)
 # ========================================================
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
 
-if "admin_authenticated" not in st.session_state: st.session_state.admin_authenticated = False
+if "admin_authenticated" not in st.session_state: 
+    st.session_state.admin_authenticated = False
 
 # شاشة الدخول الاحترافية المقفلة
 if not st.session_state.admin_authenticated:
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 60px; text-shadow: 0 0 15px #00fff0;'>🔒 غرفة القيادة والسيادة الكبرى للمنصة</h1>", unsafe_allow_html=True)
     
-    _, col_login, _ = st.columns()
+    # 🚨 [الإصلاح الهندسي لتطهير الخطأ الأحمر]: تحديد مصفوفة تقسيم الأعمدة بدقة داخل الأقواس
+    col_left, col_login, col_right = st.columns([1, 2, 1])
     with col_login:
         st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#fff; text-align:center; margin:0 0 15px 0;'>تسجيل الدخول الإداري المعزول</h3>", unsafe_allow_html=True)
@@ -121,7 +123,8 @@ if not st.session_state.admin_authenticated:
                 st.success("⚡ تم التحقق من الهوية الرقمية بنجاح بنسبة 100%! جاري الدخول...")
                 time.sleep(0.4)
                 st.rerun()
-            else: st.error("🚨 محاولة دخول مشبوهة! تم حظر الإدخل وتأمين قاعدة بيانات v4.")
+            else: 
+                st.error("🚨 محاولة دخول مشبوهة! تم حظر الإدخال وتأمين قاعدة بيانات v4.")
     st.stop()
 # ========================================================
 # الجزء الثالث: لوحة الإحصائيات الفاخرة وجرد السيرفر السحابي (admin_panel.py)
