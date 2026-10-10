@@ -280,6 +280,7 @@ def evaluate_logic_response(query, placeholder):
             """, unsafe_allow_html=True)
         else: placeholder.info("💰 لا توجد فواتير صادرة لتقييم المتوسط المالي.")
     # 7️⃣ رادار السلعة الذهبية الأكثر ربحاً لجميع التجار
+      # 7️⃣ رادار السلعة الذهبية الأكثر ربحاً لجميع التجار
     elif query == "السلعة الذهبية":
         df_invoices = pd.read_sql("SELECT product_name, SUM(final_total) as revenue FROM v4_customer_invoices GROUP BY product_name ORDER BY revenue DESC LIMIT 1", conn)
         if not df_invoices.empty:
@@ -313,7 +314,7 @@ def evaluate_logic_response(query, placeholder):
             """, unsafe_allow_html=True)
 
     # 9️⃣ ساعات الذروة الشرائية للـ COD الجزائر
-    elif query == "ساعات الذروة":
+    elif query == "sاعات الذروة" or query == "ساعات الذروة":
         placeholder.markdown("""
             <div class="card-btn9" style="box-shadow: 0 0 15px #9900ff;">
                 <h4 style="color: #9900ff; font-family: 'Cairo', sans-serif; font-size: 14px; margin: 0 0 6px 0;">📅 مستشار أوقات ذروة نشاط زبائن المتجر الإلكتروني:</h4>
@@ -330,6 +331,13 @@ def evaluate_logic_response(query, placeholder):
             </div>
         """, unsafe_allow_html=True)
     conn.close()
+
+# 🚨 [الحقن التكتيكي الحاسم]: تعريف الدالات المفقودة لإنهاء خطأ الـ ImportError فوراً
+def render_marketing_hub():
+    pass
+
+def render_data_insights(conn=None):
+    pass
 
 def render_saas_management_hub():
     pass
