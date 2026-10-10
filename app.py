@@ -219,3 +219,6 @@ elif choice == "🚀 مولّد الحملات والتخطيط التسويقي
     render_marketing_hub()
 
 conne.close()
+# حقن دالة إدارة المشتركين لـ SaaS في نهاية الملف الرئيسي
+import ai_helper
+ai_helper.render_saas_management_hub()
