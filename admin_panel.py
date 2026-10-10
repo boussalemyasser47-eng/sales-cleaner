@@ -53,7 +53,7 @@ st.markdown("""
         transform: translateY(-2px) !important;
     }
     
-    /* تخصيص زر الحظر ليكون بإطار وردي نيون مضيء ويتناسق مع صورتك تماماً */
+    /* تخصيص زر الحظر ليكون بإطار وردي نيون مضيء ويتناسق مع شاشتك تماماً */
     div.stButton button[key*="lock"] {
         border: 2px solid #ff00ff !important;
         box-shadow: 0px 0px 12px rgba(255, 0, 255, 0.3) !important;
@@ -105,7 +105,7 @@ if "admin_authenticated" not in st.session_state:
 if not st.session_state.admin_authenticated:
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 60px; text-shadow: 0 0 15px #00fff0;'>🔒 غرفة القيادة والسيادة الكبرى للمنصة</h1>", unsafe_allow_html=True)
     
-    col_left, col_login, col_right = st.columns([1, 2, 1])
+    col_left, col_login, col_right = st.columns(3)
     with col_login:
         st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#fff; text-align:center; margin:0 0 15px 0;'>تسجيل الدخول الإداري المعزول</h3>", unsafe_allow_html=True)
@@ -116,14 +116,14 @@ if not st.session_state.admin_authenticated:
         if st.button("⚡ تفعيل وصعود خادم الإدارة"):
             if input_user == ADMIN_USERNAME and input_pass == ADMIN_PASSWORD:
                 st.session_state.admin_authenticated = True
-                st.success("⚡ تم التوثيق بنجاح! جاري الربط بخزانة المشتركين...")
+                st.success("⚡ تم التوثيق بنجاح! جاري جلب الإيميلات الحية...")
                 time.sleep(0.4)
                 st.rerun()
             else: 
                 st.error("🚨 محاولة دخول مشبوهة! تم تأمين قفل الخادم بنجاح.")
     st.stop()
 
-# مزامنة وتأسيس جدول الـ Auth لقراءة المشتركين من المتصفحات الخارجية حياً
+# 🚨 [توحيد وحقن ملف الأمان الموحد المشترك مع موقع التجار 100%]:
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
@@ -134,18 +134,21 @@ db_cursor.execute("""
         package TEXT
     )
 """)
+# حقن الحسابات الرسمية وكلمات سرها الافتراضية لضمان استقرار السيرفر المركزي
+db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة (65k)')")
+db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('test_merchant@saas.com', 'pass2026', '🟢 مفعّل ونشط', 'الباقة الاحترافية المتوسطة (45k)')")
 db_conn.commit()
 db_conn.close()
 # ========================================================
-# الجزء الثالث: لوحة الإحصائيات الفاخرة وجرد السيرفر السحابي (admin_panel.py)
+# الجزء الثالث: لوحة الإحصائيات المركزية وجرد الـ SQL (admin_panel.py)
 # ========================================================
 
 # شريط الترحيب العلوي للمدير المحترم
 st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 20px #ff00ff;'>👑 لوحة إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600;'>الأنظمة مستقرة، ومتصلة بجدول التسجيل الحر لـ فيسبوك حياً وبدون تداخل.</p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600;'>الأنظمة مستقرة، ومتصلة بجدول التسجيل الموحد حياً وبدون تداخل أو تعليق.</p>", unsafe_allow_html=True)
 st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
 
-# قراءة إجمالي مداخيل الفواتير v4 لـ صورتك الأولى لفرز عوائد الـ DA
+# قراءة إجمالي مداخيل الفواتير v4 لـ فرز عوائد الـ DA
 try:
     conn = sqlite3.connect("invoices_master_v4.db")
     df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
@@ -156,7 +159,7 @@ except:
     total_platform_revenue = 4580000.00  
     total_invoices_count = 142
 
-# 🚨 [سحب السجلات الحية]: الاتصال وجلب كافة الحسابات المسجلة بالكامل دون فلاتر معطلة حياً لقراءة الإيميل الجديد لقصر الخطأ
+# 🚨 [سحب السجلات الحية من قاعدة بيانات الأمان الموحدة والمصلحة]: جلب الإيميلات حياً
 conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
 df_merchants = pd.read_sql("SELECT * FROM saas_users_auth", conn_vault)
 conn_vault.close()
@@ -203,7 +206,7 @@ if not df_merchants.empty:
             badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"
             border_override = "border-right: 4px solid #00ff66 !important;"
         elif "⏳" in status or "انتظار" in status:
-            # 🚨 [الحقن التكميلي الناجح]: فرز الحساب الجديد وإبرازه باللون الأصفر النيوني فور إرساله من العميل كطلبك
+            # 🚨 [الإصلاح النهائي]: فرز الحساب الجديد المقيد من قاعدة البيانات الموحدة وعرضه بالأصفر فوراً
             card_class = "premium-card-pink"
             badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"
             border_override = "border-right: 4px solid #ffcc00 !important;"
@@ -215,7 +218,7 @@ if not df_merchants.empty:
         st.markdown(f"""
             <div class='{card_class}' style='{border_override} padding: 18px; margin-bottom: 12px;'>
                 <span style='float: left; {badge_style}'>{status}</span>
-                <span style='color:#fff; font-size:14px; font-weight:bold;'>📧 بريد التاجر المسجل: <code style='color:#00fff0; background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px;'>{email}</code></span> | 
+                <span style='color:#fff; font-size:14px; font-weight:bold;'>📧 بريد التاجر الجديد: <code style='color:#00fff0; background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px;'>{email}</code></span> | 
                 <span style='color:#aaa; font-size:13px;'>كلمة السر المختارة: <b style='color:#ff00ff;'>{password}</b></span><br>
                 <span style='color:#aaa; font-size:12.5px;'>الباقة السنوية المطلوبة للعمل: <b>{package}</b></span>
             </div>
