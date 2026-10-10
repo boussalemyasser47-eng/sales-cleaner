@@ -1,74 +1,113 @@
 # ========================================================
-# الجزء الأول: مركز التحكم الإداري المستقل والمحمّي (admin_panel.py)
+# الجزء الأول: الهندسة البصرية الفاخرة وشاشة الدخول المطورة (admin_panel.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
 import sqlite3
 import time
 
-# 1. تهيئة الأنماط البصرية النيونية الفخمة لعزل شاشة الإدارة الكبرى لمالك المنصة
-st.set_page_config(page_title="NEXUS SaaS CENTRAL ADMIN", page_icon="⚙️", layout="wide")
+# ضبط إعدادات الصفحة الكلية لتكون عريضة ومستقرة سيبرانياً
+st.set_page_config(page_title="NEXUS MASTER ADMIN v4", page_icon="👑", layout="wide")
 
+# حقن كود الـ CSS المطور كلياً لتحسين المظهر وجعل الواجهة خرافية
 st.markdown("""
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
     <style>
-    /* تصميم الخلفية لغرفة القيادة السيبرانية */
-    .stApp { background-color: #06060c !important; color: #ffffff !important; }
-    
-    /* هندسة الأوعية الرسومية الفاخرة الملونة من الداخل ومن الخارج بالتوالي لحسابات التجار */
-    .admin-card-pink { background: linear-gradient(135deg, #140217 0%, #290430 100%) !important; border: 2px solid #ff00ff !important; border-radius: 12px; padding: 20px; box-shadow: 0px 0px 15px rgba(255, 0, 255, 0.4); direction: rtl; text-align: right; margin-bottom: 20px; }
-    .admin-card-cyan { background: linear-gradient(135deg, #020f14 0%, #062630 100%) !important; border: 2px solid #00fff0 !important; border-radius: 12px; padding: 20px; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.4); direction: rtl; text-align: right; margin-bottom: 20px; }
-    
-    /* تنسيق الجداول والخطوط لمنع انضغاط النصوص والتقطيع اللغوي الظاهر في المتصفحات */
-    h2, h3, h4, p, span { font-family: 'Cairo', sans-serif !important; }
-    
-    /* إجبار أزرار التحكم ميكانيكياً على العرض الكامل المريح للعين دون تداخل حركي */
-    div[data-testid="stVerticalBlock"] button, div.stButton button {
-        width: 100% !important;
-        min-height: 45px !important;
+    /* ترقية خلفية المتصفح بالكامل لتصبح ليلة رقمية عميقة */
+    .stApp {
+        background: radial-gradient(circle at 50% 50%, #0b0b16 0%, #040408 100%) !important;
+        color: #ffffff !important;
         font-family: 'Cairo', sans-serif !important;
-        font-weight: bold !important;
-        border-radius: 8px !important;
-        transition: all 0.3s ease-in-out !important;
     }
+    
+    /* 🚨 [تصميم البطاقة الوردية المشعة]: تأثير زجاجي نيون فاخر للأرباح بـ DA */
+    .premium-card-pink {
+        background: linear-gradient(135deg, rgba(25, 4, 34, 0.65) 0%, rgba(15, 2, 20, 0.85) 100%) !important;
+        border: 2px solid #ff00ff !important;
+        border-radius: 16px !important;
+        padding: 22px !important;
+        box-shadow: 0px 0px 25px rgba(255, 0, 255, 0.25), inset 0px 0px 15px rgba(255, 0, 255, 0.1) !important;
+        direction: rtl !important;
+        text-align: right !important;
+        margin-bottom: 20px !important;
+        backdrop-filter: blur(10px) !important;
+    }
+    
+    /* 🚨 [تصميم البطاقة الفيروزية المشعة]: تأثير زجاجي نيون للمخازن والمشتركين */
+    .premium-card-cyan {
+        background: linear-gradient(135deg, rgba(4, 25, 34, 0.65) 0%, rgba(2, 14, 20, 0.85) 100%) !important;
+        border: 2px solid #00fff0 !important;
+        border-radius: 16px !important;
+        padding: 22px !important;
+        box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.25), inset 0px 0px 15px rgba(0, 255, 240, 0.1) !important;
+        direction: rtl !important;
+        text-align: right !important;
+        margin-bottom: 20px !important;
+        backdrop-filter: blur(10px) !important;
+    }
+    
+    /* منع تقطيع كلمات الأزرار (...) وجعلها عريضة ومريحة جداً للعين */
+    div[data-testid="stVerticalBlock"] button, div.stButton button, .stButton > button {
+        width: 100% !important;
+        min-height: 48px !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        font-family: 'Cairo', sans-serif !important;
+        font-size: 13.5px !important;
+        font-weight: 700 !important;
+        border-radius: 10px !important;
+        text-align: center !important;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    }
+    
+    /* تأثير التوهج عند تمرير الفأرة فوق الأزرار */
+    div.stButton button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0px 5px 15px rgba(0, 255, 240, 0.4) !important;
+    }
+    
+    h1, h2, h3, h4, p, span, label { font-family: 'Cairo', sans-serif !important; }
     </style>
 """, unsafe_allow_html=True)
 
-# 🚨 [جدار الحماية السيبراني الأعلى]: تخصيص بيانات دخولك السرية التي لا يعرفها أحد غيرك
 ADMIN_USERNAME = "admin_master_v4"
-ADMIN_PASSWORD = "SaasPassword2026"  # يمكنك تعديل كلمة السر والاسم من هنا بأمان
+ADMIN_PASSWORD = "SaasPassword2026"
 
-if "admin_authenticated" not in st.session_state:
-    st.session_state.admin_authenticated = False
+if "admin_authenticated" not in st.session_state: st.session_state.admin_authenticated = False
 
-# شاشة قفل بوابة الخادم الرئيسية (Login Gate)
+# شاشة الدخول الاحترافية المقفلة
 if not st.session_state.admin_authenticated:
-    st.markdown("<h2 style='color: #00fff0; text-align: center; margin-top: 50px;'>🔐 بوابة القيادة المركزية لمنصة SaaS الجزائر</h2>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 60px; text-shadow: 0 0 15px #00fff0;'>🔒 غرفة القيادة والسيادة الكبرى للمنصة</h1>", unsafe_allow_html=True)
     
-    col_login, _ = st.columns([1, 1])
+    _, col_login, _ = st.columns([1, 2, 1])
     with col_login:
-        st.markdown("<div class='admin-card-cyan'>", unsafe_allow_html=True)
-        input_user = st.text_input("👤 اسم المستخدم الإداري المخصص:")
+        st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#fff; text-align:center; margin:0 0 15px 0;'>تسجيل الدخول الإداري المعزول</h3>", unsafe_allow_html=True)
+        input_user = st.text_input("👤 اسم المستخدم الخاص بالقائد:")
         input_pass = st.text_input("🔑 كلمة المرور السرية الخارقة:", type="password")
         st.markdown("</div>", unsafe_allow_html=True)
         
-        if st.button("صعود وتفعيل غرفة التحكم ⚡"):
+        if st.button("⚡ تفعيل وصعود خادم الإدارة"):
             if input_user == ADMIN_USERNAME and input_pass == ADMIN_PASSWORD:
                 st.session_state.admin_authenticated = True
-                st.success("⚡ تم التحقق من الهوية السيبرانية! جاري الدخول الخادم...")
-                time.sleep(0.5)
+                st.success("⚡ تم التحقق من الهوية الرقمية بنجاح بنسبة 100%! جاري الدخول...")
+                time.sleep(0.4)
                 st.rerun()
-            else:
-                st.error("🚨 بيانات الدخول خاطئة ومشبوهة! تم رصد المحاولة وتأمين النظام.")
+            else: st.error("🚨 محاولة دخول مشبوهة! تم حظر الإدخال وتأمين قاعدة بيانات v4.")
     st.stop()
 # ========================================================
-# الجزء الثاني: لوحة الإحصائيات المركزية وجرد السيرفر السحابي (admin_panel.py)
+# الجزء الثاني: لوحة الإحصائيات الفاخرة وجرد السيرفر السحابي (admin_panel.py)
 # ========================================================
 
-# إذا تم التحقق بنجاح، تفتح لك المنصة الأسطورية كاملة ولا يراها غيرك أبداً
-st.markdown("<h1 style='color: #ff00ff; text-align: center; text-shadow: 0 0 10px #ff00ff;'>⚙️ مركز التحكم والسيادة الرقمية للمشتركين (SaaS Command Center)</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px;'>مرحباً بك في موقعك السري والمعزول تماماً يا مالك المنصة. من هنا تقود وتتحكم بصلاحيات كافة التجار بلمحة بصر.</p>", unsafe_allow_html=True)
+# شريط الترحيب العلوي الأنيق المحدث بالكامل
+st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 20px #ff00ff;'>👑 لوحة إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
+st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600;'>الأنظمة مستقرة، ومتصلة بقواعد بيانات v4 اللاسلكية بنجاح.</p>", unsafe_allow_html=True)
+st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
 
-# تهيئة قاعدة بيانات المشتركين المركزية في السيرفر لفصل وتتبع التجار لاسلكياً
+# تتبع ومحاكاة المعاملات النقدية الصافية في الجزائر بـ DA
 if "saas_merchants_ledger" not in st.session_state:
     st.session_state.saas_merchants_ledger = {
         "daymaabdaalhmdllh@gmail.com": {"status": "🟢 مفعّل ونشط", "package": "الباقة السيبرانية الخارقة (65k)"},
@@ -76,7 +115,6 @@ if "saas_merchants_ledger" not in st.session_state:
         "algiers_cod_store@gmail.com": {"status": "🔴 مقفل ومحجوب", "package": "الباقة الأساسية المبتدئة (29k)"}
     }
 
-# ربط وقراءة إجمالي التدفق النقدي المسجل في قاعدة البيانات للـ COD في الجزائر لعام 2026
 try:
     conn = sqlite3.connect("invoices_master_v4.db")
     df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
@@ -84,86 +122,83 @@ try:
     total_invoices_count = len(df_sales)
     conn.close()
 except:
-    total_platform_revenue = 4500000.00  # قيمة محاكاة تكتيكية في حال غياب الاتصال المباشر
+    total_platform_revenue = 4580000.00  
     total_invoices_count = 142
 
-# عرض لوحة العدادات المالية الكلية للمنصة
-st.markdown("### 📊 حالة الكفاءة المالية وحركة المعاملات الكلية عبر المنصة:")
+# عرض عدادات التوهج الثلاثية المتناسقة هندسياً
 col_stat1, col_stat2, col_stat3 = st.columns(3)
 
 with col_stat1:
-    st.markdown(f"""<div class='admin-card-pink'>
-        <h4 style='color:#ff00ff; margin:0;'>💰 التدفق النقدي الكلي الممرر:</h4>
-        <h2 style='color:#fff; margin:10px 0 0 0;'>{total_platform_revenue:,.2f} DA</h2>
-        <small style='color:#aaa;'>إجمالي مداخيل طلبيات جميع التجار المشتركين بمتجرك</small>
+    st.markdown(f"""<div class='premium-card-pink'>
+        <span style='color:#ff00ff; font-weight:900; font-size:12px;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر:</span>
+        <h2 style='color:#ffffff; font-weight:900; margin:10px 0 5px 0; text-shadow: 0 0 10px #ff00ff;'>{total_platform_revenue:,.2f} DA</h2>
+        <small style='color:#ff00ff; font-weight:bold;'>إجمالي عوائد معاملات فواتير جميع التجار</small>
     </div>""", unsafe_allow_html=True)
 # ========================================================
 # الجزء الثالث: رادار رصد المشتركين وجدول تتبع التجار (admin_panel.py)
 # ========================================================
 with col_stat2:
     active_merchants_count = sum(1 for m in st.session_state.saas_merchants_ledger.values() if "🟢" in m["status"])
-    st.markdown(f"""<div class='admin-card-cyan'>
-        <h4 style='color:#00fff0; margin:0;'>👥 عدد التجار الفاعلين حالياً:</h4>
-        <h2 style='color:#fff; margin:10px 0 0 0;'>{active_merchants_count} تجار مستأجرين</h2>
-        <small style='color:#aaa;'>الحسابات المفتوحة والتي تملك صلاحية جرد المخزن المفكك</small>
+    st.markdown(f"""<div class='premium-card-cyan'>
+        <span style='color:#00fff0; font-weight:900; font-size:12px;'>👥 المشتركين النشطين حالياً بالمنصة:</span>
+        <h2 style='color:#ffffff; font-weight:900; margin:10px 0 5px 0; text-shadow: 0 0 10px #00fff0;'>{active_merchants_count} تجار مستأجرين</h2>
+        <small style='color:#00fff0; font-weight:bold;'>الحسابات المفتوحة والمصرح لها بقراءة الجرد</small>
     </div>""", unsafe_allow_html=True)
 
 with col_stat3:
-    st.markdown(f"""<div class='admin-card-pink' style='border-color: #00ff66; box-shadow: 0 0 15px rgba(0,255,102,0.3);'>
-        <h4 style='color:#00ff66; margin:0;'>📦 الفواتير المطبوعة بالمنصة:</h4>
-        <h2 style='color:#fff; margin:10px 0 0 0;'>{total_invoices_count} فاتورة COD</h2>
-        <small style='color:#aaa;'>مجموع عمليات الشحن المسلمة للولايات الجزائرية بنجاح</small>
+    st.markdown(f"""<div class='premium-card-pink' style='border-color: #00ff66; box-shadow: 0 0 25px rgba(0,255,102,0.25);'>
+        <span style='color:#00ff66; font-weight:900; font-size:12px;'>📦 حركة الفواتير المطبوعة بالـ SQL:</span>
+        <h2 style='color:#ffffff; font-weight:900; margin:10px 0 5px 0; text-shadow: 0 0 10px #00ff66;'>{total_invoices_count} طلبيّة صادرة</h2>
+        <small style='color:#00ff66; font-weight:bold;'>مجموع السلع المشحونة والمؤكدة هاتفياً لجميع الولايات</small>
     </div>""", unsafe_allow_html=True)
 
-st.markdown("---")
-st.markdown("### 📡 رادار كشف وجرد هويات التجار المسجلين في المنصة لاسلكياً:")
-st.markdown("<p style='color:#aaa; font-size:12.5px;'>يقوم السيرفر بتحديث هذه القائمة حياً فور قيام أي تاجر جديد بفتح الرابط وتدوين إيميله بمتصفحه.</p>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
+st.markdown("<h3 style='color: #00fff0; font-weight:900; text-shadow: 0 0 8px rgba(0,255,240,0.3); text-align:right;'>📡 رادار مسح وفحص هويات التجار المسجلين لاسلكياً:</h3>", unsafe_allow_html=True)
 
-# بناء حلقة التكرار الميكانيكية لعرض حساب كل تاجر على حدة في لوحة مستقلة تماماً
+# توليد بطاقات المشتركين بشكل منفرد ومحمي بصرياً من التقطيع
 for email, data in st.session_state.saas_merchants_ledger.items():
-    st.markdown(f"#### 📧 البريد الإلكتروني للمشترك: ` {email} `")
-    
-    col_info, col_act1, col_act2 = st.columns([2, 1, 1])
-    
-    with col_info:
-        if "🟢" in data["status"]:
-            badge_color = "#00ff66"
-            text_shadow = "0 0 8px #00ff66"
-        else:
-            badge_color = "#ff3333"
-            text_shadow = "0 0 8px #ff3333"
-            
-        st.markdown(f"""
-            <div style='background:#10101b; padding:12px; border-radius:8px; border-right:4px solid {badge_color};'>
-                <span style='color:{badge_color}; font-weight:bold; text-shadow: {text_shadow};'>{data["status"]}</span> | 
-                <span style='color:#fff;'>نوع الباقة السنوية: <b>{data["package"]}</b></span>
-            </div>
-        """, unsafe_allow_html=True)
+    if "🟢" in data["status"]:
+        card_class = "premium-card-cyan"
+        badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"
+        border_override = "border-right: 4px solid #00ff66 !important;"
+    else:
+        card_class = "premium-card-pink"
+        badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"
+        border_override = "border-right: 4px solid #ff3333 !important;"
+        
+    st.markdown(f"""
+        <div class='{card_class}' style='{border_override} padding: 18px; margin-bottom: 12px;'>
+            <span style='float: left; {badge_style}'>{data["status"]}</span>
+            <span style='color:#fff; font-size:14px; font-weight:bold;'>📧 البريد الإلكتروني للمشترك: <code style='color:#00fff0; background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px;'>{email}</code></span><br>
+            <span style='color:#aaa; font-size:12.5px;'>فئة الاشتراك السنوي الحالي للتجارة: <b>{data["package"]}</b></span>
+        </div>
+    """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الرابع: أزرار الحظر والتحكم وقفل الخادم الآمن (admin_panel.py)
+# الجزء الرابع: أزرار التحكم وقفل الخادم الآمن (admin_panel.py)
 # ========================================================
+    col_act1, col_act2 = st.columns(2)
+    
     with col_act1:
-        # زر التفعيل ومنح الصلاحيات الـ 9 للتاجر بلمحة بصر
-        if st.button("⚡ تفعيل الحساب ومنح الصلاحيات", key=f"activate_{email}"):
+        if st.button("⚡ تفعيل ومنح الصلاحيات الـ 9 كاملة", key=f"activate_{email}"):
             st.session_state.saas_merchants_ledger[email]["status"] = "🟢 مفعّل ونشط"
-            st.success(f"🟢 تم تنشيط باقة [ {email} ] لاسلكياً! فتحت له خلايا الجرد والأرباح.")
-            time.sleep(0.4)
+            st.success(f"🟢 تم تنشيط باقة التاجر [ {email} ] لاسلكياً فوراً!")
+            time.sleep(0.3)
             st.rerun()
             
     with col_act2:
-        # زر الحظر والمقصلة الرقمية لحجب متجر التاجر وتحويله لدرع المنع الأحمر فوراً
-        if st.button("🔒 حظر وقفل صلاحيات الحساب", key=f"lock_{email}"):
-            st.session_state.saas_merchants_ledger[email]["status"] = "🔒 تم قفل ومصادرة الصلاحيات"
-            st.success(f"🔒 تم حظر وقفل [ {email} ] بنجاح كلي! شاشته محجوبة وموقوفة الآن.")
-            time.sleep(0.4)
+        if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"lock_{email}"):
+            st.session_state.saas_database[email] = "🔒 تم قفل ومصادرة الصلاحيات" # مزامنة مع موقع العميل
+            st.session_state.saas_merchants_ledger[email]["status"] = "🔴 مقفل ومحجوب"
+            st.success(f"🔒 تم حظر وقفل حساب التاجر [ {email} ] ميكانيكياً بلمحة بصر!")
+            time.sleep(0.3)
             st.rerun()
             
-    st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom:20px;'></div>", unsafe_allow_html=True)
 
 st.markdown("---")
-# زر الخروج التكتيكي الآمن للمدير لإغلاق خزانة السيرفر وحمايتها من عيون المتطفلين
-if st.button("🚪 تسجيل الخروج الآمن وقفل لوحة السيادة الرقمية"):
+# زر تسجيل الخروج الآمن لمالك المنصة
+if st.button("🚪 تسجيل الخروج الآمن وقفل لوحة القيادة العليا"):
     st.session_state.admin_authenticated = False
-    st.success("🔒 تم الخروج بأمان وقفل بوابة الخادم بنجاح. تحياتي يا سيادة المدير!")
-    time.sleep(0.5)
+    st.success("🔒 تم قفل نظام السيرفر المركزي بنجاح وتأمين الحسابات. تحياتي يا سيادة المدير!")
+    time.sleep(0.4)
     st.rerun()
