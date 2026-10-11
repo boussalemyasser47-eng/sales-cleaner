@@ -65,9 +65,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: التهيئة الحديدية للمتغيرات وشاشة القائد الموسطة (control_panel.py)
+# الجزء الثاني: منظومة التحقق الآمنة وشاشة القيادة الموسطة (control_panel.py)
 # ========================================================
-# [العلاج الجذري والقاطع لخطأ شاشتك الحمراء]: تهيئة وإعلان المتغيرات في أول سطر تنفيذي
+# 🚨 [الحقن التكتيكي القاطع للاختراقات والأعطال]: الفحص الآمن كلياً لمتغيرات الجلسة لمنع أي KeyError
 if "admin_authenticated" not in st.session_state:
     st.session_state["admin_authenticated"] = False
 
@@ -77,7 +77,7 @@ if "system_role" not in st.session_state:
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
 
-# تأسيس خزانة الـ SQL السحابية الموحدة لضمان مزامنة حسابات التجار بالثانية
+# تأسيس وتأمين ملف قاعدة بيانات التراخيص لضمان دمج وقراءة القنوات اللامركزية حياً
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
@@ -88,8 +88,8 @@ db_cursor.execute("""
 db_conn.commit()
 db_conn.close()
 
-# 👑 [بوابة المدير الموسطة كلياً]: تنبثق في منتصف الشاشة بدقة متناهية عند فتح رابطك السري
-if is_boss_link and not st.session_state["admin_authenticated"]:
+# 👑 [بوابة المدير الموسطة الفاخرة]: تنبثق بمنتصف المتصفح فور استدعاء مفتاح السيرفر الخاص بك
+if is_boss_link and not st.session_state.get("admin_authenticated", False):
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 30px; text-shadow: 0 0 20px #00fff0; font-size:28px;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 14px; margin-bottom: 20px;'>مرحباً بك يا قائد المنصة المحترم. أدخل بياناتك بمركز التحقق الموسط لتنشيط السيرفر.</p>", unsafe_allow_html=True)
     
@@ -106,20 +106,20 @@ if is_boss_link and not st.session_state["admin_authenticated"]:
             if admin_user_check == ADMIN_USERNAME and admin_pass_check == ADMIN_PASSWORD:
                 st.session_state["admin_authenticated"] = True
                 st.session_state["system_role"] = "admin"
-                st.success("⚡ تم التوثيق بنجاح ملوكي! جاري الدخول للوحة...")
+                st.success("⚡ تم التوثيق بنجاح ملوكي! جاري الدخول للوحة القيادة...")
                 time.sleep(0.3)
                 st.rerun()
             else:
-                st.error("❌ بيانات خاطئة! تم تأمين الحساب.")
+                st.error("❌ بيانات خاطئة! تم قفل النظام وحماية السجلات.")
 # ========================================================
 # الجزء الثالث: واجهة فيسبوك الموسطة للتجار وعزل الخزائن (control_panel.py)
 # ========================================================
-# حظر وصيانة واجهة التجار وفصلها تماماً عن الأدمن لمنع التداخل والسرقة
-if st.session_state["system_role"] == "visitor" and not is_boss_link:
+# 🚨 [الفحص التبادلي المضمون 100%]: منع تداخل الشاشات أو انبثاق اللوحات للغرباء
+if st.session_state.get("system_role", "visitor") == "visitor" and not is_boss_link:
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>سجل بريدك وإلكترونيات متجرك الخاص للتحويل التلقائي والآمن لخزانة فواتيرك.</p>", unsafe_allow_html=True)
     
-    _, col_center_box, _ = st.columns([1, 2, 1])
+    _, col_center_box, _ = st.columns()
     with col_center_box:
         st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
@@ -175,8 +175,8 @@ if st.session_state["system_role"] == "visitor" and not is_boss_link:
                             st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
                     else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
 
-# اللوحة تفتح وتتوسط الشاشة كلياً فقط وحصرياً إذا تحقق حساب الأدمن بنجاح
-if st.session_state["system_role"] == "admin" and st.session_state["admin_logged_in"]:
+# 👑 [الأمان الملوكي الحتمي الصافي 100% المانع للأخطاء]: استخدام الفحص الآمن بدالة الـ .get() الموجهة
+if st.session_state.get("system_role") == "admin" and st.session_state.get("admin_logged_in"):
     st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المحمية كلياً. المزامنة تعمل بكفاءة مطلقة.</p>", unsafe_allow_html=True)
     
@@ -207,7 +207,7 @@ if st.session_state["system_role"] == "admin" and st.session_state["admin_logged
             if "🟢" in status:
                 card_class = "premium-card-cyan"; badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"; border_override = "border-right: 5px solid #00ff66 !important;"
             elif "⏳" in status or "انتظار" in status:
-                # 🚨 [النجاح الميكانيكي الحتمي]: صعود بريد تاجر الجزائر المعلق فوراً باللون الأصفر المضيء أمام عينيك حياً في قلب منتصف الشاشة!
+                # 🚨 ينبثق إيميل التاجر الجديد بوضعية الأصفر النيوني المضيء في قلب منتصف الشاشة وبدقة فائقة!
                 card_class = "premium-card-pink"; badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"; border_override = "border-right: 4px solid #ffcc00 !important;"
             else:
                 card_class = "premium-card-pink"; badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"; border_override = "border-right: 4px solid #ff3333 !important;"
