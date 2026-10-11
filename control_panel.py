@@ -1,10 +1,11 @@
 # ========================================================
-# الجزء الأول: الهندسة البصرية المتقدمة وتلوين الواجهات الموسطة (control_panel.py)
+# الجزء الأول: الهندسة البصرية المتقدمة وتلوين واجهة القيادة الموسطة (control_panel.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
 import sqlite3
 import time
+import os
 
 # ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة ومحمية ومستقلة 100%
 st.set_page_config(page_title="NEXUS COMMAND CENTER v4", page_icon="👑", layout="wide")
@@ -63,23 +64,20 @@ st.markdown("""
 # ========================================================
 # الجزء الثاني: التهيئة النظيفة وصندوق تسجيل القائد الموسط (control_panel.py)
 # ========================================================
-# تهيئة وحقن متغيرات الجلسة مسبقاً وبشكل معزول كلياً لسحق عيوب الـ KeyError تماماً
+# تهيئة وحقن متغيرات الجلسة مسبقاً بشكل معزول كلياً لسحق عيوب الـ KeyError تماماً
 if "admin_authenticated" not in st.session_state: 
     st.session_state["admin_authenticated"] = False
 
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
 
-# تأسيس ومزامنة قاعدة بيانات الأمان الموحدة لاستقبال وقراءة الحسابات بالثانية
-db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-db_cursor = db_conn.cursor()
-db_cursor.execute("""
-    CREATE TABLE IF NOT EXISTS saas_users_auth (
-        email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT
-    )
-""")
-db_conn.commit()
-db_conn.close()
+# ربط وتثبيت مسار الخزانة التشاركية المشتركة مع واجهة التجار لقصر الخلل والأعطال
+VAULT_FILE = "merchants_vault.txt"
+
+# إنشاء الملف تلقائياً إذا لم يكن موجوداً مسبقاً لمنع أي خطأ قراءة سحابي
+if not os.path.exists(VAULT_FILE):
+    with open(VAULT_FILE, "w", encoding="utf-8") as f:
+        f.write("daymaabdaalhmdllh@gmail.com|123456|🟢 مفعّل ونشط|الباقة الخارقة\n")
 
 # 👑 [غرفة المالك الموسطة كلياً]: صعود الصندوق النيوني بمنتصف الصفحة فوراً وبشكل تلقائي مستقر
 if not st.session_state.get("admin_authenticated", False):
@@ -104,13 +102,13 @@ if not st.session_state.get("admin_authenticated", False):
             else:
                 st.error("❌ بيانات خاطئة! تم قفل السيرفر وتأمين الحسابات.")
 # ========================================================
-# الجزء الثالث: لوحة الإحصائيات المركزية وجرد الـ SQL (control_panel.py)
+# الجزء الثالث: لوحة الإحصائيات المركزية وجرد الـ TXT التشاركي (control_panel.py)
 # ========================================================
-# فتح لوحة القيادة المركزية كلياً بالمنتصف واختفاء شاشات الدخول التزامن الفوري
 if st.session_state.get("admin_authenticated", False):
     st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المعزولة كلياً لعام 2026.</p>", unsafe_allow_html=True)
     
+    # جلب التدفقات النقدية من قاعدة فواتير متجرك v4 لـ صورتك الأساسية
     try:
         conn = sqlite3.connect("invoices_master_v4.db")
         df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
@@ -120,32 +118,48 @@ if st.session_state.get("admin_authenticated", False):
     except: 
         total_platform_revenue = 4580000.00; total_invoices_count = 142
 
-    conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
-    df_merchants = pd.read_sql("SELECT * FROM saas_users_auth", conn_vault)
-    conn_vault.close()
+    # 🚨 [المزامنة التشاركية القاطعة]: جلب وقراءة كافة هويات التجار المسجلين من ملف الـ TXT الموحد حياً
+    merchants_list = []
+    active_count = 0
+    with open(VAULT_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                parts = line.strip().split("|")
+                if len(parts) >= 4:
+                    merchants_list.append({
+                        "email": parts[0],
+                        "password": parts[1],
+                        "status": parts[2],
+                        "package": parts[3]
+                    })
+                    if "🟢" in parts[2]:
+                        active_count += 1
 
     # عدادات الأرباح والتدفقات النقدية المحدثة بمنتصف المتصفح لـ فواتير الجزائر
     col_s1, col_v2, col_v3 = st.columns(3)
     with col_s1:
         st.markdown(f"<div class='premium-card-pink'><span style='color:#ff00ff; font-weight:900;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر:</span><h2 style='color:#fff; text-shadow: 0 0 10px #ff00ff; margin:10px 0 0 0;'>{total_platform_revenue:,.2f} DA</h2></div>", unsafe_allow_html=True)
     with col_v2:
-        active_count = len(df_merchants[df_merchants['status'].str.contains("🟢")]) if not df_merchants.empty else 0
         st.markdown(f"<div class='premium-card-cyan'><span style='color:#00fff0; font-weight:900;'>👥 المشتركين النشطين حالياً بالمنصة:</span><h2 style='color:#fff; text-shadow: 0 0 10px #00fff0; margin:10px 0 0 0;'>{active_count} تجار نشطين</h2></div>", unsafe_allow_html=True)
     with col_v3:
         st.markdown(f"<div class='premium-card-pink' style='border-color:#00ff66; box-shadow:0 0 20px rgba(0,255,102,0.2);'><span style='color:#00ff66; font-weight:900;'>📦 حركة الفواتير المطبوعة بالـ SQL:</span><h2 style='color:#fff; text-shadow: 0 0 10px #00ff66; margin:10px 0 0 0;'>{total_invoices_count} طلبيّة صادرة</h2></div>", unsafe_allow_html=True)
 # ========================================================
-# الجزء الرابع: رادار الموافقات وقفل الخادم المعزول (control_panel.py)
+# الجزء الرابع: رادار الموافقات التشاركي وقفل الخادم المعزول (control_panel.py)
 # ========================================================
     st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
     st.markdown("<h3 style='color: #00fff0; font-weight:900; text-shadow: 0 0 8px rgba(0,255,240,0.3); text-align:right;'>📡 رادار مسح طلبات التسجيل المفتوحة (SaaS Incoming Queue):</h3>", unsafe_allow_html=True)
 
-    if not df_merchants.empty:
-        for idx, row in df_merchants.iterrows():
-            email = row["email"]; status = row["status"]; package = row["package"]; password = row["password"]
+    if merchants_list:
+        for merchant in merchants_list:
+            email = merchant["email"]
+            status = merchant["status"]
+            package = merchant["package"]
+            password = merchant["password"] # كشف الرمز لتأكيده وحماية تجار الجزائر
+            
             if "🟢" in status:
                 card_class = "premium-card-cyan"; badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"; border_override = "border-right: 5px solid #00ff66 !important;"
             elif "⏳" in status or "انتظار" in status:
-                # 🚨 [الانبثاق الحتمي]: إيميل التاجر وباسورده يصعدان هنا فوراً وفي نفس اللحظة بالأصفر النيوني اللامع!
+                # 🚨 [الظهور الحتمي المضمون]: الإيميل الجديد المعلق ينبثق هنا بالأصفر النيوني فوراً وبأجزاء من الثانية!
                 card_class = "premium-card-pink"; badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"; border_override = "border-right: 4px solid #ffcc00 !important;"
             else:
                 card_class = "premium-card-pink"; badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"; border_override = "border-right: 4px solid #ff3333 !important;"
@@ -160,16 +174,39 @@ if st.session_state.get("admin_authenticated", False):
             """, unsafe_allow_html=True)
 
             col_act1, col_act2 = st.columns(2)
+            
             with col_act1:
                 if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"activate_{email}"):
-                    conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (email,)); conn.commit(); conn.close()
-                    st.success("🟢 تم قبول وتنشيط التاجر وبدء التحويل الآمن!"); time.sleep(0.3); st.rerun()
+                    # تحديث الحالة حياً في ملف الـ TXT التشاركي
+                    lines = []
+                    with open(VAULT_FILE, "r", encoding="utf-8") as f:
+                        lines = f.readlines()
+                    with open(VAULT_FILE, "w", encoding="utf-8") as f:
+                        for line in lines:
+                            if line.strip() and line.split("|")[0] == email:
+                                parts = line.strip().split("|")
+                                f.write(f"{parts[0]}|{parts[1]}|🟢 مفعّل ونشط|{parts[3]}\n")
+                            else:
+                                f.write(line)
+                    st.success("🟢 تم قبول وتنشيط التاجر وبدء النقل للموقع الأصلي!"); time.sleep(0.3); st.rerun()
+            
             with col_act2:
                 if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"lock_{email}"):
-                    conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,)); conn.commit(); conn.close()
+                    # تحديث الحظر حياً في ملف الـ TXT التشاركي
+                    lines = []
+                    with open(VAULT_FILE, "r", encoding="utf-8") as f:
+                        lines = f.readlines()
+                    with open(VAULT_FILE, "w", encoding="utf-8") as f:
+                        for line in lines:
+                            if line.strip() and line.split("|")[0] == email:
+                                parts = line.strip().split("|")
+                                f.write(f"{parts[0]}|{parts[1]}|🔒 تم قفل ومصادرة الصلاحيات|{parts[3]}\n")
+                            else:
+                                f.write(line)
                     st.success("🔒 تم طرد وقفل حساب التاجر سحابياً بنجاح كلي!"); time.sleep(0.3); st.rerun()
             st.markdown("<div style='margin-bottom:20px;'></div>", unsafe_allow_html=True)
-    else: st.info("📡 لا يوجد طلبات تسجيل حالياً بمركز الموافقات السحابية الموسطة.")
+    else:
+        st.info("📡 لا يوجد طلبات تسجيل حالياً بمركز الموافقات السحابية الموسطة.")
     
     if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر الموسط"):
         st.session_state["admin_authenticated"] = False; st.success("🔒 تم تأمين السيرفر الموسط بنجاح!"); time.sleep(0.3); st.rerun()
