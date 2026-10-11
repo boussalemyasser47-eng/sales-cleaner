@@ -67,7 +67,7 @@ st.markdown("""
 # ========================================================
 # الجزء الثاني: التهيئة الحديدية للمتغيرات وشاشة القائد الموسطة (control_panel.py)
 # ========================================================
-# تهيئة وحقن متغيرات الجلسة مسبقاً لمنع خطأ الـ KeyError والـ AttributeError نهائياً وسحق الصفحة السوداء
+# تهيئة وحقن متغيرات الجلسة مسبقاً لمنع خطأ الـ KeyError والـ AttributeError نهائياً وسحق الصفحة البيضاء
 if "admin_authenticated" not in st.session_state: 
     st.session_state["admin_authenticated"] = False
 
@@ -88,7 +88,7 @@ db_cursor.execute("""
 db_conn.commit()
 db_conn.close()
 
-# 👑 [تحقيق طلبك الحاسم وإبادة السواد]: صعود نموذج دخول الأدمن بمنتصف الصفحة حياً وبشكل تلقائي ومضمون
+# 👑 [بوابة المدير الموسطة الفاخرة]: تنبثق بمنتصف المتصفح فور استدعاء مفتاح السيرفر الخاص بك
 if is_boss_link and not st.session_state.get("admin_authenticated", False):
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 30px; text-shadow: 0 0 20px #00fff0; font-size:28px;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 14px; margin-bottom: 20px;'>مرحباً بك يا قائد المنصة المحترم. أدخل بياناتك بمركز التحقق الموسط لتنشيط السيرفر الكلي.</p>", unsafe_allow_html=True)
@@ -114,14 +114,15 @@ if is_boss_link and not st.session_state.get("admin_authenticated", False):
             else:
                 st.error("❌ بيانات خاطئة! تم تأمين قفل قاعدة البيانات بنجاح.")
 # ========================================================
-# الجزء الثالث: واجهة فيسبوك الموسطة للتجار وعزل البيانات (control_panel.py)
+# الجزء الثالث: واجهة فيسبوك الموسطة للتجار وإصلاح دالة الـ columns (control_panel.py)
 # ========================================================
 # شاشة التاجر تظهر فقط في حال تصفح الرابط العادي وبمعزل كلي عن غرف الإدارة لحماية الخصوصية
 if st.session_state.get("system_role", "visitor") == "visitor" and not is_boss_link:
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>سجل بريدك وإلكترونيات متجرك الخاص للتحويل التلقائي والآمن لخزانة فواتيرك.</p>", unsafe_allow_html=True)
     
-    _, col_center_box, _ = st.columns()
+    # 🚨 [الإصلاح التكتيكي القاطع لخطأ صورتك الأولى]: تحديد الرقم 3 بداخل دالة الأعمدة لتوسيط الحقل بنجاح
+    col_side_left, col_center_box, col_side_right = st.columns(3)
     with col_center_box:
         st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
@@ -209,7 +210,6 @@ if st.session_state.get("system_role") == "admin" and st.session_state.get("admi
             if "🟢" in status:
                 card_class = "premium-card-cyan"; badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"; border_override = "border-right: 5px solid #00ff66 !important;"
             elif "⏳" in status or "انتظار" in status:
-                # 🚨 ينبثق إيميل التاجر الجديد بوضعية الأصفر النيوني المضيء أمام عينيك حياً وفي قلب منتصف الصفحة تماماً بالثانية!
                 card_class = "premium-card-pink"; badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"; border_override = "border-right: 4px solid #ffcc00 !important;"
             else:
                 card_class = "premium-card-pink"; badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"; border_override = "border-right: 4px solid #ff3333 !important;"
