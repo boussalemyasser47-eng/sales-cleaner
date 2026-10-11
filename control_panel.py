@@ -6,14 +6,14 @@ import pandas as pd
 import sqlite3
 import time
 
-# ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة ملوكية فخمة
+# ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة ومحمية 100%
 st.set_page_config(page_title="NEXUS MASTER HQ v4", page_icon="👑", layout="wide")
 
 # 🚨 [جدار الحماية الشبح]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
 query_params = st.query_params
 is_boss_link = query_params.get("role") == "boss"
 
-# إخفاء السهم الجانبي والشريط تماماً بـ الـ CSS عن التجار والزبائن العاديين لمنع التجسس والسرقة
+# إخفاء السهم الجانبي والشريط تماماً بالـ CSS عن التجار والزبائن العاديين نهائياً
 st.markdown("""
     <style>
     [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] {
@@ -21,15 +21,22 @@ st.markdown("""
     }
     section[data-testid="stSidebar"] { display: none !important; visibility: hidden !important; }
     
+    /* ترقية خلفية المتصفح بالكامل لتصبح ليلة رقمية عميقة وعميقة البعد */
+    .stApp {
+        background: radial-gradient(circle at 50% 40%, #0d0d21 0%, #030307 100%) !important;
+        color: #ffffff !important;
+        font-family: 'Cairo', sans-serif !important;
+    }
+    
     /* 🚨 [إصلاح حاسم وتوسيط البطاقة]: ضبط أبعاد حقول الدخول بمنتصف الشاشة بدقة هندسية متناهية */
     .centered-box-container {
         max-width: 500px !important;
-        margin: 60px auto 20px auto !important;
+        margin: 40px auto 20px auto !important;
         padding: 35px !important;
-        background: linear-gradient(135deg, rgba(10, 10, 26, 0.65) 0%, rgba(5, 5, 12, 0.85) 100%) !important;
+        background: linear-gradient(135deg, rgba(10, 10, 26, 0.7) 0%, rgba(5, 5, 12, 0.9) 100%) !important;
         border: 2px solid #00fff0 !important;
         border-radius: 20px !important;
-        box-shadow: 0px 0px 30px rgba(0, 255, 240, 0.3), inset 0px 0px 15px rgba(0, 255, 240, 0.1) !important;
+        box-shadow: 0px 0px 35px rgba(0, 255, 240, 0.3), inset 0px 0px 15px rgba(0, 255, 240, 0.1) !important;
         direction: rtl !important;
         text-align: right !important;
         backdrop-filter: blur(12px) !important;
@@ -59,44 +66,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: شاشة الدخول الإدارية الموسطة بالكامل وتأسيس الـ SQL (control_panel.py)
+# الجزء الثاني: التهيئة الآمنة للجلسة وشاشة القائد الموسطة (control_panel.py)
 # ========================================================
-# تهيئة وحقن متغيرات الجلسة مسبقاً لمنع خطأ الـ KeyError والـ AttributeError نهائياً
-if "admin_authenticated" not in st.session_state: st.session_state.admin_authenticated = False
-if "system_role" not in st.session_state: st.session_state.system_role = "visitor"
+# التهيئة الحديدية الاستباقية لمنع خطأ الـ KeyError والـ AttributeError نهائياً وسحق الصفحة البيضاء
+if "admin_authenticated" not in st.session_state: 
+    st.session_state.admin_authenticated = False
+
+if "system_role" not in st.session_state: 
+    st.session_state.system_role = "visitor"
 
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
 
-# 👑 [توسيط حتمي وإملاء الفراغ الأسود]: الحقول والنموذج النيوني يصعدان بمنتصف الشاشة حياً
-if is_boss_link and not st.session_state.admin_authenticated:
-    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 30px; text-shadow: 0 0 20px #00fff0; font-size:28px;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 14px; margin-bottom: 20px;'>مرحباً بك يا قائد المنصة المحترم. أدخل بياناتك بمركز التحقق الموسط لتنشيط السيرفر الكلي.</p>", unsafe_allow_html=True)
-    
-    # بناء البطاقة الملوكية بمنتصف المتصفح وضخ الحقول بالداخل مباشرة لحل مشكلة الصفحة السوداء
-    st.markdown("<div class='centered-box-container'>", unsafe_allow_html=True)
-    st.markdown("<h3 style='color:#00fff0; text-align:center; font-weight:700; margin-top:0;'>🔑 تسجيل دخول المالك الأعلى</h3>", unsafe_allow_html=True)
-    
-    admin_user_check = st.text_input("👤 اسم المستخدم الخاص بالقائد:", value="", key="boss_username_field")
-    admin_pass_check = st.text_input("🔑 كلمة المرور الإدارية الخارقة:", type="password", value="", key="boss_password_field")
-    
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    # وضع زر التفعيل بشكل موسط ومتناسق
-    _, col_btn_center, _ = st.columns([1, 2, 1])
-    with col_btn_center:
-        if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="boss_submit_btn"):
-            if admin_user_check == ADMIN_USERNAME and admin_pass_check == ADMIN_PASSWORD:
-                st.session_state.admin_authenticated = True
-                st.session_state.system_role = "admin"
-                st.success("⚡ تم التوثيق بنجاح ملوكي! جاري تحويلك...")
-                time.sleep(0.3)
-                st.rerun()
-            else:
-                st.error("❌ بيانات خاطئة! تم تأمين قفل قاعدة البيانات بنجاح.")
-    st.stop() # إيقاف فوري يحمي الغرفة ويمنع تدحرج التجار للأسفل
-
-# مزامنة وتأسيس جدول الـ Auth لقراءة المشتركين من المتصفحات الخارجية حياً وبدون تداخل
+# تأسيس خزانة الـ SQL الموحدة داخل السيرفر لضمان مزامنة طلبات المشتركين الجدد حياً بالثانية
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
@@ -106,10 +88,36 @@ db_cursor.execute("""
 """)
 db_conn.commit()
 db_conn.close()
+
+# 👑 [بوابة القائد الموسطة كلياً]: تظهر لك فقط في حال فتح الرابط السري ولم تكن مسجلاً بعد
+if is_boss_link and not st.session_state.admin_authenticated:
+    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 30px; text-shadow: 0 0 20px #00fff0; font-size:28px;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 14px; margin-bottom: 20px;'>مرحباً بك يا قائد المنصة المحترم. أدخل بياناتك بمركز التحقق الموسط لتنشيط السيرفر الكلي.</p>", unsafe_allow_html=True)
+    
+    # ضخ الحقول داخل حاوية التوسيط الزجاجية مباشرة لمنع السواد والبياض
+    st.markdown("<div class='centered-box-container'>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#00fff0; text-align:center; font-weight:700; margin-top:0;'>🔑 تسجيل دخول المالك الأعلى</h3>", unsafe_allow_html=True)
+    
+    admin_user_check = st.text_input("👤 اسم المستخدم الخاص بالقائد:", value="", key="boss_username_field")
+    admin_pass_check = st.text_input("🔑 كلمة المرور الإدارية الخارقة:", type="password", value="", key="boss_password_field")
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    _, col_btn_center, _ = st.columns([1, 2, 1])
+    with col_btn_center:
+        if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="boss_submit_btn"):
+            if admin_user_check == ADMIN_USERNAME and admin_pass_check == ADMIN_PASSWORD:
+                st.session_state.admin_authenticated = True
+                st.session_state.system_role = "admin"
+                st.success("⚡ تم التوثيق بنجاح ملوكي! جاري صعود لوحة السيطرة...")
+                time.sleep(0.3)
+                st.st_rerun = st.rerun()
+            else:
+                st.error("❌ بيانات خاطئة! تم تأمين قفل قاعدة البيانات بنجاح.")
 # ========================================================
-# الجزء الثالث: واجهة فيسبوك الموسطة للتجار وعزل البيانات (control_panel.py)
+# الجزء الثالث: واجهة فيسبوك الموسطة للتجار وعزل الخزائن (control_panel.py)
 # ========================================================
-if st.session_state.system_role != "admin":
+# 🚨 [الحقن الشرطي الصافي 100% المانع للصفحات البيضاء والسوداء]:
+if st.session_state.system_role == "visitor" and not is_boss_link:
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>سجل بريدك وإلكترونيات متجرك الخاص للتحويل التلقائي والآمن لخزانة فواتيرك.</p>", unsafe_allow_html=True)
     
@@ -144,9 +152,7 @@ if st.session_state.system_role != "admin":
                     except sqlite3.IntegrityError:
                         st.error("🚨 هذا البريد الإلكتروني مسجل مسبقاً بالنظام! جرب خيار تسجيل الدخول.")
                     conn_reg.close()
-# ========================================================
-# الجزء الرابع: ميكانيكية التحويل ولوحة الموافقات الموسطة (control_panel.py)
-# ========================================================
+        
         elif auth_mode == "🔑 تسجيل الدخول للحساب الحالي":
             st.markdown("</div>", unsafe_allow_html=True)
             
@@ -160,7 +166,7 @@ if st.session_state.system_role != "admin":
                     conn_login.close()
                     
                     if db_row:
-                        user_status = db_row
+                        user_status = db_row[0]
                         if "⏳" in user_status or "انتظار" in user_status: st.warning("⏳ حسابك الحر مسجل، وهو قيد المراجعة حالياً من طرف الإدارة!")
                         elif "🔒" in user_status or "قفل" in user_status or "محجوب" in user_status: st.error("🚨 عذراً، هذا الحساب مقفل ومحجوب كلياً لعدم سداد الباقة السنوية!")
                         else:
@@ -168,10 +174,11 @@ if st.session_state.system_role != "admin":
                             time.sleep(0.4)
                             st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
                     else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
-    st.stop()
-
-# 👑 [الانقلاب الكامل والنجاح الموسط الحتمي]: صعود لوحة الموافقات بمنتصف الشاشة واختفاء الجنب تماماً
-if st.session_state.get("system_role") == "admin" and st.session_state.get("admin_logged_in"):
+# ========================================================
+# الجزء الرابع: لوحة التحكم الإدارية الموسطة وقفل السيرفر (control_panel.py)
+# ========================================================
+# اللوحة تفتح وتتوسط الشاشة كلياً فقط وحصرياً إذا تحقق حساب الأدمن بنجاح
+if st.session_state.system_role == "admin" and st.session_state.admin_logged_in:
     st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المحمية كلياً. المزامنة تعمل بكفاءة مطلقة.</p>", unsafe_allow_html=True)
     
@@ -183,7 +190,7 @@ if st.session_state.get("system_role") == "admin" and st.session_state.get("admi
     conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
     df_merchants = pd.read_sql("SELECT * FROM saas_users_auth", conn_vault); conn_vault.close()
 
-    # عدادات الأرباح والتدفقات النقدية المحدثة بالمنتصف
+    # عدادات الأرباح والتدفقات النقدية المحدثة بمنتصف المتصفح للـ COD بالجزائر
     col_s1, col_v2, col_v3 = st.columns(3)
     with col_s1:
         st.markdown(f"<div class='premium-card-pink'><span style='color:#ff00ff; font-weight:900;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر:</span><h2 style='color:#fff; text-shadow: 0 0 10px #ff00ff; margin:10px 0 0 0;'>{total_platform_revenue:,.2f} DA</h2></div>", unsafe_allow_html=True)
@@ -202,7 +209,7 @@ if st.session_state.get("system_role") == "admin" and st.session_state.get("admi
             if "🟢" in status:
                 card_class = "premium-card-cyan"; badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"; border_override = "border-right: 5px solid #00ff66 !important;"
             elif "⏳" in status or "انتظار" in status:
-                # 🚨 ينبثق إيميل التاجر الجديد بوضعية الأصفر النيوني المشع والمطور بصرياً في منتصف الصفحة تماماً بالثانية أمام عينيك حياً
+                # 🚨 البريد الإلكتروني الجديد ينبثق هنا فوراً بالأصفر النيوني المضيء في قلب منتصف الشاشة وبدقة فائقة!
                 card_class = "premium-card-pink"; badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"; border_override = "border-right: 4px solid #ffcc00 !important;"
             else:
                 card_class = "premium-card-pink"; badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"; border_override = "border-right: 4px solid #ff3333 !important;"
