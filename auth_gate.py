@@ -18,7 +18,7 @@ is_boss_link = query_params.get("role") == "boss" if "role" in query_params else
 st.markdown("""
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
     /* ترقية خلفية المتصفح بالكامل لتصبح ليلة رقمية عميقة وعميقة البعد */
@@ -73,6 +73,13 @@ st.markdown("""
 # ========================================================
 # الجزء الثاني: حقول مدخلات التجار وبناء جدول الـ SQL الموحد (auth_gate.py)
 # ========================================================
+# تهيئة ثوابت الهوية الإدارية الموحدة لغرفة القيادة العليا لمنع ثغرات الكاش
+ADMIN_USERNAME = "admin_master_v4"
+ADMIN_PASSWORD = "SaasPassword2026"
+
+if "admin_master_logged" not in st.session_state:
+    st.session_state["admin_master_logged"] = False
+
 # صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
@@ -127,7 +134,7 @@ if not is_boss_link:
                     except sqlite3.IntegrityError:
                         st.error("🚨 هذا البريد الإلكتروني مسجل مسبقاً بالنظام!")
                     conn_reg.close()
-        
+                    
         elif auth_mode == "🔑 تسجيل الدخول للحساب الحالي":
             st.markdown("</div>", unsafe_allow_html=True)
             if st.button("🔓 دخول آمن وتحويل للمستودع"):
@@ -140,7 +147,7 @@ if not is_boss_link:
                     conn_login.close()
                     
                     if db_row:
-                        user_status = db_row
+                        user_status = db_row[0]
                         if "⏳" in user_status or "انتظار" in user_status: st.warning("⏳ حسابك مسجل، وهو قيد المراجعة حالياً من طرف الإدارة!")
                         elif "🔒" in user_status or "قفل" in user_status or "محجوب" in user_status: st.error("🚨 عذراً، هذا الحساب مقفل ومحجوب كلياً لعدم الاشتراك السنوي!")
                         else:
@@ -149,56 +156,98 @@ if not is_boss_link:
                             st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
                     else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
 # ========================================================
-# الجزء الرابع: لوحة التحكم المركزية وقفل ومصادرة الصلاحيات (auth_gate.py)
+# الجزء الرابع: لوحة التحكم الإدارية المركزية وقفل السيرفر الموحد (auth_gate.py)
 # ========================================================
-# [النجاح الملوكي المطلق]: إذا وجد السيرفر المفتاح علوياً بالرابط، تفتح غرف التحكم فوراً بالمنتصف وتطمس الشاشة السوداء
+# اللوحة تفتح وتتوسط الشاشة كلياً فقط وحصرياً إذا تحقق وجود المعرّف الشبح بالرابط علوياً
 if is_boss_link:
-    st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المشتركة. المزامنة الفورية تعمل بكفاءة 100%.</p>", unsafe_allow_html=True)
-    
-    try:
-        conn = sqlite3.connect("invoices_master_v4.db")
-        df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn); total_platform_revenue = df_sales['final_total'].sum(); total_invoices_count = len(df_sales); conn.close()
-    except: total_platform_revenue = 4580000.00; total_invoices_count = 142
+    # تهيئة كاش الجلسة الإدارية لمنع الأخطاء العشوائية وتحصين الهوية الرقمية الأعلى
+    if "admin_master_logged" not in st.session_state:
+        st.session_state["admin_master_logged"] = False
 
-    conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
-    df_merchants = pd.read_sql("SELECT * FROM saas_users_auth", conn_vault); conn_vault.close()
+    # 1️⃣ جدار التحقق الموسط الشبح: يطالبك ببياناتك الإدارية أولاً ويقفل الغرفة عن المتطفلين
+    if not st.session_state["admin_master_logged"]:
+        st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 50px; text-shadow: 0 0 20px #00fff0; font-size:28px;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h1>", unsafe_allow_html=True)
+        
+        st.markdown("<div class='centered-box-container'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#00fff0; text-align:center; font-weight:700; margin-top:0;'>🔑 تسجيل دخول المالك الأعلى</h3>", unsafe_allow_html=True)
+        
+        input_boss_user = st.text_input("👤 اسم المستخدم الخاص بالقائد:", value="", key="vault_boss_user_field")
+        input_boss_pass = st.text_input("🔑 كلمة المرور الإدارية الخارقة:", type="password", value="", key="vault_boss_pass_field")
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        _, col_btn_lock_center, _ = st.columns(3)
+        with col_btn_lock_center:
+            if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="vault_boss_submit_btn"):
+                if input_boss_user.strip() == "admin_master_v4" and input_boss_pass.strip() == "SaasPassword2026":
+                    st.session_state["admin_master_logged"] = True
+                    st.success("⚡ تم التوثيق بنجاح ملوكي! جاري قراءة طلبات التجار...")
+                    time.sleep(0.3)
+                    st.rerun()
+                else:
+                    st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من الأحرف والرموز السريّة.")
+                    
+    # 2️⃣ فتح حجرة القيادة والسيادة الكبرى وعوائد الـ DA فور نجاح مطابقة بياناتك أعلاه
+    else:
+        st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك المشتركة. المزامنة تعمل بكفاءة مطلقة.</p>", unsafe_allow_html=True)
+        
+        try:
+            conn = sqlite3.connect("invoices_master_v4.db")
+            df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
+            total_platform_revenue = df_sales['final_total'].sum()
+            total_invoices_count = len(df_sales)
+            conn.close()
+        except: 
+            total_platform_revenue = 4580000.00; total_invoices_count = 142
 
-    col_s1, col_v2, col_v3 = st.columns(3)
-    with col_s1: st.markdown(f"<div class='premium-card-pink'><span style='color:#ff00ff; font-weight:900;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر:</span><h2 style='color:#fff; text-shadow: 0 0 10px #ff00ff; margin:10px 0 0 0;'>{total_platform_revenue:,.2f} DA</h2></div>", unsafe_allow_html=True)
-    with col_v2:
-        active_count = len(df_merchants[df_merchants['status'].str.contains("🟢")]) if not df_merchants.empty else 0
-        st.markdown(f"<div class='premium-card-cyan'><span style='color:#00fff0; font-weight:900;'>👥 المشتركين النشطين حالياً بالمنصة:</span><h2 style='color:#fff; text-shadow: 0 0 10px #00fff0; margin:10px 0 0 0;'>{active_count} تجار مستأجرين</h2></div>", unsafe_allow_html=True)
-    with col_v3: st.markdown(f"<div class='premium-card-pink' style='border-color:#00ff66; box-shadow:0 0 20px rgba(0,255,102,0.2);'><span style='color:#00ff66; font-weight:900;'>📦 حركة الفواتير المطبوعة بالـ SQL:</span><h2 style='color:#fff; text-shadow: 0 0 10px #00ff66; margin:10px 0 0 0;'>{total_invoices_count} طلبيّة صادرة</h2></div>", unsafe_allow_html=True)
+        conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
+        df_merchants = pd.read_sql("SELECT * FROM saas_users_auth", conn_vault)
+        conn_vault.close()
 
-    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
-    st.markdown("<h3 style='color: #00fff0; font-weight:900; text-shadow: 0 0 8px rgba(0,255,240,0.3); text-align:right;'>📡 رادار مسح طلبات التسجيل المفتوحة (SaaS Incoming Queue):</h3>", unsafe_allow_html=True)
+        col_s1, col_v2, col_v3 = st.columns(3)
+        with col_s1: st.markdown(f"<div class='premium-card-pink'><span style='color:#ff00ff; font-weight:900;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر:</span><h2 style='color:#fff; text-shadow: 0 0 10px #ff00ff; margin:10px 0 0 0;'>{total_platform_revenue:,.2f} DA</h2></div>", unsafe_allow_html=True)
+        with col_v2:
+            active_count = len(df_merchants[df_merchants['status'].str.contains("🟢")]) if not df_merchants.empty else 0
+            st.markdown(f"<div class='premium-card-cyan'><span style='color:#00fff0; font-weight:900;'>👥 المشتركين النشطين حالياً بالمنصة:</span><h2 style='color:#fff; text-shadow: 0 0 10px #00fff0; margin:10px 0 0 0;'>{active_count} تجار نشطين</h2></div>", unsafe_allow_html=True)
+        with col_v3: st.markdown(f"<div class='premium-card-pink' style='border-color:#00ff66; box-shadow:0 0 20px rgba(0,255,102,0.2);'><span style='color:#00ff66; font-weight:900;'>📦 حركة الفواتير المطبوعة بالـ SQL:</span><h2 style='color:#fff; text-shadow: 0 0 10px #00ff66; margin:10px 0 0 0;'>{total_invoices_count} طلبيّة صادرة</h2></div>", unsafe_allow_html=True)
 
-    if not df_merchants.empty:
-        for idx, row in df_merchants.iterrows():
-            email = row["email"]; status = row["status"]; package = row["package"]; password = row["password"]
-            if "🟢" in status: card_class = "premium-card-cyan"; badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"; border_override = "border-right: 5px solid #00ff66 !important;"
-            elif "⏳" in status or "انتظار" in status:
-                # 🚨 [الظهور اللحظي الفوري]: الإيميل الجديد boussalemyasser47 يصعد وينبثق بالأصفر اللامع فوراً وبأجزاء من الثانية!
-                card_class = "premium-card-pink"; badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"; border_override = "border-right: 4px solid #ffcc00 !important;"
-            else: card_class = "premium-card-pink"; badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"; border_override = "border-right: 4px solid #ff3333 !important;"
+        st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: #00fff0; font-weight:900; text-shadow: 0 0 8px rgba(0,255,240,0.3); text-align:right;'>📡 رادار مسح طلبات التسجيل المفتوحة (SaaS Incoming Queue):</h3>", unsafe_allow_html=True)
+
+        if not df_merchants.empty:
+            for idx, row in df_merchants.iterrows():
+                email = row["email"]; status = row["status"]; package = row["package"]; password = row["password"]
                 
-            st.markdown(f"""
-                <div class='{card_class}' style='{border_override} padding: 18px; margin-bottom: 15px;'>
-                    <span style='float: left; {badge_style}'>{status}</span>
-                    <span style='color:#fff; font-size:14.5px; font-weight:bold;'>📧 بريد التاجر الجديد: <code style='color:#00fff0; background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:6px;'>{email}</code></span> | 
-                    <span style='color:#aaa; font-size:13px;'>كلمة السر المختارة: <b style='color:#ff00ff;'>{password}</b></span><br>
-                    <span style='color:#aaa; font-size:12.5px;'>فئة الاشتراك المطلوبة للعمل: <b>{package}</b></span>
-                </div>
-            """, unsafe_allow_html=True)
+                if "🟢" in status:
+                    card_class = "premium-card-cyan"; badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"; border_override = "border-right: 5px solid #00ff66 !important;"
+                elif "⏳" in status or "انتظار" in status:
+                    card_class = "premium-card-pink"; badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"; border_override = "border-right: 4px solid #ffcc00 !important;"
+                else:
+                    card_class = "premium-card-pink"; badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"; border_override = "border-right: 4px solid #ff3333 !important;"
+                    
+                st.markdown(f"""
+                    <div class='{card_class}' style='{border_override} padding: 18px; margin-bottom: 15px;'>
+                        <span style='float: left; {badge_style}'>{status}</span>
+                        <span style='color:#fff; font-size:14.5px; font-weight:bold;'>📧 بريد التاجر الجديد: <code style='color:#00fff0; background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:6px;'>{email}</code></span> | 
+                        <span style='color:#aaa; font-size:13px;'>كلمة السر المختارة: <b style='color:#ff00ff;'>{password}</b></span><br>
+                        <span style='color:#aaa; font-size:12.5px;'>فئة الاشتراك المطلوبة للعمل: <b>{package}</b></span>
+                    </div>
+                """, unsafe_allow_html=True)
 
-            col_act1, col_act2 = st.columns(2)
-            with col_act1:
-                if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"activate_{email}"):
-                    conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (email,)); conn.commit(); conn.close()
-                    st.success("🟢 تم قبول وتنشيط التاجر وبدء التحويل الآمن!"); time.sleep(0.3); st.rerun()
-            with col_act2:
-                if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"lock_{email}"):
-                    conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,)); conn.commit(); conn.close()
-                    st.success("🔒 تم طرد وقفل حساب التاجر سحابياً بنجاح كلي!"); time.sleep(0.3); st.rerun()
-    else: st.info("📡 رادار البحث فارغ، لا يوجد طلبات تسجيل حالياً.")
+                col_act1, col_act2 = st.columns(2)
+                with col_act1:
+                    if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"activate_{email}"):
+                        conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (email,)); conn.commit(); conn.close()
+                        st.success("🟢 تم قبول وتنشيط التاجر وبدء التحويل الآمن!"); time.sleep(0.3); st.rerun()
+                with col_act2:
+                    if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"lock_{email}"):
+                        conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,)); conn.commit(); conn.close()
+                        st.success("🔒 تم طرد وقفل حساب التاجر سحابياً بنجاح كلي!"); time.sleep(0.3); st.rerun()
+        else:
+            st.info("📡 رادار البحث فارغ، لا يوجد طلبات تسجيل حالياً بمركز الموافقات السحابية الموسطة.")
+            
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر الموسط والخزائن"):
+            st.session_state["admin_master_logged"] = False
+            st.success("🔒 تم تأمين وقفل السيرفر بنجاح ملوكي!")
+            time.sleep(0.3); st.rerun()
