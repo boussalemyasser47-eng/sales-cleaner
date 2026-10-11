@@ -2,9 +2,8 @@
 # الجزء الأول: الهندسة البصرية المتقدمة وتلوين واجهة التجار (auth_gate.py)
 # ========================================================
 import streamlit as st
-import requests
-import json
 import time
+import os
 
 # ضبط إعدادات الصفحة الكلية لتكون واجهة دخول ملوكية موسطة ونظيفة
 st.set_page_config(page_title="NEXUS SaaS GATEWAY v4", page_icon="🔐", layout="wide")
@@ -66,7 +65,7 @@ st.markdown("""
         transform: translateY(-3px) !important;
     }
     
-    /* تخصيص مستطيلات مدخلات الكتابة باللون الوردي والأبيض الفخم لمنع التداخل وعلامة visibility */
+    /* تخصيص مستطيلات مدخلات الكتابة باللون الوردي والأبيض الفخم لمنع التداخل */
     div[data-testid="stTextInput"] input { 
         border: 2px solid #ff00ff !important; 
         background-color: #080811 !important; 
@@ -81,10 +80,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: حقول مدخلات التجار وربط جوجل السحابي (auth_gate.py)
+# الجزء الثاني: حقول مدخلات التجار وتثبيت مسار التخزين الموحد (auth_gate.py)
 # ========================================================
-# 🔗 [المفتاح السحابي الموحد المشترك]: رابط قاعدة بيانات جوجل فايربيس الرسمية والآمنة لتأمين مشروعك
-FIREBASE_URL = "https://firebaseio.com"
+# اسم ملف التخزين التشاركي الموحد والثابت داخل نفس مجلد المشروع لضمان نقل البيانات الفوري
+VAULT_FILE = "merchants_vault.txt"
+
+# إنشاء الملف تلقائياً إذا لم يكن موجوداً مسبقاً لمنع أي خطأ قراءة
+if not os.path.exists(VAULT_FILE):
+    with open(VAULT_FILE, "w", encoding="utf-8") as f:
+        f.write("daymaabdaalhmdllh@gmail.com|123456|🟢 مفعّل ونشط|الباقة الخارقة\n")
 
 st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 30px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
 st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>قم بإنشاء حسابك الخاص بكلمة سر من إرادتك، وسجل دخولك للتحويل التلقائي والآمن لمتجرك الفواتيري.</p>", unsafe_allow_html=True)
@@ -99,14 +103,10 @@ st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>
 input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em_gate")
 input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw_gate")
 
-# تنظيف وحماية المدخلات من الفراغات المشوهة
 clean_email = input_email.strip()
 clean_pass = input_password.strip()
-
-# تجهيز معرّف أمن مشفر لـ بايثون لاستخدامه كـ مفتاح للـ SQL السحابي (تطهير النقاط لحماية بنية جيسون)
-safe_key = clean_email.replace(".", "_").replace("@", "_")
 # ========================================================
-# الجزء الثالث: معالجة ضخ طلبات التسجيل السحابية الحية (auth_gate.py)
+# الجزء الثالث: معالجة حقن طلبات التسجيل وحظر التكرار (auth_gate.py)
 # ========================================================
 if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
     user_package_choice = st.selectbox("اختر فئة الباقة السنوية لمتجرك للعمل:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
@@ -118,26 +118,23 @@ if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
             if clean_email == "" or clean_pass == "":
                 st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً من اختيارك!")
             else:
-                # 🚀 [الطيران السحابي]: التحقق أولاً إذا كان الحساب موجود مسبقاً في سيرفر جوجل فايربيس
-                check_response = requests.get(f"{FIREBASE_URL}/users/{safe_key}.json")
-                if check_response.status_code == 200 and check_response.json() is not None:
-                    st.error("🚨 هذا البريد الإلكتروني مسجل مسبقاً بالنظام السحابي! جرب خيار تسجيل الدخول.")
+                # التحقق الحاسم من عدم تكرار الحساب داخل ملف الأمان المشترك
+                email_exists = False
+                with open(VAULT_FILE, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if line.strip() and line.split("|")[0] == clean_email:
+                            email_exists = True
+                            break
+                
+                if email_exists:
+                    st.error("🚨 هذا البريد الإلكتروني مسجل مسبقاً بالنظام! جرب خيار تسجيل الدخول.")
                 else:
-                    # تجهيز باقة البيانات بصيغة JSON النقية لضخها في السحاب حياً
-                    user_data = {
-                        "email": clean_email,
-                        "password": clean_pass,
-                        "status": "⏳ في انتظار التفعيل",
-                        "package": user_package_choice
-                    }
-                    # ضخ البيانات لاسلكياً بالثانية لتطير فوراً إلى لوحة تحكمك السرية
-                    post_response = requests.put(f"{FIREBASE_URL}/users/{safe_key}.json", data=json.dumps(user_data))
-                    if post_response.status_code == 200:
-                        st.success("✅ تم تسجيل حسابك الحر بنجاح أسطوري! طارت معلوماتك للإدارة وبانتظار تفعيل باقتك السنوية حياً حالياً.")
-                    else:
-                        st.error("🚨 عطل مؤقت في شبكة الاتصال اللاسلكية لجوجل السحابية، أعد المحاولة!")
+                    # حقن العميل حياً بداخل مسار التخزين الموحد بصيغة معزولة لحين مراجعته وقبوله من طرفك
+                    with open(VAULT_FILE, "a", encoding="utf-8") as f:
+                        f.write(f"{clean_email}|{clean_pass}|⏳ في انتظار التفعيل|{user_package_choice}\n")
+                    st.success("✅ تم تسجيل حسابك الحر بنجاح! طارت معلوماتك للإدارة وبانتظار تفعيل باقتك السنوية حياً.")
 # ========================================================
-# الجزء الرابع: التوثيق السحابي والمصادقة والتحويل الآلي (auth_gate.py)
+# الجزء الرابع: التوثيق والمصادقة والتحويل الآلي للمستودع (auth_gate.py)
 # ========================================================
 elif auth_mode == "🔑 تسجيل الدخول للحساب الحالي":
     st.markdown("</div>", unsafe_allow_html=True)
@@ -148,23 +145,31 @@ elif auth_mode == "🔑 تسجيل الدخول للحساب الحالي":
             if clean_email == "" or clean_pass == "": 
                 st.error("⚠️ يرجى كتابة البريد وكلمة السر أولاً!")
             else:
-                # 🚀 جلب البيانات وقراءتها لاسلكياً من سيرفر جوجل فايربيس حياً وفي نفس الثانية
-                login_response = requests.get(f"{FIREBASE_URL}/users/{safe_key}.json")
-                if login_response.status_code == 200 and login_response.json() is not None:
-                    cloud_data = login_response.json()
-                    
-                    # التحقق القاطع من مطابقة الباسورد الحر الذي اختاره التاجر بنفسه
-                    if cloud_data["password"] == clean_pass:
-                        user_status = cloud_data["status"]
-                        
+                # قراءة ومصادقة هويات التجار من ملف الأمان التشاركي الموحد بالثانية
+                account_found = False
+                user_status = ""
+                user_password_cloud = ""
+                
+                with open(VAULT_FILE, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if line.strip():
+                            parts = line.strip().split("|")
+                            if parts[0] == clean_email:
+                                account_found = True
+                                user_password_cloud = parts[1]
+                                user_status = parts[2]
+                                break
+                
+                if account_found:
+                    if user_password_cloud == clean_pass:
                         if "⏳" in user_status or "انتظار" in user_status:
-                            st.warning("⏳ حسابك الحر مسجل، وهو قيد المراجعة حالياً من طرف الإدارة! يرجى التواصل مع المدير لتنشيط باقتك السنوية.")
+                            st.warning("⏳ حسابك مسجل، وهو قيد المراجعة حالياً من طرف الإدارة! يرجى التواصل مع المدير لتنشيط باقتك.")
                         elif "🔒" in user_status or "قفل" in user_status or "محجوب" in user_status:
                             st.error("🚨 عذراً، هذا الحساب مقفل ومحجوب كلياً لعدم سداد الاشتراك السنوي للمنصة!")
                         else:
-                            st.success("⚡ تم التوثيق بنجاح ملوكي! جاري تحويلك تلقائياً لمتجر فواتير الجزائر ومستودع الـ AI الصافي...")
+                            st.success("⚡ تم التوثيق بنجاح ملوكي! جاري تحويلك تلقائياً لمتجر فواتير الجزائر والمستودع الصافي...")
                             time.sleep(0.4)
-                            # 🚨 [التحويل التلقائي والربط السري للمنصة]: نقل متصفحه تلقائياً لمتجرك ومستودع الفواتير الصافي بـ DA
+                            # التحويل التلقائي والربط السري لمتجرك الإلكتروني الفعلي لـ الجزائر
                             st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
                     else:
                         st.error("❌ كلمة المرور السرية غير مطابقة لملف الأمان السحابي!")
