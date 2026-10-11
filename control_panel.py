@@ -31,14 +31,13 @@ st.markdown("""
     <link href="https://googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
-    /* ترقية خلفية المتصفح بالكامل لتصبح ليلة رقمية عميقة وعميقة البعد */
     .stApp {
         background: radial-gradient(circle at 50% 40%, #0d0d21 0%, #030307 100%) !important;
         color: #ffffff !important;
         font-family: 'Cairo', sans-serif !important;
     }
     
-    /* [إصلاح حاسم وتوسيط الحاوية]: ضبط أبعاد صناديق الدخول في منتصف الشاشة بدقة متناهية */
+    /* 🚨 [تصميم الحاوية الموسطة]: ضبط أبعاد صناديق الدخول في منتصف الشاشة بدقة متناهية بالبكسل */
     .centered-login-box {
         max-width: 500px !important;
         margin: 0 auto !important;
@@ -52,95 +51,46 @@ st.markdown("""
         backdrop-filter: blur(12px) !important;
     }
     
-    /* تصميم البطاقة الوردية المشعة: تأثير زجاجي شفاف نيون فاخر للطلبات والتحذيرات بـ DA */
     .premium-card-pink {
         background: linear-gradient(135deg, rgba(34, 4, 46, 0.5) 0%, rgba(15, 2, 20, 0.8) 100%) !important;
-        border: 2px solid #ff00ff !important;
-        border-radius: 20px !important;
-        padding: 30px !important;
-        box-shadow: 0px 0px 30px rgba(255, 0, 255, 0.2), inset 0px 0px 20px rgba(255, 0, 255, 0.1) !important;
-        direction: rtl !important;
-        text-align: right !important;
-        margin-bottom: 25px !important;
-        backdrop-filter: blur(12px) !important;
+        border: 2px solid #ff00ff !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 30px rgba(255, 0, 255, 0.2) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(12px);
     }
-    
-    /* تصميم البطاقة الفيروزية المحدثة للمشتركين النشطين */
     .premium-card-cyan {
         background: linear-gradient(135deg, rgba(4, 32, 43, 0.5) 0%, rgba(2, 14, 20, 0.8) 100%) !important;
-        border: 2px solid #00fff0 !important;
-        border-radius: 20px !important;
-        padding: 30px !important;
-        box-shadow: 0px 0px 30px rgba(0, 255, 240, 0.2), inset 0px 0px 20px rgba(0, 255, 240, 0.1) !important;
-        direction: rtl !important;
-        text-align: right !important;
-        margin-bottom: 25px !important;
-        backdrop-filter: blur(12px) !important;
+        border: 2px solid #00fff0 !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 30px rgba(0, 255, 240, 0.2) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(12px);
     }
     
-    /* جعل أزرار التحكم داكنة ونيونية زجاجية مرئية 100% ونقية */
     div[data-testid="stVerticalBlock"] button, div.stButton button, .stButton > button {
-        width: 100% !important;
-        min-height: 50px !important;
-        white-space: normal !important;
-        word-wrap: break-word !important;
-        font-family: 'Cairo', sans-serif !important;
-        font-size: 14.5px !important;
-        font-weight: 800 !important;
-        border-radius: 12px !important;
-        text-align: center !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 12px 18px !important;
-        background: linear-gradient(135deg, #090915 0%, #040409 100%) !important;
-        color: #00fff0 !important;
-        border: 2px solid #00fff0 !important;
-        box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.3) !important;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        width: 100% !important; min-height: 50px !important; white-space: normal !important; word-wrap: break-word !important;
+        font-family: 'Cairo', sans-serif !important; font-size: 14.5px !important; font-weight: 800 !important; border-radius: 12px !important;
+        text-align: center !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
+        padding: 12px 18px !important; background: linear-gradient(135deg, #090915 0%, #040409 100%) !important; color: #00fff0 !important;
+        border: 2px solid #00fff0 !important; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.3) !important; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     }
-    
-    div.stButton button:hover {
-        background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important;
-        color: #000000 !important;
-        box-shadow: 0px 0px 25px #00fff0 !important;
-        transform: translateY(-3px) !important;
-    }
-    
-    /* تخصيص وتلوين مستطيلات مدخلات الكتابة */
-    div[data-testid="stTextInput"] input { 
-        border: 2px solid #ff00ff !important; 
-        background-color: #080811 !important; 
-        color: #ffffff !important; 
-        border-radius: 12px !important; 
-        padding: 15px 18px !important;
-        font-family: 'Cairo', sans-serif !important;
-        font-size: 14px !important;
-        box-shadow: 0px 0px 10px rgba(255, 0, 255, 0.1) !important;
-    }
-    
+    div.stButton button:hover { background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important; box-shadow: 0px 0px 25px #00fff0 !important; transform: translateY(-3px) !important; }
+    div[data-testid="stTextInput"] input { border: 2px solid #ff00ff !important; background-color: #080811 !important; color: #ffffff !important; border-radius: 12px !important; padding: 15px 18px !important; font-family: 'Cairo', sans-serif !important; font-size: 14px !important; }
     .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 { font-family: 'Cairo', sans-serif !important; color: #ffffff !important; }
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: التهيئة الآمنة للجلسة وتأسيس الـ SQL (control_panel.py)
+# الجزء الثاني: التهيئة الآمنة للجلسة وتأمين الدخول الموسط (control_panel.py)
 # ========================================================
-# [الإصلاح الجذري الحاسم لخطأ شاشتك الحمراء]: تهيئة وحقن متغيرات الجلسة مسبقاً قبل أي فحص شرطي
-if "admin_authenticated" not in st.session_state: 
+# تهيئة وحقن المتغيرات بشكل استباقي لمنع أي KeyError أو اعتراض في حاويات السحاب
+if "admin_authenticated" not in st.session_state:
     st.session_state.admin_authenticated = False
 
-if "system_role" not in st.session_state: 
+if "system_role" not in st.session_state:
     st.session_state.system_role = "visitor"
 
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
 
-# 👑 عرض واجهة تسجيل دخول الأدمن بمنتصف الصفحة بالكامل واختفاء شريط الجنب إذا استخدمت رابطك السري
+# 👑 [تحقيق طلبك الموسط المكتمل]: عرض واجهة تسجيل دخول الأدمن بمنتصف الصفحة بالكامل واختفاء السايدبار
 if is_boss_link and not st.session_state.admin_authenticated:
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 50px; text-shadow: 0 0 20px #00fff0; font-size:30px;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 14px; margin-bottom: 25px;'>مرحباً بك يا قائد المنصة. أدخل بياناتك بمركز التحقق لتفعيل السيرفر.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 14px; margin-bottom: 25px;'>مرحباً بك يا قائد المنصة. أدخل بياناتك بمركز التحقق لتفعيل السيرفر الموسط.</p>", unsafe_allow_html=True)
     
-    # حقن الصناديق في قلب منتصف المتصفح
+    # حقن الصناديق في قلب منتصف المتصفح لمنع تشوهات الجنب وكلمة visibility الزائدة
     st.markdown("<div class='centered-login-box'>", unsafe_allow_html=True)
     st.markdown("<h3 style='color:#00fff0; text-align:center; font-weight:700; margin-top:0;'>🔑 تسجيل دخول المالك الأعلى</h3>", unsafe_allow_html=True)
     
@@ -153,15 +103,15 @@ if is_boss_link and not st.session_state.admin_authenticated:
         if admin_user_check == ADMIN_USERNAME and admin_pass_check == ADMIN_PASSWORD:
             st.session_state.admin_authenticated = True
             st.session_state.system_role = "admin"
-            st.success("⚡ تم التوثيق بنجاح! جاري تحويلك فوراً إلى لوحة التحكم بمنتصف الشاشة...")
+            st.success("⚡ تم التوثيق بنجاح ملوكي! جاري صعود لوحة السيطرة الموسطة...")
             time.sleep(0.3)
             st.rerun()
         else:
             st.error("❌ بيانات خاطئة! تم تأمين قفل قاعدة البيانات السحابية بنجاح.")
     st.markdown("</div>", unsafe_allow_html=True)
-    st.stop()
+    st.stop() # إيقاف فوري آمن يحمي اللوحة ويمنع التدحرج لأسفل الكود
 
-# مزامنة وتأسيس جدول الـ Auth لقراءة المشتركين من المتصفحات الخارجية حياً وبدون تداخل
+# تأسيس خزانة الـ SQL الموحدة داخل نفس السيرفر لضمان مزامنة الإيميل بالثانية
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
@@ -174,6 +124,7 @@ db_conn.close()
 # ========================================================
 # الجزء الثالث: واجهة فيسبوك الموسطة للتجار وعزل البيانات (control_panel.py)
 # ========================================================
+# شاشة التاجر تظهر فقط إذا لم تكن أنت مسجل كأدمن، وتكون موسطة وخالية من السايدبار
 if st.session_state.system_role != "admin":
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>سجل بريدك وإلكترونيات متجرك الخاص للتحويل التلقائي والآمن لخزانة فواتيرك.</p>", unsafe_allow_html=True)
@@ -192,7 +143,7 @@ if st.session_state.system_role != "admin":
         clean_email = input_email.strip()
         clean_pass = input_password.strip()
         
-        if auth_mode == "📝 إنشاء حساب taجر جديد فريش" or auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
             user_package_choice = st.selectbox("اختر فئة الباقة السنوية لمتجرك:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
             st.markdown("</div>", unsafe_allow_html=True)
             
@@ -226,8 +177,8 @@ if st.session_state.system_role != "admin":
                     
                     if db_row:
                         user_status = db_row
-                        if "⏳" in user_status or "انتظار" in user_status: st.warning("⏳ حسابك الحر مسجل، وهو قيد المراجعة حالياً من طرف الإدارة!")
-                        elif "🔒" in user_status or "قفل" in user_status or "محجوب" in user_status: st.error("🚨 عذراً، هذا الحساب مقفل ومحجوب كلياً لعدم سداد الباقة السنوية!")
+                        if "⏳" in user_status or "انتظار" in user_status: st.warning("⏳ حسابك قيد المراجعة حالياً من طرف الإدارة!")
+                        elif "🔒" in user_status or "قفل" in user_status or "محجوب" in user_status: st.error("🚨 عذراً، هذا الحساب مقفل ومحجوب كلياً لعدم سداد الاشتراك السنوي!")
                         else:
                             st.success("⚡ تم التوثيق بنجاح! جاري تحويلك تلقائياً لمتجرك الأصلي والـ 9 ميزات...")
                             time.sleep(0.4)
@@ -235,10 +186,10 @@ if st.session_state.system_role != "admin":
                     else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
     st.stop()
 
-# فتح لوحة القيادة المركزية والمقصلة الرقمية للمشتركين إذا تحقق حساب الأدمن بنجاح
-if st.session_state.system_role == "admin" and st.session_state.admin_logged_in:
+# 👑 [الانقلاب الكامل والنجاح الموسط الحتمي]: صعود لوحة الموافقات بمنتصف الشاشة واختفاء الجنب تماماً
+if st.session_state.get("system_role") == "admin" and st.session_state.get("admin_logged_in"):
     st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المحمية كلياً. المزامنة تعمل بكفاءة بالغة.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المحمية كلياً. المزامنة تعمل بكفاءة مطلقة.</p>", unsafe_allow_html=True)
     
     try:
         conn = sqlite3.connect("invoices_master_v4.db")
@@ -248,7 +199,7 @@ if st.session_state.system_role == "admin" and st.session_state.admin_logged_in:
     conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
     df_merchants = pd.read_sql("SELECT * FROM saas_users_auth", conn_vault); conn_vault.close()
 
-    # تظهير عدادات التوهج الثلاثية المتناسقة زجاجياً للأرباح والطلبيات المحدثة بالمنتصف
+    # عدادات الأرباح والتدفقات النقدية المحدثة بالمنتصف
     col_s1, col_v2, col_v3 = st.columns(3)
     with col_s1:
         st.markdown(f"<div class='premium-card-pink'><span style='color:#ff00ff; font-weight:900;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر:</span><h2 style='color:#fff; text-shadow: 0 0 10px #ff00ff; margin:10px 0 0 0;'>{total_platform_revenue:,.2f} DA</h2></div>", unsafe_allow_html=True)
@@ -267,7 +218,7 @@ if st.session_state.system_role == "admin" and st.session_state.admin_logged_in:
             if "🟢" in status:
                 card_class = "premium-card-cyan"; badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"; border_override = "border-right: 5px solid #00ff66 !important;"
             elif "⏳" in status or "انتظار" in status:
-                # 🚨 [النجاح الميكانيكي الحتمي وبدقة 100%]: صعود بريد تاجر الجزائر المعلق فوراً باللون الأصفر المضيء أمام عينيك
+                # 🚨 [المعجزة الحركية الحتمية]: البريد الإلكتروني الجديد ينبثق هنا فوراً بالأصفر النيوني المضيء في قلب منتصف الشاشة!
                 card_class = "premium-card-pink"; badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"; border_override = "border-right: 4px solid #ffcc00 !important;"
             else:
                 card_class = "premium-card-pink"; badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"; border_override = "border-right: 4px solid #ff3333 !important;"
@@ -291,7 +242,7 @@ if st.session_state.system_role == "admin" and st.session_state.admin_logged_in:
                     conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,)); conn.commit(); conn.close()
                     st.success("🔒 تم طرد وقفل حساب التاجر سحابياً بنجاح كلي!"); time.sleep(0.3); st.rerun()
             st.markdown("<div style='margin-bottom:20px;'></div>", unsafe_allow_html=True)
-    else: st.info("📡 لا يوجد طلبات تسجيل حالياً بمركز الموافقات السحابية.")
+    else: st.info("📡 لا يوجد طلبات تسجيل حالياً بمركز الموافقات السحابية الموسطة.")
     
     if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر الموسط"):
         st.session_state.admin_authenticated = False; st.session_state.system_role = "visitor"; st.success("🔒 تم تأمين السيرفر الموسط بنجاح!"); time.sleep(0.3); st.rerun()
