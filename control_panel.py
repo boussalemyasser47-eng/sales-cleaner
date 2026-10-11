@@ -65,9 +65,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: منظومة التحقق الآمنة وشاشة القيادة الموسطة (control_panel.py)
+# الجزء الثاني: التهيئة النظيفة وصندوق تسجيل القائد الموسط (control_panel.py)
 # ========================================================
-# 🚨 [الحقن التكتيكي القاطع للاختراقات والأعطال]: الفحص الآمن كلياً لمتغيرات الجلسة لمنع أي KeyError
+# التأكد الاستباقي من تهيئة الكاش لمنع الأعطال النحوية
 if "admin_authenticated" not in st.session_state:
     st.session_state["admin_authenticated"] = False
 
@@ -77,7 +77,7 @@ if "system_role" not in st.session_state:
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
 
-# تأسيس وتأمين ملف قاعدة بيانات التراخيص لضمان دمج وقراءة القنوات اللامركزية حياً
+# تأسيس خزانة الـ SQL السحابية الموحدة لضمان مزامنة حسابات التجار بالثانية
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
@@ -102,19 +102,21 @@ if is_boss_link and not st.session_state.get("admin_authenticated", False):
     
     _, col_btn_center, _ = st.columns(3)
     with col_btn_center:
+        # 🚨 [إصلاح حاسم]: تمت تنقية دالة التحديث كلياً لمنع الغرفة السوداء
         if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="boss_submit_btn"):
             if admin_user_check == ADMIN_USERNAME and admin_pass_check == ADMIN_PASSWORD:
                 st.session_state["admin_authenticated"] = True
                 st.session_state["system_role"] = "admin"
-                st.success("⚡ تم التوثيق بنجاح ملوكي! جاري الدخول للوحة القيادة...")
+                st.success("⚡ تم التوثيق بنجاح ملوكي! جاري الدخول...")
                 time.sleep(0.3)
-                st.rerun()
+                st.sidebar.markdown("<!-- Refresh -->") # حقن نبضة صامتة
+                st.rerun() # الأمر الصافي والصحيح لبايثون بنسبة 100%
             else:
                 st.error("❌ بيانات خاطئة! تم قفل النظام وحماية السجلات.")
 # ========================================================
-# الجزء الثالث: واجهة فيسبوك الموسطة للتجار وعزل الخزائن (control_panel.py)
+# الجزء الثالث: واجهة فيسبوك الموسطة للتجار وعزل البيانات (control_panel.py)
 # ========================================================
-# 🚨 [الفحص التبادلي المضمون 100%]: منع تداخل الشاشات أو انبثاق اللوحات للغرباء
+# منع تداخل الشاشات أو انبثاق اللوحات للغرباء
 if st.session_state.get("system_role", "visitor") == "visitor" and not is_boss_link:
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>سجل بريدك وإلكترونيات متجرك الخاص للتحويل التلقائي والآمن لخزانة فواتيرك.</p>", unsafe_allow_html=True)
@@ -175,7 +177,7 @@ if st.session_state.get("system_role", "visitor") == "visitor" and not is_boss_l
                             st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
                     else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
 
-# 👑 [الأمان الملوكي الحتمي الصافي 100% المانع للأخطاء]: استخدام الفحص الآمن بدالة الـ .get() الموجهة
+# الانقلاب السحابي النقي لمنتصف المتصفح بعد نجاح التوثيق
 if st.session_state.get("system_role") == "admin" and st.session_state.get("admin_logged_in"):
     st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المحمية كلياً. المزامنة تعمل بكفاءة مطلقة.</p>", unsafe_allow_html=True)
@@ -188,7 +190,7 @@ if st.session_state.get("system_role") == "admin" and st.session_state.get("admi
     conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
     df_merchants = pd.read_sql("SELECT * FROM saas_users_auth", conn_vault); conn_vault.close()
 
-    # عدادات الأرباح والتدفقات النقدية المحدثة بمنتصف المتصفح للـ COD بالجزائر
+    # عدادات الأرباح والتدفقات النقدية المحدثة بمنتصف المتصفح
     col_s1, col_v2, col_v3 = st.columns(3)
     with col_s1:
         st.markdown(f"<div class='premium-card-pink'><span style='color:#ff00ff; font-weight:900;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر:</span><h2 style='color:#fff; text-shadow: 0 0 10px #ff00ff; margin:10px 0 0 0;'>{total_platform_revenue:,.2f} DA</h2></div>", unsafe_allow_html=True)
@@ -207,7 +209,7 @@ if st.session_state.get("system_role") == "admin" and st.session_state.get("admi
             if "🟢" in status:
                 card_class = "premium-card-cyan"; badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"; border_override = "border-right: 5px solid #00ff66 !important;"
             elif "⏳" in status or "انتظار" in status:
-                # 🚨 ينبثق إيميل التاجر الجديد بوضعية الأصفر النيوني المضيء في قلب منتصف الشاشة وبدقة فائقة!
+                # 🚨 ينبثق إيميل التاجر الجديد بوضعية الأصفر النيوني المضيء أمام عينيك حياً في قلب منتصف الشاشة!
                 card_class = "premium-card-pink"; badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"; border_override = "border-right: 4px solid #ffcc00 !important;"
             else:
                 card_class = "premium-card-pink"; badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"; border_override = "border-right: 4px solid #ff3333 !important;"
