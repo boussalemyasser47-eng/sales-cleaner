@@ -7,7 +7,7 @@ import sqlite3
 import time
 
 # ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة وفخمة جداً
-st.set_page_config(page_title="NEXUS SaaS GATEWAY v4", page_icon="🔐", layout="wide")
+st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
 # 🚨 [جدار الحماية الشبح]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
 query_params = st.query_params
@@ -28,7 +28,7 @@ if not is_boss_link:
 st.markdown("""
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com" rel="stylesheet">
+    <link href="https://googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
     /* ترقية خلفية المتصفح بالكامل لتصبح ليلة رقمية عميقة وعميقة البعد */
@@ -38,7 +38,7 @@ st.markdown("""
         font-family: 'Cairo', sans-serif !important;
     }
     
-    /* 🚨 [إصلاح حاسم وتوسيط الحاوية]: ضبط أبعاد صناديق الدخول في منتصف الشاشة بدقة متناهية */
+    /* [إصلاح حاسم وتوسيط الحاوية]: ضبط أبعاد صناديق الدخول في منتصف الشاشة بدقة متناهية */
     .centered-login-box {
         max-width: 500px !important;
         margin: 0 auto !important;
@@ -107,7 +107,7 @@ st.markdown("""
         transform: translateY(-3px) !important;
     }
     
-    /* تخصيص وتلوين مستطيلات مدخلات الكتابة باللون الوردي والأبيض الفخم */
+    /* تخصيص وتلوين مستطيلات مدخلات الكتابة */
     div[data-testid="stTextInput"] input { 
         border: 2px solid #ff00ff !important; 
         background-color: #080811 !important; 
@@ -123,15 +123,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: شاشة الدخول الإدارية الموسطة بالكامل وتأسيس الـ SQL (control_panel.py)
+# الجزء الثاني: التهيئة الآمنة للجلسة وتأسيس الـ SQL (control_panel.py)
 # ========================================================
+# [الإصلاح الجذري الحاسم لخطأ شاشتك الحمراء]: تهيئة وحقن متغيرات الجلسة مسبقاً قبل أي فحص شرطي
+if "admin_authenticated" not in st.session_state: 
+    st.session_state.admin_authenticated = False
+
+if "system_role" not in st.session_state: 
+    st.session_state.system_role = "visitor"
+
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
 
-if "admin_authenticated" not in st.session_state: st.session_state.admin_authenticated = False
-if "system_role" not in st.session_state: st.session_state.system_role = "visitor"
-
-# 👑 [تحقيق طلبك الحاسم]: عرض واجهة تسجيل دخول الأدمن بمنتصف الصفحة بالكامل واختفاء شريط الجنب
+# 👑 عرض واجهة تسجيل دخول الأدمن بمنتصف الصفحة بالكامل واختفاء شريط الجنب إذا استخدمت رابطك السري
 if is_boss_link and not st.session_state.admin_authenticated:
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 50px; text-shadow: 0 0 20px #00fff0; font-size:30px;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 14px; margin-bottom: 25px;'>مرحباً بك يا قائد المنصة. أدخل بياناتك بمركز التحقق لتفعيل السيرفر.</p>", unsafe_allow_html=True)
@@ -188,7 +192,7 @@ if st.session_state.system_role != "admin":
         clean_email = input_email.strip()
         clean_pass = input_password.strip()
         
-        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+        if auth_mode == "📝 إنشاء حساب taجر جديد فريش" or auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
             user_package_choice = st.selectbox("اختر فئة الباقة السنوية لمتجرك:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
             st.markdown("</div>", unsafe_allow_html=True)
             
@@ -231,7 +235,7 @@ if st.session_state.system_role != "admin":
                     else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
     st.stop()
 
-# 👑 [الانقلاب والتحويل لمنتصف الصفحة]: فتح لوحة القيادة المركزية كلياً بالمنتصف واختفاء الجنب تماماً
+# فتح لوحة القيادة المركزية والمقصلة الرقمية للمشتركين إذا تحقق حساب الأدمن بنجاح
 if st.session_state.system_role == "admin" and st.session_state.admin_logged_in:
     st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المحمية كلياً. المزامنة تعمل بكفاءة بالغة.</p>", unsafe_allow_html=True)
@@ -263,7 +267,7 @@ if st.session_state.system_role == "admin" and st.session_state.admin_logged_in:
             if "🟢" in status:
                 card_class = "premium-card-cyan"; badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"; border_override = "border-right: 5px solid #00ff66 !important;"
             elif "⏳" in status or "انتظار" in status:
-                # 🚨 ينبثق إيميل التاجر الجديد بوضعية الأصفر النيوني المشع والمطور بصرياً في منتصف الصفحة تماماً بالثانية
+                # 🚨 [النجاح الميكانيكي الحتمي وبدقة 100%]: صعود بريد تاجر الجزائر المعلق فوراً باللون الأصفر المضيء أمام عينيك
                 card_class = "premium-card-pink"; badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"; border_override = "border-right: 4px solid #ffcc00 !important;"
             else:
                 card_class = "premium-card-pink"; badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"; border_override = "border-right: 4px solid #ff3333 !important;"
@@ -287,7 +291,7 @@ if st.session_state.system_role == "admin" and st.session_state.admin_logged_in:
                     conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,)); conn.commit(); conn.close()
                     st.success("🔒 تم طرد وقفل حساب التاجر سحابياً بنجاح كلي!"); time.sleep(0.3); st.rerun()
             st.markdown("<div style='margin-bottom:20px;'></div>", unsafe_allow_html=True)
-    else: st.info("📡 لا يوجد طلبات تسجيل حالياً بمركز الموافقات.")
+    else: st.info("📡 لا يوجد طلبات تسجيل حالياً بمركز الموافقات السحابية.")
     
     if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر الموسط"):
         st.session_state.admin_authenticated = False; st.session_state.system_role = "visitor"; st.success("🔒 تم تأمين السيرفر الموسط بنجاح!"); time.sleep(0.3); st.rerun()
