@@ -167,7 +167,7 @@ if not is_boss_link:
                             st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
                     else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
 # ========================================================
-# الجزء الرابع: لوحة التحكم الإدارية المركزية الملوكية المحدثة (auth_gate.py)
+# الجزء الرابع: لوحة التحكم الإدارية المركزية المحصنة كلياً (auth_gate.py)
 # ========================================================
 # اللوحة تفتح وتتوسط الشاشة كلياً فقط وحصرياً إذا تحقق وجود المعرّف الشبح بالرابط علوياً
 if is_boss_link:
@@ -175,7 +175,7 @@ if is_boss_link:
     if "admin_master_logged" not in st.session_state:
         st.session_state["admin_master_logged"] = False
 
-    # جدار التحقق الموسط الشبح: يطالبك بالبيانات لأول مرة فقط، ويختفي تماماً طالما أنت داخل الصفحة
+    # 1️⃣ جدار التحقق الموسط الشبح: يطالبك بالبيانات لأول مرة فقط، ويختفي تماماً طالما أنت داخل الصفحة
     if not st.session_state["admin_master_logged"]:
         st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 50px; text-shadow: 0 0 20px #00fff0; font-size:28px;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h1>", unsafe_allow_html=True)
         st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 14px; margin-bottom: 20px;'>مرحباً بك يا قائد المنصة المحترم. أدخل بياناتك بمركز التحقق الموسط لتنشيط السيرفر الكلي.</p>", unsafe_allow_html=True)
@@ -198,7 +198,7 @@ if is_boss_link:
                 else:
                     st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من الأحرف والرموز السريّة.")
                     
-    # فتح حجرة القيادة والسيادة الكبرى وعوائد الـ DA فور نجاح مطابقة بياناتك (تظل مستقرة عند الـ Refresh)
+    # 2️⃣ فتح حجرة القيادة والسيادة الكبرى وعوائد الـ DA فور نجاح مطابقة بياناتك (تظل مستقرة عند الـ Refresh)
     else:
         st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
         st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المشتركة المستقرة. المزامنة تعمل بكفاءة مطلقة.</p>", unsafe_allow_html=True)
@@ -214,7 +214,6 @@ if is_boss_link:
 
         # جلب البيانات من خزانة الأمان لقراءتها وفرزها منطقياً
         conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
-        # [الفرز المنطقي الاستراتيجي]: سحب طلبات الانتظار (⏳) لتصعد في قمة رادار القيادة أولاً وتتذيل الحسابات المفعلة والمحظورة
         df_merchants = pd.read_sql("SELECT * FROM saas_users_auth ORDER BY CASE WHEN status LIKE '%⏳%' THEN 0 ELSE 1 END, email ASC", conn_vault)
         conn_vault.close()
 
@@ -249,28 +248,36 @@ if is_boss_link:
                     </div>
                 """, unsafe_allow_html=True)
 
-                # 🚨 [تحقيق طلبك التاريخي الحتمي]: تفريغ المساحة لـ 3 أزرار كاملة لجميع الحسابات بدون استثناء شروط
+                # 🚨 [العزل السيبراني المطلق للأزرار]: تشفير المفاتيح (Key Matrix Isolation) بنسبة 100% لمنع تداخل نبضات التحديث
                 col_act1, col_act2, col_act3 = st.columns(3)
                 with col_act1:
-                    if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"activate_{email}"):
-                        conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (email,)); conn.commit(); conn.close()
-                        st.success("🟢 تم قبول وتنشيط الحساب وبدء التحويل الآمن لمتجر العميل!"); time.sleep(0.3); st.rerun()
+                    if st.button("⚡ تفعيل وقبول", key=f"btn_activate_secure_v4_{idx}_{email[:5]}"):
+                        conn = sqlite3.connect("saas_security_vault.db", timeout=10)
+                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (email,))
+                        conn.commit(); conn.close()
+                        st.success("🟢 تم تفعيل الحساب حياً!")
+                        time.sleep(0.3); st.rerun()
                 with col_act2:
-                    if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"lock_{email}"):
-                        conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,)); conn.commit(); conn.close()
-                        st.success("🔒 تم طرد وقفل حساب التاجر سحابياً بنجاح كلي!"); time.sleep(0.3); st.rerun()
-                # 🗑️ [سلاح التدمير الحاسم الشامل في كل الحالات]: مسح الحساب نهائياً وفورياً من الجدول السحابي الموحد
+                    if st.button("🔒 حظر وقفل", key=f"btn_lock_secure_v4_{idx}_{email[:5]}"):
+                        conn = sqlite3.connect("saas_security_vault.db", timeout=10)
+                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,))
+                        conn.commit(); conn.close()
+                        st.success("🔒 تم قفل الحساب سحابياً!")
+                        time.sleep(0.3); st.rerun()
+                # 🗑️ [المقصلة المعزولة القاطعة للأخطاء]: استخدام معرف عسكري خارق لنسف السجل كلياً حياً في كل الحالات
                 with col_act3:
-                    if st.button("🗑️ حذف وإعدام هذا الحساب نهائياً", key=f"delete_{email}"):
-                        conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("DELETE FROM saas_users_auth WHERE email = ?", (email,)); conn.commit(); conn.close()
-                        st.success(f"🗑️ تم تدمير وحذف الحساب {email} كلياً من سجلات السيرفر!"); time.sleep(0.3); st.rerun()
+                    if st.button("🗑️ حذف وإعدام", key=f"btn_destroy_absolute_v4_{idx}_{email[:5]}"):
+                        conn = sqlite3.connect("saas_security_vault.db", timeout=10)
+                        conn.cursor().execute("DELETE FROM saas_users_auth WHERE email = ?", (email,))
+                        conn.commit(); conn.close()
+                        st.success("🗑️ تم مسح وحذف الحساب من الجذور كلياً!")
+                        time.sleep(0.3); st.rerun()
                 st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
         else:
             st.info("📡 لا يوجد طلبات تسجيل حالياً بمركز الموافقات السحابية الموسطة.")
             
         st.markdown("<br>", unsafe_allow_html=True)
-        # زر التجميد والخروج لتأمين السيرفر وقفله عند الرغبة
-        if st.button("🚪 مغادرة غُرفة القيادة وقفل السيرفر الموسط والخزائن"):
+        if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر الموسط والخزائن"):
             st.session_state["admin_master_logged"] = False
-            st.success("🔒 تم تأمين وقفل السيرفر بنجاح ملوكي! يتطلب الرمز عند العودة.")
+            st.success("🔒 تم تأمين وقفل السيرفر بنجاح ملوكي!")
             time.sleep(0.3); st.rerun()
