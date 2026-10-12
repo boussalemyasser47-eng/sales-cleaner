@@ -71,16 +71,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: حقول مدخلات التجار وبناء جدول الـ SQL الموحد (auth_gate.py)
+# الجزء الثاني: حقول مدخلات التجار وحقن حساب الفحص الذكي (auth_gate.py)
 # ========================================================
-# تهيئة ثوابت الهوية الإدارية الموحدة لغرفة القيادة العليا لمنع ثغرات الكاش
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
 
 if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 
-# صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
+# إنشاء وتأمين جدول الـ Auth
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
@@ -91,31 +90,19 @@ db_cursor.execute("""
 db_conn.commit()
 db_conn.close()
 
-# حقن حساب الفحص الافتراضي لضمان استقرار جرد القنوات بالثانية
+# 🧠 [حل الثغرة الذكي]: التحقق أولاً إذا تم حذف الحساب يدوياً لمنع إعادة حقنه تلقائياً في الكاش
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-db_conn.cursor().execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
-db_conn.commit()
-db_conn.close()
-# ========================================================
-# تابع للجزء الثاني: دالة التدمير الشامل للإيميلات (جميع الحالات)
-# ========================================================
-def delete_email_completely(email_to_delete):
-    """
-    حذف الحساب والبريد الإلكتروني فوراً من قاعدة البيانات 
-    بغض النظر عن حالته الحالية (نشط، معلق، محظور)
-    """
-    try:
-        conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-        cursor = conn.cursor()
-        # تنفيذ أمر الحذف المباشر لسطر الإيميل بالكامل دون شروط مسبقة
-        cursor.execute("DELETE FROM saas_users_auth WHERE email = ?", (email_to_delete,))
-        conn.commit()
-        conn.close()
-        return True
-    except Exception as e:
-        st.error(f"⚠️ خطأ أثناء معالجة الحذف الميكانيكي: {e}")
-        return False
+check_cursor = db_conn.cursor()
+check_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
+account_exists = check_cursor.fetchone()[0]
 
+# إذا تم حذف الحساب من لوحة الـ Boss (أي أن الـ count أصبح 0)، فلن يقوم الكود بإعادة توليده ونشره مجدداً
+if account_exists == 0 and "account_destroyed" not in st.session_state:
+    # نقوم بحقنه مرة واحدة فقط عند إقلاع السيرفر لأول مرة كلياً
+    db_conn.cursor().execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
+    db_conn.commit()
+
+db_conn.close()
 # ========================================================
 # الجزء الثالث: لوحة التحكم العليا المحدثة وميكانيكية التحديث الحية
 # ========================================================
