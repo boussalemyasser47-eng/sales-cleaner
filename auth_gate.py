@@ -112,67 +112,74 @@ def delete_email_completely(email_to_delete):
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}")
         return False
 # ========================================================
-# الجزء الثالث: رادار مسح الطلبات والأزرار مدمجة داخلياً (auth_gate.py)
+# الجزء الثالث: نظام إظهار الأزرار بعد إدخال معلومات التاجر (auth_gate.py)
 # ========================================================
 if is_boss_link:
-    st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900;'>📡 (SaaS Incoming Queue): رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900;'>👑 غرفة السيادة والموافقات السحابية العليا</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #b0b0d0; text-align: right;'>أدخل بريد التاجر أولاً للكشف عن أزرار التحكم السحابية المدمجة:</p>", unsafe_allow_html=True)
     
-    # قراءة البيانات حية مباشرة من قاعدة البيانات الموحدة
-    conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
-    df_users = pd.read_sql_query("SELECT email, password, status, package FROM saas_users_auth", conn_view)
-    conn_view.close()
+    # 1. حقل إدخال ميكانيكي مخصص للمسؤول للبحث أو إدخال معلومات التاجر
+    search_email = st.text_input("✍️ أدخل البريد الإلكتروني للتاجر المطلوب التحكم به:", key="boss_search_input").strip()
     
-    if not df_users.empty:
-        for index, row in df_users.iterrows():
-            current_email = row['email']
-            current_pass = row['password']
-            current_status = row['status']
-            current_package = row['package']
+    if search_email:
+        # 2. قراءة قاعدة البيانات للتأكد من وجود البريد الذي أدخله المسؤول
+        conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
+        db_cursor = conn_view.cursor()
+        db_cursor.execute("SELECT email, password, status, package FROM saas_users_auth WHERE email = ?", (search_email,))
+        merchant_data = db_cursor.fetchone()
+        conn_view.close()
+        
+        if merchant_data:
+            current_email = merchant_data[0]
+            current_pass = merchant_data[1]
+            current_status = merchant_data[2]
+            current_package = merchant_data[3]
             
-            # 1. فتح بطاقة لوحة التحكم وحقن النصوص بداخلها
+            # 3. [ظهور اللوحة والأزرار بالداخل]: لا يتم بناء هذا الإطار إلا بعد صحة البيانات المدخلة
             st.markdown(f"""
-            <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%); margin-bottom: 15px; box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.15);">
-                <p style="text-align: right; font-weight: 700; margin-bottom: 8px;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
-                <p style="text-align: right; font-size: 14px; color: #b0b0d0; margin-bottom: 12px;">فئة الاشتراك المطلوبة للعمل: {current_package}</p>
-                <p style="text-align: right; font-weight: bold; color: #00fff0; margin-bottom: 20px;">🟢 الحالة الحالية: {current_status}</p>
+            <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: linear-gradient(135deg, rgba(10, 10, 26, 0.9) 0%, rgba(3, 3, 7, 0.99) 100%); margin-top: 20px; margin-bottom: 15px; box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.25);">
+                <p style="text-align: right; font-weight: 700; margin-bottom: 8px; color: #ffffff;">💻 معلومات الحساب المستهدف: <span style="color: #00fff0;">{current_email}</span></p>
+                <p style="text-align: right; font-size: 14px; color: #b0b0d0; margin-bottom: 12px;">كلمة السر الحالية: <span style="color: #ff00ff;">{current_pass}</span> | الباقة السنوية: {current_package}</p>
+                <p style="text-align: right; font-weight: bold; color: #00fff0; margin-bottom: 20px;">📊 الحالة الحالية في النظام: {current_status}</p>
             """, unsafe_allow_html=True)
             
-            # 2. توليد صف الأزرار الثلاثي ليكون محاطاً بهيكل لوحة التحكم الزرقاء داخلياً
+            # توليد مصفوفة الأزرار الثلاثية مدمجة بالداخل في سطر واحد
             col_activate, col_lock, col_delete = st.columns(3)
             
             with col_activate:
                 if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"int_active_{current_email}"):
-                    st.success("تم التفعيل")
+                    st.success("🎯 تم تفعيل وتنشيط حساب التاجر بنجاح!")
                     
             with col_lock:
                 if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"int_lock_{current_email}"):
-                    st.warning("تم الحظر")
+                    st.warning("⛔ تم قفل وحظر صلاحيات الحساب عن بعد!")
                     
             with col_delete:
-                # زر الحذف الفوري والنهائي مدمج في نفس الصف الداخلي للوحة
                 if st.button("🗑️ حذف وتدمير الحساب فوراً", key=f"int_del_{current_email}"):
                     st.session_state[f"ask_confirm_{current_email}"] = True
             
-            # 3. إغلاق وسم الـ div الخاص بالبطاقة النيونية لضمان احتواء الأزرار بالداخل بنسبة 100%
+            # إغلاق لوحة التحكم النيونية بإحكام لحبس الأزرار داخل الإطار الأزرق
             st.markdown("</div>", unsafe_allow_html=True)
             
-            # آلية التأكيد التفاعلية تظهر بمرونة في حال طلب الحذف
+            # آلية زر التأكيد التفاعلي "فهمت" المنبثق في حال الرغبة بالتدمير
             if st.session_state.get(f"ask_confirm_{current_email}", False):
                 st.markdown("<hr style='border-color: rgba(255, 0, 0, 0.3); margin: 10px 0;'>", unsafe_allow_html=True)
-                col_txt, col_yes_btn = st.columns([3, 1])
+                col_txt, col_yes_btn = st.columns()
                 with col_txt:
-                    st.error(f"⚠️ هل أنت متأكد تماماً من تدمير بيانات {current_email}؟")
+                    st.error(f"⚠️ تحذير سيبراني: هل أنت متأكد تماماً من إبادة حساب {current_email}؟")
                 with col_yes_btn:
-                    if st.button("✅ فهمت، احذف", key=f"final_yes_{current_email}"):
+                    if st.button("✅ فهمت، احذف الحساب", key=f"final_yes_{current_email}"):
                         st.session_state["destroyed_flag"] = True
                         st.session_state[f"ask_confirm_{current_email}"] = False
                         
                         if delete_email_completely(current_email):
-                            st.toast(f"🔥 تم تدمير وإزالة الحساب كلياً!", icon="💥")
+                            st.toast(f"🔥 تم تطهير وحذف الحساب من السيرفر كلياً!", icon="💥")
                             time.sleep(0.5)
                             st.rerun()
+        else:
+            st.error("❌ عذراً، هذا البريد الإلكتروني غير مسجل في قاعدة بيانات المنصة حالياً.")
     else:
-        st.warning("📭 الرادار صافي تماماً، لا توجد طلبات تجار حالية في خزانة الفواتير.")
+        st.info("💡 بانتظار كتابة بريد التاجر في الحقل أعلاه لإظهار أزرار التحكم ميكانيكياً...")
 # ========================================================
 # الجزء الرابع: لوحة التحكم الإدارية المركزية وقفل السيرفر الموحد (auth_gate.py)
 # ========================================================
