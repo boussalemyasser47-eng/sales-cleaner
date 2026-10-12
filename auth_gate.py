@@ -71,7 +71,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: حقول مدخلات التجار وبناء جدول الـ SQL الموحد (auth_gate.py)
+# الجزء الثاني: بناء جدول الـ SQL الموحد ودالة التدمير (auth_gate.py)
 # ========================================================
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
@@ -89,7 +89,7 @@ db_cursor.execute("""
 """)
 db_conn.commit()
 
-# [حل الثغرة]: التحقق أولاً إذا كان الحساب قد حُذف نهائياً لمنع الـ INSERT التلقائي من إعادته كـ "نشط"
+# [حل الثغرة القاطع]: التحقق إذا كان الحساب قد حُذف يدوياً لمنع الـ INSERT التلقائي من إعادته
 db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
 account_exists = db_cursor.fetchone()[0]
 
@@ -99,12 +99,11 @@ if account_exists == 0 and "destroyed_flag" not in st.session_state:
 
 db_conn.close()
 
-# ⚙️ [تعريف الدالة]: وضع الدالة هنا يضمن أن يراها الجزء الثالث تماماً ويختفي خطأ NameError
+# دالة الحذف الميكانيكي الشامل لجميع الحالات
 def delete_email_completely(email_to_delete):
     try:
         conn = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor = conn.cursor()
-        # تدمير البريد الإلكتروني في كل الحالات (نشط، معلق، محظور)
         cursor.execute("DELETE FROM saas_users_auth WHERE email = ?", (email_to_delete,))
         conn.commit()
         conn.close()
@@ -113,46 +112,53 @@ def delete_email_completely(email_to_delete):
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}")
         return False
 # ========================================================
-# الجزء الثالث: لوحة التحكم العليا وجدول التدمير الفوري (auth_gate.py)
+# الجزء الثالث: رادار مسح الطلبات وزر التدمير التفاعلي "فهمت" (auth_gate.py)
 # ========================================================
 if is_boss_link:
-    st.markdown("<h2 style='color: #ff00ff; text-align: right; font-weight:900;'>👑 غرفة القيادة العليا - حذف وتدمير الإيميلات</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900;'>📡 (SaaS Incoming Queue): رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
     
-    # قراءة البيانات طازجة مباشرة من قاعدة البيانات
+    # قراءة البيانات حية من السيرفر
     conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
-    df_users = pd.read_sql_query("SELECT email, status, package FROM saas_users_auth", conn_view)
+    df_users = pd.read_sql_query("SELECT email, password, status, package FROM saas_users_auth", conn_view)
     conn_view.close()
     
     if not df_users.empty:
-        st.markdown("<p style='color: #b0b0d0; text-align: right;'>قائمة المشتركين الحاليين في المنصة:</p>", unsafe_allow_html=True)
-        
         for index, row in df_users.iterrows():
             current_email = row['email']
+            current_pass = row['password']
             current_status = row['status']
             current_package = row['package']
             
-            col_mail, col_status, col_action = st.columns([2, 2, 1])
+            # بناء حاوية النيون التفاعلية الموضحة بالصورة
+            st.markdown(f"""
+            <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 20px; background: rgba(5, 5, 12, 0.8); margin-bottom: 20px;">
+                <p style="text-align: right; font-weight: 700;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
+                <p style="text-align: right; font-size: 14px; color: #b0b0d0;">فئة الاشتراك المطلوبة للعمل: {current_package}</p>
+            </div>
+            """, unsafe_allow_html=True)
             
-            with col_mail:
-                st.text(current_email)
-            with col_status:
-                st.info(f"الحالة الحالية: {current_status}")
-            with col_action:
-                button_key = f"destroy_btn_{current_email}"
-                
-                if st.button("🗑️ حذف الحساب فوراً", key=button_key):
-                    # تفعيل راية تدمير الحساب لمنع سطر الـ INSERT من إعادة توليده تلقائياً
-                    st.session_state["destroyed_flag"] = True
-                    
-                    # استدعاء دالة الحذف الميكانيكي المعرفة في الأعلى
-                    if delete_email_completely(current_email):
-                        st.toast(f"🔥 تم تدمير وإزالة البريد {current_email} كلياً!", icon="💥")
-                        time.sleep(0.5)
-                        # إجبار السيرفر على إعادة التشغيل لتنظيف الشاشة واختفاء الحساب فوراً
-                        st.rerun()
+            col_confirm, col_delete = st.columns([2, 1])
+            
+            with col_delete:
+                # زر طلب الحذف الأولي لإظهار صندوق التأكيد
+                if st.button("🗑️ حذف الحساب نهائياً", key=f"init_del_{current_email}"):
+                    st.session_state[f"show_confirm_{current_email}"] = True
+            
+            # التحقق من حالة ضغط زر الحذف لعرض زر التأكيد "فهمت"
+            if st.session_state.get(f"show_confirm_{current_email}", False):
+                with col_confirm:
+                    st.warning(f"⚠️ هل أنت متأكد من مسح {current_email}؟")
+                    # زر "فهمت" النهائي للتأكيد الفوري
+                    if st.button("✅ فهمت، قم بالحذف الآن", key=f"final_confirm_{current_email}"):
+                        st.session_state["destroyed_flag"] = True
+                        st.session_state[f"show_confirm_{current_email}"] = False
+                        
+                        if delete_email_completely(current_email):
+                            st.toast(f"🔥 تم تدمير الحساب وإغلاق السيرفر للمشترك!", icon="💥")
+                            time.sleep(0.5)
+                            st.rerun()
     else:
-        st.warning("📭 لا توجد حسابات تجار مسجلة حالياً في قاعدة البيانات.")
-
+        st.warning("📭 الرادار صافي، لا توجد طلبات تسجيل معلقة حالياً.")
                                
 # ========================================================
 # الجزء الرابع: لوحة التحكم الإدارية المركزية وقفل السيرفر الموحد (auth_gate.py)
