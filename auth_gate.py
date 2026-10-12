@@ -10,7 +10,7 @@ import os
 # ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة وفخمة ومحمية كلياً
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
-# قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
+# 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
 query_params = st.query_params
 is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
 
@@ -32,7 +32,6 @@ st.markdown("""
     <link href="https://googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
-    /* ترقية خلفية المتصفح بالكامل لتصبح ليلة رقمية عميقة وعميقة البعد */
     .stApp {
         background: radial-gradient(circle at 50% 40%, #0d0d21 0%, #030307 100%) !important;
         color: #ffffff !important;
@@ -68,7 +67,6 @@ st.markdown("""
         border: 2px solid #00fff0 !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 30px rgba(0, 255, 240, 0.2) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(12px);
     }
     
-    /* منع انهيار وإخفاء الأزرار الميكانيكية للوحة وثبات أبعادها */
     div[data-testid="stVerticalBlock"] button, div.stButton button, .stButton > button {
         width: 100% !important; min-height: 50px !important; white-space: normal !important; word-wrap: break-word !important;
         font-family: 'Cairo', sans-serif !important; font-size: 14.5px !important; font-weight: 800 !important; border-radius: 12px !important;
@@ -77,7 +75,6 @@ st.markdown("""
         border: 2px solid #00fff0 !important; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.3) !important; transition: all 0.4s ease-in-out !important;
     }
     div.stButton button:hover { background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important; box-shadow: 0px 0px 25px #00fff0 !important; transform: translateY(-3px) !important; }
-    
     div[data-testid="stTextInput"] input { border: 2px solid #ff00ff !important; background-color: #080811 !important; color: #ffffff !important; border-radius: 12px !important; padding: 15px 18px !important; font-family: 'Cairo', sans-serif !important; font-size: 14px !important; transition: all 0.3s ease-in-out; }
     div[data-testid="stTextInput"] input:focus { border-color: #00fff0 !important; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.4) !important; }
     
@@ -170,15 +167,15 @@ if not is_boss_link:
                             st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
                     else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
 # ========================================================
-# الجزء الرابع: لوحة التحكم المركزية المزودة بـ زر الحذف الكلي (auth_gate.py)
+# الجزء الرابع: لوحة التحكم الإدارية المركزية الملوكية المحدثة (auth_gate.py)
 # ========================================================
 # اللوحة تفتح وتتوسط الشاشة كلياً فقط وحصرياً إذا تحقق وجود المعرّف الشبح بالرابط علوياً
 if is_boss_link:
-    # [استقرار الجلسة ضد الـ Refresh]: تفعيل وحقن خلايا الجلسة لمنع طلب البيانات مجدداً عند التحديث
+    # [استقرار الجلسة ضد الـ Refresh]: تفعيل وحقن خلايا الجلسة الحديدية لمنع طلب البيانات مجدداً عند التحديث
     if "admin_master_logged" not in st.session_state:
         st.session_state["admin_master_logged"] = False
 
-    # 1️⃣ جدار التحقق الموسط الشبح: يطالبك بالبيانات لأول مرة فقط، ويختفي تماماً طالما أنت داخل الصفحة
+    # جدار التحقق الموسط الشبح: يطالبك بالبيانات لأول مرة فقط، ويختفي تماماً طالما أنت داخل الصفحة
     if not st.session_state["admin_master_logged"]:
         st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 50px; text-shadow: 0 0 20px #00fff0; font-size:28px;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h1>", unsafe_allow_html=True)
         st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 14px; margin-bottom: 20px;'>مرحباً بك يا قائد المنصة المحترم. أدخل بياناتك بمركز التحقق الموسط لتنشيط السيرفر الكلي.</p>", unsafe_allow_html=True)
@@ -201,7 +198,7 @@ if is_boss_link:
                 else:
                     st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من الأحرف والرموز السريّة.")
                     
-    # 2️⃣ فتح حجرة القيادة والسيادة الكبرى وعوائد الـ DA فور نجاح مطابقة بياناتك (تظل مستقرة عند الـ Refresh)
+    # فتح حجرة القيادة والسيادة الكبرى وعوائد الـ DA فور نجاح مطابقة بياناتك (تظل مستقرة عند الـ Refresh)
     else:
         st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
         st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المشتركة المستقرة. المزامنة تعمل بكفاءة مطلقة.</p>", unsafe_allow_html=True)
@@ -252,7 +249,7 @@ if is_boss_link:
                     </div>
                 """, unsafe_allow_html=True)
 
-                # 🚨 [تحقيق طلبك كلياً بالمليمتر]: صعود الأزرار الثلاثية لجميع الحسابات (مفعل، محظور، منتظر) بدون استثناء
+                # 🚨 [تحقيق طلبك التاريخي الحتمي]: تفريغ المساحة لـ 3 أزرار كاملة لجميع الحسابات بدون استثناء شروط
                 col_act1, col_act2, col_act3 = st.columns(3)
                 with col_act1:
                     if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"activate_{email}"):
@@ -262,7 +259,7 @@ if is_boss_link:
                     if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"lock_{email}"):
                         conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,)); conn.commit(); conn.close()
                         st.success("🔒 تم طرد وقفل حساب التاجر سحابياً بنجاح كلي!"); time.sleep(0.3); st.rerun()
-                # 🗑️ [سلاح التدمير الحاسم]: الحذف يعمل حياً ويمسح الإيميل نهائياً من قلب السيرفر في كل الحالات
+                # 🗑️ [سلاح التدمير الحاسم الشامل في كل الحالات]: مسح الحساب نهائياً وفورياً من الجدول السحابي الموحد
                 with col_act3:
                     if st.button("🗑️ حذف وإعدام هذا الحساب نهائياً", key=f"delete_{email}"):
                         conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("DELETE FROM saas_users_auth WHERE email = ?", (email,)); conn.commit(); conn.close()
