@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول: الهندسة البصرية المتقدمة وتلوين الواجهات (auth_gate.py)
+# الجزء الأول: الهندسة البصرية المتقدمة والأنماط الشبحية (auth_gate.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
@@ -10,15 +10,26 @@ import os
 # ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة وفخمة ومحمية كلياً
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
-# 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
+# قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
 query_params = st.query_params
 is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
 
-# حقن كود الـ CSS الأسطوري لإبادة الخلفية البيضاء وجعل الأزرار نيون زجاجية مرئية 100%
+# إذا كان المتصفح لتاجر عادي، نقوم بنسف وإخفاء السهم الجانبي والشريط تماماً بـ الـ CSS ومستحيل ينتبه له أحد
+if not is_boss_link:
+    st.markdown("""
+        <style>
+        [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] {
+            display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0px !important; width: 0px !important;
+        }
+        section[data-testid="stSidebar"] { display: none !important; visibility: hidden !important; }
+        </style>
+    """, unsafe_allow_html=True)
+
+# حقن كود التصميم السيبراني المطور كلياً مع تأثير النبض الحركي الخفيف للفخامة البصرية
 st.markdown("""
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
     /* ترقية خلفية المتصفح بالكامل لتصبح ليلة رقمية عميقة وعميقة البعد */
@@ -40,6 +51,12 @@ st.markdown("""
         direction: rtl !important;
         text-align: right !important;
         backdrop-filter: blur(12px) !important;
+        animation: boxGlowPulse 4s infinite alternate ease-in-out;
+    }
+    
+    @keyframes boxGlowPulse {
+        0% { border-color: #00fff0; box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.25); }
+        100% { border-color: #ff00ff; box-shadow: 0px 0px 35px rgba(255, 0, 255, 0.35); }
     }
     
     .premium-card-pink {
@@ -51,7 +68,7 @@ st.markdown("""
         border: 2px solid #00fff0 !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 30px rgba(0, 255, 240, 0.2) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(12px);
     }
     
-    /* منع انهيار وإخفاء الأزرار الميكانيكية للوحة */
+    /* منع انهيار وإخفاء الأزرار الميكانيكية للوحة وثبات أبعادها */
     div[data-testid="stVerticalBlock"] button, div.stButton button, .stButton > button {
         width: 100% !important; min-height: 50px !important; white-space: normal !important; word-wrap: break-word !important;
         font-family: 'Cairo', sans-serif !important; font-size: 14.5px !important; font-weight: 800 !important; border-radius: 12px !important;
@@ -61,11 +78,8 @@ st.markdown("""
     }
     div.stButton button:hover { background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important; box-shadow: 0px 0px 25px #00fff0 !important; transform: translateY(-3px) !important; }
     
-    div[data-testid="stTextInput"] input { border: 2px solid #ff00ff !important; background-color: #080811 !important; color: #ffffff !important; border-radius: 12px !important; padding: 15px 18px !important; font-family: 'Cairo', sans-serif !important; font-size: 14px !important; }
-    
-    /* إلغاء وإخفاء السهم الجانبي تلقائياً لمنع المتطفلين من فتحه والتجسس */
-    [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] { display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0px !important; width: 0px !important; }
-    section[data-testid="stSidebar"] { display: none !important; visibility: hidden !important; }
+    div[data-testid="stTextInput"] input { border: 2px solid #ff00ff !important; background-color: #080811 !important; color: #ffffff !important; border-radius: 12px !important; padding: 15px 18px !important; font-family: 'Cairo', sans-serif !important; font-size: 14px !important; transition: all 0.3s ease-in-out; }
+    div[data-testid="stTextInput"] input:focus { border-color: #00fff0 !important; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.4) !important; }
     
     .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 { font-family: 'Cairo', sans-serif !important; color: #ffffff !important; }
     </style>
@@ -73,12 +87,12 @@ st.markdown("""
 # ========================================================
 # الجزء الثاني: حقول مدخلات التجار وبناء جدول الـ SQL الموحد (auth_gate.py)
 # ========================================================
-# تهيئة ثوابت الهوية الإدارية الموحدة لغرفة القيادة العليا لمنع ثغرات الكاش
+# تهيئة وحقن متغيرات الجلسة مسبقاً بشكل معزول كلياً لسحق عيوب الـ KeyError تماماً
+if "admin_master_logged" not in st.session_state: st.session_state["admin_master_logged"] = False
+if "system_role" not in st.session_state: st.session_state["system_role"] = "visitor"
+
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
-
-if "admin_master_logged" not in st.session_state:
-    st.session_state["admin_master_logged"] = False
 
 # صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
@@ -147,7 +161,7 @@ if not is_boss_link:
                     conn_login.close()
                     
                     if db_row:
-                        user_status = db_row[0]
+                        user_status = db_row
                         if "⏳" in user_status or "انتظار" in user_status: st.warning("⏳ حسابك مسجل، وهو قيد المراجعة حالياً من طرف الإدارة!")
                         elif "🔒" in user_status or "قفل" in user_status or "محجوب" in user_status: st.error("🚨 عذراً، هذا الحساب مقفل ومحجوب كلياً لعدم الاشتراك السنوي!")
                         else:
@@ -160,17 +174,15 @@ if not is_boss_link:
 # ========================================================
 # اللوحة تفتح وتتوسط الشاشة كلياً فقط وحصرياً إذا تحقق وجود المعرّف الشبح بالرابط علوياً
 if is_boss_link:
-    # تهيئة كاش الجلسة الإدارية لمنع الأخطاء العشوائية وتحصين الهوية الرقمية الأعلى
-    if "admin_master_logged" not in st.session_state:
-        st.session_state["admin_master_logged"] = False
-
     # 1️⃣ جدار التحقق الموسط الشبح: يطالبك ببياناتك الإدارية أولاً ويقفل الغرفة عن المتطفلين
     if not st.session_state["admin_master_logged"]:
         st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 50px; text-shadow: 0 0 20px #00fff0; font-size:28px;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 14px; margin-bottom: 20px;'>مرحباً بك يا قائد المنصة المحترم. أدخل بياناتك بمركز التحقق الموسط لتنشيط السيرفر الكلي.</p>", unsafe_allow_html=True)
         
         st.markdown("<div class='centered-box-container'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#00fff0; text-align:center; font-weight:700; margin-top:0;'>🔑 تسجيل دخول المالك الأعلى</h3>", unsafe_allow_html=True)
         
+        # حقول إدخال فريدة ونظيفة ومحسنة تمنع التداخل أو تعليق البكسل القديم
         input_boss_user = st.text_input("👤 اسم المستخدم الخاص بالقائد:", value="", key="vault_boss_user_field")
         input_boss_pass = st.text_input("🔑 كلمة المرور الإدارية الخارقة:", type="password", value="", key="vault_boss_pass_field")
         st.markdown("</div>", unsafe_allow_html=True)
@@ -178,18 +190,20 @@ if is_boss_link:
         _, col_btn_lock_center, _ = st.columns(3)
         with col_btn_lock_center:
             if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="vault_boss_submit_btn"):
-                if input_boss_user.strip() == "admin_master_v4" and input_boss_pass.strip() == "SaasPassword2026":
+                # تحسين تكتيكي: تنظيف المدخلات من الفراغات علوياً تلقائياً لحمايتك من الأخطاء
+                if input_boss_user.strip() == ADMIN_USERNAME and input_boss_pass.strip() == ADMIN_PASSWORD:
                     st.session_state["admin_master_logged"] = True
                     st.success("⚡ تم التوثيق بنجاح ملوكي! جاري قراءة طلبات التجار...")
                     time.sleep(0.3)
+                    st.sidebar.markdown("<!-- Live Refresh -->")
                     st.rerun()
                 else:
                     st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من الأحرف والرموز السريّة.")
                     
-    # 2️⃣ فتح حجرة القيادة والسيادة الكبرى وعوائد الـ DA فور نجاح مطابقة بياناتك أعلاه
+    # 2️⃣ فتح حجرة القيادة والسيادة الكبرى وعوائد الـ DA فور نجاح مطابقة بياناتك أعلاه بنقاء كامل
     else:
         st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك المشتركة. المزامنة تعمل بكفاءة مطلقة.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المشتركة. المزامنة تعمل بكفاءة مطلقة.</p>", unsafe_allow_html=True)
         
         try:
             conn = sqlite3.connect("invoices_master_v4.db")
@@ -201,9 +215,9 @@ if is_boss_link:
             total_platform_revenue = 4580000.00; total_invoices_count = 142
 
         conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
-        df_merchants = pd.read_sql("SELECT * FROM saas_users_auth", conn_vault)
-        conn_vault.close()
+        df_merchants = pd.read_sql("SELECT * FROM saas_users_auth", conn_vault); conn_vault.close()
 
+        # عدادات الأرباح والتدفقات النقدية المحدثة بمنتصف المتصفح للـ COD بالجزائر
         col_s1, col_v2, col_v3 = st.columns(3)
         with col_s1: st.markdown(f"<div class='premium-card-pink'><span style='color:#ff00ff; font-weight:900;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر:</span><h2 style='color:#fff; text-shadow: 0 0 10px #ff00ff; margin:10px 0 0 0;'>{total_platform_revenue:,.2f} DA</h2></div>", unsafe_allow_html=True)
         with col_v2:
