@@ -71,7 +71,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: حقول مدخلات التجار وحقن حساب الفحص الذكي (auth_gate.py)
+# الجزء الثاني: حقول مدخلات التجار وبناء جدول الـ SQL الموحد (auth_gate.py)
 # ========================================================
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
@@ -79,7 +79,7 @@ ADMIN_PASSWORD = "SaasPassword2026"
 if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 
-# إنشاء وتأمين جدول الـ Auth
+# تهيئة وتأمين الجدول في قاعدة البيانات
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
@@ -88,28 +88,37 @@ db_cursor.execute("""
     )
 """)
 db_conn.commit()
-db_conn.close()
 
-# 🧠 [حل الثغرة الذكي]: التحقق أولاً إذا تم حذف الحساب يدوياً لمنع إعادة حقنه تلقائياً في الكاش
-db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-check_cursor = db_conn.cursor()
-check_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
-account_exists = check_cursor.fetchone()[0]
+# [حل الثغرة]: التحقق أولاً إذا كان الحساب قد حُذف نهائياً لمنع الـ INSERT التلقائي من إعادته كـ "نشط"
+db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
+account_exists = db_cursor.fetchone()[0]
 
-# إذا تم حذف الحساب من لوحة الـ Boss (أي أن الـ count أصبح 0)، فلن يقوم الكود بإعادة توليده ونشره مجدداً
-if account_exists == 0 and "account_destroyed" not in st.session_state:
-    # نقوم بحقنه مرة واحدة فقط عند إقلاع السيرفر لأول مرة كلياً
-    db_conn.cursor().execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
+if account_exists == 0 and "destroyed_flag" not in st.session_state:
+    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
     db_conn.commit()
 
 db_conn.close()
+
+# ⚙️ [تعريف الدالة]: وضع الدالة هنا يضمن أن يراها الجزء الثالث تماماً ويختفي خطأ NameError
+def delete_email_completely(email_to_delete):
+    try:
+        conn = sqlite3.connect("saas_security_vault.db", timeout=10)
+        cursor = conn.cursor()
+        # تدمير البريد الإلكتروني في كل الحالات (نشط، معلق، محظور)
+        cursor.execute("DELETE FROM saas_users_auth WHERE email = ?", (email_to_delete,))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}")
+        return False
 # ========================================================
-# الجزء الثالث: لوحة التحكم العليا المحدثة وميكانيكية التحديث الحية
+# الجزء الثالث: لوحة التحكم العليا وجدول التدمير الفوري (auth_gate.py)
 # ========================================================
 if is_boss_link:
     st.markdown("<h2 style='color: #ff00ff; text-align: right; font-weight:900;'>👑 غرفة القيادة العليا - حذف وتدمير الإيميلات</h2>", unsafe_allow_html=True)
     
-    # 1. جلب البيانات طازجة مباشرة من قاعدة البيانات في كل تحديث
+    # قراءة البيانات طازجة مباشرة من قاعدة البيانات
     conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
     df_users = pd.read_sql_query("SELECT email, status, package FROM saas_users_auth", conn_view)
     conn_view.close()
@@ -117,32 +126,32 @@ if is_boss_link:
     if not df_users.empty:
         st.markdown("<p style='color: #b0b0d0; text-align: right;'>قائمة المشتركين الحاليين في المنصة:</p>", unsafe_allow_html=True)
         
-        # 2. حلقة التكرار الآمنة لعرض الأسطر والأزرار
         for index, row in df_users.iterrows():
             current_email = row['email']
             current_status = row['status']
             current_package = row['package']
             
-            col_mail, col_status, col_action = st.columns([2, 1, 1])
+            col_mail, col_status, col_action = st.columns([2, 2, 1])
             
             with col_mail:
                 st.text(current_email)
             with col_status:
                 st.info(f"الحالة الحالية: {current_status}")
             with col_action:
-                # عزل الـ key داخل نص صافي ومحمي تماماً لحل خطأ NameError بالثانية
                 button_key = f"destroy_btn_{current_email}"
                 
                 if st.button("🗑️ حذف الحساب فوراً", key=button_key):
-                    # استدعاء دالة الحذف الشامل
+                    # تفعيل راية تدمير الحساب لمنع سطر الـ INSERT من إعادة توليده تلقائياً
+                    st.session_state["destroyed_flag"] = True
+                    
+                    # استدعاء دالة الحذف الميكانيكي المعرفة في الأعلى
                     if delete_email_completely(current_email):
                         st.toast(f"🔥 تم تدمير وإزالة البريد {current_email} كلياً!", icon="💥")
                         time.sleep(0.5)
-                        # إجبار السيرفر على إعادة التشغيل لتنظيف الشاشة وحذف الحالة النشطة تماماً
+                        # إجبار السيرفر على إعادة التشغيل لتنظيف الشاشة واختفاء الحساب فوراً
                         st.rerun()
     else:
         st.warning("📭 لا توجد حسابات تجار مسجلة حالياً في قاعدة البيانات.")
-
 
                                
 # ========================================================
