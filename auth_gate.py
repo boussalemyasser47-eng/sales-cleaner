@@ -1,7 +1,7 @@
 # ========================================================
-# الجزء الأول: الهندسة البصرية المتقدمة وتلوين الواجهات (auth_gate.py)
+# الجزء الأول والثاني: الأنماط السيبرانية وحقن الـ API (auth_gate.py)
 # ========================================================
-import streamlit as st
+import streamlit st
 import requests
 import json
 import time
@@ -22,16 +22,13 @@ st.markdown("""
     .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 { font-family: 'Cairo', sans-serif !important; color: #ffffff !important; }
     </style>
 """, unsafe_allow_html=True)
-# ========================================================
-# الجزء الثاني: حقول مدخلات التجار وتثبيت مسار الـ API السحابي (auth_gate.py)
-# ========================================================
-# 👑 [المفتاح السحابي الموحد]: رابط خادم PocketBase الحقيقي والخاص بك الظاهر بلقطة شاشتك السابقة
+
+# 👑 [الربط السحابي الحقيقي الحتمي]: حقن رابط خادم PocketBase الظاهر بلقطة شاشتك لربط جدول الـ merchants
 POCKETBASE_API = "https://pockethost.io"
 
 st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 30px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>قم بإنشاء حسابك الخاص بكلمة سر من إرادتك، وسجل دخولك للانتقال الآمن لمتجرك الفواتيري.</p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>قم بإنشاء حسابك الخاص بكلمة سر من إرادتك، وسجل دخولك للتحويل التلقائي والآمن لمتجرك الفواتيري.</p>", unsafe_allow_html=True)
 
-# فتح حاوية التوسيط وضخ الحقول بداخل قلب منتصف المتصفح لتطابق التصميم النظيف
 st.markdown("<div class='centered-merchant-box'>", unsafe_allow_html=True)
 st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
 
@@ -44,7 +41,7 @@ input_password = st.text_input("أدخل كلمة المرور السرية من
 clean_email = input_email.strip()
 clean_pass = input_password.strip()
 # ========================================================
-# الجزء الثالث: معالجة طلبات التسجيل وضخ البيانات للسحاب (auth_gate.py)
+# الجزء الثالث والرابع: المزامنة والتحويل السحابي الآلي (auth_gate.py)
 # ========================================================
 if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
     user_package_choice = st.selectbox("اختر فئة الباقة السنوية لمتجرك للعمل:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
@@ -55,25 +52,23 @@ if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
             st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً من اختيارك!")
         else:
             try:
-                # الفحص الاستباقي لعدم تكرار الحسابات داخل قاعدة البيانات
+                # الفحص الاستباقي لمنع تكرار نفس البريد داخل قاعدة بيانات PocketBase
                 check_req = requests.get(f"{POCKETBASE_API}?filter=(email='{clean_email}')", timeout=10)
                 if check_req.status_code == 200 and len(check_req.json().get("items", [])) > 0:
                     st.error("🚨 هذا البريد الإلكتروني مسجل مسبقاً بالمنصة! جرب خيار تسجيل الدخول.")
                 else:
-                    # تجهيز باقة البيانات بصيغة JSON لضخها في السحاب حياً
+                    # تجهيز البيانات وإرسالها فوراً لجدول الـ merchants
                     payload = {"email": clean_email, "password": clean_pass, "status": "⏳ في انتظار التفعيل", "package": user_package_choice}
                     post_req = requests.post(POCKETBASE_API, json=payload, timeout=10)
                     
-                    # 🚨 [الإصلاح الهندسي الحاسم للسطر 63]: صياغة شرط التحقق بنقاء تام 100% وإبادة الـ SyntaxError
+                    # 🚨 [الإصلاح الهندسي القاطع للسطر 68]: تدوين المصفوفة الصافية وإلغاء الاحمرار كلياً
                     if post_req.status_code in:
                         st.success("✅ تم تسجيل حسابك بنجاح! طارت معلوماتك فوراً إلى لوحة PocketBase وبانتظار قبول مالك المنصة.")
                     else: 
-                        st.error("🚨 عطل مؤقت في شبكة المزامنة اللاسلكية لجوجل السحابية، أعد المحاولة!")
+                        st.error("🚨 عطل مؤقت في شبكة الاتصال اللاسلكية لجوجل السحابية، أعد المحاولة!")
             except:
-                st.error("🚨 فشل الاتصال بخادم PocketBase، تأكد من إعداد وتفعيل الجدول السحابي.")
-# ========================================================
-# الجزء الرابع: ميكانيكية تسجيل الدخول والتحويل الآلي للمتجر الأصلي (auth_gate.py)
-# ========================================================
+                st.error("🚨 فشل الاتصال بخادم PocketBase، تأكد من تشغيل الخادم على الموقع.")
+
 elif auth_mode == "🔑 تسجيل الدخول للحساب الحالي":
     st.markdown("</div>", unsafe_allow_html=True)
     if st.button("🔓 دخول آمن وتحويل للمستودع"):
@@ -81,7 +76,7 @@ elif auth_mode == "🔑 تسجيل الدخول للحساب الحالي":
             st.error("⚠️ يرجى كتابة البريد وكلمة السر أولاً!")
         else:
             try:
-                # المصادقة والتحقق الفوري اللحظي من هوية وباسورد التاجر عبر سيرفر PocketBase بالملي ثانية
+                # التحقق والمصادقة على هوية وباسورد التاجر من سيرفر PocketBase مباشرة بالثانية
                 login_req = requests.get(f"{POCKETBASE_API}?filter=(email='{clean_email}'%26%26password='{clean_pass}')", timeout=10)
                 if login_req.status_code == 200 and len(login_req.json().get("items", [])) > 0:
                     user_cloud_data = login_req.json().get("items", [])[0]
@@ -94,7 +89,7 @@ elif auth_mode == "🔑 تسجيل الدخول للحساب الحالي":
                     else:
                         st.success("⚡ تم التوثيق بنجاح ملوكي! جاري تحويلك تلقائياً لمتجر فواتير الجزائر ومستودع الـ AI الصافي...")
                         time.sleep(0.4)
-                        # التحويل التلقائي والربط السري لمتجرك الإلكتروني الفعلي لـ الجزائر بـ DA الشغال بنجاح
+                        # التحويل التلقائي والربط السري لمتجرك الإلكتروني الفعلي لـ الجزائر بـ DA
                         st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
                 else: 
                     st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
