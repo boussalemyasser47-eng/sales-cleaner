@@ -117,77 +117,45 @@ def delete_email_completely(email_to_delete):
         return False
 
 # ========================================================
-# الجزء الثالث: واجهة فيسبوك الموسطة والآمنة للتجار (auth_gate.py)
+# الجزء الثالث: لوحة التحكم العليا المحدثة وميكانيكية التحديث الحية
 # ========================================================
-# واجهة التجار الصافية تصعد تلقائياً للجمهور فقط وحصرياً إذا كان الرابط عادياً وخالياً من مفتاحك السري
-if not is_boss_link:
-    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>سجل بريدك وإلكترونيات متجرك الخاص للتحويل التلقائي والآمن لخزانة فواتيرك.</p>", unsafe_allow_html=True)
+if is_boss_link:
+    st.markdown("<h2 style='color: #ff00ff; text-align: right; font-weight:900;'>👑 غرفة القيادة العليا - حذف وتدمير الإيميلات</h2>", unsafe_allow_html=True)
     
-    col_side_left, col_center_box, col_side_right = st.columns(3)
-    with col_center_box:
-        st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
-        st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
+    # 1. جلب البيانات طازجة مباشرة من قاعدة البيانات في كل تحديث
+    conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
+    df_users = pd.read_sql_query("SELECT email, status, package FROM saas_users_auth", conn_view)
+    conn_view.close()
+    
+    if not df_users.empty:
+        st.markdown("<p style='color: #b0b0d0; text-align: right;'>قائمة المشتركين الحاليين في المنصة:</p>", unsafe_allow_html=True)
         
-        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
-        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
-        
-        input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
-        input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
-        
-        clean_email = input_email.strip()
-        clean_pass = input_password.strip()
-        
-        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-            user_package_choice = st.selectbox("اختر فئة الباقة السنوية لمتجرك:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
-            st.markdown("</div>", unsafe_allow_html=True)
+        # 2. حلقة التكرار الآمنة لعرض الأسطر والأزرار
+        for index, row in df_users.iterrows():
+            current_email = row['email']
+            current_status = row['status']
+            current_package = row['package']
             
-            if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
-                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
-                else:
-                    conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
-                    cursor_reg = conn_reg.cursor()
-                    try:
-                        cursor_reg.execute("INSERT INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, user_package_choice))
-                        conn_reg.commit()
-                        st.success("✅ تم تسجيل حسابك الحر بنجاح! طارت معلوماتك للإدارة وبانتظار تفعيل باقتك السنوية حيًا.")
-                    except sqlite3.IntegrityError:
-                        st.error("🚨 هذا البريد الإلكتروني مسجل مسبقاً بالنظام!")
-                    conn_reg.close()
-                    
-        elif auth_mode == "🔑 تسجيل الدخول للحساب الحالي":
-            st.markdown("</div>", unsafe_allow_html=True)
-            if st.button("🔓 دخول آمن وتحويل للمستودع"):
-                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى كتابة البريد وكلمة السر أولاً!")
-                else:
-                    conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
-                    cursor_login = conn_login.cursor()
-                    cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
-                    db_row = cursor_login.fetchone()
-                    conn_login.close()
-                    
-                    if db_row:
-                        user_status = db_row[0]
-                        if "⏳" in user_status or "انتظار" in user_status: st.warning("⏳ حسابك مسجل، وهو قيد المراجعة حالياً من طرف الإدارة!")
-                        elif "🔒" in user_status or "قفل" in user_status or "محجوب" in user_status: st.error("🚨 عذراً، هذا الحساب مقفل ومحجوب كلياً لعدم الاشتراك السنوي!")
-                        else:
-                            st.success("⚡ تم التوثيق بنجاح! جاري تحويلك تلقائياً لمتجرك الأصلي والـ 9 ميزات...")
-                            time.sleep(0.4)
-                            st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
-  
-                    else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي ")
+            col_mail, col_status, col_action = st.columns([2, 1, 1])
+            
+            with col_mail:
+                st.text(current_email)
+            with col_status:
+                st.info(f"الحالة الحالية: {current_status}")
+            with col_action:
+                # عزل الـ key داخل نص صافي ومحمي تماماً لحل خطأ NameError بالثانية
+                button_key = f"destroy_btn_{current_email}"
+                
+                if st.button("🗑️ حذف الحساب فوراً", key=button_key):
+                    # استدعاء دالة الحذف الشامل
+                    if delete_email_completely(current_email):
+                        st.toast(f"🔥 تم تدمير وإزالة البريد {current_email} كلياً!", icon="💥")
+                        time.sleep(0.5)
+                        # إجبار السيرفر على إعادة التشغيل لتنظيف الشاشة وحذف الحالة النشطة تماماً
+                        st.rerun()
+    else:
+        st.warning("📭 لا توجد حسابات تجار مسجلة حالياً في قاعدة البيانات.")
 
-# ========================================================
-# تابع للجزء الثالث: معالجة ضغطة زر الحذف وتدمير الكاش حياً
-# ========================================================
-if st.button(f"🗑️ حذف الحساب فوراً", key=f"destroy_{row['email']}"):
-    # 1. تنفيذ المسح الفوري من قاعدة البيانات السحابية
-    if delete_email_completely(row['email']):
-        # 2. إرسال إشعار توست زجاجي مرئي للتأكيد
-        st.toast(f"🔥 تم تدمير وإزالة البريد {row['email']} كلياً!", icon="💥")
-        # 3. [الحل الحاسم للـ Bug]: إجبار السيرفر على التحديث الفوري لإخفاء الحالة النشطة
-        time.sleep(0.5)
-        st.rerun()
 
                                
 # ========================================================
