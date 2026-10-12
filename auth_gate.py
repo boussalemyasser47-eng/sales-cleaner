@@ -170,11 +170,15 @@ if not is_boss_link:
                             st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
                     else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
 # ========================================================
-# الجزء الرابع: لوحة التحكم الإدارية المركزية وقفل السيرفر الموحد (auth_gate.py)
+# الجزء الرابع: لوحة التحكم الإدارية المركزية الملوكية المحدثة (auth_gate.py)
 # ========================================================
 # اللوحة تفتح وتتوسط الشاشة كلياً فقط وحصرياً إذا تحقق وجود المعرّف الشبح بالرابط علوياً
 if is_boss_link:
-    # 1️⃣ جدار التحقق الموسط الشبح: يطالبك ببياناتك الإدارية أولاً ويقفل الغرفة عن المتطفلين
+    # 👑 [استقرار الجلسة ضد الـ Refresh]: تفعيل وحقن خلايا الجلسة الحديدية لمنع طلب الباسورد مجدداً عند التحديث
+    if "admin_master_logged" not in st.session_state:
+        st.session_state["admin_master_logged"] = False
+
+    # 1️⃣ جدار التحقق الموسط الشبح: يطالبك بالبيانات لأول مرة فقط، ويختفي تماماً طالما أنت داخل الصفحة
     if not st.session_state["admin_master_logged"]:
         st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 50px; text-shadow: 0 0 20px #00fff0; font-size:28px;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h1>", unsafe_allow_html=True)
         st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 14px; margin-bottom: 20px;'>مرحباً بك يا قائد المنصة المحترم. أدخل بياناتك بمركز التحقق الموسط لتنشيط السيرفر الكلي.</p>", unsafe_allow_html=True)
@@ -182,7 +186,6 @@ if is_boss_link:
         st.markdown("<div class='centered-box-container'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#00fff0; text-align:center; font-weight:700; margin-top:0;'>🔑 تسجيل دخول المالك الأعلى</h3>", unsafe_allow_html=True)
         
-        # حقول إدخال فريدة ونظيفة ومحسنة تمنع التداخل أو تعليق البكسل القديم
         input_boss_user = st.text_input("👤 اسم المستخدم الخاص بالقائد:", value="", key="vault_boss_user_field")
         input_boss_pass = st.text_input("🔑 كلمة المرور الإدارية الخارقة:", type="password", value="", key="vault_boss_pass_field")
         st.markdown("</div>", unsafe_allow_html=True)
@@ -190,20 +193,18 @@ if is_boss_link:
         _, col_btn_lock_center, _ = st.columns(3)
         with col_btn_lock_center:
             if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="vault_boss_submit_btn"):
-                # تحسين تكتيكي: تنظيف المدخلات من الفراغات علوياً تلقائياً لحمايتك من الأخطاء
-                if input_boss_user.strip() == ADMIN_USERNAME and input_boss_pass.strip() == ADMIN_PASSWORD:
+                if input_boss_user.strip() == "admin_master_v4" and input_boss_pass.strip() == "SaasPassword2026":
                     st.session_state["admin_master_logged"] = True
                     st.success("⚡ تم التوثيق بنجاح ملوكي! جاري قراءة طلبات التجار...")
                     time.sleep(0.3)
-                    st.sidebar.markdown("<!-- Live Refresh -->")
                     st.rerun()
                 else:
                     st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من الأحرف والرموز السريّة.")
                     
-    # 2️⃣ فتح حجرة القيادة والسيادة الكبرى وعوائد الـ DA فور نجاح مطابقة بياناتك أعلاه بنقاء كامل
+    # 2️⃣ فتح حجرة القيادة والسيادة الكبرى وعوائد الـ DA فور نجاح مطابقة بياناتك (تظل مستقرة عند الـ Refresh)
     else:
         st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المشتركة. المزامنة تعمل بكفاءة مطلقة.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المشتركة المستقرة. المزامنة تعمل بكفاءة مطلقة.</p>", unsafe_allow_html=True)
         
         try:
             conn = sqlite3.connect("invoices_master_v4.db")
@@ -214,8 +215,11 @@ if is_boss_link:
         except: 
             total_platform_revenue = 4580000.00; total_invoices_count = 142
 
+        # جلب البيانات من خزانة الأمان لقراءتها وفرزها منطقياً
         conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
-        df_merchants = pd.read_sql("SELECT * FROM saas_users_auth", conn_vault); conn_vault.close()
+        # 💡 [الفرز المنطقي الاستراتيجي]: سحب طلبات الانتظار (⏳) لتصعد في قمة رادار القيادة أولاً وتتذيل الحسابات المفعلة
+        df_merchants = pd.read_sql("SELECT * FROM saas_users_auth ORDER BY CASE WHEN status LIKE '%⏳%' THEN 0 ELSE 1 END, email ASC", conn_vault)
+        conn_vault.close()
 
         # عدادات الأرباح والتدفقات النقدية المحدثة بمنتصف المتصفح للـ COD بالجزائر
         col_s1, col_v2, col_v3 = st.columns(3)
@@ -226,7 +230,7 @@ if is_boss_link:
         with col_v3: st.markdown(f"<div class='premium-card-pink' style='border-color:#00ff66; box-shadow:0 0 20px rgba(0,255,102,0.2);'><span style='color:#00ff66; font-weight:900;'>📦 حركة الفواتير المطبوعة بالـ SQL:</span><h2 style='color:#fff; text-shadow: 0 0 10px #00ff66; margin:10px 0 0 0;'>{total_invoices_count} طلبيّة صادرة</h2></div>", unsafe_allow_html=True)
 
         st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
-        st.markdown("<h3 style='color: #00fff0; font-weight:900; text-shadow: 0 0 8px rgba(0,255,240,0.3); text-align:right;'>📡 رادار مسح طلبات التسجيل المفتوحة (SaaS Incoming Queue):</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: #00fff0; font-weight:900; text-shadow: 0 0 8px rgba(0,255,240,0.3); text-align:right;'>📡 رادار مسح طلبات التسجيل المفتوحة المفرزة منطقياً (Queue):</h3>", unsafe_allow_html=True)
 
         if not df_merchants.empty:
             for idx, row in df_merchants.iterrows():
@@ -235,6 +239,7 @@ if is_boss_link:
                 if "🟢" in status:
                     card_class = "premium-card-cyan"; badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"; border_override = "border-right: 5px solid #00ff66 !important;"
                 elif "⏳" in status or "انتظار" in status:
+                    # تظهر الحسابات الجديدة المعلقة بالأعلى دوماً بوضعية الأصفر النيوني اللامع حياً
                     card_class = "premium-card-pink"; badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"; border_override = "border-right: 4px solid #ffcc00 !important;"
                 else:
                     card_class = "premium-card-pink"; badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"; border_override = "border-right: 4px solid #ff3333 !important;"
@@ -242,13 +247,14 @@ if is_boss_link:
                 st.markdown(f"""
                     <div class='{card_class}' style='{border_override} padding: 18px; margin-bottom: 15px;'>
                         <span style='float: left; {badge_style}'>{status}</span>
-                        <span style='color:#fff; font-size:14.5px; font-weight:bold;'>📧 بريد التاجر الجديد: <code style='color:#00fff0; background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:6px;'>{email}</code></span> | 
+                        <span style='color:#fff; font-size:14.5px; font-weight:bold;'>📧 بريد التاجر: <code style='color:#00fff0; background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:6px;'>{email}</code></span> | 
                         <span style='color:#aaa; font-size:13px;'>كلمة السر المختارة: <b style='color:#ff00ff;'>{password}</b></span><br>
                         <span style='color:#aaa; font-size:12.5px;'>فئة الاشتراك المطلوبة للعمل: <b>{package}</b></span>
                     </div>
                 """, unsafe_allow_html=True)
 
-                col_act1, col_act2 = st.columns(2)
+                # حقن وتثبيت ميكانيكية أزرار الموافقات الثلاثية الفخمة بالتوزيع المتساوي
+                col_act1, col_act2, col_act3 = st.columns(3)
                 with col_act1:
                     if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"activate_{email}"):
                         conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (email,)); conn.commit(); conn.close()
@@ -257,11 +263,19 @@ if is_boss_link:
                     if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"lock_{email}"):
                         conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,)); conn.commit(); conn.close()
                         st.success("🔒 تم طرد وقفل حساب التاجر سحابياً بنجاح كلي!"); time.sleep(0.3); st.rerun()
+                # 💡 [حقن فكرة زر تدمير الحساب الحتمي نهائياً من الـ SQL]:
+                with col_act3:
+                    if st.button("🗑️ حذف وإعدام هذا الإيميل نهائياً", key=f"delete_{email}"):
+                        conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("DELETE FROM saas_users_auth WHERE email = ?", (email,)); conn.commit(); conn.close()
+                        st.success(f"🗑️ تم نسف وحذف البريد {email} من سجلات السيرفر كلياً!"); time.sleep(0.3); st.rerun()
+                st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
         else:
-            st.info("📡 رادار البحث فارغ، لا يوجد طلبات تسجيل حالياً بمركز الموافقات السحابية الموسطة.")
+            st.info("📡 لا يوجد طلبات تسجيل حالياً بمركز الموافقات السحابية الموسطة.")
             
         st.markdown("<br>", unsafe_allow_html=True)
+        # 👑 [زر التجميد والخروج الوحيد لإغلاق المتصفح]:
         if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر الموسط والخزائن"):
             st.session_state["admin_master_logged"] = False
-            st.success("🔒 تم تأمين وقفل السيرفر بنجاح ملوكي!")
+            st.success("🔒 تم تأمين وقفل السيرفر بنجاح ملوكي! يتطلب الرمز الآن عند العودة.")
             time.sleep(0.3); st.rerun()
+
