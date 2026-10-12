@@ -178,39 +178,6 @@ if not is_boss_link:
                     else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي ")
 
 # ========================================================
-# تابع للجزء الثالث: لوحة التحكم العليا وجدول التدمير الفوري
-# ========================================================
-if is_boss_link:
-    st.markdown("<h2 style='color: #ff00ff; text-align: right; font-weight:900;'>👑 غرفة القيادة العليا - إدارة الحسابات الموحدة</h2>", unsafe_allow_html=True)
-    
-    # جلب كافة الحسابات المسجلة في النظام حالياً حياً
-    conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
-    df_users = pd.read_sql_query("SELECT email, status, package FROM saas_users_auth", conn_view)
-    conn_view.close()
-    
-    if not df_users.empty:
-        st.markdown("<p style='color: #b0b0d0; text-align: right;'>قائمة المشتركين الحاليين مع إمكانية الحذف الفوري لجميع الحالات:</p>", unsafe_allow_html=True)
-        
-        # عرض البيانات عبر تقسيم أسطر تفاعلي آمن
-        for index, row in df_users.iterrows():
-            col_mail, col_status, col_pack, col_action = st.columns([3, 2, 2, 2])
-            
-            with col_mail:
-                st.text(row['email'])
-            with col_status:
-                st.info(f"الحالة: {row['status']}")
-            with col_pack:
-                st.text(row['package'])
-            with col_action:
-                # زر تدمير فوري مخصص لكل بريد إلكتروني على حدة
-                if st.button(f"🗑️ حذف الحساب", key=f"del_{row['email']}"):
-                    if delete_email_completely(row['email']):
-                        st.toast(f"🔥 تم حذف البريد {row['email']} بنجاح في كل الحالات!", icon="✅")
-                        time.sleep(1)
-                        st.rerun()
-    else:
-        st.warning("📭 لا توجد حسابات تجار مسجلة حالياً في قاعدة البيانات.")
-# ========================================================
 # تابع للجزء الثالث: معالجة ضغطة زر الحذف وتدمير الكاش حياً
 # ========================================================
 if st.button(f"🗑️ حذف الحساب فوراً", key=f"destroy_{row['email']}"):
