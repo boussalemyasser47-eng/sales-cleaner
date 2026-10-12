@@ -10,35 +10,26 @@ import os
 # ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة وفخمة ومحمية كلياً
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
-# 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
+# قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
 query_params = st.query_params
 is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
 
-# إذا كان المتصفح لتاجر عادي، نقوم بنسف وإخفاء السهم الجانبي والشريط تماماً بـ الـ CSS ومستحيل ينتبه له أحد
-if not is_boss_link:
-    st.markdown("""
-        <style>
-        [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] {
-            display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0px !important; width: 0px !important;
-        }
-        section[data-testid="stSidebar"] { display: none !important; visibility: hidden !important; }
-        </style>
-    """, unsafe_allow_html=True)
-
-# حقن كود التصميم السيبراني المطور كلياً مع تأثير النبض الحركي الخفيف للفخامة البصرية
+# إذا كان المتصفح لتاجر عادي، نقوم بنسف وإخفاء السهم الجانبي والشريط تماماً بالـ CSS
 st.markdown("""
-    <link rel="preconnect" href="https://googleapis.com">
-    <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    
     <style>
+    [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] {
+        display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0px !important; width: 0px !important;
+    }
+    section[data-testid="stSidebar"] { display: none !important; visibility: hidden !important; }
+    
+    /* ترقية خلفية المتصفح بالكامل لتصبح ليلة رقمية عميقة وعميقة البعد */
     .stApp {
         background: radial-gradient(circle at 50% 40%, #0d0d21 0%, #030307 100%) !important;
         color: #ffffff !important;
         font-family: 'Cairo', sans-serif !important;
     }
     
-    /* [إصلاح حاسم وتوسيط البطاقة]: إجبار صندوق الدخول على الصعود بمنتصف الشاشة بنقاء 100% */
+    /* ضبط أبعاد حقول الدخول بمنتصف الشاشة بدقة متناهية بالبكسل */
     .centered-box-container {
         max-width: 500px !important;
         margin: 50px auto 20px auto !important;
@@ -50,43 +41,40 @@ st.markdown("""
         direction: rtl !important;
         text-align: right !important;
         backdrop-filter: blur(12px) !important;
-        animation: boxGlowPulse 4s infinite alternate ease-in-out;
-    }
-    
-    @keyframes boxGlowPulse {
-        0% { border-color: #00fff0; box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.25); }
-        100% { border-color: #ff00ff; box-shadow: 0px 0px 35px rgba(255, 0, 255, 0.35); }
     }
     
     .premium-card-pink {
         background: linear-gradient(135deg, rgba(34, 4, 46, 0.5) 0%, rgba(15, 2, 20, 0.8) 100%) !important;
-        border: 2px solid #ff00ff !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 30px rgba(255, 0, 255, 0.2) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(12px);
+        border: 2px solid #ff00ff !important; border-radius: 20px !important; padding: 25px !important; box-shadow: 0px 0px 30px rgba(255, 0, 255, 0.2) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(12px);
     }
     .premium-card-cyan {
         background: linear-gradient(135deg, rgba(4, 32, 43, 0.5) 0%, rgba(2, 14, 20, 0.8) 100%) !important;
-        border: 2px solid #00fff0 !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 30px rgba(0, 255, 240, 0.2) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(12px);
+        border: 2px solid #00fff0 !important; border-radius: 20px !important; padding: 25px !important; box-shadow: 0px 0px 30px rgba(0, 255, 240, 0.2) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(12px);
     }
     
+    /* تخصيص وتثبيت أبعاد الأزرار الإدارية والتجارية بنقاء تام */
     div[data-testid="stVerticalBlock"] button, div.stButton button, .stButton > button {
-        width: 100% !important; min-height: 50px !important; white-space: normal !important; word-wrap: break-word !important;
-        font-family: 'Cairo', sans-serif !important; font-size: 14.5px !important; font-weight: 800 !important; border-radius: 12px !important;
+        width: 100% !important; min-height: 48px !important; white-space: normal !important; word-wrap: break-word !important;
+        font-family: 'Cairo', sans-serif !important; font-size: 14px !important; font-weight: 800 !important; border-radius: 12px !important;
         text-align: center !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
-        padding: 12px 18px !important; background: linear-gradient(135deg, #090915 0%, #040409 100%) !important; color: #00fff0 !important;
-        border: 2px solid #00fff0 !important; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.3) !important; transition: all 0.4s ease-in-out !important;
+        padding: 10px 15px !important; background: linear-gradient(135deg, #090915 0%, #040409 100%) !important; color: #00fff0 !important;
+        border: 2px solid #00fff0 !important; box-shadow: 0px 0px 12px rgba(0, 255, 240, 0.25) !important; transition: all 0.4s ease-in-out !important;
     }
-    div.stButton button:hover { background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important; box-shadow: 0px 0px 25px #00fff0 !important; transform: translateY(-3px) !important; }
-    div[data-testid="stTextInput"] input { border: 2px solid #ff00ff !important; background-color: #080811 !important; color: #ffffff !important; border-radius: 12px !important; padding: 15px 18px !important; font-family: 'Cairo', sans-serif !important; font-size: 14px !important; transition: all 0.3s ease-in-out; }
-    div[data-testid="stTextInput"] input:focus { border-color: #00fff0 !important; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.4) !important; }
+    div.stButton button:hover { background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important; box-shadow: 0px 0px 22px #00fff0 !important; transform: translateY(-2px) !important; }
     
+    div[data-testid="stTextInput"] input { border: 2px solid #ff00ff !important; background-color: #080811 !important; color: #ffffff !important; border-radius: 12px !important; padding: 14px 16px !important; font-family: 'Cairo', sans-serif !important; font-size: 14px !important; }
     .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 { font-family: 'Cairo', sans-serif !important; color: #ffffff !important; }
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
 # الجزء الثاني: حقول مدخلات التجار وبناء جدول الـ SQL الموحد (auth_gate.py)
 # ========================================================
-# تهيئة وحقن متغيرات الجلسة مسبقاً بشكل معزول كلياً لسحق عيوب الـ KeyError تماماً
-if "admin_master_logged" not in st.session_state: st.session_state["admin_master_logged"] = False
-if "system_role" not in st.session_state: st.session_state["system_role"] = "visitor"
+# [تطبيق فكرتك الأسطورية ضد الـ Refresh]: قفل وحفظ حالة الجلسة لمنع طلب المعطيات عند التحديث كلياً
+if "admin_master_logged" not in st.session_state:
+    st.session_state["admin_master_logged"] = False
+
+if "system_role" not in st.session_state:
+    st.session_state["system_role"] = "visitor"
 
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
@@ -167,18 +155,12 @@ if not is_boss_link:
                             st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
                     else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
 # ========================================================
-# الجزء الرابع: لوحة التحكم الإدارية المركزية المحصنة كلياً (auth_gate.py)
+# الجزء الرابع: لوحة التحكم الإدارية وبوابة التدمير المعزولة (auth_gate.py)
 # ========================================================
-# اللوحة تفتح وتتوسط الشاشة كلياً فقط وحصرياً إذا تحقق وجود المعرّف الشبح بالرابط علوياً
 if is_boss_link:
-    # [استقرار الجلسة ضد الـ Refresh]: تفعيل وحقن خلايا الجلسة الحديدية لمنع طلب البيانات مجدداً عند التحديث
-    if "admin_master_logged" not in st.session_state:
-        st.session_state["admin_master_logged"] = False
-
-    # 1️⃣ جدار التحقق الموسط الشبح: يطالبك بالبيانات لأول مرة فقط، ويختفي تماماً طالما أنت داخل الصفحة
+    # 1️⃣ شاشة قفل التحقق الموسطة للأدمن (تظهر لأول مرة فقط وتختفي للأبد طالما المتصفح مفتوح)
     if not st.session_state["admin_master_logged"]:
         st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 50px; text-shadow: 0 0 20px #00fff0; font-size:28px;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 14px; margin-bottom: 20px;'>مرحباً بك يا قائد المنصة المحترم. أدخل بياناتك بمركز التحقق الموسط لتنشيط السيرفر الكلي.</p>", unsafe_allow_html=True)
         
         st.markdown("<div class='centered-box-container'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#00fff0; text-align:center; font-weight:700; margin-top:0;'>🔑 تسجيل دخول المالك الأعلى</h3>", unsafe_allow_html=True)
@@ -190,15 +172,16 @@ if is_boss_link:
         _, col_btn_lock_center, _ = st.columns(3)
         with col_btn_lock_center:
             if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="vault_boss_submit_btn"):
-                if input_boss_user.strip() == "admin_master_v4" and input_boss_pass.strip() == "SaasPassword2026":
+                if input_boss_user.strip() == ADMIN_USERNAME and input_boss_pass.strip() == ADMIN_PASSWORD:
                     st.session_state["admin_master_logged"] = True
+                    st.session_state["system_role"] = "admin"
                     st.success("⚡ تم التوثيق بنجاح ملوكي! جاري قراءة طلبات التجار...")
                     time.sleep(0.3)
                     st.rerun()
                 else:
-                    st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من الأحرف والرموز السريّة.")
+                    st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من الأحرف والرموز السرية.")
                     
-    # 2️⃣ فتح حجرة القيادة والسيادة الكبرى وعوائد الـ DA فور نجاح مطابقة بياناتك (تظل مستقرة عند الـ Refresh)
+    # 2️⃣ فتح حجرة القيادة والسيادة الكبرى وعوائد الـ DA (تظل مستقرة وثابتة عند عمل Refresh للمتصفح)
     else:
         st.markdown("<h1 style='color: #ff00ff; text-align: center; font-weight:900; text-shadow: 0 0 25px #ff00ff; font-size:34px;'>👑 مركز إدارة وتحويل صلاحيات المشتركين الكبرى</h1>", unsafe_allow_html=True)
         st.markdown("<p style='color: #00fff0; text-align: center; font-size: 14px; font-weight:600; margin-bottom:30px;'>مرحباً بك يا مالك المنصة في حجرتك الموسطة المشتركة المستقرة. المزامنة تعمل بكفاءة مطلقة.</p>", unsafe_allow_html=True)
@@ -206,14 +189,12 @@ if is_boss_link:
         try:
             conn = sqlite3.connect("invoices_master_v4.db")
             df_sales = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conn)
-            total_platform_revenue = df_sales['final_total'].sum()
-            total_invoices_count = len(df_sales)
-            conn.close()
+            total_platform_revenue = df_sales['final_total'].sum(); total_invoices_count = len(df_sales); conn.close()
         except: 
             total_platform_revenue = 4580000.00; total_invoices_count = 142
 
-        # جلب البيانات من خزانة الأمان لقراءتها وفرزها منطقياً
         conn_vault = sqlite3.connect("saas_security_vault.db", timeout=10)
+        # 💡 [الفرز المنطقي العبقري]: سحب طلبات الانتظار (⏳) لتصعد في القمة أولاً وتتذيل الحسابات المفعلة والمحظورة تلقائياً
         df_merchants = pd.read_sql("SELECT * FROM saas_users_auth ORDER BY CASE WHEN status LIKE '%⏳%' THEN 0 ELSE 1 END, email ASC", conn_vault)
         conn_vault.close()
 
@@ -232,52 +213,46 @@ if is_boss_link:
             for idx, row in df_merchants.iterrows():
                 email = row["email"]; status = row["status"]; package = row["package"]; password = row["password"]
                 
-                if "🟢" in status:
-                    card_class = "premium-card-cyan"; badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"; border_override = "border-right: 5px solid #00ff66 !important;"
-                elif "⏳" in status or "انتظار" in status:
-                    card_class = "premium-card-pink"; badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"; border_override = "border-right: 4px solid #ffcc00 !important;"
-                else:
-                    card_class = "premium-card-pink"; badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"; border_override = "border-right: 4px solid #ff3333 !important;"
+                if "🟢" in status: card_class = "premium-card-cyan"; badge_style = "color:#00ff66; font-weight:900; text-shadow:0 0 8px #00ff66;"; border_override = "border-right: 5px solid #00ff66 !important;"
+                elif "⏳" in status or "انتظار" in status: card_class = "premium-card-pink"; badge_style = "color:#ffcc00; font-weight:900; text-shadow:0 0 8px #ffcc00;"; border_override = "border-right: 4px solid #ffcc00 !important;"
+                else: card_class = "premium-card-pink"; badge_style = "color:#ff3333; font-weight:900; text-shadow:0 0 8px #ff3333;"; border_override = "border-right: 4px solid #ff3333 !important;"
                     
                 st.markdown(f"""
-                    <div class='{card_class}' style='{border_override} padding: 18px; margin-bottom: 15px;'>
+                    <div class='{card_class}' style='{border_override} padding: 18px; margin-bottom: 5px;'>
                         <span style='float: left; {badge_style}'>{status}</span>
                         <span style='color:#fff; font-size:14.5px; font-weight:bold;'>📧 بريد التاجر: <code style='color:#00fff0; background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:6px;'>{email}</code></span> | 
-                        <span style='color:#aaa; font-size:13px;'>كلمة السر المختارة: <b style='color:#ff00ff;'>{password}</b></span><br>
-                        <span style='color:#aaa; font-size:12.5px;'>فئة الاشتراك المطلوبة للعمل: <b>{package}</b></span>
+                        <span style='color:#aaa; font-size:13px;'>كلمة السر: <b style='color:#ff00ff;'>{password}</b></span><br>
+                        <span style='color:#aaa; font-size:12.5px;'>باقة العمل المطلوبة: <b>{package}</b></span>
                     </div>
                 """, unsafe_allow_html=True)
 
-                # 🚨 [العزل السيبراني المطلق للأزرار]: تشفير المفاتيح (Key Matrix Isolation) بنسبة 100% لمنع تداخل نبضات التحديث
-                col_act1, col_act2, col_act3 = st.columns(3)
-                with col_act1:
-                    if st.button("⚡ تفعيل وقبول", key=f"btn_activate_secure_v4_{idx}_{email[:5]}"):
-                        conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (email,))
-                        conn.commit(); conn.close()
-                        st.success("🟢 تم تفعيل الحساب حياً!")
-                        time.sleep(0.3); st.rerun()
-                with col_act2:
-                    if st.button("🔒 حظر وقفل", key=f"btn_lock_secure_v4_{idx}_{email[:5]}"):
-                        conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,))
-                        conn.commit(); conn.close()
-                        st.success("🔒 تم قفل الحساب سحابياً!")
-                        time.sleep(0.3); st.rerun()
-                # 🗑️ [المقصلة المعزولة القاطعة للأخطاء]: استخدام معرف عسكري خارق لنسف السجل كلياً حياً في كل الحالات
-                with col_act3:
-                    if st.button("🗑️ حذف وإعدام", key=f"btn_destroy_absolute_v4_{idx}_{email[:5]}"):
-                        conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        conn.cursor().execute("DELETE FROM saas_users_auth WHERE email = ?", (email,))
-                        conn.commit(); conn.close()
-                        st.success("🗑️ تم مسح وحذف الحساب من الجذور كلياً!")
-                        time.sleep(0.3); st.rerun()
-                st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
-        else:
-            st.info("📡 لا يوجد طلبات تسجيل حالياً بمركز الموافقات السحابية الموسطة.")
-            
-        st.markdown("<br>", unsafe_allow_html=True)
+                # 🚨 [الحقن العسكري الحاسم والأخير للهيكل والمحو]: حبس الأزرار داخل نموذج مستقل لمنع اختلاط النبضات نهائياً
+                with st.form(key=f"secure_matrix_form_{idx}_{email[:4]}"):
+                    col_act1, col_act2, col_act3 = st.columns(3)
+                    with col_act1:
+                        execute_activate = st.form_submit_button("⚡ قبول وتفعيل")
+                    with col_act2:
+                        execute_lock = st.form_submit_button("🔒 طرد وحظر")
+                    with col_act3:
+                        execute_delete = st.form_submit_button("🗑️ حذف وإعدام")
+                    
+                    # قنوات المعالجة الفردية المعزولة 100% لكل زر داخل الاستمارة بالملي ثانية
+                    if execute_activate:
+                        conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (email,)); conn.commit(); conn.close()
+                        st.success("🟢 تم تفعيل الحساب وحفظ الباقة حياً!"); time.sleep(0.3); st.sidebar.markdown("<!-- Refresh -->"); st.rerun()
+                    
+                    if execute_lock:
+                        conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("UPDATE saas_users_auth SET status = '🔒 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (email,)); conn.commit(); conn.close()
+                        st.success("🔒 تم قفل الحساب وطرد التاجر سحابياً!"); time.sleep(0.3); st.sidebar.markdown("<!-- Refresh -->"); st.rerun()
+                    
+                    # 🗑️ المقصلة الرقمية التامة: تمسح وتنسف الإيميل من جذور قاعدة البيانات في نفس الثانية لجميع الحالات حتماً!
+                    if execute_delete:
+                        conn = sqlite3.connect("saas_security_vault.db", timeout=10); conn.cursor().execute("DELETE FROM saas_users_auth WHERE email = ?", (email,)); conn.commit(); conn.close()
+                        st.success(f"🗑️ تم نسف وحذف الحساب {email} كلياً من السيرفر!"); time.sleep(0.3); st.sidebar.markdown("<!-- Refresh -->"); st.rerun()
+        else: st.info("📡 رادار البحث فارغ، لا يوجد طلبات تسجيل حالياً.")
+        
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        # زر التجميد وقفل المتصفح لتأمين السيرفر عند المغادرة كلياً
         if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر الموسط والخزائن"):
-            st.session_state["admin_master_logged"] = False
-            st.success("🔒 تم تأمين وقفل السيرفر بنجاح ملوكي!")
-            time.sleep(0.3); st.rerun()
+            st.session_state["admin_master_logged"] = False; st.session_state["system_role"] = "visitor"
+            st.success("🔒 تم تأمين وقفل السيرفر بنجاح ملوكي! يتطلب الرمز عند العودة."); time.sleep(0.3); st.rerun()
