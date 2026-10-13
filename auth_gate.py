@@ -171,7 +171,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
 
 # ========================================================
-# الجزء الثالث: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py)
+# الجزء الثالث: غرفة المالك ورادار الموافقات الخماسي المصحح (auth_gate.py)
 # ========================================================
 if is_boss_link:
     if not st.session_state["admin_master_logged"]:
@@ -179,16 +179,14 @@ if is_boss_link:
         st.markdown("<div class='centered-box-container' style='max-width: 500px; margin: 60px auto 20px auto; padding: 40px; background: rgba(5, 5, 15, 0.95); border: 2px solid #00fff0; border-radius: 20px; box-shadow: 0px 0px 40px rgba(0, 255, 240, 0.35); direction: rtl; text-align: right; backdrop-filter: blur(15px);'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color: #ff00ff; text-align: center; font-weight: 900; margin-top: 0;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h2>", unsafe_allow_html=True)
         
-                # ========================================================
-        # 👍 [الإصلاح الحاسم]: توحيد أسماء المتغيرات لمنع خطأ NameError بالثانية
-        # ========================================================
+        # 👍 [إبادة خطأ الـ NameError]: تعريف المتغيرات بأسماء موحدة وصافية تطابق الشرط بالمليمتر
         boss_user = st.text_input("👤 اسم المستخدم الخاص بالقائد:", key="boss_leader_user").strip()
         boss_pass = st.text_input("🔑 كلمة المرور الإدارية الخارقة:", type="password", key="boss_leader_pass").strip()
         
         st.markdown("<br>", unsafe_allow_html=True)
         
         if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="submit_boss_login_btn"):
-            # تم توحيد المتغيرات هنا لتطابق المدخلات في الأعلى تماماً دون أي نقص
+            # تطابق صارم ومحمي بنسبة 100% بين المدخلات والثوابت الإدارية
             if boss_user == ADMIN_USERNAME and boss_pass == ADMIN_PASSWORD:
                 st.session_state["admin_master_logged"] = True
                 st.toast("👑 مرحباً بك يا قائد! تم تفعيل لوحة السيادة والموافقات.", icon="🔓")
@@ -196,12 +194,12 @@ if is_boss_link:
                 st.rerun()
             else:
                 st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من مفاتيح الأمان السحابية.")
-
         st.markdown("</div>", unsafe_allow_html=True)
+        
     else:
         st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900; text-shadow: 0 0 25px #00fff0;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
         
-        # 📈 العدادات الثلاثية المستقلة المعزولة كلياً والمحاطة بإطار النيون
+        # العدادات الثلاثية المستقلة المعزولة كلياً والمحاطة بإطار النيون
         col_stat1, col_stat2, col_stat3 = st.columns(3)
         with col_stat1: st.markdown("<div style='border:2px solid #ff00ff; border-radius:15px; padding:20px; text-align:center; background:rgba(5,5,15,0.85); box-shadow: 0px 0px 25px rgba(255, 0, 255, 0.35); direction:rtl;'><h4 style='color:#ff00ff; margin:0;'>📦 حركة الفواتير المطبوعة بالـ SQL</h4><h2>142 تلبية صادرة</h2></div>", unsafe_allow_html=True)
         with col_stat2: st.markdown("<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(5,5,15,0.85); box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.35); direction:rtl;'><h4 style='color:#00fff0; margin:0;'>👥 المشتركين النشطين حالياً بالمنصة</h4><h2>1 تجار نشطين</h2></div>", unsafe_allow_html=True)
@@ -226,6 +224,7 @@ if is_boss_link:
                 </div>
                 """, unsafe_allow_html=True)
                 
+                # مصفوفة التحكم الخماسية (الحذف في المنتصف)
                 col_1, col_2, col_3, col_4, col_5 = st.columns(5)
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
