@@ -277,19 +277,20 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     cursor.execute('''CREATE TABLE IF NOT EXISTS store_stock (product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER)''')
     conne.commit()
     
-    # أشرطة التحكم الجانبية للمتجر والأزرار النيونية للتاجر
+        # أشرطة التحكم الجانبية للمتجر والأزرار النيونية للتاجر
     st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold;'>👤 التاجر النشط: {current_merchant}</p>", unsafe_allow_html=True)
     choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي"])
     
-       if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب"):
-        st.session_state.pop("active_merchant_user"); st.toast("تم الخروج الآمن!"); time.sleep(0.5); st.rerun()
+    # ✅ تم تصحيح الإزاحة الحادّة هنا: السطر أصبح محاذياً بالمليمتر وعلى نفس خط الكود السابق والتالي
+    if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب"):
+        st.session_state.pop("active_merchant_user")
+        st.toast("تم الخروج الآمن!")
+        time.sleep(0.5)
+        st.rerun()
         
-    # 👍 تم إيقاف وحظر السطر المسبب لـ NameError للأبد ليعود السيرفر للبث فوراً
+    # تم إيقاف وحظر السطر المسبب لـ NameError للأبد ليعود السيرفر للبث
     # render_sidebar_helper()
 
-        
-    render_sidebar_helper()
-    
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
         stat_col1, stat_col2, stat_col3 = st.columns(3)
