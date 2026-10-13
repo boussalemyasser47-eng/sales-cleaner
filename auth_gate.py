@@ -171,7 +171,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
 
 # ========================================================
-# الجزء الثالث: غرفة المالك ورادار الموافقات الخماسي المصحح (auth_gate.py)
+# الجزء الثالث: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py)
 # ========================================================
 if is_boss_link:
     if not st.session_state["admin_master_logged"]:
@@ -179,7 +179,6 @@ if is_boss_link:
         st.markdown("<div class='centered-box-container' style='max-width: 500px; margin: 60px auto 20px auto; padding: 40px; background: rgba(5, 5, 15, 0.95); border: 2px solid #00fff0; border-radius: 20px; box-shadow: 0px 0px 40px rgba(0, 255, 240, 0.35); direction: rtl; text-align: right; backdrop-filter: blur(15px);'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color: #ff00ff; text-align: center; font-weight: 900; margin-top: 0;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h2>", unsafe_allow_html=True)
         
-        # 👍 تم إكمال السطر البرمجي وإغلاق الأقواس والمفاتيح بالمليمتر لمنع الـ NameError
         boss_user = st.text_input("👤 اسم المستخدم الخاص بالقائد:", key="boss_leader_user").strip()
         boss_pass = st.text_input("🔑 كلمة المرور الإدارية الخارقة:", type="password", key="boss_leader_pass").strip()
         
@@ -194,8 +193,6 @@ if is_boss_link:
             else:
                 st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من مفاتيح الأمان السحابية.")
         st.markdown("</div>", unsafe_allow_html=True)
-
-        
     else:
         st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900; text-shadow: 0 0 25px #00fff0;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
         
