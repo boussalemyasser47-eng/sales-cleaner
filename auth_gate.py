@@ -247,9 +247,9 @@ if not is_boss_link:
                 st.toast("🔒 تم الخروج وتأمين السيرفر كلياً.", icon="🛡️")
                 time.sleep(0.5)
                 st.rerun()
-        else:
-            st.warning("📭 الرادار صافي تماماً، لا توجد طلبات تجار معلقة حالياً في السيرفر.")
-            if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر", key="logout_empty_boss_btn"):
+            else:
+             st.warning("📭 الرادار صافي تماماً، لا توجد طلبات تجار معلقة حالياً في السيرفر.")
+             if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر", key="logout_empty_boss_btn"):
                 st.session_state["admin_master_logged"] = False
                 st.rerun()
 
