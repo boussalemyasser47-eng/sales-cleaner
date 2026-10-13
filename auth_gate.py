@@ -174,7 +174,7 @@ if is_boss_link:
             # ظهور آلية زر التأكيد التفاعلي "فهمت" عند طلب المسح
             if st.session_state.get(f"ask_confirm_{current_email}", False):
                 st.markdown("<hr style='border-color: rgba(255, 0, 0, 0.3); margin: 10px 0;'>", unsafe_allow_html=True)
-                col_txt, col_yes_btn = st.columns()
+                col_txt, col_yes_btn = st.columns(2)
                 with col_txt:
                     st.error(f"⚠️ هل أنت متأكد تماماً من إبادة وحذف حساب {current_email} نهائياً؟")
                 with col_yes_btn:
