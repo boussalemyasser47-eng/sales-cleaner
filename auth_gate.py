@@ -18,34 +18,67 @@ is_boss_link = query_params.get("role") == "boss" if "role" in query_params else
 if "cyber_lockout_aura" not in st.session_state:
     st.session_state["cyber_lockout_aura"] = False
 
-# اختيار نمط الحاوية بناءً على علم الخطأ (إذا كان true يتحول لوميض اختراق أحمر نابض)
+# تهيئة ألوان وصور الحركة النيونية المعزولة ميكانيكياً خارج النص
 box_border_color = "#ff0055" if st.session_state["cyber_lockout_aura"] else "#00fff0"
 box_shadow_glow = "0px 0px 45px rgba(255, 0, 85, 0.65), inset 0px 0px 20px rgba(255, 0, 85, 0.2)" if st.session_state["cyber_lockout_aura"] else "0px 0px 40px rgba(0, 255, 240, 0.4), inset 0px 0px 20px rgba(0, 255, 240, 0.15)"
+animation_trigger = "animation: cyberPulseAlert 1.5s infinite !important;" if st.session_state["cyber_lockout_aura"] else ""
 
-# حقن كود الـ CSS الأسطوري المطور لإبادة الخلفية البيضاء وجعل الواجهات نيون متحركة فخمة
-st.markdown(f"""
+# 🛡️ تم إزالة حرف الـ f هنا وجعل النص صافي ومضاعفة الأقواس أصبحت غير مطلوبة لمنع الأخطاء نهائياً
+st.markdown("""
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com" rel="stylesheet">
     
     <style>
-    @keyframes pulseBackground {{
-        0% {{ background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%); }}
-        50% {{ background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%); }}
-        100% {{ background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%); }}
-    }}
-    @keyframes cyberPulseAlert {{
-        0% {{ box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }}
-        50% {{ box-shadow: 0px 0px 45px rgba(255, 0, 85, 0.8); border-color: #ff3377; }}
-        100% {{ box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }}
-    }}
+    @keyframes pulseBackground {
+        0% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%); }
+        50% { background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%); }
+        100% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%); }
+    }
+    @keyframes cyberPulseAlert {
+        0% { box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }
+        50% { box-shadow: 0px 0px 45px rgba(255, 0, 85, 0.8); border-color: #ff3377; }
+        100% { box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }
+    }
 
-    .stApp {{
+    .stApp {
         animation: pulseBackground 8s ease-in-out infinite !important;
         color: #ffffff !important;
         font-family: 'Cairo', sans-serif !important;
-    }}
+    }
     
+    /* ترقية البطاقات الزجاجية الملونة بالتأثير البلوري والظلال المشعة */
+    .premium-card-pink {
+        background: linear-gradient(135deg, rgba(34, 4, 46, 0.6) 0%, rgba(15, 2, 20, 0.9) 100%) !important;
+        border: 2px solid #ff00ff !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 35px rgba(255, 0, 255, 0.25) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(15px);
+    }
+    .premium-card-cyan {
+        background: linear-gradient(135deg, rgba(4, 32, 43, 0.6) 0%, rgba(2, 14, 20, 0.9) 100%) !important;
+        border: 2px solid #00fff0 !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 35px rgba(0, 255, 240, 0.25) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(15px);
+    }
+    
+    div[data-testid="stVerticalBlock"] button, div.stButton button, .stButton > button {
+        width: 100% !important; min-height: 48px !important; white-space: normal !important; word-wrap: break-word !important;
+        font-family: 'Cairo', sans-serif !important; font-size: 13.5px !important; font-weight: 900 !important; border-radius: 12px !important;
+        text-align: center !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
+        padding: 10px 14px !important; background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%) !important; color: #00fff0 !important;
+        border: 2px solid #00fff0 !important; box-shadow: 0px 0px 14px rgba(0, 255, 240, 0.25) !important; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    }
+    div.stButton button:hover { background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important; box-shadow: 0px 0px 25px #00fff0 !important; transform: translateY(-2px) !important; }
+    
+    div[data-testid="stTextInput"] input { border: 2px solid #ff00ff !important; background-color: #06060d !important; color: #ffffff !important; border-radius: 14px !important; padding: 15px 18px !important; font-family: 'Cairo', sans-serif !important; font-size: 14.5px !important; box-shadow: 0px 0px 10px rgba(255, 0, 255, 0.1) !important; }
+    div[data-testid="stTextInput"] input:focus { border-color: #00fff0 !important; box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.4) !important; }
+    
+    [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] { display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0px !important; width: 0px !important; }
+    section[data-testid="stSidebar"] { display: none !important; visibility: hidden !important; }
+    
+    .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 { font-family: 'Cairo', sans-serif !important; color: #ffffff !important; text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.1) !important; }
+    </style>
+""", unsafe_allow_html=True)
+
+# 🧠 حقن الجزء الشرطي المعزول الخاص بغرفة المالك بشكل منفصل تماماً ومحمي لمنع انهيار الـ f-string
+st.markdown(f"""
+    <style>
     .centered-box-container {{
         max-width: 500px !important;
         margin: 60px auto 20px auto !important;
@@ -57,36 +90,10 @@ st.markdown(f"""
         direction: rtl !important;
         text-align: right !important;
         backdrop-filter: blur(15px) !important;
-        {"animation: cyberPulseAlert 1.5s infinite !important;" if st.session_state["cyber_lockout_aura"] else ""}}}
-    
-    .premium-card-pink {{
-        background: linear-gradient(135deg, rgba(34, 4, 46, 0.6) 0%, rgba(15, 2, 20, 0.9) 100%) !important;
-        border: 2px solid #ff00ff !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 35px rgba(255, 0, 255, 0.25) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(15px);
+        {animation_trigger}
     }}
-    .premium-card-cyan {{
-        background: linear-gradient(135deg, rgba(4, 32, 43, 0.6) 0%, rgba(2, 14, 20, 0.9) 100%) !important;
-        border: 2px solid #00fff0 !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 35px rgba(0, 255, 240, 0.25) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(15px);
-    }}
-    
-    div[data-testid="stVerticalBlock"] button, div.stButton button, .stButton > button {{
-        width: 100% !important; min-height: 48px !important; white-space: normal !important; word-wrap: break-word !important;
-        font-family: 'Cairo', sans-serif !important; font-size: 13.5px !important; font-weight: 900 !important; border-radius: 12px !important;
-        text-align: center !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
-        padding: 10px 14px !important; background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%) !important; color: #00fff0 !important;
-        border: 2px solid #00fff0 !important; box-shadow: 0px 0px 14px rgba(0, 255, 240, 0.25) !important; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-    }
-    div.stButton button:hover {{ background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important; box-shadow: 0px 0px 25px #00fff0 !important; transform: translateY(-2px) !important; }}
-    
-    div[data-testid="stTextInput"] input {{ border: 2px solid #ff00ff !important; background-color: #06060d !important; color: #ffffff !important; border-radius: 14px !important; padding: 15px 18px !important; font-family: 'Cairo', sans-serif !important; font-size: 14.5px !important; box-shadow: 0px 0px 10px rgba(255, 0, 255, 0.1) !important; }}
-    div[data-testid="stTextInput"] input:focus {{ border-color: #00fff0 !important; box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.4) !important; }}
-    
-    [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] {{ display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0px !important; width: 0px !important; }}
-    section[data-testid="stSidebar"] {{ display: none !important; visibility: hidden !important; }}
-    
-    .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 {{ font-family: 'Cairo', sans-serif !important; color: #ffffff !important; text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.1) !important; }}
     </style>
 """, unsafe_allow_html=True)
-
 
 # ========================================================
 # الجزء الثاني: حقول مدخلات التجار وبناء جدول الـ SQL الموحد (auth_gate.py)
