@@ -16,7 +16,7 @@ st.set_page_config(page_title="نظام المبيعات والمخزون الأ
 apply_neon_theme()
 
 # ========================================================
-# 🧠 [جدار الربط الميكانيكي المصحح والمعزول كلياً بعد التوحيد للنجاح]
+# 🧠 [جدار الربط الميكانيكي المعزول كلياً الموحد]
 # ========================================================
 if "active_merchant_user" in st.session_state:
     current_merchant = st.session_state["active_merchant_user"]
@@ -45,25 +45,7 @@ else:
     st.stop()
 
 # ========================================================
-# 🏪 بدء كود قاعدة بيانات الفواتير والمخزون المصحح المسافات الأصلي الخاص بك كما هو
-# ========================================================
-conne = sqlite3.connect("invoices_master_v4.db")
-cursor = conne.cursor()
-# ... (بقية كود الفواتير والجداول وصناعة مستندات الـ PDF تستمر لأسفل طبيعياً بدون أي تغيير)
-
-    
-    # التحقق من حالة الحساب للتوجيه أو الحظر السحابي
-    if not current_status_row or "مفعّل" not in current_status_row:
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.markdown("<div class='centered-box-container' style='max-width:600px; margin:0 auto; padding:40px; border:2px solid #ffaa00; border-radius:20px; background:rgba(10,10,26,0.95); text-align:center;'>", unsafe_allow_html=True)
-        st.markdown("<h2 style='color: #ffaa00; font-weight:900;'>⏳ الحساب قيد المراجعة السيبرانية</h2>", unsafe_allow_html=True)
-        st.markdown(f"<p style='color:#ffffff; font-size:16px;'>مرحباً بك يا تاجر. حسابك الحالي هو: <span style='color:#00fff0;'>{current_merchant}</span></p>", unsafe_allow_html=True)
-        st.markdown("<p style='color:#b0b0d0;'>بانتظار موافقة وقبول القائد الأعلى لتنشيط تراخيص لوحة المبيعات والمخزون الأسطورية وعرض العدادات حياً.</p>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-        st.stop() # إيقاف قراءة بقية أسطر ملف المبيعات نهائياً لحين تفعيله من قبلك
-
-# ========================================================
-# 🏪 بدء كود قاعدة بيانات الفواتير والمخزون المصحح المسافات
+# 🏪 كود قاعدة بيانات الفواتير والمخزون النظيف والمحمي (تم إزالة التكرار)
 # ========================================================
 conne = sqlite3.connect("invoices_master_v4.db")
 cursor = conne.cursor()
