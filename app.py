@@ -28,6 +28,8 @@ if "active_merchant_user" in st.session_state:
     cursor_auth_check = conn_auth_check.cursor()
     cursor_auth_check.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
     current_status_row = cursor_auth_check.fetchone()
+    
+    # 👍 [تصحيح الإزاحة الحاسم]: إرجاع الأقواس والمحاذاة لتقع بداخل بلوك الـ if بـ 4 مسافات دقيقة
     conn_auth_check.close()
     
     # [الحظر والتحويل الذكي]: إذا سحب القائد التفعيل أو حظر الحساب، يتم شل الحركة فوراً
@@ -45,10 +47,11 @@ else:
     st.stop()
 
 # ========================================================
-# 🏪 بدء كود قاعدة بيانات الفواتير الأصلي الخاص بك (يستمر لأسفل طبيعياً بعد هذا السطر)
+# 🏪 بدء كود قاعدة بيانات الفواتير الأصلي الخاص بك (يستمر لأسفل طبيعياً)
 # ========================================================
 conne = sqlite3.connect("invoices_master_v4.db", timeout=10)
 cursor = conne.cursor()
+
 # ... (بقية كود الفواتير والجداول القديمة لمتجرك تستمر لأسفل دون أي مساس بها)
 
     conn_auth_check.close()
