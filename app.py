@@ -42,27 +42,27 @@ if "merchant_em" in st.session_state and st.session_state["merchant_em"] != "":
         st.stop() # إيقاف قراءة بقية أسطر ملف المبيعات نهائياً لحين تفعيله من قبلك
 
 # ========================================================
-# 🏪 بدء كود قاعدة بيانات الفواتير الأصلي الخاص بك (بدون تكرار)
+# 🏪 بدء كود قاعدة بيانات الفواتير الأصلي الخاص بك (بدون أي مسافات زائدة)
 # ========================================================
 conne = sqlite3.connect("invoices_master_v4.db", timeout=10)
 cursor = conne.cursor()
 
-# إنشاء جداول قاعدة البيانات بانتظام ميكانيكي هندسي
+# إنشاء جداول قاعدة البيانات بانتظام ميكانيكي هندسي وبدون فراغات عشوائية
 cursor.execute('''
-    CREATE TABLE IF NOT EXISTS v4_customer_invoices (
-        invoice_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        shop_name TEXT, customer_name TEXT, customer_phone TEXT,
-        product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT
-    )
+CREATE TABLE IF NOT EXISTS v4_customer_invoices (
+    invoice_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    shop_name TEXT, customer_name TEXT, customer_phone TEXT,
+    product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT
+)
 ''')
 
 cursor.execute('''
-    CREATE TABLE IF NOT EXISTS store_stock (
-        product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER
-    )
+CREATE TABLE IF NOT EXISTS store_stock (
+    product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER
+)
 ''')
 conne.commit()
-# ... (بقية كود ملف المبيعات الخاص بك يستمر طبيعياً لأسفل دون أي تغيير)
+# ========================================================
 
 # ========================================================
 # 🧠 [جدار الربط الميكانيكي]: التحقق إذا كان التاجر مفعلاً في قاعدة بيانات الـ Auth
