@@ -152,19 +152,19 @@ if not is_boss_link:
         st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
         
-        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب taجر جديد فريش"])
+        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
         st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
         
-        # 🧠 المفتاح هنا هو "merchant_em" وهو يقوم بحفظ القيمة في الـ session_state تلقائياً دون الحاجة للسطر 195
         input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
         input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
         
         clean_email = input_email.strip()
         clean_pass = input_password.strip()
         
+        # 🛡️ [القسم الأول]: إذا اختار التاجر إنشاء حساب فريش، تظهر حقول الخيارات وزر الإرسال الخاص بها فقط
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
             user_package_choice = st.selectbox("اختر فئة الباقة السنوية لمتجرك:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True) # إغلاق الكرت النيوني بانتظام هنا للإنشاء
             
             if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
                 if clean_email == "" or clean_pass == "": 
@@ -178,8 +178,11 @@ if not is_boss_link:
                     st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
                     time.sleep(0.5)
                     st.rerun()
+                    
+        # 🛡️ [القسم الثاني معزول تماماً]: إذا اختار تسجيل الدخول، يظهر زر الدخول الخاص به فقط وبدون أي خلط لباقات الإنشاء
         else:
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True) # إغلاق الكرت النيوني بانتظام هنا للدخول
+            
             if st.button("🔑 تسجيل الدخول إلى المتجر"):
                 if clean_email == "" or clean_pass == "":
                     st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
@@ -192,7 +195,6 @@ if not is_boss_link:
                     
                     if user_status_row:
                         user_status = user_status_row[0]
-                        
                         if "🟢 مفعّل ونشط" in user_status:
                             st.success("🔓 تم التحقق بنجاح! حسابك نشط.")
                             st.toast("🚀 جاري فتح لوحة المبيعات الأسطورية حياً...", icon="⚡")
