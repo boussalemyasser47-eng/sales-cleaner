@@ -327,29 +327,27 @@ if is_boss_link:
             if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر", key="logout_empty_boss_btn"):
                 st.session_state["admin_master_logged"] = False; st.rerun()
 # ========================================================
-# 🚀 جدار العبور والدمج الشامل: استدعاء ملف المبيعات حياً بعد التفعيل
+# 🚀 جدار العبور والدمج الشامل المطور - نهاية ملف (auth_gate.py)
 # ========================================================
-# إذا نجح التاجر في تسجيل الدخول وحفظ إيميله في الجلسة وكانت حالته نشطة
 if "merchant_em" in st.session_state and st.session_state["merchant_em"] != "":
     current_merchant = st.session_state["merchant_em"]
     
-    # التأكد من حالة التفعيل في خزانة الأمان
+    # قراءة طازجة ومباشرة للحالة من خزانة الأمان بدون استخدام كاش قديم
     conn_final_gate = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor_final_gate = conn_final_gate.cursor()
     cursor_final_gate.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
     final_status_row = cursor_final_gate.fetchone()
     conn_final_gate.close()
     
-    # 🔓 [الانبثاق الأسطوري]: إذا ثبت تفعيله، يتم تشغيل وعرض ملف المبيعات فوراً وحجب بوابة التسجيل
+    # 🔓 [الانبثاق الأسطوري الفوري]: إذا ثبت تفعيل الحساب حياً
     if final_status_row and "🟢 مفعّل ونشط" in final_status_row[0]:
         try:
-            # فتح وقراءة ملف المبيعات والمخزون وتشغيله حياً في المتصفح
+            # قراءة ملف نظام المبيعات والمخزون الأسطوري وتشغيله مباشرة
             with open("app.py", "r", encoding="utf-8") as sales_file:
                 sales_code = sales_file.read()
             
-            # تنفيذ الكود ميكانيكياً للتاجر لتفتح له لوحة صانع الفواتير والملصقات الحرارية
+            # حجب عناصر بوابة التسجيل وعرض لوحة صانع الفواتير والملصقات الحرارية
             exec(sales_code, globals())
-            st.stop() # إيقاف كود التسجيل تماماً لضمان نظافة الصفحة والـ RAM
+            st.stop() 
         except Exception as e:
             st.error(f"⚠️ خطأ ميكانيكي أثناء صعود لوحة المبيعات: {e}")
-
