@@ -142,6 +142,7 @@ def delete_email_completely(email_to_delete):
 # ========================================================
 # الجزء الثالث - أ: واجهة فيسبوك الموسطة والآمنة للتجار (auth_gate.py)
 # ========================================================
+# واجهة التجار الصافية تصعد تلقائياً للجمهور فقط وحصرياً إذا كان الرابط عادياً وخالياً من مفتاحك السري
 if not is_boss_link:
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>سجل بريدك وإلكترونيات متجرك الخاص للتحويل التلقائي والآمن لخزانة فواتيرك.</p>", unsafe_allow_html=True)
@@ -165,7 +166,8 @@ if not is_boss_link:
             st.markdown("</div>", unsafe_allow_html=True)
             
             if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
-                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
+                if clean_email == "" or clean_pass == "": 
+                    st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
                 else:
                     conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                     cursor_reg = conn_reg.cursor()
@@ -175,7 +177,7 @@ if not is_boss_link:
                     st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
                     time.sleep(0.5)
                     st.rerun()
-                else:
+        else:
             st.markdown("</div>", unsafe_allow_html=True)
             if st.button("🔑 تسجيل الدخول إلى المتجر"):
                 if clean_email == "" or clean_pass == "":
@@ -189,85 +191,19 @@ if not is_boss_link:
                     
                     if user_status_row:
                         user_status = user_status_row[0]
-                        # 🧠 [التثبيت الحاسم للجلسة]: حفظ الإيميل في كاش النظام ليعرفه السيرفر بالثانية
+                        # [التثبيت الحاسم للجلسة]: حفظ الإيميل حياً لتفعيل التحويل التلقائي
                         st.session_state["merchant_em"] = clean_email
                         
                         if "🟢 مفعّل ونشط" in user_status:
                             st.success("🔓 تم التحقق بنجاح! حسابك نشط.")
-                            st.toast("🚀 جاري تحويلك إلى لوحة المبيعات الأسطورية حياً...", icon="⚡")
-                            time.sleep(1)
-                            # هنا يمكنك عمل الرابط المباشر لملف المبيعات لفتح المتجر فوراً للتاجر
+                            st.toast("🚀 جاري فتح لوحة المبيعات الأسطورية حياً...", icon="⚡")
+                            time.sleep(0.5)
                             st.rerun()
                         else:
                             st.warning(f"⏳ حالة حسابك الحالية: {user_status}")
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
 
-                # 2️⃣ [تكملة مصفوفة التحكم الخماسية المدمجة]: توزيع بقية الأعمدة التفاعلية حياً
-                with col_2:
-                    if st.button("⏳ تمديد 7 أيام", key=f"btn_ext_{current_email}"):
-                        conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
-                        conn.commit()
-                        conn.close()
-                        st.toast("⏳ تم منح المشترك مهلة إضافية!", icon="⏱️")
-                        time.sleep(0.5)
-                        st.rerun()
-                
-                with col_3: # الحذف والتدمير الفوري في المنتصف تماماً لسيادة لوحة التحكم
-                    if st.button("🗑️ تدمير نهائي", key=f"btn_del_{current_email}"):
-                        st.session_state[f"ask_confirm_{current_email}"] = True
-                
-                with col_4:
-                    if st.button("💸 ترقية الباقة", key=f"btn_upg_{current_email}"):
-                        conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
-                        conn.commit()
-                        conn.close()
-                        st.toast("💸 تم ترقية حساب التاجر للباقة القصوى!", icon="🚀")
-                        time.sleep(0.5)
-                        st.rerun()
-                
-                with col_5:
-                    if st.button("🔒 حظر وقفل", key=f"btn_lck_{current_email}"):
-                        conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
-                        conn.commit()
-                        conn.close()
-                        st.toast("🔒 تم مصادرة الصلاحيات عن بعد!", icon="⚠️")
-                        time.sleep(0.5)
-                        st.rerun()
-                
-                # إغلاق حاوية الـ HTML للبطاقة النيونية لضمان حبس الأزرار الخمسة بالداخل 100%
-                st.markdown("</div>", unsafe_allow_html=True)
-                
-                # صندوق التأكيد التفاعلي الصارم "فهمت" لحذف البريد ومنع ثغرة الـ INSERT الافتراضية
-                if st.session_state.get(f"ask_confirm_{current_email}", False):
-                    st.markdown("<hr style='border-color: rgba(255, 0, 0, 0.3); margin: 10px 0;'>", unsafe_allow_html=True)
-                    col_txt, col_yes_btn = st.columns(2)
-                    with col_txt:
-                        st.error(f"⚠️ هل أنت متأكد تماماً من إبادة وحذف حساب {current_email} نهائياً؟")
-                    with col_yes_btn:
-                        if st.button("✅ فهمت، احذف الآن", key=f"final_yes_{current_email}"):
-                            st.session_state["destroyed_flag"] = True
-                            st.session_state[f"ask_confirm_{current_email}"] = False
-                            if delete_email_completely(current_email):
-                                st.toast("🔥 تم تطهير الحساب بنجاح من خادم المنصة!", icon="💥")
-                                time.sleep(0.5)
-                                st.rerun()
-            
-            # زر الخروج الآمن الموحد في نهاية الصفحة لإغلاق الجلسة واللوحة كلياً لحماية الأمان السحابي
-            st.markdown("<br><hr style='border-color: rgba(255, 0, 0, 0.2); margin: 20px 0;'>", unsafe_allow_html=True)
-            if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر الموسط والخزائن", key="logout_boss_panel_btn"):
-                st.session_state["admin_master_logged"] = False
-                st.toast("🔒 تم الخروج وتأمين السيرفر كلياً.", icon="🛡️")
-                time.sleep(0.5)
-                st.rerun()
-            else:
-             st.warning("📭 الرادار صافي تماماً، لا توجد طلبات تجار معلقة حالياً في السيرفر.")
-             if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر", key="logout_empty_boss_btn"):
-                st.session_state["admin_master_logged"] = False
-                st.rerun()
 # ========================================================
 # الجزء الثالث - ب: غرفة المالك ورادار الموافقات الأسطوري (auth_gate.py)
 # ========================================================
