@@ -22,7 +22,7 @@ if "cyber_lockout_aura" not in st.session_state:
 box_border_color = "#ff0055" if st.session_state["cyber_lockout_aura"] else "#00fff0"
 box_shadow_glow = "0px 0px 45px rgba(255, 0, 85, 0.65), inset 0px 0px 20px rgba(255, 0, 85, 0.2)" if st.session_state["cyber_lockout_aura"] else "0px 0px 40px rgba(0, 255, 240, 0.4), inset 0px 0px 20px rgba(0, 255, 240, 0.15)"
 
-# حقن كود الـ CSS الأسطوري المطور لإبادة الخلفية البيضاء وجعل الواجهات نيون متحركة فخمة
+# 👍 [الإصلاح الحاسم للـ f-string]: مضاعفة كافة الأقواس المجعدة لحماية كود الـ CSS من الانهيار البنيوي
 st.markdown(f"""
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
