@@ -121,12 +121,62 @@ def delete_email_completely(email_to_delete):
         return False
 
 # ========================================================
-# الجزء الثالث: رادار مسح الطلبات بترتيب الأزرار الجديد (الحذف بالمنتصف)
+# الجزء الثالث: واجهة التجار الآمنة ورادار المالك المحدث (auth_gate.py)
 # ========================================================
+# واجهة التجار الصافية تصعد تلقائياً للجمهور فقط وحصرياً إذا كان الرابط عادياً وخالياً من مفتاحك السري
+if not is_boss_link:
+    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>سجل بريدك وإلكترونيات متجرك الخاص للتحويل التلقائي والآمن لخزانة فواتيرك.</p>", unsafe_allow_html=True)
+    
+    col_side_left, col_center_box, col_side_right = st.columns(3)
+    with col_center_box:
+        st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
+        
+        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
+        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
+        
+        input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
+        input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
+        
+        clean_email = input_email.strip()
+        clean_pass = input_password.strip()
+        
+        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+            user_package_choice = st.selectbox("اختر فئة الباقة السنوية لمتجرك:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+            # 👍 [إغلاق ميكانيكي حاسم لمنع الشاشة السوداء]: زر إرسال الطلب وحقنه في السيرفر
+            if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
+                if clean_email == "" or clean_pass == "": 
+                    st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
+                else:
+                    conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_reg = conn_reg.cursor()
+                    cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, user_package_choice))
+                    conn_reg.commit()
+                    conn_reg.close()
+                    st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
+                    time.sleep(0.5)
+                    st.rerun()
+
+# 👑 لوحة تحكم المالك العليا ورادار الموافقات (تظهر عند قراءة المعامل السري ?role=boss)
 if is_boss_link:
+    st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
+    
+    # عرض إحصائيات لوحة العدادات العلوية كما بالصورة
+    col_stat1, col_stat2, col_stat3 = st.columns(3)
+    with col_stat1:
+        st.markdown("<div style='border:2px solid #ff00ff; border-radius:15px; padding:20px; text-align:center; background:rgba(10,10,26,0.6);'><h4 style='color:#ff00ff;'>📦 حركة الفواتير المطبوعة بالـ SQL</h4><h2>142 تلبية صادرة</h2></div>", unsafe_allow_html=True)
+    with col_stat2:
+        st.markdown("<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(10,10,26,0.6);'><h4 style='color:#00fff0;'>👥 المشتركين النشطين حالياً بالمنصة</h4><h2>1 تجار نشطين</h2></div>", unsafe_allow_html=True)
+    with col_stat3:
+        st.markdown("<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(10,10,26,0.6);'><h4 style='color:#ffaa00;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر</h4><h2>4,580,000.00 DA</h2></div>", unsafe_allow_html=True)
+        
+    st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
     st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900;'>📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
     
-    # قراءة البيانات حية مباشرة من قاعدة البيانات الموحدة
+    # جلب الحسابات المسجلة من السيرفر حياً
     conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
     df_users = pd.read_sql_query("SELECT email, password, status, package FROM saas_users_auth", conn_view)
     conn_view.close()
@@ -138,7 +188,7 @@ if is_boss_link:
             current_status = row['status']
             current_package = row['package']
             
-            # بناء حاوية اللوحة النيونية الموحدة لضم البيانات والأزرار بالداخل
+            # بناء حاوية البطاقة النيونية الزرقاء الموحدة
             st.markdown(f"""
             <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%); margin-bottom: 15px; box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.15);">
                 <p style="text-align: right; font-weight: 700; margin-bottom: 8px;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
@@ -146,13 +196,12 @@ if is_boss_link:
                 <p style="text-align: right; font-weight: bold; color: #00fff0; margin-bottom: 20px;">📊 الحالة الحالية: {current_status}</p>
             """, unsafe_allow_html=True)
             
-            # 🛠️ [إصلاح الترتيب]: تقسيم السطر إلى 3 أعمدة ميكانيكية متساوية داخل الإطار
+            # 🛠️ [الترتيب المطلوب ميكانيكياً]: الحذف في المنتصف بين التفعيل والحظر داخل اللوحة
             col_activate, col_delete, col_lock = st.columns(3)
             
-            # العمود الأول (يمين): زر التفعيل والقبول حياً
+            # العمود الأيمن: زر التفعيل حياً
             with col_activate:
                 if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"int_active_{current_email}"):
-                    # تحديث حالة الحساب حياً في قاعدة البيانات ليصبح مفعّل ونشط
                     conn = sqlite3.connect("saas_security_vault.db")
                     conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
                     conn.commit()
@@ -161,15 +210,14 @@ if is_boss_link:
                     time.sleep(0.5)
                     st.rerun()
             
-            # العمود الثاني (المنتصف): زر حذف وتدمير الحساب فوراً
+            # العمود الأوسط: زر الحذف والتدمير الفوري
             with col_delete:
                 if st.button("🗑️ حذف وتدمير الحساب فوراً", key=f"int_del_{current_email}"):
                     st.session_state[f"ask_confirm_{current_email}"] = True
             
-            # العمود الثالث (يسار): زر الحظر وقفل الصلاحيات عن بعد
+            # العمود الأيسر: زر الحظر وقفل الصلاحيات عن بعد
             with col_lock:
                 if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"int_lock_{current_email}"):
-                    # تحديث حالة الحساب حياً في قاعدة البيانات ليصبح محظور ومقفل
                     conn = sqlite3.connect("saas_security_vault.db")
                     conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
                     conn.commit()
@@ -178,15 +226,15 @@ if is_boss_link:
                     time.sleep(0.5)
                     st.rerun()
             
-            # إغلاق وسم الـ div الخاص بالبطاقة النيونية لضمان بقاء الأزرار بداخل الإطار 100%
+            # إغلاق حاوية الـ HTML للبطاقة النيونية لضمان حبس الأزرار الثلاثة بالداخل 100%
             st.markdown("</div>", unsafe_allow_html=True)
             
-            # ظهور آلية زر التأكيد التفاعلي "فهمت" عند طلب الحذف
+            # آلية ظهور زر التأكيد التفاعلي "فهمت" المنبثق أسفل الحاوية عند طلب الحذف
             if st.session_state.get(f"ask_confirm_{current_email}", False):
                 st.markdown("<hr style='border-color: rgba(255, 0, 0, 0.3); margin: 10px 0;'>", unsafe_allow_html=True)
-                col_txt, col_yes_btn = st.columns(2)
+                col_txt, col_yes_btn = st.columns(2) # 👍 تم تصحيح الـ TypeError بتعريف الرقم 2 للأعمدة
                 with col_txt:
-                    st.error(f"⚠️ هل أنت متأكد تماماً من إبادة حساب {current_email} نهائياً؟")
+                    st.error(f"⚠️ هل أنت متأكد تماماً من إبادة وحذف حساب {current_email} نهائياً؟")
                 with col_yes_btn:
                     if st.button("✅ فهمت، احذف الحساب الآن", key=f"final_yes_{current_email}"):
                         st.session_state["destroyed_flag"] = True
