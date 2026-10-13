@@ -23,6 +23,31 @@ cursor.execute('''
         shop_name TEXT, customer_name TEXT, customer_phone TEXT,
         product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT
     )
+# ========================================================
+# 🧠 [جدار الربط الميكانيكي]: التحقق إذا كان التاجر مفعلاً في قاعدة بيانات الـ Auth
+# ========================================================
+
+# التأكد من وجود بريد التاجر في الجلسة لمعرفة من الذي فتح الصفحة
+if "merchant_em" in st.session_state and st.session_state["merchant_em"] != "":
+    current_merchant = st.session_state["merchant_em"]
+    
+    # الاتصال بخزانة الأمان لقراءة الحالة حياً
+    conn_auth_check = sqlite3.connect("saas_security_vault.db", timeout=10)
+    cursor_auth_check = conn_auth_check.cursor()
+    cursor_auth_check.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
+    current_status_row = cursor_auth_check.fetchone()
+    conn_auth_check.close()
+    
+    # 🚨 [الحظر والتحويل الذكي]: إذا لم يكن الحساب مفعلاً ونشطاً، يتم إيقاف تشغيل كود المتجر فوراً وتنبيه التاجر
+    if not current_status_row or "مفعّل" not in current_status_row[0]:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<div class='centered-box-container' style='max-width:600px; margin:0 auto; padding:40px; border:2px solid #ffaa00; border-radius:20px; background:rgba(10,10,26,0.95); text-align:center;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color: #ffaa00; font-weight:900;'>⏳ الحساب قيد المراجعة السيبرانية</h2>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color:#ffffff; font-size:16px;'>مرحباً بك يا تاجر. حسابك الحالي هو: <span style='color:#00fff0;'>{current_merchant}</span></p>", unsafe_allow_html=True)
+        st.markdown("<p style='color:#b0b0d0;'>بانتظار موافقة وقبول القائد الأعلى لتنشيط تراخيص لوحة المبيعات والمخزون الأسطورية وعرض العدادات حياً.</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.stop() # إيقاف قراءة بقية أسطر ملف المبيعات نهائياً لحين تفعيله من قبلك
+
 ''')
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS store_stock (
