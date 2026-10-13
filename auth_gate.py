@@ -121,26 +121,77 @@ def delete_email_completely(email_to_delete):
         return False
 
 # ========================================================
-# الجزء الثالث: نظام حجب الواجهة وإظهار لوحة التحكم بعد تسجيل الدخول (auth_gate.py)
+# الجزء الثالث - أ: واجهة فيسبوك الموسطة والآمنة للتجار (auth_gate.py)
+# ========================================================
+# واجهة التجار الصافية تصعد تلقائياً للجمهور فقط وحصرياً إذا كان الرابط عادياً وخالياً من مفتاحك السري
+if not is_boss_link:
+    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>سجل بريدك وإلكترونيات متجرك الخاص للتحويل التلقائي والآمن لخزانة فواتيرك.</p>", unsafe_allow_html=True)
+    
+    col_side_left, col_center_box, col_side_right = st.columns(3)
+    with col_center_box:
+        st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
+        
+        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
+        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
+        
+        input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
+        input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
+        
+        clean_email = input_email.strip()
+        clean_pass = input_password.strip()
+        
+        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+            user_package_choice = st.selectbox("اختر فئة الباقة السنوية لمتجرك:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+            if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
+                if clean_email == "" or clean_pass == "": 
+                    st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
+                else:
+                    conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_reg = conn_reg.cursor()
+                    cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, user_package_choice))
+                    conn_reg.commit()
+                    conn_reg.close()
+                    st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
+                    time.sleep(0.5)
+                    st.rerun()
+        else:
+            st.markdown("</div>", unsafe_allow_html=True)
+            if st.button("🔑 تسجيل الدخول إلى المتجر"):
+                if clean_email == "" or clean_pass == "":
+                    st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
+                else:
+                    conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_login = conn_login.cursor()
+                    cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
+                    user_status = cursor_login.fetchone()
+                    conn_login.close()
+                    
+                    if user_status:
+                        st.success(f"🔓 تم التحقق بنجاح! حالة حسابك الحالية هي: {user_status[0]}")
+                    else:
+                        st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
+# ========================================================
+# الجزء الثالث - ب: غرفة المالك والسيادة ورادار الموافقات (auth_gate.py)
 # ========================================================
 if is_boss_link:
     
-    # 1. 🔒 [بوابة الحماية]: إذا لم يسجل المشرف دخوله بعد، تظهر واجهة القفل أولاً وتمنع ظهور أي بيانات
+    # 🔒 بوابة الحماية السحابية تطلب الكود السري قبل فتح الإحصائيات والرادار لمنع الاختلاط
     if not st.session_state["admin_master_logged"]:
         st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown("<div class='centered-box-container'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color: #ff00ff; text-align: center; font-weight: 900; margin-top: 0;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h2>", unsafe_allow_html=True)
         st.markdown("<p style='color: #ffffff; text-align: center; font-size: 15px; margin-bottom: 25px;'>🔑 تسجيل دخول المالك الأعلى للوصول للرادار</p>", unsafe_allow_html=True)
         
-        # حقول الدخول الإداري المعزولة داخل صندوق الحماية
         boss_user = st.text_input("👤 اسم المستخدم الخاص بالقائد:", key="boss_leader_user").strip()
         boss_pass = st.text_input("🔑 كلمة المرور الإدارية الخارقة:", type="password", key="boss_leader_pass").strip()
         
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # زر صعود وتفعيل خادم التحكم
         if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="submit_boss_login_btn"):
-            # الفحص الصارم ومطابقة البيانات بالثوابت الإدارية لمنع التسريبات
             if boss_user == ADMIN_USERNAME and boss_pass == ADMIN_PASSWORD:
                 st.session_state["admin_master_logged"] = True
                 st.toast("👑 مرحباً بك يا قائد! تم تفعيل لوحة السيادة والموافقات.", icon="🔓")
@@ -148,14 +199,12 @@ if is_boss_link:
                 st.rerun()
             else:
                 st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من مفاتيح الأمان السحابية.")
-                
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # 2. 👑 [لوحة التحكم والرادار]: تفتح وتنبثق حصرياً بعد تخطي بوابة الحماية ونجاح الدخول
+    # 👑 فتح وغلق الحاوية النيونية الكبرى وعرض المشتركين بعد نجاح التحقق
     else:
         st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
         
-        # عرض إحصائيات لوحة العدادات العلوية بانتظام كامل
         col_stat1, col_stat2, col_stat3 = st.columns(3)
         with col_stat1:
             st.markdown("<div style='border:2px solid #ff00ff; border-radius:15px; padding:20px; text-align:center; background:rgba(10,10,26,0.6); direction:rtl;'><h4 style='color:#ff00ff; margin:0;'>📦 حركة الفواتير المطبوعة بالـ SQL</h4><h2 style='margin:10px 0 0 0;'>142 تلبية صادرة</h2></div>", unsafe_allow_html=True)
@@ -167,7 +216,6 @@ if is_boss_link:
         st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
         
-        # جلب الحسابات المسجلة من السيرفر حياً
         conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
         df_users = pd.read_sql_query("SELECT email, password, status, package FROM saas_users_auth", conn_view)
         conn_view.close()
@@ -179,7 +227,6 @@ if is_boss_link:
                 current_status = row['status']
                 current_package = row['package']
                 
-                # بناء حاوية البطاقة النيونية الزرقاء المنظمة بإحكام داخلياً
                 st.markdown(f"""
                 <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%); margin-bottom: 15px; box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.15); direction: rtl; text-align: right;">
                     <p style="margin: 0 0 8px 0; font-weight: 700; font-size: 16px;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
@@ -188,7 +235,7 @@ if is_boss_link:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # مصفوفة التحكم الثلاثية المنظمة بداخل إطار البطاقة النيونية (الحذف في المنتصف)
+                # صف التحكم الثلاثي المدمج بداخل البطاقة النيونية (الحذف بالمنتصف)
                 col_activate, col_delete, col_lock = st.columns(3)
                 
                 with col_activate:
@@ -215,9 +262,9 @@ if is_boss_link:
                         time.sleep(0.5)
                         st.rerun()
                 
-                # آلية ظهور زر التأكيد التفاعلي "فهمت" المنظّم بداخل لوحة التحكم
+                # آلية ظهور زر التأكيد التفاعلي "فهمت" المنبثق أسفل اللوحة
                 if st.session_state.get(f"ask_confirm_{current_email}", False):
-                    st.markdown("<hr style='border-color: rgba(255, 0, 0, 0.3); margin: 15px 0;'>", unsafe_allow_html=True)
+                    st.markdown("<hr style='border-color: rgba(255, 0, 0, 0.3); margin: 10px 0;'>", unsafe_allow_html=True)
                     col_txt, col_yes_btn = st.columns(2)
                     with col_txt:
                         st.error(f"⚠️ هل أنت متأكد تماماً من إبادة وحذف حساب {current_email} نهائياً؟")
@@ -231,7 +278,6 @@ if is_boss_link:
                                 time.sleep(0.5)
                                 st.rerun()
             
-            # زر مغادرة الغرفة وقفل السيرفر لتأمين الجلسة مجدداً ونظافة الصفحة
             st.markdown("<br><hr style='border-color: rgba(255, 0, 0, 0.2); margin: 20px 0;'>", unsafe_allow_html=True)
             if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر الموسط والخزائن", key="logout_boss_panel_btn"):
                 st.session_state["admin_master_logged"] = False
@@ -240,12 +286,9 @@ if is_boss_link:
                 st.rerun()
         else:
             st.warning("📭 الرادار صافي تماماً، لا توجد طلبات تجار معلقة حالياً في السيرفر.")
-            
-            # إتاحة زر الخروج حتى في حالة خلو قاعدة البيانات
             if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر", key="logout_empty_boss_btn"):
                 st.session_state["admin_master_logged"] = False
                 st.rerun()
-
 
 # ========================================================
 # الجزء الرابع: لوحة التحكم الإدارية المركزية وقفل السيرفر الموحد (auth_gate.py)
