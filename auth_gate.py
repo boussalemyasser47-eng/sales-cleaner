@@ -308,7 +308,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         time.sleep(0.5)
         st.rerun()
         
-    render_sidebar_helper()
+   # render_sidebar_helper()
+
     
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
