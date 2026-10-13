@@ -193,7 +193,7 @@ if is_boss_link:
             if st.button("🚪 قفل وغلق السيرفر", key="logout_boss"): st.session_state["admin_master_logged"] = False; st.rerun()
         else: st.warning("📭 الرادار صافي.")
 # ========================================================
-# الجزء الرابع المطور: انبثاق صانع الفواتير النيوني الزجاجي (auth_gate.py)
+# الجزء الرابع الأسطوري: حقن النيون الصارم لمتجر التاجر (auth_gate.py)
 # ========================================================
 if "active_merchant_user" in st.session_state and not is_boss_link:
     current_merchant = st.session_state["active_merchant_user"]
@@ -211,47 +211,57 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             st.session_state.pop("active_merchant_user"); st.rerun()
         st.stop()
     
-    # 🧠 [ترقية الألوان الأسطورية]: إعادة حقن كود الـ CSS الزجاجي والنيون لصبغ المتجر بالكامل
+    # 🧠 [الحقن السيبراني الصارم]: اختراق الـ Shadow DOM لصبغ المقاييس وحقول الإدخال بالنيون رغماً عن المتصفح
     st.markdown("""
         <style>
-        /* ترقية خلفية المتصفح لتصبح ليلة رقمية عميقة الأبعاد ونبض نيون هادئ */
+        /* إجبار الخلفية على النبض الرقمي اللامع */
         @keyframes storePulse {
-            0% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%); }
-            50% { background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%); }
-            100% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%); }
+            0% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }
+            50% { background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%) !important; }
+            100% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }
         }
         .stApp {
             animation: storePulse 8s ease-in-out infinite !important;
+            background-attachment: fixed !important;
+        }
+        
+        /* صبغ إحصائيات المقاييس المربعة (إجمالي المداخيل، عدد الفواتير) بالنيون الفاخر */
+        div[data-testid="stMetricBlock"], div[data-testid="metric-container"] {
+            background: linear-gradient(135deg, rgba(15, 2, 20, 0.8) 0%, rgba(5, 5, 12, 0.95) 100%) !important;
+            border: 2px solid #ff00ff !important;
+            border-radius: 16px !important;
+            padding: 15px !important;
+            box-shadow: 0px 0px 25px rgba(255, 0, 255, 0.35) !important;
+            text-align: center !important;
+        }
+        
+        /* تحويل حقول الـ Inputs والأرقام إلى اللون الوردي المشع ومنع بهتان الألوان */
+        div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input, div[data-testid="stSelectbox"] div[role="button"] {
+            border: 2px solid #ff00ff !important; 
+            background-color: #05050c !important; 
             color: #ffffff !important;
+            border-radius: 12px !important; 
+            padding: 12px 15px !important;
+            font-weight: 700 !important;
+            box-shadow: 0px 0px 10px rgba(255, 0, 255, 0.15) !important;
         }
-        /* البطاقات النيونية المدمجة لصانع الفواتير */
-        div[data-testid="stBlock"] {
-            background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%) !important;
-            border: 2px solid #00fff0 !important;
-            border-radius: 15px !important;
-            padding: 20px !important;
-            box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.2) !important;
-            backdrop-filter: blur(15px) !important;
-        }
-        /* تلوين أزرار الطباعة والتحميل بالسيان المشع */
-        div.stButton button, .stButton > button {
-            width: 100% !important; min-height: 48px !important;
-            font-family: 'Cairo', sans-serif !important; font-weight: 900 !important; border-radius: 12px !important;
-            background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%) !important; color: #00fff0 !important;
-            border: 2px solid #00fff0 !important; box-shadow: 0px 0px 14px rgba(0, 255, 240, 0.25) !important;
-            transition: all 0.3s ease-in-out !important;
-        }
-        div.stButton button:hover { 
-            background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important;
-            box-shadow: 0px 0px 25px #00fff0 !important; transform: translateY(-2px) !important;
-        }
-        /* صبغ حقول الإدخال النصية بالوردي السيبراني المتناسق مع متجرك */
-        div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input {
-            border: 2px solid #ff00ff !important; background-color: #06060d !important; color: #ffffff !important;
-            border-radius: 12px !important; padding: 12px 15px !important;
-        }
+        
+        /* تفعيل التوهج السيان الفوري عند الضغط أو التركيز بداخل الحقل */
         div[data-testid="stTextInput"] input:focus, div[data-testid="stNumberInput"] input:focus {
-            border-color: #00fff0 !important; box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.4) !important;
+            border-color: #00fff0 !important; 
+            box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.5) !important;
+        }
+        
+        /* إجبار نصوص المقاييس والعناوين على التوهج والوضوح 100% */
+        div[data-testid="stMetricLabel"] p, label, .stWidgetFormLabel p {
+            color: #00fff0 !important;
+            text-shadow: 0px 0px 10px rgba(0, 255, 240, 0.4) !important;
+            font-weight: 900 !important;
+        }
+        div[data-testid="stMetricValue"] div {
+            color: #ffffff !important;
+            font-weight: 900 !important;
+            text-shadow: 0px 0px 12px rgba(255, 255, 255, 0.3) !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -334,3 +344,4 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         with col_view:
             stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
             if not stock_df.empty: st.dataframe(stock_df)
+
