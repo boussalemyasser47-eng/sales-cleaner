@@ -1,8 +1,21 @@
+import streamlit as st # 🧠 [الإصلاح الحاسم]: يجب أن يوضع هذا السطر في أول سطر بالملف تماماً
+import pandas as pd
+import sqlite3
+import time
+import os
+
+# ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة وفخمة ومحمية كلياً
+st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
+
+# 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
+query_params = st.query_params
+is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
+
 # حقن كود الـ CSS الأسطوري المطور لإبادة الخلفية البيضاء وجعل الواجهات نيون متحركة فخمة
 st.markdown("""
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://googleapis.com" rel="stylesheet">
     
     <style>
     /* ترقية خلفية المتصفح بالكامل لتصبح ليلة رقمية عميقة الأبعاد مع تأثير نبض نيون هادئ */
@@ -113,6 +126,7 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
 
 # ========================================================
 # الجزء الثاني: حقول مدخلات التجار وبناء جدول الـ SQL الموحد (auth_gate.py)
