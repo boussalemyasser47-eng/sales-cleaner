@@ -281,8 +281,12 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold;'>👤 التاجر النشط: {current_merchant}</p>", unsafe_allow_html=True)
     choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي"])
     
-    if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب"):
+       if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب"):
         st.session_state.pop("active_merchant_user"); st.toast("تم الخروج الآمن!"); time.sleep(0.5); st.rerun()
+        
+    # 👍 تم إيقاف وحظر السطر المسبب لـ NameError للأبد ليعود السيرفر للبث فوراً
+    # render_sidebar_helper()
+
         
     render_sidebar_helper()
     
