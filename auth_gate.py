@@ -327,7 +327,7 @@ if is_boss_link:
             if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر", key="logout_empty_boss_btn"):
                 st.session_state["admin_master_logged"] = False; st.rerun()
 # ========================================================
-# 🚀 جدار العبور والدمج الشامل المطور - نهاية ملف (auth_gate.py)
+# 🚀 جدار العبور والدمج الشامل - نهاية ملف (auth_gate.py)
 # ========================================================
 if "merchant_em" in st.session_state and st.session_state["merchant_em"] != "":
     current_merchant = st.session_state["merchant_em"]
@@ -340,7 +340,7 @@ if "merchant_em" in st.session_state and st.session_state["merchant_em"] != "":
     conn_final_gate.close()
     
     # 🔓 [الانبثاق الأسطوري الفوري]: إذا ثبت تفعيل الحساب حياً
-    if final_status_row and "🟢 مفعّل ونشط" in final_status_row[0]:
+    if final_status_row and "🟢 مفعّل ونشط" in final_status_row:
         try:
             # قراءة ملف نظام المبيعات والمخزون الأسطوري وتشغيله مباشرة
             with open("app.py", "r", encoding="utf-8") as sales_file:
