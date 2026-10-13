@@ -327,12 +327,12 @@ if is_boss_link:
             if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر", key="logout_empty_boss_btn"):
                 st.session_state["admin_master_logged"] = False; st.rerun()
 # ========================================================
-# 🚀 جدار العبور والدمج الشامل - نهاية ملف (auth_gate.py)
+# 🚀 جدار العبور والدمج الشامل المصحح - نهاية ملف (auth_gate.py)
 # ========================================================
 if "merchant_em" in st.session_state and st.session_state["merchant_em"] != "":
     current_merchant = st.session_state["merchant_em"]
     
-    # قراءة طازجة ومباشرة للحالة من خزانة الأمان بدون استخدام كاش قديم
+    # قراءة طازجة ومباشرة للحالة من خزانة الأمان
     conn_final_gate = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor_final_gate = conn_final_gate.cursor()
     cursor_final_gate.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
@@ -342,6 +342,9 @@ if "merchant_em" in st.session_state and st.session_state["merchant_em"] != "":
     # 🔓 [الانبثاق الأسطوري الفوري]: إذا ثبت تفعيل الحساب حياً
     if final_status_row and "🟢 مفعّل ونشط" in final_status_row:
         try:
+            # 🧠 [التثبيت السحابي الحاسم]: إجبار الـ RAM على حفظ الإيميل قبل التحويل لكي يراه ملف المبيعات
+            st.session_state["active_merchant_user"] = current_merchant
+            
             # قراءة ملف نظام المبيعات والمخزون الأسطوري وتشغيله مباشرة
             with open("app.py", "r", encoding="utf-8") as sales_file:
                 sales_code = sales_file.read()
