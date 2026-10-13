@@ -26,88 +26,88 @@ box_border_color = "#ff0055" if st.session_state["cyber_lockout_aura"] else "#00
 box_shadow_glow = "0px 0px 45px rgba(255, 0, 85, 0.65)" if st.session_state["cyber_lockout_aura"] else "0px 0px 40px rgba(0, 255, 240, 0.35)"
 animation_trigger = "animation: cyberPulseAlert 1.5s infinite !important;" if st.session_state["cyber_lockout_aura"] else ""
 
-# 🧠 [الحقن السيبراني الاختراقي العالي]: تلوين كافة الأزرار الخماسية والعدادات والبطاقات رغماً عن أي ملفات فرعية
-st.markdown(f"""
+# 🛡️ تم إزالة حرف الـ f هنا وجعل النص صافي ومضاعفة الأقواس أصبحت غير مطلوبة لمنع الأخطاء نهائياً
+st.markdown("""
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com" rel="stylesheet">
     
     <style>
-    @keyframes pulseBackground {{
-        0% {{ background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }}
-        50% {{ background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%) !important; }}
-        100% {{ background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }}
-    }}
-    @keyframes cyberPulseAlert {{
-        0% {{ box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }}
-        50% {{ box-shadow: 0px 0px 45px rgba(255, 0, 85, 0.8); border-color: #ff3377; }}
-        100% {{ box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }}
-    }}
+    @keyframes pulseBackground {
+        0% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }
+        50% { background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%) !important; }
+        100% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }
+    }
+    @keyframes cyberPulseAlert {
+        0% { box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }
+        50% { box-shadow: 0px 0px 45px rgba(255, 0, 85, 0.8); border-color: #ff3377; }
+        100% { box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }
+    }
 
-    .stApp {{
+    .stApp {
         animation: pulseBackground 8s ease-in-out infinite !important;
         color: #ffffff !important;
         font-family: 'Cairo', sans-serif !important;
-    }}
+    }
     
     /* صبغ وتلوين البطاقات النيونية المحيطة ببيانات التجار */
-    div[data-testid="stMarkdownContainer"] > div, .premium-card-cyan, .premium-card-pink {{
+    div[data-testid="stMarkdownContainer"] > div, .premium-card-cyan, .premium-card-pink {
         background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%) !important;
         border: 2px solid #00fff0 !important;
         border-radius: 15px !important;
         box-shadow: 0px 0px 30px rgba(0, 255, 240, 0.25) !important;
         backdrop-filter: blur(15px) !important;
-    }}
+    }
     
     /* إجبار الأزرار الخماسية التفاعلية على التوهج الكامل بالألوان السيبرانية الموضحة بالصورة */
-    div.stButton button, .stButton > button {{
+    div.stButton button, .stButton > button {
         width: 100% !important; min-height: 48px !important;
         font-family: 'Cairo', sans-serif !important; font-size: 14px !important; font-weight: 900 !important; border-radius: 12px !important;
         background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%) !important; color: #00fff0 !important;
         border: 2px solid #00fff0 !important; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.3) !important;
         transition: all 0.3s ease-in-out !important;
     }
-    div.stButton button:hover {{ 
+    div.stButton button:hover { 
         background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important;
         box-shadow: 0px 0px 30px #00fff0 !important; transform: translateY(-2px) !important;
     }
     
     /* صبغ العدادات الثلاثية والمقاييس المستقلة بالبلور الزجاجي الفاخر */
-    div[data-testid="stMetricBlock"], div[data-testid="metric-container"] {{
+    div[data-testid="stMetricBlock"], div[data-testid="metric-container"] {
         background: linear-gradient(135deg, rgba(15, 2, 20, 0.85) 0%, rgba(5, 5, 12, 0.98) 100%) !important;
         border: 2px solid #ff00ff !important;
         border-radius: 16px !important;
         box-shadow: 0px 0px 25px rgba(255, 0, 255, 0.35) !important;
-    }}
+    }
     
     /* تنظيف وتلوين حقول النصوص لمنع التداخل البصري */
-    div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input {{
+    div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input {
         border: 2px solid #ff00ff !important; background-color: #06060d !important; color: #ffffff !important;
         border-radius: 12px !important; font-weight: 700 !important;
-    }}
-    div[data-testid="stTextInput"] input:focus, div[data-testid="stNumberInput"] input:focus {{
+    }
+    div[data-testid="stTextInput"] input:focus, div[data-testid="stNumberInput"] input:focus {
         border-color: #00fff0 !important; box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.5) !important;
-    }}
+    }
     
     /* إلغاء القائمة الجانبية المكررة لمنع تداخل شاشات المالك */
-    [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] {{ display: none !important; }}
+    [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] { display: none !important; }
     
-    .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 {{ 
+    .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 { 
         font-family: 'Cairo', sans-serif !important; color: #ffffff !important;
         text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.15) !important;
-    }}
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# حقن كود الحاوية المستقل المعزول لمنع خطأ الـ f-string للأبد
-st.markdown(f"""
+# 🧠 [حل ثغرة السطر 69 الحاسمة]: استخدام دالة الدمج النصية المستقلة لـ بايثون لمنع تعارض الـ f-string
+st.markdown("""
     <style>
-    .centered-box-container {{
+    .centered-box-container {
         max-width: 500px !important; margin: 60px auto 20px auto !important; padding: 40px !important;
-        background: rgba(5, 5, 15, 0.95) !important; border: 2px solid {box_border_color} !important; border-radius: 20px !important;
-        box-shadow: {box_shadow_glow} !important; direction: rtl !important; text-align: right !important; backdrop-filter: blur(15px) !important;
-        {animation_trigger}
-    }}
+        background: rgba(5, 5, 15, 0.95) !important; border: 2px solid """ + box_border_color + """ !important; border-radius: 20px !important;
+        box-shadow: """ + box_shadow_glow + """ !important; direction: rtl !important; text-align: right !important; backdrop-filter: blur(15px) !important;
+        """ + animation_trigger + """
+    }
     </style>
 """, unsafe_allow_html=True)
 
