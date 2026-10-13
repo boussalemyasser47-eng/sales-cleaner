@@ -175,18 +175,34 @@ if not is_boss_link:
                     st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
                     time.sleep(0.5)
                     st.rerun()
-        else:
+                else:
             st.markdown("</div>", unsafe_allow_html=True)
             if st.button("🔑 تسجيل الدخول إلى المتجر"):
-                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
+                if clean_email == "" or clean_pass == "":
+                    st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
                 else:
                     conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
                     cursor_login = conn_login.cursor()
                     cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
-                    user_status = cursor_login.fetchone()
+                    user_status_row = cursor_login.fetchone()
                     conn_login.close()
-                    if user_status: st.success(f"🔓 تم التحقق بنجاح! حالة حسابك الحالية هي: {user_status[0]}")
-                    else: st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
+                    
+                    if user_status_row:
+                        user_status = user_status_row[0]
+                        # 🧠 [التثبيت الحاسم للجلسة]: حفظ الإيميل في كاش النظام ليعرفه السيرفر بالثانية
+                        st.session_state["merchant_em"] = clean_email
+                        
+                        if "🟢 مفعّل ونشط" in user_status:
+                            st.success("🔓 تم التحقق بنجاح! حسابك نشط.")
+                            st.toast("🚀 جاري تحويلك إلى لوحة المبيعات الأسطورية حياً...", icon="⚡")
+                            time.sleep(1)
+                            # هنا يمكنك عمل الرابط المباشر لملف المبيعات لفتح المتجر فوراً للتاجر
+                            st.rerun()
+                        else:
+                            st.warning(f"⏳ حالة حسابك الحالية: {user_status}")
+                    else:
+                        st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
+
                 # 2️⃣ [تكملة مصفوفة التحكم الخماسية المدمجة]: توزيع بقية الأعمدة التفاعلية حياً
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام", key=f"btn_ext_{current_email}"):
