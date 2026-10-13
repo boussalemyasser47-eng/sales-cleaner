@@ -152,9 +152,10 @@ if not is_boss_link:
         st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
         
-        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
+        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب taجر جديد فريش"])
         st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
         
+        # 🧠 المفتاح هنا هو "merchant_em" وهو يقوم بحفظ القيمة في الـ session_state تلقائياً دون الحاجة للسطر 195
         input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
         input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
         
@@ -191,8 +192,6 @@ if not is_boss_link:
                     
                     if user_status_row:
                         user_status = user_status_row[0]
-                        # [التثبيت الحاسم للجلسة]: حفظ الإيميل حياً لتفعيل التحويل التلقائي
-                        st.session_state["merchant_em"] = clean_email
                         
                         if "🟢 مفعّل ونشط" in user_status:
                             st.success("🔓 تم التحقق بنجاح! حسابك نشط.")
