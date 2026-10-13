@@ -123,71 +123,62 @@ def delete_email_completely(email_to_delete):
 # ========================================================
 # الجزء الثالث: واجهة فيسبوك الموسطة والآمنة للتجار (auth_gate.py)
 # ========================================================
-
-# ... (هنا كود واجهة التجار الصافية الحالية الخاصة بك دون أي تغيير) ...
-
-
-# 🚨 [الموضع الدقيق]: هنا يبدأ شرط دخول المالك وغرفة السيادة
-if is_boss_link:
-    st.markdown("📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة", unsafe_allow_html=True)
+# واجهة التجار الصافية تصعد تلقائياً للجمهور فقط وحصرياً إذا كان الرابط عادياً وخالياً من مفتاحك السري
+if not is_boss_link:
+    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>سجل بريدك وإلكترونيات متجرك الخاص للتحويل التلقائي والآمن لخزانة فواتيرك.</p>", unsafe_allow_html=True)
     
-    # جلب الحسابات المسجلة من الجدول حياً
-    conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
-    df_users = pd.read_sql_query("SELECT email, password, status, package FROM saas_users_auth", conn_view)
-    conn_view.close()
-    
-    if not df_users.empty:
-        for index, row in df_users.iterrows():
-            current_email = row['email']
-            current_pass = row['password']
-            current_status = row['status']
-            current_package = row['package']
-            
-            # 👇👇 [ضع الإضافة الثانية هنا مباشرة داخل حلقة التكرار] 👇👇
-            
-            # بناء حاوية اللوحة النيونية الموحدة واحتواء أزرار التحكم بداخلها بالكامل
-            st.markdown(f"""
-            <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%); margin-bottom: 15px; box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.15);">
-                <p style="text-align: right; font-weight: 700; margin-bottom: 8px; color: #ffffff;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
-                <p style="text-align: right; font-size: 14px; color: #b0b0d0; margin-bottom: 12px;">فئة الاشتراك المطلوبة للعمل: {current_package}</p>
-                <p style="text-align: right; font-weight: bold; color: #00fff0; margin-bottom: 20px;">🟢 الحالة الحالية: {current_status}</p>
-            """, unsafe_allow_html=True)
-
-            # توليد صف الأعمدة الثلاثي للأزرار ليكون محاطاً بهيكل اللوحة الزرقاء داخلياً
-            col_activate, col_lock, col_delete = st.columns(3)
-
-            with col_activate:
-                if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"int_active_{current_email}"):
-                    st.success("🎯 تم قبول وتنشيط الحساب!")
-
-            with col_lock:
-                if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"int_lock_{current_email}"):
-                    st.warning("⛔ تم قفل وحظر صلاحيات المشترك!")
-
-            with col_delete:
-                if st.button("🗑️ حذف وتدمير الحساب فوراً", key=f"int_del_{current_email}"):
-                    st.session_state[f"ask_confirm_{current_email}"] = True
-
-            # إغلاق وسم الـ div لضمان احتواء الأزرار بالداخل 100%
+    col_side_left, col_center_box, col_side_right = st.columns(3)
+    with col_center_box:
+        st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
+        
+        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
+        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
+        
+        input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
+        input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
+        
+        clean_email = input_email.strip()
+        clean_pass = input_password.strip()
+        
+        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+            user_package_choice = st.selectbox("اختر فئة الباقة السنوية لمتجرك:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
             st.markdown("</div>", unsafe_allow_html=True)
-
-            # ظهور آلية زر التأكيد التفاعلي "فهمت" عند طلب المسح
-            if st.session_state.get(f"ask_confirm_{current_email}", False):
-                st.markdown("<hr style='border-color: rgba(255, 0, 0, 0.3); margin: 10px 0;'>", unsafe_allow_html=True)
-                col_txt, col_yes_btn = st.columns(2)
-                with col_txt:
-                    st.error(f"⚠️ هل أنت متأكد تماماً من إبادة وحذف حساب {current_email} نهائياً؟")
-                with col_yes_btn:
-                    if st.button("✅ فهمت، احذف الحساب الآن", key=f"final_yes_{current_email}"):
-                        st.session_state["destroyed_flag"] = True
-                        st.session_state[f"ask_confirm_{current_email}"] = False
-                        
-                        if delete_email_completely(current_email):
-                            st.toast(f"🔥 تم تطهير البريد الإلكتروني بنجاح من النظام!", icon="💥")
-                            time.sleep(0.5)
-                            st.rerun()
-    else:
-        st.warning("📭 الرادار صافي تماماً، لا توجد طلبات تجار معلقة حالياً في السيرفر.")
+            
+            if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
+                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
+                else:
+                    conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_reg = conn_reg.cursor()
+                    try:
+                        cursor_reg.execute("INSERT INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, user_package_choice))
+                        conn_reg.commit()
+                        st.success("✅ تم تسجيل حسابك الحر بنجاح! طارت معلوماتك للإدارة وبانتظار تفعيل باقتك السنوية حيًا.")
+                    except sqlite3.IntegrityError:
+                        st.error("🚨 هذا البريد الإلكتروني مسجل مسبقاً بالنظام!")
+                    conn_reg.close()
+                    
+        elif auth_mode == "🔑 تسجيل الدخول للحساب الحالي":
+            st.markdown("</div>", unsafe_allow_html=True)
+            if st.button("🔓 دخول آمن وتحويل للمستودع"):
+                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى كتابة البريد وكلمة السر أولاً!")
+                else:
+                    conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_login = conn_login.cursor()
+                    cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
+                    db_row = cursor_login.fetchone()
+                    conn_login.close()
+                    
+                    if db_row:
+                        user_status = db_row[0]
+                        if "⏳" in user_status or "انتظار" in user_status: st.warning("⏳ حسابك مسجل، وهو قيد المراجعة حالياً من طرف الإدارة!")
+                        elif "🔒" in user_status or "قفل" in user_status or "محجوب" in user_status: st.error("🚨 عذراً، هذا الحساب مقفل ومحجوب كلياً لعدم الاشتراك السنوي!")
+                        else:
+                            st.success("⚡ تم التوثيق بنجاح! جاري تحويلك تلقائياً لمتجرك الأصلي والـ 9 ميزات...")
+                            time.sleep(0.4)
+                            st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
+                    else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
 
 # ========================================================
 # الجزء الرابع: لوحة التحكم الإدارية المركزية وقفل السيرفر الموحد (auth_gate.py)
