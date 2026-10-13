@@ -252,59 +252,65 @@ if is_boss_link:
         else: st.warning("📭 الرادار صافي تماماً، لا توجد طلبات معلقة حالياً.")
 
 # ========================================================
-# الجزء الرابع: انبثاق صانع الفواتير والمخزون للتاجر المفعّل (auth_gate.py)
+# الجزء الرابع الأسطوري: انبثاق صانع الفواتير النيوني الزجاجي (auth_gate.py)
 # ========================================================
 if "active_merchant_user" in st.session_state and not is_boss_link:
     current_merchant = st.session_state["active_merchant_user"]
     
-    # التحقق الأخير من استمرار الصلاحية في خزانة الأمان
     conn_final_auth = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor_final_auth = conn_final_auth.cursor()
     cursor_final_auth.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
     chk_row = cursor_final_auth.fetchone()
     conn_final_auth.close()
     
-    if not chk_row or "مفعّل" not in chk_row[0]:
-        st.warning("🔒 انتهت أو سُحبت تراخيص الحساب السحابي.")
-        if st.button("🔄 العودة لبوابة الدخول الرئيسية"): 
+    if not chk_row or "مفعّل" not in chk_row:
+        st.warning("🔒 انتهت أو سُحبت تراخيص الحساب.")
+        if st.button("🔄 :العودة لبوابة الدخول"): 
             st.session_state.pop("active_merchant_user"); st.rerun()
         st.stop()
     
-    # 🏪 [نظام المتجر الأصلي الخاص بك مدمج بالمليمتر في نفس الصفحة]
     conne = sqlite3.connect("invoices_master_v4.db")
     cursor = conne.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS v4_customer_invoices (invoice_id INTEGER PRIMARY KEY AUTOINCREMENT, shop_name TEXT, customer_name TEXT, customer_phone TEXT, product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT)''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS store_stock (product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER)''')
     conne.commit()
     
-        # أشرطة التحكم الجانبية للمتجر والأزرار النيونية للتاجر
-    st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold;'>👤 التاجر النشط: {current_merchant}</p>", unsafe_allow_html=True)
+    st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold; text-align:center;'>👤 التاجر النشط:<br>{current_merchant}</p>", unsafe_allow_html=True)
     choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي"])
     
-    # ✅ تم تصحيح الإزاحة الحادّة هنا: السطر أصبح محاذياً بالمليمتر وعلى نفس خط الكود السابق والتالي
     if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب"):
-        st.session_state.pop("active_merchant_user")
-        st.toast("تم الخروج الآمن!")
-        time.sleep(0.5)
-        st.rerun()
+        st.session_state.pop("active_merchant_user"); st.toast("تم الخروج الآمن!"); time.sleep(0.5); st.rerun()
         
-    # تم إيقاف وحظر السطر المسبب لـ NameError للأبد ليعود السيرفر للبث
-    # render_sidebar_helper()
-
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
-        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
-        stat_col1, stat_col2, stat_col3 = st.columns(3)
+        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0; text-align:right;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
+        
         total_sales_db = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conne)
         total_stock_db = pd.read_sql("SELECT SUM(available_qty) as total_qty FROM store_stock", conne)
         
-        with stat_col1: st.metric(label="💰 إجمالي المداخيل", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
-        with stat_col2: st.metric(label="🧾 الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
-        with stat_col3:
-            try: stock_val = int(total_stock_db['total_qty'].values) if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
-            except: stock_val = 0
-            st.metric(label="📦 قطع متوفرة", value=f"{stock_val} حبة")
-            
-        st.markdown("---")
+        sales_sum = total_sales_db['final_total'].sum()
+        invoices_count = len(total_sales_db)
+        try: stock_val = int(total_stock_db['total_qty'].values) if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
+        except: stock_val = 0
+        
+        st.markdown(f"""
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; direction: rtl;">
+            <div style="border: 2px solid #ff00ff; border-radius: 15px; padding: 20px; text-align: center; background: rgba(34, 4, 46, 0.6); box-shadow: 0px 0px 25px rgba(255, 0, 255, 0.4); backdrop-filter: blur(15px);">
+                <p style="color: #ff00ff; margin: 0; font-weight: bold; font-size: 14px; font-family: 'Cairo', sans-serif;">💰 إجمالي المداخيل المسجلة</p>
+                <h2 style="color: #ffffff; margin: 10px 0 0 0; font-weight: 900; font-size: 26px; font-family: 'Cairo', sans-serif;">{sales_sum:,.2f} DA</h2>
+            </div>
+            <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 20px; text-align: center; background: rgba(4, 32, 43, 0.6); box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.4); backdrop-filter: blur(15px);">
+                <p style="color: #00fff0; margin: 0; font-weight: bold; font-size: 14px; font-family: 'Cairo', sans-serif;">🧾 عدد الفواتير الصادرة</p>
+                <h2 style="color: #ffffff; margin: 10px 0 0 0; font-weight: 900; font-size: 26px; font-family: 'Cairo', sans-serif;">{invoices_count} فاتورة</h2>
+            </div>
+            <div style="border: 2px solid #ffaa00; border-radius: 15px; padding: 20px; text-align: center; background: rgba(43, 28, 4, 0.6); box-shadow: 0px 0px 25px rgba(255, 170, 0, 0.4); backdrop-filter: blur(15px);">
+                <p style="color: #ffaa00; margin: 0; font-weight: bold; font-size: 14px; font-family: 'Cairo', sans-serif;">📦 السلع المتوفرة بالمستودع</p>
+                <h2 style="color: #ffffff; margin: 10px 0 0 0; font-weight: 900; font-size: 26px; font-family: 'Cairo', sans-serif;">{stock_val} حبة</h2>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15);'>", unsafe_allow_html=True)
+        
         col_left, col_right = st.columns(2)
         with col_left:
             st.subheader("🏪 معلومات المتجر والزبون")
