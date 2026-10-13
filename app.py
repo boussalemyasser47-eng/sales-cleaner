@@ -15,19 +15,49 @@ from ai_helper import render_marketing_hub, render_data_insights, render_sidebar
 st.set_page_config(page_title="نظام المبيعات والمخزون الأسطوري", layout="wide")
 apply_neon_theme()
 
+# ========================================================
+# 🧠 [جدار الربط الميكانيكي المصحح والمعزول كلياً]
+# ========================================================
+if "merchant_em" in st.session_state and st.session_state["merchant_em"] != "":
+    current_merchant = st.session_state["merchant_em"]
+    
+    # فتح خزانة الأمان لقراءة الحالة حياً من السيرفر
+    conn_auth_check = sqlite3.connect("saas_security_vault.db", timeout=10)
+    cursor_auth_check = conn_auth_check.cursor()
+    cursor_auth_check.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
+    current_status_row = cursor_auth_check.fetchone()
+    
+    # 🛡️ [قفل فوري صارم]: إغلاق قاعدة بيانات الحسابات قبل الانتقال لقاعدة الفواتير لمنع الـ Lock
+    conn_auth_check.close()
+    
+    # التحقق من حالة الحساب للتوجيه أو الحظر السحابي
+    if not current_status_row or "مفعّل" not in current_status_row:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<div class='centered-box-container' style='max-width:600px; margin:0 auto; padding:40px; border:2px solid #ffaa00; border-radius:20px; background:rgba(10,10,26,0.95); text-align:center;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color: #ffaa00; font-weight:900;'>⏳ الحساب قيد المراجعة السيبرانية</h2>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color:#ffffff; font-size:16px;'>مرحباً بك يا تاجر. حسابك الحالي هو: <span style='color:#00fff0;'>{current_merchant}</span></p>", unsafe_allow_html=True)
+        st.markdown("<p style='color:#b0b0d0;'>بانتظار موافقة وقبول القائد الأعلى لتنشيط تراخيص لوحة المبيعات والمخزون الأسطورية وعرض العدادات حياً.</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.stop() # إيقاف قراءة بقية أسطر ملف المبيعات نهائياً لحين تفعيله من قبلك
+
+# ========================================================
+# 🏪 بدء كود قاعدة بيانات الفواتير والمخزون المصحح المسافات
+# ========================================================
 conne = sqlite3.connect("invoices_master_v4.db")
 cursor = conne.cursor()
+
 cursor.execute('''
-    CREATE TABLE IF NOT EXISTS v4_customer_invoices (
-        invoice_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        shop_name TEXT, customer_name TEXT, customer_phone TEXT,
-        product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT
-    )
+CREATE TABLE IF NOT EXISTS v4_customer_invoices (
+    invoice_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    shop_name TEXT, customer_name TEXT, customer_phone TEXT,
+    product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT
+)
 ''')
+
 cursor.execute('''
-    CREATE TABLE IF NOT EXISTS store_stock (
-        product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER
-    )
+CREATE TABLE IF NOT EXISTS store_stock (
+    product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER
+)
 ''')
 conne.commit()
 
