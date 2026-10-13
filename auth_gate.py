@@ -171,30 +171,36 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
 
 # ========================================================
-# الجزء الثالث: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py)
+# الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py)
 # ========================================================
 if is_boss_link:
+    # 🧠 [تأمين وحقن الهوية علوياً]: تعريف ثوابت الدخول مباشرة داخل الجزء الثالث لمنع خطأ NameError
+    ADMIN_USERNAME = "admin_master_v4"
+    ADMIN_PASSWORD = "SaasPassword2026"
+
     if not st.session_state["admin_master_logged"]:
         st.markdown("<br><br>", unsafe_allow_html=True)
-        st.markdown("<div class='centered-box-container'>", unsafe_allow_html=True)
+        st.markdown("<div class='centered-box-container' style='max-width: 500px; margin: 60px auto 20px auto; padding: 40px; background: rgba(5, 5, 15, 0.95); border: 2px solid #00fff0; border-radius: 20px; box-shadow: 0px 0px 40px rgba(0, 255, 240, 0.35); direction: rtl; text-align: right; backdrop-filter: blur(15px);'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color: #ff00ff; text-align: center; font-weight: 900; margin-top: 0;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h2>", unsafe_allow_html=True)
         st.markdown("<p style='color: #ffffff; text-align: center; font-size: 15px; margin-bottom: 25px;'>🔑 تسجيل دخول المالك الأعلى للوصول للرادار</p>", unsafe_allow_html=True)
         
-        # حقول الإدخال الإدارية الصافية والمحاذية بالمليمتر لمنع الـ NameError
         boss_user = st.text_input("User:", key="boss_leader_user").strip()
         boss_pass = st.text_input("Password:", type="password", key="boss_leader_pass").strip()
         
         st.markdown("<br>", unsafe_allow_html=True)
         
         if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="submit_boss_login_btn"):
+            # الآن المتغيرات معرّفة فوق السطر مباشرة وسيتعرف عليها السيرفر بنجاح قاطع
             if boss_user == ADMIN_USERNAME and boss_pass == ADMIN_PASSWORD:
                 st.session_state["admin_master_logged"] = True
-                st.toast("👑 مرحباً بك يا قائد!", icon="🔓")
+                st.toast("👑 مرحباً بك يا قائد! تم تفعيل لوحة السيادة والموافقات.", icon="🔓")
                 time.sleep(0.5)
                 st.rerun()
             else:
                 st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من مفاتيح الأمان السحابية.")
         st.markdown("</div>", unsafe_allow_html=True)
+)
+       
 
         # العدادات الثلاثية المستقلة المعزولة كلياً والمحاطة بإطار النيون
         col_stat1, col_stat2, col_stat3 = st.columns(3)
