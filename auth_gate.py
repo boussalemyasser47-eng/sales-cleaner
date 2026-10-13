@@ -1,108 +1,36 @@
 # ========================================================
-# الجزء الأول: الهندسة البصرية المتقدمة وتلوين الواجهات الأسطوري (auth_gate.py)
+# الجزء الأول: النواة السيبرانية والتهيئة السحابية (auth_gate.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
 import sqlite3
 import time
-import os
+from datetime import datetime
+import io
+import urllib.parse
+
+# استدعاء الدوال من الملفات الفرعية المخصصة الثابتة والموجودة في مشروعك
+from styles import apply_neon_theme
+from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
+from cleaner_helper import process_sales_file
+from ai_helper import render_marketing_hub, render_data_insights, render_sidebar_helper
 
 # ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة وفخمة ومحمية كلياً
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
+apply_neon_theme()
 
 # 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
 query_params = st.query_params
 is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
 
-# تفعيل علم وميض الخطأ السيبراني الأحمر في الجلسة في حال الفشل
-if "cyber_lockout_aura" not in st.session_state:
-    st.session_state["cyber_lockout_aura"] = False
-
-# تهيئة ألوان وصور الحركة النيونية المعزولة ميكانيكياً خارج النص
-box_border_color = "#ff0055" if st.session_state["cyber_lockout_aura"] else "#00fff0"
-box_shadow_glow = "0px 0px 45px rgba(255, 0, 85, 0.65), inset 0px 0px 20px rgba(255, 0, 85, 0.2)" if st.session_state["cyber_lockout_aura"] else "0px 0px 40px rgba(0, 255, 240, 0.4), inset 0px 0px 20px rgba(0, 255, 240, 0.15)"
-animation_trigger = "animation: cyberPulseAlert 1.5s infinite !important;" if st.session_state["cyber_lockout_aura"] else ""
-
-# 🛡️ تم إزالة حرف الـ f هنا وجعل النص صافي ومضاعفة الأقواس أصبحت غير مطلوبة لمنع الأخطاء نهائياً
-st.markdown("""
-    <link rel="preconnect" href="https://googleapis.com">
-    <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com" rel="stylesheet">
-    
-    <style>
-    @keyframes pulseBackground {
-        0% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%); }
-        50% { background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%); }
-        100% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%); }
-    }
-    @keyframes cyberPulseAlert {
-        0% { box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }
-        50% { box-shadow: 0px 0px 45px rgba(255, 0, 85, 0.8); border-color: #ff3377; }
-        100% { box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }
-    }
-
-    .stApp {
-        animation: pulseBackground 8s ease-in-out infinite !important;
-        color: #ffffff !important;
-        font-family: 'Cairo', sans-serif !important;
-    }
-    
-    /* ترقية البطاقات الزجاجية الملونة بالتأثير البلوري والظلال المشعة */
-    .premium-card-pink {
-        background: linear-gradient(135deg, rgba(34, 4, 46, 0.6) 0%, rgba(15, 2, 20, 0.9) 100%) !important;
-        border: 2px solid #ff00ff !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 35px rgba(255, 0, 255, 0.25) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(15px);
-    }
-    .premium-card-cyan {
-        background: linear-gradient(135deg, rgba(4, 32, 43, 0.6) 0%, rgba(2, 14, 20, 0.9) 100%) !important;
-        border: 2px solid #00fff0 !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 35px rgba(0, 255, 240, 0.25) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(15px);
-    }
-    
-    div[data-testid="stVerticalBlock"] button, div.stButton button, .stButton > button {
-        width: 100% !important; min-height: 48px !important; white-space: normal !important; word-wrap: break-word !important;
-        font-family: 'Cairo', sans-serif !important; font-size: 13.5px !important; font-weight: 900 !important; border-radius: 12px !important;
-        text-align: center !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
-        padding: 10px 14px !important; background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%) !important; color: #00fff0 !important;
-        border: 2px solid #00fff0 !important; box-shadow: 0px 0px 14px rgba(0, 255, 240, 0.25) !important; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-    }
-    div.stButton button:hover { background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important; box-shadow: 0px 0px 25px #00fff0 !important; transform: translateY(-2px) !important; }
-    
-    div[data-testid="stTextInput"] input { border: 2px solid #ff00ff !important; background-color: #06060d !important; color: #ffffff !important; border-radius: 14px !important; padding: 15px 18px !important; font-family: 'Cairo', sans-serif !important; font-size: 14.5px !important; box-shadow: 0px 0px 10px rgba(255, 0, 255, 0.1) !important; }
-    div[data-testid="stTextInput"] input:focus { border-color: #00fff0 !important; box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.4) !important; }
-    
-    [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] { display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0px !important; width: 0px !important; }
-    section[data-testid="stSidebar"] { display: none !important; visibility: hidden !important; }
-    
-    .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 { font-family: 'Cairo', sans-serif !important; color: #ffffff !important; text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.1) !important; }
-    </style>
-""", unsafe_allow_html=True)
-
-# 🧠 حقن الجزء الشرطي المعزول الخاص بغرفة المالك بشكل منفصل تماماً ومحمي لمنع انهيار الـ f-string
-st.markdown(f"""
-    <style>
-    .centered-box-container {{
-        max-width: 500px !important;
-        margin: 60px auto 20px auto !important;
-        padding: 40px !important;
-        background: rgba(5, 5, 15, 0.93) !important;
-        border: 2px solid {box_border_color} !important;
-        border-radius: 20px !important;
-        box-shadow: {box_shadow_glow} !important;
-        direction: rtl !important;
-        text-align: right !important;
-        backdrop-filter: blur(15px) !important;
-        {animation_trigger}
-    }}
-    </style>
-""", unsafe_allow_html=True)
-
-# ========================================================
-# الجزء الثاني: حقول مدخلات التجار وبناء جدول الـ SQL الموحد (auth_gate.py)
-# ========================================================
+# تهيئة ثوابت الهوية الإدارية الموحدة لغرفة القيادة العليا لمنع ثغرات الكاش
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
 
 if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
+if "cyber_lockout_aura" not in st.session_state:
+    st.session_state["cyber_lockout_aura"] = False
 
 # صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
@@ -113,39 +41,30 @@ db_cursor.execute("""
     )
 """)
 db_conn.commit()
-db_conn.close()
 
-# [إصلاح حاسم للثغرة الذكية]: منع حقن الحساب الافتراضي تلقائياً في الكاش إذا قام المالك بحذفه
-db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-db_cursor = db_conn.cursor()
+# [إصلاح الثغرة الذكية]: منع حقن الحساب الافتراضي تلقائياً إذا قام المالك بحذفه يدوياً
 db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
 account_exists = db_cursor.fetchone()[0]
-
 if account_exists == 0 and "destroyed_flag" not in st.session_state:
     db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
     db_conn.commit()
 db_conn.close()
 
-# ⚙️ دالة التدمير الفوري لأي حساب في قاعدة البيانات
+# دالة التدمير الفوري لأي حساب في قاعدة البيانات
 def delete_email_completely(email_to_delete):
     try:
         conn = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor = conn.cursor()
         cursor.execute("DELETE FROM saas_users_auth WHERE email = ?", (email_to_delete,))
-        conn.commit()
-        conn.close()
+        conn.commit(); conn.close()
         return True
     except Exception as e:
-        st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}")
-        return False
-
+        st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
 # ========================================================
-# الجزء الثالث - أ: واجهة فيسبوك الموسطة والآمنة للتجار (auth_gate.py)
+# الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
 # ========================================================
-# واجهة التجار الصافية تصعد تلقائياً للجمهور فقط وحصرياً إذا كان الرابط عادياً وخالياً من مفتاحك السري
-if not is_boss_link:
+if not is_boss_link and "active_merchant_user" not in st.session_state:
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>سجل بريدك وإلكترونيات متجرك الخاص للتحويل التلقائي والآمن لخزانة فواتيرك.</p>", unsafe_allow_html=True)
     
     col_side_left, col_center_box, col_side_right = st.columns(3)
     with col_center_box:
@@ -161,31 +80,23 @@ if not is_boss_link:
         clean_email = input_email.strip()
         clean_pass = input_password.strip()
         
-        # 🛡️ [القسم الأول]: إذا اختار التاجر إنشاء حساب فريش، تظهر حقول الخيارات وزر الإرسال الخاص بها فقط
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
             user_package_choice = st.selectbox("اختر فئة الباقة السنوية لمتجرك:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
-            st.markdown("</div>", unsafe_allow_html=True) # إغلاق الكرت النيوني بانتظام هنا للإنشاء
+            st.markdown("</div>", unsafe_allow_html=True)
             
             if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
-                if clean_email == "" or clean_pass == "": 
-                    st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
+                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
                 else:
                     conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                     cursor_reg = conn_reg.cursor()
                     cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, user_package_choice))
-                    conn_reg.commit()
-                    conn_reg.close()
+                    conn_reg.commit(); conn_reg.close()
                     st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
-                    time.sleep(0.5)
-                    st.rerun()
-                    
-        # 🛡️ [القسم الثاني معزول تماماً]: إذا اختار تسجيل الدخول، يظهر زر الدخول الخاص به فقط وبدون أي خلط لباقات الإنشاء
+                    time.sleep(0.5); st.rerun()
         else:
-            st.markdown("</div>", unsafe_allow_html=True) # إغلاق الكرت النيوني بانتظام هنا للدخول
-            
+            st.markdown("</div>", unsafe_allow_html=True)
             if st.button("🔑 تسجيل الدخول إلى المتجر"):
-                if clean_email == "" or clean_pass == "":
-                    st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
+                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
                 else:
                     conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
                     cursor_login = conn_login.cursor()
@@ -194,59 +105,44 @@ if not is_boss_link:
                     conn_login.close()
                     
                     if user_status_row:
-                        user_status = user_status_row[0]
-                        if "🟢 مفعّل ونشط" in user_status:
-                            st.success("🔓 تم التحقق بنجاح! حسابك نشط.")
-                            st.toast("🚀 جاري فتح لوحة المبيعات الأسطورية حياً...", icon="⚡")
-                            time.sleep(0.5)
-                            st.rerun()
+                        if "🟢 مفعّل ونشط" in user_status_row[0]:
+                            st.session_state["active_merchant_user"] = clean_email
+                            st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
+                            time.sleep(0.5); st.rerun()
                         else:
-                            st.warning(f"⏳ حالة حسابك الحالية: {user_status}")
+                            st.warning(f"⏳ حالة حسابك الحالية: {user_status_row[0]}")
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
-
 # ========================================================
-# الجزء الثالث - ب: غرفة المالك ورادار الموافقات الأسطوري (auth_gate.py)
+# الجزء الثالث: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py)
 # ========================================================
 if is_boss_link:
     if not st.session_state["admin_master_logged"]:
         st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown("<div class='centered-box-container'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color: #ff00ff; text-align: center; font-weight: 900; margin-top: 0;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #ffffff; text-align: center; font-size: 15px; margin-bottom: 25px;'>🔑 تسجيل دخول المالك الأعلى للوصول للرادار</p>", unsafe_allow_html=True)
         
         boss_user = st.text_input("👤 اسم المستخدم الخاص بالقائد:", key="boss_leader_user").strip()
         boss_pass = st.text_input("🔑 كلمة المرور الإدارية الخارقة:", type="password", key="boss_leader_pass").strip()
-        
-        st.markdown("<br>", unsafe_allow_html=True)
         
         if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="submit_boss_login_btn"):
             if boss_user == ADMIN_USERNAME and boss_pass == ADMIN_PASSWORD:
                 st.session_state["admin_master_logged"] = True
                 st.session_state["cyber_lockout_aura"] = False
-                st.toast("👑 مرحباً بك يا قائد! تم تفعيل لوحة السيادة والموافقات.", icon="🔓")
-                time.sleep(0.5)
-                st.rerun()
+                st.toast("👑 مرحباً بك يا قائد!", icon="🔓"); time.sleep(0.5); st.rerun()
             else:
                 st.session_state["cyber_lockout_aura"] = True
-                st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من مفاتيح الأمان السحابية.")
-                time.sleep(0.5)
-                st.rerun()
+                st.error("❌ بيانات خاطئة!"); time.sleep(0.5); st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
-
     else:
         st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900; text-shadow: 0 0 25px #00fff0;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
         
         col_stat1, col_stat2, col_stat3 = st.columns(3)
-        with col_stat1:
-            st.markdown("<div style='border:2px solid #ff00ff; border-radius:15px; padding:20px; text-align:center; background:rgba(5,5,15,0.85); box-shadow: 0 0 20px rgba(255,0,255,0.25); direction:rtl; backdrop-filter: blur(25px);'><h4 style='color:#ff00ff; margin:0; font-size:14px;'>📦 حركة الفواتير المطبوعة بالـ SQL</h4><h2 style='margin:10px 0 0 0; font-weight:900;'>142 تلبية صادرة</h2></div>", unsafe_allow_html=True)
-        with col_stat2:
-            st.markdown("<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(5,5,15,0.85); box-shadow: 0 0 20px rgba(0,255,240,0.25); direction:rtl; backdrop-filter: blur(25px);'><h4 style='color:#00fff0; margin:0; font-size:14px;'>👥 المشتركين النشطين حالياً بالمنصة</h4><h2 style='margin:10px 0 0 0; font-weight:900;'>1 تجار نشطين</h2></div>", unsafe_allow_html=True)
-        with col_stat3:
-            st.markdown("<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(5,5,15,0.85); box-shadow: 0 0 20px rgba(255,170,0,0.25); direction:rtl; backdrop-filter: blur(25px);'><h4 style='color:#ffaa00; margin:0; font-size:14px;'>💰 التدفق النقدي الكلي عبر السيرفر</h4><h2 style='margin:10px 0 0 0; font-weight:900;'>4,580,000.00 DA</h2></div>", unsafe_allow_html=True)
-            
+        with col_stat1: st.markdown("<div style='border:2px solid #ff00ff; border-radius:15px; padding:20px; text-align:center; background:rgba(5,5,15,0.85); direction:rtl;'><h4 style='color:#ff00ff; margin:0;'>📦 حركة الفواتير</h4><h2>142 تلبية</h2></div>", unsafe_allow_html=True)
+        with col_stat2: st.markdown("<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(5,5,15,0.85); direction:rtl;'><h4 style='color:#00fff0; margin:0;'>👥 تجار نشطين</h4><h2>1 نشط</h2></div>", unsafe_allow_html=True)
+        with col_stat3: st.markdown("<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(5,5,15,0.85); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 التدفق النقدي</h4><h2>4,580,000 DA</h2></div>", unsafe_allow_html=True)
+        
         st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
-        st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
         
         conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
         df_users = pd.read_sql_query("SELECT email, password, status, package FROM saas_users_auth", conn_view)
@@ -254,103 +150,141 @@ if is_boss_link:
         
         if not df_users.empty:
             for index, row in df_users.iterrows():
-                current_email = row['email']
-                current_pass = row['password']
-                current_status = row['status']
-                current_package = row['package']
+                current_email = row['email']; current_pass = row['password']; current_status = row['status']; current_package = row['package']
                 
-                status_color = "#00fff0"
-                if "مفعّل" in current_status: status_color = "#00ff66; text-shadow: 0 0 15px #00ff66;"
-                elif "انتظار" in current_status: status_color = "#ffaa00; text-shadow: 0 0 15px #ffaa00;"
-                elif "قفل" in current_status: status_color = "#ff0055; text-shadow: 0 0 15px #ff0055;"
-                
+                status_color = "#00ff66" if "مفعّل" in current_status else "#ffaa00" if "انتظار" in current_status else "#ff0055"
                 st.markdown(f"""
-                <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: linear-gradient(135deg, rgba(10, 10, 26, 0.9) 0%, rgba(3, 3, 7, 0.99) 100%); margin-bottom: 15px; box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.15); direction: rtl; text-align: right;">
-                    <p style="margin: 0 0 8px 0; font-weight: 700; font-size: 16px;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
-                    <p style="margin: 0 0 8px 0; font-size: 14px; color: #b0b0d0;">فئة الاشتراك المطلوبة للعمل: <span style="color: #ffffff; font-weight: 600;">{current_package}</span></p>
-                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #ffffff;">📊 الحالة الهولوغرامية: <span style="color: {status_color}">{current_status}</span></p>
+                <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right;">
+                    <p>💻 بريد التاجر: <span style="color: #00fff0;">{current_email}</span> | كلمة السر: <span style="color: #ff00ff;">{current_pass}</span></p>
+                    <p>📊 الحالة: <span style="color: {status_color};">{current_status}</span> | الباقة: {current_package}</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
                 col_1, col_2, col_3, col_4, col_5 = st.columns(5)
-                
                 with col_1:
                     if st.button("⚡ تفعيل وقبول", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
-                        conn.commit(); conn.close()
-                        st.toast("🎯 تم التنشيط حياً!", icon="✅"); time.sleep(0.5); st.rerun()
-                
+                        conn.commit(); conn.close(); st.toast("🎯 تم التفعيل!"); time.sleep(0.5); st.rerun()
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
-                        conn.commit(); conn.close()
-                        st.toast("⏳ تم منح المشترك مهلة إضافية!", icon="⏱️"); time.sleep(0.5); st.rerun()
-                
+                        conn.commit(); conn.close(); st.toast("⏳ تم التمديد!"); time.sleep(0.5); st.rerun()
                 with col_3:
-                    if st.button("🗑️ تدمير نهائي", key=f"btn_del_{current_email}"):
-                        st.session_state[f"ask_confirm_{current_email}"] = True
-                
+                    if st.button("🗑️ تدمير نهائي", key=f"btn_del_{current_email}"): st.session_state[f"ask_confirm_{current_email}"] = True
                 with col_4:
                     if st.button("💸 ترقية الباقة", key=f"btn_upg_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
-                        conn.commit(); conn.close()
-                        st.toast("💸 تم ترقية حساب التاجر للباقة القصوى!", icon="🚀"); time.sleep(0.5); st.rerun()
-                
+                        conn.commit(); conn.close(); st.toast("🚀 تم ترقية الباقة!"); time.sleep(0.5); st.rerun()
                 with col_5:
                     if st.button("🔒 حظر وقفل", key=f"btn_lck_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
-                        conn.commit(); conn.close()
-                        st.toast("🔒 تم مصادرة الصلاحيات عن بعد!", icon="⚠️"); time.sleep(0.5); st.rerun()
+                        conn.commit(); conn.close(); st.toast("🔒 تم الحظر!"); time.sleep(0.5); st.rerun()
                 
                 if st.session_state.get(f"ask_confirm_{current_email}", False):
-                    st.markdown("<hr style='border-color: rgba(255, 0, 0, 0.3); margin: 10px 0;'>", unsafe_allow_html=True)
-                    col_txt, col_yes_btn = st.columns(2)
-                    with col_txt:
-                        st.error(f"⚠️ هل أنت متأكد تماماً من إبادة وحذف حساب {current_email} نهائياً؟")
-                    with col_yes_btn:
-                        if st.button("✅ فهمت، احذف الآن", key=f"final_yes_{current_email}"):
-                            st.session_state["destroyed_flag"] = True
-                            st.session_state[f"ask_confirm_{current_email}"] = False
-                            if delete_email_completely(current_email):
-                                st.toast("🔥 تم تطهير الحساب بنجاح!", icon="💥"); time.sleep(0.5); st.rerun()
+                    if st.button("✅ فهمت، احذف الآن", key=f"final_yes_{current_email}"):
+                        st.session_state["destroyed_flag"] = True
+                        st.session_state[f"ask_confirm_{current_email}"] = False
+                        if delete_email_completely(current_email): st.toast("🔥 تم الحذف!"); time.sleep(0.5); st.rerun()
             
-            st.markdown("<br><hr style='border-color: rgba(255, 0, 0, 0.2); margin: 20px 0;'>", unsafe_allow_html=True)
-            if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر الموسط والخزائن", key="logout_boss_panel_btn"):
-                st.session_state["admin_master_logged"] = False
-                st.toast("🔒 تم الخروج وتأمين السيرفر كلياً.", icon="🛡️"); time.sleep(0.5); st.rerun()
-        else:
-            st.warning("📭 رادار خزانة الفواتير صافي تماماً، لا توجد طلبات معلقة حالياً.")
-            if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر", key="logout_empty_boss_btn"):
-                st.session_state["admin_master_logged"] = False; st.rerun()
+            if st.button("🚪 قفل وغلق السيرفر", key="logout_boss"): st.session_state["admin_master_logged"] = False; st.rerun()
+        else: st.warning("📭 الرادار صافي.")
 # ========================================================
-# 🚀 جدار العبور والدمج الشامل المصحح - نهاية ملف (auth_gate.py)
+# الجزء الرابع: انبثاق صانع الفواتير والمخزون للتاجر المفعّل (auth_gate.py)
 # ========================================================
-if "merchant_em" in st.session_state and st.session_state["merchant_em"] != "":
-    current_merchant = st.session_state["merchant_em"]
+if "active_merchant_user" in st.session_state and not is_boss_link:
+    current_merchant = st.session_state["active_merchant_user"]
     
-    # قراءة طازجة ومباشرة للحالة من خزانة الأمان
-    conn_final_gate = sqlite3.connect("saas_security_vault.db", timeout=10)
-    cursor_final_gate = conn_final_gate.cursor()
-    cursor_final_gate.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
-    final_status_row = cursor_final_gate.fetchone()
-    conn_final_gate.close()
+    # التحقق الأخير من استمرار الصلاحية في خزانة الأمان
+    conn_final_auth = sqlite3.connect("saas_security_vault.db", timeout=10)
+    cursor_final_auth = conn_final_auth.cursor()
+    cursor_final_auth.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
+    chk_row = cursor_final_auth.fetchone()
+    conn_final_auth.close()
     
-    # 🔓 [الانبثاق الأسطوري الفوري]: إذا ثبت تفعيل الحساب حياً
-    if final_status_row and "🟢 مفعّل ونشط" in final_status_row:
-        try:
-            # 🧠 [التثبيت السحابي الحاسم]: إجبار الـ RAM على حفظ الإيميل قبل التحويل لكي يراه ملف المبيعات
-            st.session_state["active_merchant_user"] = current_merchant
+    if not chk_row or "مفعّل" not in chk_row[0]:
+        st.warning("🔒 انتهت أو سُحبت تراخيص الحساب.")
+        if st.button("🔄 :العودة لبوابة الدخول"): 
+            st.session_state.pop("active_merchant_user"); st.rerun()
+        st.stop()
+    
+    # 🏪 [نظام المتجر الأصلي الخاص بك مدمج بالمليمتر في نفس الصفحة]
+    conne = sqlite3.connect("invoices_master_v4.db")
+    cursor = conne.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS v4_customer_invoices (invoice_id INTEGER PRIMARY KEY AUTOINCREMENT, shop_name TEXT, customer_name TEXT, customer_phone TEXT, product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT)''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS store_stock (product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER)''')
+    conne.commit()
+    
+    # أشرطة التحكم الجانبية للمتجر والأزرار النيونية للتاجر
+    st.sidebar.markdown(f"<p style='color: #00fff0;'>التاجر النشط: {current_merchant}</p>", unsafe_allow_html=True)
+    choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي"])
+    
+    if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب"):
+        st.session_state.pop("active_merchant_user"); st.toast("تم الخروج الآمن!"); time.sleep(0.5); st.rerun()
+        
+    render_sidebar_helper()
+    
+    if choice == "✨ صانع الفواتير الاحترافي (PDF)":
+        st.write("<h1 style='font-size: 32px;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
+        stat_col1, stat_col2, stat_col3 = st.columns(3)
+        total_sales_db = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conne)
+        total_stock_db = pd.read_sql("SELECT SUM(available_qty) as total_qty FROM store_stock", conne)
+        
+        with stat_col1: st.metric(label="💰 إجمالي المداخيل", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
+        with stat_col2: st.metric(label="🧾 الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
+        with stat_col3:
+            try: stock_val = int(total_stock_db['total_qty'].values) if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
+            except: stock_val = 0
+            st.metric(label="📦 قطع متوفرة", value=f"{stock_val} حبة")
             
-            # قراءة ملف نظام المبيعات والمخزون الأسطوري وتشغيله مباشرة
-            with open("app.py", "r", encoding="utf-8") as sales_file:
-                sales_code = sales_file.read()
+        st.markdown("---")
+        col_left, col_right = st.columns(2)
+        with col_left:
+            st.subheader("🏪 معلومات المتجر والزبون")
+            shop_name = st.text_input("اسم متجرك الإلكتروني:", "DZ Cyber Store")
+            customer_name = st.text_input("اسم الزبون الكامل:")
+            customer_phone = st.text_input("رقم هاتف الزبون:")
+            customer_address = st.text_input("عنوان التوصيل والولاية:")
+            uploaded_logo = st.file_uploader("اختر لوغو متجرك", type=["png", "jpg", "jpeg"])
+        with col_right:
+            st.subheader("📦 تفاصيل السلعة")
+            stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
+            product_name = st.selectbox("اختر المنتج من المخزون:", stock_products['product_name']) if not stock_products.empty else st.text_input("اسم المنتج:")
+            price = st.number_input("سعر القطعة (DA):", min_value=0, value=1200)
+            quantity = st.number_input("الكمية المبيعة:", min_value=1, value=1)
+            shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600)
             
-            # حجب عناصر بوابة التسجيل وعرض لوحة صانع الفواتير والملصقات الحرارية
-            exec(sales_code, globals())
-            st.stop() 
-        except Exception as e:
-            st.error(f"⚠️ خطأ ميكانيكي أثناء صعود لوحة المبيعات: {e}")
+        product_total = price * quantity; final_total = product_total + shipping_cost
+        current_date = datetime.now().strftime("%Y-%m-%d %H:%M"); current_month = datetime.now().strftime("%Y-%m")
+        
+        if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون"):
+            if not customer_name or not product_name: st.error("❌ خطأ: يرجى ملء البيانات أولاً!")
+            else:
+                cursor.execute("INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)", (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
+                conne.commit(); st.success("💾 تم توليد المستندات بنجاح!")
+                
+                pdf_invoice = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, current_date, None)
+                pdf_label = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
+                
+                c1, c2 = st.columns(2)
+                with c1: st.download_button(label="📥 تحميل الفاتورة A4", data=pdf_invoice, file_name=f"invoice_{customer_name}.pdf", mime="application/pdf")
+                with c2: st.download_button(label="🖨️ تحميل ملصق الشحن", data=pdf_label, file_name=f"label_{customer_name}.pdf", mime="application/pdf")
+                
+    elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
+        st.write("📦 نظام إدارة ومراقبة مخزون المستودع", unsafe_allow_html=True)
+        col_add, col_view = st.columns(2)
+        with col_add:
+            new_prod = st.text_input("اسم السلعة الجديدة:")
+            new_qty = st.number_input("الكمية المتوفرة:", min_value=1, value=50)
+            if st.button("➕ حفظ في المستودع"):
+                if new_prod:
+                    try:
+                        cursor.execute("INSERT INTO store_stock (product_name, available_qty) VALUES (?, ?)", (new_prod, new_qty))
+                        conne.commit(); st.success("تم الإضافة!"); time.sleep(0.5); st.rerun()
+                    except: st.error("المنتج موجود مسبقاً.")
+        with col_view:
+            stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
+            if not stock_df.empty: st.dataframe(stock_df)
