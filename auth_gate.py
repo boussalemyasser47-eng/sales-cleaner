@@ -71,15 +71,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الثاني: بناء جدول الـ SQL الموحد ودالة التدمير (auth_gate.py)
+# الجزء الثاني: حقول مدخلات التجار وبناء جدول الـ SQL الموحد (auth_gate.py)
 # ========================================================
+# تهيئة ثوابت الهوية الإدارية الموحدة لغرفة القيادة العليا لمنع ثغرات الكاش
 ADMIN_USERNAME = "admin_master_v4"
 ADMIN_PASSWORD = "SaasPassword2026"
 
 if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 
-# تهيئة وتأمين الجدول في قاعدة البيانات
+# صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
@@ -88,98 +89,72 @@ db_cursor.execute("""
     )
 """)
 db_conn.commit()
-
-# [حل الثغرة القاطع]: التحقق إذا كان الحساب قد حُذف يدوياً لمنع الـ INSERT التلقائي من إعادته
-db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
-account_exists = db_cursor.fetchone()[0]
-
-if account_exists == 0 and "destroyed_flag" not in st.session_state:
-    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
-    db_conn.commit()
-
 db_conn.close()
 
-# دالة الحذف الميكانيكي الشامل لجميع الحالات
-def delete_email_completely(email_to_delete):
-    try:
-        conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM saas_users_auth WHERE email = ?", (email_to_delete,))
-        conn.commit()
-        conn.close()
-        return True
-    except Exception as e:
-        st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}")
-        return False
+# حقن حساب الفحص الافتراضي لضمان استقرار جرد القنوات بالثانية
+db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
+db_conn.cursor().execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
+db_conn.commit()
+db_conn.close()
 # ========================================================
-# الجزء الثالث: نظام إظهار الأزرار بعد إدخال معلومات التاجر (auth_gate.py)
+# الجزء الثالث: واجهة فيسبوك الموسطة والآمنة للتجار (auth_gate.py)
 # ========================================================
-if is_boss_link:
-    st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900;'>👑 غرفة السيادة والموافقات السحابية العليا</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #b0b0d0; text-align: right;'>أدخل بريد التاجر أولاً للكشف عن أزرار التحكم السحابية المدمجة:</p>", unsafe_allow_html=True)
+# واجهة التجار الصافية تصعد تلقائياً للجمهور فقط وحصرياً إذا كان الرابط عادياً وخالياً من مفتاحك السري
+if not is_boss_link:
+    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #b0b0d0; text-align: center; font-size: 15px; font-weight:600; margin-bottom:25px;'>سجل بريدك وإلكترونيات متجرك الخاص للتحويل التلقائي والآمن لخزانة فواتيرك.</p>", unsafe_allow_html=True)
     
-    # 1. حقل إدخال ميكانيكي مخصص للمسؤول للبحث أو إدخال معلومات التاجر
-    search_email = st.text_input("✍️ أدخل البريد الإلكتروني للتاجر المطلوب التحكم به:", key="boss_search_input").strip()
-    
-    if search_email:
-        # 2. قراءة قاعدة البيانات للتأكد من وجود البريد الذي أدخله المسؤول
-        conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
-        db_cursor = conn_view.cursor()
-        db_cursor.execute("SELECT email, password, status, package FROM saas_users_auth WHERE email = ?", (search_email,))
-        merchant_data = db_cursor.fetchone()
-        conn_view.close()
+    col_side_left, col_center_box, col_side_right = st.columns(3)
+    with col_center_box:
+        st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
         
-        if merchant_data:
-            current_email = merchant_data[0]
-            current_pass = merchant_data[1]
-            current_status = merchant_data[2]
-            current_package = merchant_data[3]
-            
-            # 3. [ظهور اللوحة والأزرار بالداخل]: لا يتم بناء هذا الإطار إلا بعد صحة البيانات المدخلة
-            st.markdown(f"""
-            <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: linear-gradient(135deg, rgba(10, 10, 26, 0.9) 0%, rgba(3, 3, 7, 0.99) 100%); margin-top: 20px; margin-bottom: 15px; box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.25);">
-                <p style="text-align: right; font-weight: 700; margin-bottom: 8px; color: #ffffff;">💻 معلومات الحساب المستهدف: <span style="color: #00fff0;">{current_email}</span></p>
-                <p style="text-align: right; font-size: 14px; color: #b0b0d0; margin-bottom: 12px;">كلمة السر الحالية: <span style="color: #ff00ff;">{current_pass}</span> | الباقة السنوية: {current_package}</p>
-                <p style="text-align: right; font-weight: bold; color: #00fff0; margin-bottom: 20px;">📊 الحالة الحالية في النظام: {current_status}</p>
-            """, unsafe_allow_html=True)
-            
-            # توليد مصفوفة الأزرار الثلاثية مدمجة بالداخل في سطر واحد
-            col_activate, col_lock, col_delete = st.columns(3)
-            
-            with col_activate:
-                if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"int_active_{current_email}"):
-                    st.success("🎯 تم تفعيل وتنشيط حساب التاجر بنجاح!")
-                    
-            with col_lock:
-                if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"int_lock_{current_email}"):
-                    st.warning("⛔ تم قفل وحظر صلاحيات الحساب عن بعد!")
-                    
-            with col_delete:
-                if st.button("🗑️ حذف وتدمير الحساب فوراً", key=f"int_del_{current_email}"):
-                    st.session_state[f"ask_confirm_{current_email}"] = True
-            
-            # إغلاق لوحة التحكم النيونية بإحكام لحبس الأزرار داخل الإطار الأزرق
+        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
+        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
+        
+        input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
+        input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
+        
+        clean_email = input_email.strip()
+        clean_pass = input_password.strip()
+        
+        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+            user_package_choice = st.selectbox("اختر فئة الباقة السنوية لمتجرك:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
             st.markdown("</div>", unsafe_allow_html=True)
             
-            # آلية زر التأكيد التفاعلي "فهمت" المنبثق في حال الرغبة بالتدمير
-            if st.session_state.get(f"ask_confirm_{current_email}", False):
-                st.markdown("<hr style='border-color: rgba(255, 0, 0, 0.3); margin: 10px 0;'>", unsafe_allow_html=True)
-                col_txt, col_yes_btn = st.columns()
-                with col_txt:
-                    st.error(f"⚠️ تحذير سيبراني: هل أنت متأكد تماماً من إبادة حساب {current_email}؟")
-                with col_yes_btn:
-                    if st.button("✅ فهمت، احذف الحساب", key=f"final_yes_{current_email}"):
-                        st.session_state["destroyed_flag"] = True
-                        st.session_state[f"ask_confirm_{current_email}"] = False
-                        
-                        if delete_email_completely(current_email):
-                            st.toast(f"🔥 تم تطهير وحذف الحساب من السيرفر كلياً!", icon="💥")
-                            time.sleep(0.5)
-                            st.rerun()
-        else:
-            st.error("❌ عذراً، هذا البريد الإلكتروني غير مسجل في قاعدة بيانات المنصة حالياً.")
-    else:
-        st.info("💡 بانتظار كتابة بريد التاجر في الحقل أعلاه لإظهار أزرار التحكم ميكانيكياً...")
+            if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
+                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
+                else:
+                    conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_reg = conn_reg.cursor()
+                    try:
+                        cursor_reg.execute("INSERT INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, user_package_choice))
+                        conn_reg.commit()
+                        st.success("✅ تم تسجيل حسابك الحر بنجاح! طارت معلوماتك للإدارة وبانتظار تفعيل باقتك السنوية حيًا.")
+                    except sqlite3.IntegrityError:
+                        st.error("🚨 هذا البريد الإلكتروني مسجل مسبقاً بالنظام!")
+                    conn_reg.close()
+                    
+        elif auth_mode == "🔑 تسجيل الدخول للحساب الحالي":
+            st.markdown("</div>", unsafe_allow_html=True)
+            if st.button("🔓 دخول آمن وتحويل للمستودع"):
+                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى كتابة البريد وكلمة السر أولاً!")
+                else:
+                    conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_login = conn_login.cursor()
+                    cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
+                    db_row = cursor_login.fetchone()
+                    conn_login.close()
+                    
+                    if db_row:
+                        user_status = db_row[0]
+                        if "⏳" in user_status or "انتظار" in user_status: st.warning("⏳ حسابك مسجل، وهو قيد المراجعة حالياً من طرف الإدارة!")
+                        elif "🔒" in user_status or "قفل" in user_status or "محجوب" in user_status: st.error("🚨 عذراً، هذا الحساب مقفل ومحجوب كلياً لعدم الاشتراك السنوي!")
+                        else:
+                            st.success("⚡ تم التوثيق بنجاح! جاري تحويلك تلقائياً لمتجرك الأصلي والـ 9 ميزات...")
+                            time.sleep(0.4)
+                            st.markdown('<meta http-equiv="refresh" content="0;URL=\'https://streamlit.app\'">', unsafe_allow_html=True)
+                    else: st.error("❌ بيانات الدخول وكلمة المرور غير مطابقة لملف الأمان السحابي!")
 # ========================================================
 # الجزء الرابع: لوحة التحكم الإدارية المركزية وقفل السيرفر الموحد (auth_gate.py)
 # ========================================================
