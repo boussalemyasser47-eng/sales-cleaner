@@ -121,102 +121,130 @@ def delete_email_completely(email_to_delete):
         return False
 
 # ========================================================
-# الجزء الثالث: رادار مسح الطلبات المنظم والمحمي (auth_gate.py)
+# الجزء الثالث: نظام حجب الواجهة وإظهار لوحة التحكم بعد تسجيل الدخول (auth_gate.py)
 # ========================================================
 if is_boss_link:
-    st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
     
-    # 1. عرض إحصائيات لوحة العدادات العلوية بانتظام
-    col_stat1, col_stat2, col_stat3 = st.columns(3)
-    with col_stat1:
-        st.markdown("<div style='border:2px solid #ff00ff; border-radius:15px; padding:20px; text-align:center; background:rgba(10,10,26,0.6); direction:rtl;'><h4 style='color:#ff00ff; margin:0;'>📦 حركة الفواتير المطبوعة بالـ SQL</h4><h2 style='margin:10px 0 0 0;'>142 تلبية صادرة</h2></div>", unsafe_allow_html=True)
-    with col_stat2:
-        st.markdown("<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(10,10,26,0.6); direction:rtl;'><h4 style='color:#00fff0; margin:0;'>👥 المشتركين النشطين حالياً بالمنصة</h4><h2 style='margin:10px 0 0 0;'>1 تجار نشطين</h2></div>", unsafe_allow_html=True)
-    with col_stat3:
-        st.markdown("<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(10,10,26,0.6); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر</h4><h2 style='margin:10px 0 0 0;'>4,580,000.00 DA</h2></div>", unsafe_allow_html=True)
+    # 1. 🔒 [بوابة الحماية]: إذا لم يسجل المشرف دخوله بعد، تظهر واجهة القفل أولاً وتمنع ظهور أي بيانات
+    if not st.session_state["admin_master_logged"]:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<div class='centered-box-container'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color: #ff00ff; text-align: center; font-weight: 900; margin-top: 0;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #ffffff; text-align: center; font-size: 15px; margin-bottom: 25px;'>🔑 تسجيل دخول المالك الأعلى للوصول للرادار</p>", unsafe_allow_html=True)
         
-    st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
-    st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
-    
-    # جلب الحسابات المسجلة من السيرفر حياً
-    conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
-    df_users = pd.read_sql_query("SELECT email, password, status, package FROM saas_users_auth", conn_view)
-    conn_view.close()
-    
-    if not df_users.empty:
-        for index, row in df_users.iterrows():
-            current_email = row['email']
-            current_pass = row['password']
-            current_status = row['status']
-            current_package = row['package']
-            
-            # بناء حاوية البطاقة النيونية الزرقاء المنظمة بإحكام (إصلاح ثغرة التداخل البصري)
-            st.markdown(f"""
-            <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%); margin-bottom: 15px; box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.15); direction: rtl; text-align: right;">
-                <p style="margin: 0 0 8px 0; font-weight: 700; font-size: 16px;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
-                <p style="margin: 0 0 8px 0; font-size: 14px; color: #b0b0d0;">فئة الاشتراك المطلوبة للعمل: <span style="color: #ffffff; font-weight: 600;">{current_package}</span></p>
-                <p style="margin: 0 0 20px 0; font-weight: bold; color: #00fff0;">📊 الحالة الحالية: <span style="color: #ffffff;">{current_status}</span></p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # 🛠️ [صف التحكم الثلاثي]: مدمج بانتظام تام أسفل البيانات وبداخل الإطار النيوني
-            col_activate, col_delete, col_lock = st.columns(3)
-            
-            # العمود الأيمن: زر التفعيل حياً
-            with col_activate:
-                if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"int_active_{current_email}"):
-                    conn = sqlite3.connect("saas_security_vault.db")
-                    conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
-                    conn.commit()
-                    conn.close()
-                    st.toast(f"🎯 تم تفعيل وتنشيط متجر {current_email}!", icon="✅")
-                    time.sleep(0.5)
-                    st.rerun()
-            
-            # العمود الأوسط (المطلوب): زر الحذف والتدمير الفوري في المنتصف
-            with col_delete:
-                if st.button("🗑️ حذف وتدمير الحساب فوراً", key=f"int_del_{current_email}"):
-                    st.session_state[f"ask_confirm_{current_email}"] = True
-            
-            # العمود الأيسر: زر الحظر وقفل الصلاحيات عن بعد
-            with col_lock:
-                if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"int_lock_{current_email}"):
-                    conn = sqlite3.connect("saas_security_vault.db")
-                    conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
-                    conn.commit()
-                    conn.close()
-                    st.toast(f"🔒 تم سحب تراخيص الحساب وحظره عن بعد!", icon="⚠️")
-                    time.sleep(0.5)
-                    st.rerun()
-            
-            # آلية ظهور زر التأكيد التفاعلي "فهمت" المنظّم بداخل صفحة المالك
-            if st.session_state.get(f"ask_confirm_{current_email}", False):
-                st.markdown("<hr style='border-color: rgba(255, 0, 0, 0.3); margin: 15px 0;'>", unsafe_allow_html=True)
-                col_txt, col_yes_btn = st.columns(2)
-                with col_txt:
-                    st.error(f"⚠️ هل أنت متأكد تماماً من إبادة وحذف حساب {current_email} نهائياً؟")
-                with col_yes_btn:
-                    if st.button("✅ فهمت، احذف الحساب الآن", key=f"final_yes_{current_email}"):
-                        st.session_state["destroyed_flag"] = True
-                        st.session_state[f"ask_confirm_{current_email}"] = False
-                        
-                        if delete_email_completely(current_email):
-                            st.toast(f"🔥 تم تطهير الحساب بنجاح من قاعدة البيانات!", icon="💥")
-                            time.sleep(0.5)
-                            st.rerun()
-                            
-        # 🔒 غرفة السيادة الكبرى وحقول الدخول الإداري في نهاية الصفحة بانتظام كامل
-        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 40px 0;'>", unsafe_allow_html=True)
-        st.markdown("<div style='border: 2px solid #ff00ff; border-radius: 15px; padding: 25px; background: rgba(15, 2, 20, 0.7); direction: rtl; text-align: right;'>", unsafe_allow_html=True)
-        st.markdown("<h3 style='color: #ff00ff; margin: 0 0 15px 0;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h3>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #ffffff; margin: 0 0 15px 0;'>🔑 تسجيل دخول المالك الأعلى</p>", unsafe_allow_html=True)
+        # حقول الدخول الإداري المعزولة داخل صندوق الحماية
+        boss_user = st.text_input("👤 اسم المستخدم الخاص بالقائد:", key="boss_leader_user").strip()
+        boss_pass = st.text_input("🔑 كلمة المرور الإدارية الخارقة:", type="password", key="boss_leader_pass").strip()
         
-        boss_user = st.text_input("👤 اسم المستخدم الخاص بالقائد:", key="boss_leader_user")
-        boss_pass = st.text_input("🔑 كلمة المرور الإدارية الخارقة:", type="password", key="boss_leader_pass")
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # زر صعود وتفعيل خادم التحكم
+        if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="submit_boss_login_btn"):
+            # الفحص الصارم ومطابقة البيانات بالثوابت الإدارية لمنع التسريبات
+            if boss_user == ADMIN_USERNAME and boss_pass == ADMIN_PASSWORD:
+                st.session_state["admin_master_logged"] = True
+                st.toast("👑 مرحباً بك يا قائد! تم تفعيل لوحة السيادة والموافقات.", icon="🔓")
+                time.sleep(0.5)
+                st.rerun()
+            else:
+                st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من مفاتيح الأمان السحابية.")
+                
         st.markdown("</div>", unsafe_allow_html=True)
-        
+
+    # 2. 👑 [لوحة التحكم والرادار]: تفتح وتنبثق حصرياً بعد تخطي بوابة الحماية ونجاح الدخول
     else:
-        st.warning("📭 الرادار صافي تماماً، لا توجد طلبات تجار معلقة حالياً في السيرفر.")
+        st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
+        
+        # عرض إحصائيات لوحة العدادات العلوية بانتظام كامل
+        col_stat1, col_stat2, col_stat3 = st.columns(3)
+        with col_stat1:
+            st.markdown("<div style='border:2px solid #ff00ff; border-radius:15px; padding:20px; text-align:center; background:rgba(10,10,26,0.6); direction:rtl;'><h4 style='color:#ff00ff; margin:0;'>📦 حركة الفواتير المطبوعة بالـ SQL</h4><h2 style='margin:10px 0 0 0;'>142 تلبية صادرة</h2></div>", unsafe_allow_html=True)
+        with col_stat2:
+            st.markdown("<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(10,10,26,0.6); direction:rtl;'><h4 style='color:#00fff0; margin:0;'>👥 المشتركين النشطين حالياً بالمنصة</h4><h2 style='margin:10px 0 0 0;'>1 تجار نشطين</h2></div>", unsafe_allow_html=True)
+        with col_stat3:
+            st.markdown("<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(10,10,26,0.6); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر</h4><h2 style='margin:10px 0 0 0;'>4,580,000.00 DA</h2></div>", unsafe_allow_html=True)
+            
+        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
+        
+        # جلب الحسابات المسجلة من السيرفر حياً
+        conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
+        df_users = pd.read_sql_query("SELECT email, password, status, package FROM saas_users_auth", conn_view)
+        conn_view.close()
+        
+        if not df_users.empty:
+            for index, row in df_users.iterrows():
+                current_email = row['email']
+                current_pass = row['password']
+                current_status = row['status']
+                current_package = row['package']
+                
+                # بناء حاوية البطاقة النيونية الزرقاء المنظمة بإحكام داخلياً
+                st.markdown(f"""
+                <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%); margin-bottom: 15px; box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.15); direction: rtl; text-align: right;">
+                    <p style="margin: 0 0 8px 0; font-weight: 700; font-size: 16px;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
+                    <p style="margin: 0 0 8px 0; font-size: 14px; color: #b0b0d0;">فئة الاشتراك المطلوبة للعمل: <span style="color: #ffffff; font-weight: 600;">{current_package}</span></p>
+                    <p style="margin: 0 0 20px 0; font-weight: bold; color: #00fff0;">📊 الحالة الحالية: <span style="color: #ffffff;">{current_status}</span></p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # مصفوفة التحكم الثلاثية المنظمة بداخل إطار البطاقة النيونية (الحذف في المنتصف)
+                col_activate, col_delete, col_lock = st.columns(3)
+                
+                with col_activate:
+                    if st.button("⚡ تفعيل وقبول طلب التاجر حياً", key=f"int_active_{current_email}"):
+                        conn = sqlite3.connect("saas_security_vault.db")
+                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
+                        conn.commit()
+                        conn.close()
+                        st.toast(f"🎯 تم تفعيل وتنشيط متجر {current_email}!", icon="✅")
+                        time.sleep(0.5)
+                        st.rerun()
+                
+                with col_delete:
+                    if st.button("🗑️ حذف وتدمير الحساب فوراً", key=f"int_del_{current_email}"):
+                        st.session_state[f"ask_confirm_{current_email}"] = True
+                
+                with col_lock:
+                    if st.button("🔒 حظر وقفل صلاحيات الحساب عن بعد", key=f"int_lock_{current_email}"):
+                        conn = sqlite3.connect("saas_security_vault.db")
+                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
+                        conn.commit()
+                        conn.close()
+                        st.toast(f"🔒 تم سحب تراخيص الحساب وحظره عن بعد!", icon="⚠️")
+                        time.sleep(0.5)
+                        st.rerun()
+                
+                # آلية ظهور زر التأكيد التفاعلي "فهمت" المنظّم بداخل لوحة التحكم
+                if st.session_state.get(f"ask_confirm_{current_email}", False):
+                    st.markdown("<hr style='border-color: rgba(255, 0, 0, 0.3); margin: 15px 0;'>", unsafe_allow_html=True)
+                    col_txt, col_yes_btn = st.columns(2)
+                    with col_txt:
+                        st.error(f"⚠️ هل أنت متأكد تماماً من إبادة وحذف حساب {current_email} نهائياً؟")
+                    with col_yes_btn:
+                        if st.button("✅ فهمت، احذف الحساب الآن", key=f"final_yes_{current_email}"):
+                            st.session_state["destroyed_flag"] = True
+                            st.session_state[f"ask_confirm_{current_email}"] = False
+                            
+                            if delete_email_completely(current_email):
+                                st.toast(f"🔥 تم تطهير الحساب بنجاح من قاعدة البيانات!", icon="💥")
+                                time.sleep(0.5)
+                                st.rerun()
+            
+            # زر مغادرة الغرفة وقفل السيرفر لتأمين الجلسة مجدداً ونظافة الصفحة
+            st.markdown("<br><hr style='border-color: rgba(255, 0, 0, 0.2); margin: 20px 0;'>", unsafe_allow_html=True)
+            if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر الموسط والخزائن", key="logout_boss_panel_btn"):
+                st.session_state["admin_master_logged"] = False
+                st.toast("🔒 تم الخروج بنجاح وتأمين الخزائن السحابية كلياً.", icon="🛡️")
+                time.sleep(0.5)
+                st.rerun()
+        else:
+            st.warning("📭 الرادار صافي تماماً، لا توجد طلبات تجار معلقة حالياً في السيرفر.")
+            
+            # إتاحة زر الخروج حتى في حالة خلو قاعدة البيانات
+            if st.button("🚪 مغادرة غرفة القيادة وقفل السيرفر", key="logout_empty_boss_btn"):
+                st.session_state["admin_master_logged"] = False
+                st.rerun()
 
 
 # ========================================================
