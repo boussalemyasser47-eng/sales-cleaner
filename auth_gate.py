@@ -193,7 +193,7 @@ if is_boss_link:
             if st.button("🚪 قفل وغلق السيرفر", key="logout_boss"): st.session_state["admin_master_logged"] = False; st.rerun()
         else: st.warning("📭 الرادار صافي.")
 # ========================================================
-# الجزء الرابع: انبثاق صانع الفواتير والمخزون للتاجر المفعّل (auth_gate.py)
+# الجزء الرابع المطور: انبثاق صانع الفواتير النيوني الزجاجي (auth_gate.py)
 # ========================================================
 if "active_merchant_user" in st.session_state and not is_boss_link:
     current_merchant = st.session_state["active_merchant_user"]
@@ -205,11 +205,56 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     chk_row = cursor_final_auth.fetchone()
     conn_final_auth.close()
     
-    if not chk_row or "مفعّل" not in chk_row[0]:
+    if not chk_row or "مفعّل" not in chk_row:
         st.warning("🔒 انتهت أو سُحبت تراخيص الحساب.")
         if st.button("🔄 :العودة لبوابة الدخول"): 
             st.session_state.pop("active_merchant_user"); st.rerun()
         st.stop()
+    
+    # 🧠 [ترقية الألوان الأسطورية]: إعادة حقن كود الـ CSS الزجاجي والنيون لصبغ المتجر بالكامل
+    st.markdown("""
+        <style>
+        /* ترقية خلفية المتصفح لتصبح ليلة رقمية عميقة الأبعاد ونبض نيون هادئ */
+        @keyframes storePulse {
+            0% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%); }
+            50% { background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%); }
+            100% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%); }
+        }
+        .stApp {
+            animation: storePulse 8s ease-in-out infinite !important;
+            color: #ffffff !important;
+        }
+        /* البطاقات النيونية المدمجة لصانع الفواتير */
+        div[data-testid="stBlock"] {
+            background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%) !important;
+            border: 2px solid #00fff0 !important;
+            border-radius: 15px !important;
+            padding: 20px !important;
+            box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.2) !important;
+            backdrop-filter: blur(15px) !important;
+        }
+        /* تلوين أزرار الطباعة والتحميل بالسيان المشع */
+        div.stButton button, .stButton > button {
+            width: 100% !important; min-height: 48px !important;
+            font-family: 'Cairo', sans-serif !important; font-weight: 900 !important; border-radius: 12px !important;
+            background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%) !important; color: #00fff0 !important;
+            border: 2px solid #00fff0 !important; box-shadow: 0px 0px 14px rgba(0, 255, 240, 0.25) !important;
+            transition: all 0.3s ease-in-out !important;
+        }
+        div.stButton button:hover { 
+            background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important;
+            box-shadow: 0px 0px 25px #00fff0 !important; transform: translateY(-2px) !important;
+        }
+        /* صبغ حقول الإدخال النصية بالوردي السيبراني المتناسق مع متجرك */
+        div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input {
+            border: 2px solid #ff00ff !important; background-color: #06060d !important; color: #ffffff !important;
+            border-radius: 12px !important; padding: 12px 15px !important;
+        }
+        div[data-testid="stTextInput"] input:focus, div[data-testid="stNumberInput"] input:focus {
+            border-color: #00fff0 !important; box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.4) !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
     
     # 🏪 [نظام المتجر الأصلي الخاص بك مدمج بالمليمتر في نفس الصفحة]
     conne = sqlite3.connect("invoices_master_v4.db")
@@ -219,7 +264,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     conne.commit()
     
     # أشرطة التحكم الجانبية للمتجر والأزرار النيونية للتاجر
-    st.sidebar.markdown(f"<p style='color: #00fff0;'>التاجر النشط: {current_merchant}</p>", unsafe_allow_html=True)
+    st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold;'>👤 التاجر النشط: {current_merchant}</p>", unsafe_allow_html=True)
     choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي"])
     
     if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب"):
@@ -228,7 +273,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     render_sidebar_helper()
     
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
-        st.write("<h1 style='font-size: 32px;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
+        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
         stat_col1, stat_col2, stat_col3 = st.columns(3)
         total_sales_db = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conne)
         total_stock_db = pd.read_sql("SELECT SUM(available_qty) as total_qty FROM store_stock", conne)
@@ -260,6 +305,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         product_total = price * quantity; final_total = product_total + shipping_cost
         current_date = datetime.now().strftime("%Y-%m-%d %H:%M"); current_month = datetime.now().strftime("%Y-%m")
         
+        st.markdown("---")
         if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون"):
             if not customer_name or not product_name: st.error("❌ خطأ: يرجى ملء البيانات أولاً!")
             else:
@@ -274,7 +320,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 with c2: st.download_button(label="🖨️ تحميل ملصق الشحن", data=pdf_label, file_name=f"label_{customer_name}.pdf", mime="application/pdf")
                 
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
-        st.write("📦 نظام إدارة ومراقبة مخزون المستودع", unsafe_allow_html=True)
+        st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
         col_add, col_view = st.columns(2)
         with col_add:
             new_prod = st.text_input("اسم السلعة الجديدة:")
