@@ -1,75 +1,119 @@
-# ========================================================
-# الجزء الأول: الهندسة البصرية المتقدمة وتلوين الواجهات (auth_gate.py)
-# ========================================================
-import streamlit as st
-import pandas as pd
-import sqlite3
-import time
-import os
-
-# ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة وفخمة ومحمية كلياً
-st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
-
-# 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
-query_params = st.query_params
-is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
-
-# حقن كود الـ CSS الأسطوري لإبادة الخلفية البيضاء وجعل الأزرار نيون زجاجية مرئية 100%
+# حقن كود الـ CSS الأسطوري المطور لإبادة الخلفية البيضاء وجعل الواجهات نيون متحركة فخمة
 st.markdown("""
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
-    /* ترقية خلفية المتصفح بالكامل لتصبح ليلة رقمية عميقة وعميقة البعد */
+    /* ترقية خلفية المتصفح بالكامل لتصبح ليلة رقمية عميقة الأبعاد مع تأثير نبض نيون هادئ */
+    @keyframes pulseBackground {
+        0% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%); }
+        50% { background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%); }
+        100% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%); }
+    }
+
     .stApp {
-        background: radial-gradient(circle at 50% 40%, #0d0d21 0%, #030307 100%) !important;
+        animation: pulseBackground 8s ease-in-out infinite !important;
         color: #ffffff !important;
         font-family: 'Cairo', sans-serif !important;
     }
     
-    /* [إصلاح حاسم وتوسيط البطاقة]: إجبار صندوق الدخول على الصعود بمنتصف الشاشة بنقاء 100% */
+    /* [تحسين حاسم وتوسيط صندوق الدخول]: إضافة ظلال نيون متداخلة وتأثير بلوري أنيق */
     .centered-box-container {
         max-width: 500px !important;
-        margin: 50px auto 20px auto !important;
-        padding: 35px !important;
-        background: linear-gradient(135deg, rgba(10, 10, 26, 0.75) 0%, rgba(5, 5, 12, 0.95) 100%) !important;
+        margin: 60px auto 20px auto !important;
+        padding: 40px !important;
+        background: rgba(10, 10, 26, 0.85) !important;
         border: 2px solid #00fff0 !important;
         border-radius: 20px !important;
-        box-shadow: 0px 0px 35px rgba(0, 255, 240, 0.35), inset 0px 0px 15px rgba(0, 255, 240, 0.1) !important;
+        box-shadow: 0px 0px 40px rgba(0, 255, 240, 0.4), inset 0px 0px 20px rgba(0, 255, 240, 0.15) !important;
         direction: rtl !important;
         text-align: right !important;
-        backdrop-filter: blur(12px) !important;
+        backdrop-filter: blur(15px) !important;
     }
     
+    /* ترقية البطاقات الزجاجية الملونة بالتأثير البلوري والظلال المشعة */
     .premium-card-pink {
-        background: linear-gradient(135deg, rgba(34, 4, 46, 0.5) 0%, rgba(15, 2, 20, 0.8) 100%) !important;
-        border: 2px solid #ff00ff !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 30px rgba(255, 0, 255, 0.2) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(12px);
+        background: linear-gradient(135deg, rgba(34, 4, 46, 0.6) 0%, rgba(15, 2, 20, 0.9) 100%) !important;
+        border: 2px solid #ff00ff !important; 
+        border-radius: 20px !important; 
+        padding: 30px !important; 
+        box-shadow: 0px 0px 35px rgba(255, 0, 255, 0.25) !important; 
+        direction: rtl; 
+        text-align: right; 
+        margin-bottom: 25px; 
+        backdrop-filter: blur(15px);
     }
     .premium-card-cyan {
-        background: linear-gradient(135deg, rgba(4, 32, 43, 0.5) 0%, rgba(2, 14, 20, 0.8) 100%) !important;
-        border: 2px solid #00fff0 !important; border-radius: 20px !important; padding: 30px !important; box-shadow: 0px 0px 30px rgba(0, 255, 240, 0.2) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(12px);
+        background: linear-gradient(135deg, rgba(4, 32, 43, 0.6) 0%, rgba(2, 14, 20, 0.9) 100%) !important;
+        border: 2px solid #00fff0 !important; 
+        border-radius: 20px !important; 
+        padding: 30px !important; 
+        box-shadow: 0px 0px 35px rgba(0, 255, 240, 0.25) !important; 
+        direction: rtl; 
+        text-align: right; 
+        margin-bottom: 25px; 
+        backdrop-filter: blur(15px);
     }
     
-    /* منع انهيار وإخفاء الأزرار الميكانيكية للوحة */
+    /* منع انهيار الأزرار الميكانيكية للوحة وجعل حوافها أكثر انسيابية ومرئية 100% */
     div[data-testid="stVerticalBlock"] button, div.stButton button, .stButton > button {
-        width: 100% !important; min-height: 50px !important; white-space: normal !important; word-wrap: break-word !important;
-        font-family: 'Cairo', sans-serif !important; font-size: 14.5px !important; font-weight: 800 !important; border-radius: 12px !important;
-        text-align: center !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
-        padding: 12px 18px !important; background: linear-gradient(135deg, #090915 0%, #040409 100%) !important; color: #00fff0 !important;
-        border: 2px solid #00fff0 !important; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.3) !important; transition: all 0.4s ease-in-out !important;
+        width: 100% !important; 
+        min-height: 52px !important; 
+        white-space: normal !important; 
+        word-wrap: break-word !important;
+        font-family: 'Cairo', sans-serif !important; 
+        font-size: 15px !important; 
+        font-weight: 900 !important; 
+        border-radius: 14px !important;
+        text-align: center !important; 
+        display: inline-flex !important; 
+        align-items: center !important; 
+        justify-content: center !important;
+        padding: 12px 20px !important; 
+        background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%) !important; 
+        color: #00fff0 !important;
+        border: 2px solid #00fff0 !important; 
+        box-shadow: 0px 0px 18px rgba(0, 255, 240, 0.35) !important; 
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
     }
-    div.stButton button:hover { background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important; box-shadow: 0px 0px 25px #00fff0 !important; transform: translateY(-3px) !important; }
+    div.stButton button:hover { 
+        background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; 
+        color: #000000 !important; 
+        box-shadow: 0px 0px 30px #00fff0 !important; 
+        transform: translateY(-2px) !important; 
+    }
     
-    div[data-testid="stTextInput"] input { border: 2px solid #ff00ff !important; background-color: #080811 !important; color: #ffffff !important; border-radius: 12px !important; padding: 15px 18px !important; font-family: 'Cairo', sans-serif !important; font-size: 14px !important; }
+    /* تحسين وتنعيم حقول الإدخال النصية ومنع تداخل النصوص بداخل شريط الكتابة */
+    div[data-testid="stTextInput"] input { 
+        border: 2px solid #ff00ff !important; 
+        background-color: #06060d !important; 
+        color: #ffffff !important; 
+        border-radius: 14px !important; 
+        padding: 15px 18px !important; 
+        font-family: 'Cairo', sans-serif !important; 
+        font-size: 14.5px !important;
+        box-shadow: 0px 0px 10px rgba(255, 0, 255, 0.1) !important;
+        transition: all 0.3s ease !important;
+    }
+    div[data-testid="stTextInput"] input:focus {
+        border-color: #00fff0 !important;
+        box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.4) !important;
+    }
     
-    /* إلغاء وإخفاء السهم الجانبي تلقائياً لمنع المتطفلين من فتحه والتجسس */
+    /* إلغاء السهم الجانبي تلقائياً لمنع المتطفلين من فتحه والتجسس */
     [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] { display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0px !important; width: 0px !important; }
     section[data-testid="stSidebar"] { display: none !important; visibility: hidden !important; }
     
-    .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 { font-family: 'Cairo', sans-serif !important; color: #ffffff !important; }
+    /* تحسين وضوح وتباين الخطوط وتفتيح الألوان للنصوص البرمجية وعناوين النظام */
+    .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 { 
+        font-family: 'Cairo', sans-serif !important; 
+        color: #ffffff !important; 
+        text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.1) !important;
+    }
     </style>
 """, unsafe_allow_html=True)
+
 # ========================================================
 # الجزء الثاني: حقول مدخلات التجار وبناء جدول الـ SQL الموحد (auth_gate.py)
 # ========================================================
