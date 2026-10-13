@@ -193,12 +193,11 @@ if is_boss_link:
             if st.button("🚪 قفل وغلق السيرفر", key="logout_boss"): st.session_state["admin_master_logged"] = False; st.rerun()
         else: st.warning("📭 الرادار صافي.")
 # ========================================================
-# الجزء الرابع الأسطوري: حقن النيون الصارم لمتجر التاجر (auth_gate.py)
+# الجزء الرابع: نظام العدادات المستقلة والصناعة النيونية (auth_gate.py)
 # ========================================================
 if "active_merchant_user" in st.session_state and not is_boss_link:
     current_merchant = st.session_state["active_merchant_user"]
     
-    # التحقق الأخير من استمرار الصلاحية في خزانة الأمان
     conn_final_auth = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor_final_auth = conn_final_auth.cursor()
     cursor_final_auth.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
@@ -211,70 +210,15 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             st.session_state.pop("active_merchant_user"); st.rerun()
         st.stop()
     
-    # 🧠 [الحقن السيبراني الصارم]: اختراق الـ Shadow DOM لصبغ المقاييس وحقول الإدخال بالنيون رغماً عن المتصفح
-    st.markdown("""
-        <style>
-        /* إجبار الخلفية على النبض الرقمي اللامع */
-        @keyframes storePulse {
-            0% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }
-            50% { background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%) !important; }
-            100% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }
-        }
-        .stApp {
-            animation: storePulse 8s ease-in-out infinite !important;
-            background-attachment: fixed !important;
-        }
-        
-        /* صبغ إحصائيات المقاييس المربعة (إجمالي المداخيل، عدد الفواتير) بالنيون الفاخر */
-        div[data-testid="stMetricBlock"], div[data-testid="metric-container"] {
-            background: linear-gradient(135deg, rgba(15, 2, 20, 0.8) 0%, rgba(5, 5, 12, 0.95) 100%) !important;
-            border: 2px solid #ff00ff !important;
-            border-radius: 16px !important;
-            padding: 15px !important;
-            box-shadow: 0px 0px 25px rgba(255, 0, 255, 0.35) !important;
-            text-align: center !important;
-        }
-        
-        /* تحويل حقول الـ Inputs والأرقام إلى اللون الوردي المشع ومنع بهتان الألوان */
-        div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input, div[data-testid="stSelectbox"] div[role="button"] {
-            border: 2px solid #ff00ff !important; 
-            background-color: #05050c !important; 
-            color: #ffffff !important;
-            border-radius: 12px !important; 
-            padding: 12px 15px !important;
-            font-weight: 700 !important;
-            box-shadow: 0px 0px 10px rgba(255, 0, 255, 0.15) !important;
-        }
-        
-        /* تفعيل التوهج السيان الفوري عند الضغط أو التركيز بداخل الحقل */
-        div[data-testid="stTextInput"] input:focus, div[data-testid="stNumberInput"] input:focus {
-            border-color: #00fff0 !important; 
-            box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.5) !important;
-        }
-        
-        /* إجبار نصوص المقاييس والعناوين على التوهج والوضوح 100% */
-        div[data-testid="stMetricLabel"] p, label, .stWidgetFormLabel p {
-            color: #00fff0 !important;
-            text-shadow: 0px 0px 10px rgba(0, 255, 240, 0.4) !important;
-            font-weight: 900 !important;
-        }
-        div[data-testid="stMetricValue"] div {
-            color: #ffffff !important;
-            font-weight: 900 !important;
-            text-shadow: 0px 0px 12px rgba(255, 255, 255, 0.3) !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-    
-    # 🏪 [نظام المتجر الأصلي الخاص بك مدمج بالمليمتر في نفس الصفحة]
+    # 🏪 اتصال قاعدة بيانات المبيعات والمخزون
     conne = sqlite3.connect("invoices_master_v4.db")
     cursor = conne.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS v4_customer_invoices (invoice_id INTEGER PRIMARY KEY AUTOINCREMENT, shop_name TEXT, customer_name TEXT, customer_phone TEXT, product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT)''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS store_stock (product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER)''')
     conne.commit()
     
-    # أشرطة التحكم الجانبية للمتجر والأزرار النيونية للتاجر
-    st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold;'>👤 التاجر النشط: {current_merchant}</p>", unsafe_allow_html=True)
+    # القائمة الجانبية للمتجر
+    st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold; text-align:center;'>👤 التاجر النشط:<br>{current_merchant}</p>", unsafe_allow_html=True)
     choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي"])
     
     if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب"):
@@ -283,19 +227,38 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     render_sidebar_helper()
     
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
-        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
-        stat_col1, stat_col2, stat_col3 = st.columns(3)
+        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0; text-align:right;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
+        
+        # جلب البيانات الحية لحقنها في كتل الـ HTML النيونية الصافية
         total_sales_db = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conne)
         total_stock_db = pd.read_sql("SELECT SUM(available_qty) as total_qty FROM store_stock", conne)
         
-        with stat_col1: st.metric(label="💰 إجمالي المداخيل", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
-        with stat_col2: st.metric(label="🧾 الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
-        with stat_col3:
-            try: stock_val = int(total_stock_db['total_qty'].values) if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
-            except: stock_val = 0
-            st.metric(label="📦 قطع متوفرة", value=f"{stock_val} حبة")
-            
-        st.markdown("---")
+        sales_sum = total_sales_db['final_total'].sum()
+        invoices_count = len(total_sales_db)
+        try: stock_val = int(total_stock_db['total_qty'].values[0]) if not total_stock_db.empty and total_stock_db['total_qty'].values[0] is not None else 0
+        except: stock_val = 0
+        
+        # 🧪 [الهندسة البديلة الحاسمة]: بناء العدادات الثلاثية بـ HTML ونظام نيون زجاجي مستقل تماماً عن قوالب المتصفح
+        st.markdown(f"""
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; direction: rtl;">
+            <div style="border: 2px solid #ff00ff; border-radius: 15px; padding: 20px; text-align: center; background: rgba(34, 4, 46, 0.4); box-shadow: 0px 0px 25px rgba(255, 0, 255, 0.35); backdrop-filter: blur(10px);">
+                <p style="color: #ff00ff; margin: 0; font-weight: bold; font-size: 14px;">💰 إجمالي المداخيل المسجلة</p>
+                <h2 style="color: #ffffff; margin: 10px 0 0 0; font-weight: 900; font-size: 26px;">{sales_sum:,.2f} DA</h2>
+            </div>
+            <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 20px; text-align: center; background: rgba(4, 32, 43, 0.4); box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.35); backdrop-filter: blur(10px);">
+                <p style="color: #00fff0; margin: 0; font-weight: bold; font-size: 14px;">🧾 عدد الفواتير الصادرة</p>
+                <h2 style="color: #ffffff; margin: 10px 0 0 0; font-weight: 900; font-size: 26px;">{invoices_count} فاتورة</h2>
+            </div>
+            <div style="border: 2px solid #ffaa00; border-radius: 15px; padding: 20px; text-align: center; background: rgba(43, 28, 4, 0.4); box-shadow: 0px 0px 25px rgba(255, 170, 0, 0.35); backdrop-filter: blur(10px);">
+                <p style="color: #ffaa00; margin: 0; font-weight: bold; font-size: 14px;">📦 السلع المتوفرة بالمستودع</p>
+                <h2 style="color: #ffffff; margin: 10px 0 0 0; font-weight: 900; font-size: 26px;">{stock_val} حبة</h2>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15);'>", unsafe_allow_html=True)
+        
+        # المبيعات والفواتير تستمر بالأسفل
         col_left, col_right = st.columns(2)
         with col_left:
             st.subheader("🏪 معلومات المتجر والزبون")
@@ -344,4 +307,3 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         with col_view:
             stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
             if not stock_df.empty: st.dataframe(stock_df)
-
