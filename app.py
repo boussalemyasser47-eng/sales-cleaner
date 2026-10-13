@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
+import time
 from datetime import datetime
 import io
 import urllib.parse
@@ -16,18 +17,40 @@ st.set_page_config(page_title="نظام المبيعات والمخزون الأ
 apply_neon_theme()
 
 # ========================================================
-# 🧠 [جدار الربط الميكانيكي المصحح والمعزول كلياً]
+# 🧠 [جدار الربط الميكانيكي المطور والمحمي من التداخل]
 # ========================================================
-if "merchant_em" in st.session_state and st.session_state["merchant_em"] != "":
-    current_merchant = st.session_state["merchant_em"]
+# التحقق من وجود البريد المحقون سحابياً من ملف التوثيق لفتح المنصة
+if "active_merchant_user" in st.session_state:
+    current_merchant = st.session_state["active_merchant_user"]
     
     # فتح خزانة الأمان لقراءة الحالة حياً من السيرفر
     conn_auth_check = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor_auth_check = conn_auth_check.cursor()
     cursor_auth_check.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
     current_status_row = cursor_auth_check.fetchone()
+    conn_auth_check.close()
     
-    # 🛡️ [قفل فوري صارم]: إغلاق قاعدة بيانات الحسابات قبل الانتقال لقاعدة الفواتير لمنع الـ Lock
+    # [الحظر والتحويل الذكي]: إذا سحب القائد التفعيل أو حظر الحساب، يتم شل الحركة فوراً
+    if not current_status_row or "مفعّل" not in current_status_row:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<div class='centered-box-container' style='max-width:600px; margin:0 auto; padding:40px; border:2px solid #ffaa00; border-radius:20px; background:rgba(10,10,26,0.95); text-align:center;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color: #ffaa00; font-weight:900;'>⏳ تراخيص الحساب غير مفعّلة</h2>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color:#ffffff; font-size:16px;'>البريد الإلكتروني الحالي: <span style='color:#00fff0;'>{current_merchant}</span></p>", unsafe_allow_html=True)
+        st.markdown("<p style='color:#b0b0d0;'>يرجى مراجعة الإدارة العليا لتنشيط الصلاحيات السحابية لويندوز الفواتير.</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.stop()
+else:
+    # حماية طارئة في حال محاولة الدخول المباشر للمتجر بدون تسجيل دخول من البوابة الأساسية
+    st.warning("🔒 الرجاء تسجيل الدخول أولاً عبر بوابة التوثيق الرئيسية للوصول للمتجر.")
+    st.stop()
+
+# ========================================================
+# 🏪 بدء كود قاعدة بيانات الفواتير الأصلي الخاص بك (يستمر لأسفل طبيعياً بعد هذا السطر)
+# ========================================================
+conne = sqlite3.connect("invoices_master_v4.db", timeout=10)
+cursor = conne.cursor()
+# ... (بقية كود الفواتير والجداول القديمة لمتجرك تستمر لأسفل دون أي مساس بها)
+
     conn_auth_check.close()
     
     # التحقق من حالة الحساب للتوجيه أو الحظر السحابي
