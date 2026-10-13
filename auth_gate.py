@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول: النواة السيبرانية والتهيئة السحابية (auth_gate.py)
+# الجزء الأول المطور: صبغ المنصة الشامل بالنيون الزجاجي (auth_gate.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
@@ -9,57 +9,108 @@ from datetime import datetime
 import io
 import urllib.parse
 
-# استدعاء الدوال من الملفات الفرعية المخصصة الثابتة والموجودة في مشروعك
-from styles import apply_neon_theme
-from pdf_helper import generate_invoice_pdf, generate_thermal_label_pdf
-from cleaner_helper import process_sales_file
-from ai_helper import render_marketing_hub, render_data_insights, render_sidebar_helper
-
 # ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة وفخمة ومحمية كلياً
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
-apply_neon_theme()
 
 # 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
 query_params = st.query_params
 is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
-
-# تهيئة ثوابت الهوية الإدارية الموحدة لغرفة القيادة العليا لمنع ثغرات الكاش
-ADMIN_USERNAME = "admin_master_v4"
-ADMIN_PASSWORD = "SaasPassword2026"
 
 if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 if "cyber_lockout_aura" not in st.session_state:
     st.session_state["cyber_lockout_aura"] = False
 
-# صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
-db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-db_cursor = db_conn.cursor()
-db_cursor.execute("""
-    CREATE TABLE IF NOT EXISTS saas_users_auth (
-        email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT
-    )
-""")
-db_conn.commit()
+# تهيئة ألوان وصور الحركة النيونية المعزولة ميكانيكياً خارج النص لكسر قيود المتصفح
+box_border_color = "#ff0055" if st.session_state["cyber_lockout_aura"] else "#00fff0"
+box_shadow_glow = "0px 0px 45px rgba(255, 0, 85, 0.65)" if st.session_state["cyber_lockout_aura"] else "0px 0px 40px rgba(0, 255, 240, 0.35)"
+animation_trigger = "animation: cyberPulseAlert 1.5s infinite !important;" if st.session_state["cyber_lockout_aura"] else ""
 
-# [إصلاح الثغرة الذكية]: منع حقن الحساب الافتراضي تلقائياً إذا قام المالك بحذفه يدوياً
-db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
-account_exists = db_cursor.fetchone()[0]
-if account_exists == 0 and "destroyed_flag" not in st.session_state:
-    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
-    db_conn.commit()
-db_conn.close()
+# 🧠 [الحقن السيبراني الاختراقي العالي]: تلوين كافة الأزرار الخماسية والعدادات والبطاقات رغماً عن أي ملفات فرعية
+st.markdown(f"""
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com" rel="stylesheet">
+    
+    <style>
+    @keyframes pulseBackground {{
+        0% {{ background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }}
+        50% {{ background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%) !important; }}
+        100% {{ background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }}
+    }}
+    @keyframes cyberPulseAlert {{
+        0% {{ box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }}
+        50% {{ box-shadow: 0px 0px 45px rgba(255, 0, 85, 0.8); border-color: #ff3377; }}
+        100% {{ box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }}
+    }}
 
-# دالة التدمير الفوري لأي حساب في قاعدة البيانات
-def delete_email_completely(email_to_delete):
-    try:
-        conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM saas_users_auth WHERE email = ?", (email_to_delete,))
-        conn.commit(); conn.close()
-        return True
-    except Exception as e:
-        st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
+    .stApp {{
+        animation: pulseBackground 8s ease-in-out infinite !important;
+        color: #ffffff !important;
+        font-family: 'Cairo', sans-serif !important;
+    }}
+    
+    /* صبغ وتلوين البطاقات النيونية المحيطة ببيانات التجار */
+    div[data-testid="stMarkdownContainer"] > div, .premium-card-cyan, .premium-card-pink {{
+        background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%) !important;
+        border: 2px solid #00fff0 !important;
+        border-radius: 15px !important;
+        box-shadow: 0px 0px 30px rgba(0, 255, 240, 0.25) !important;
+        backdrop-filter: blur(15px) !important;
+    }}
+    
+    /* إجبار الأزرار الخماسية التفاعلية على التوهج الكامل بالألوان السيبرانية الموضحة بالصورة */
+    div.stButton button, .stButton > button {{
+        width: 100% !important; min-height: 48px !important;
+        font-family: 'Cairo', sans-serif !important; font-size: 14px !important; font-weight: 900 !important; border-radius: 12px !important;
+        background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%) !important; color: #00fff0 !important;
+        border: 2px solid #00fff0 !important; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.3) !important;
+        transition: all 0.3s ease-in-out !important;
+    }
+    div.stButton button:hover {{ 
+        background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important;
+        box-shadow: 0px 0px 30px #00fff0 !important; transform: translateY(-2px) !important;
+    }
+    
+    /* صبغ العدادات الثلاثية والمقاييس المستقلة بالبلور الزجاجي الفاخر */
+    div[data-testid="stMetricBlock"], div[data-testid="metric-container"] {{
+        background: linear-gradient(135deg, rgba(15, 2, 20, 0.85) 0%, rgba(5, 5, 12, 0.98) 100%) !important;
+        border: 2px solid #ff00ff !important;
+        border-radius: 16px !important;
+        box-shadow: 0px 0px 25px rgba(255, 0, 255, 0.35) !important;
+    }}
+    
+    /* تنظيف وتلوين حقول النصوص لمنع التداخل البصري */
+    div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input {{
+        border: 2px solid #ff00ff !important; background-color: #06060d !important; color: #ffffff !important;
+        border-radius: 12px !important; font-weight: 700 !important;
+    }}
+    div[data-testid="stTextInput"] input:focus, div[data-testid="stNumberInput"] input:focus {{
+        border-color: #00fff0 !important; box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.5) !important;
+    }}
+    
+    /* إلغاء القائمة الجانبية المكررة لمنع تداخل شاشات المالك */
+    [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] {{ display: none !important; }}
+    
+    .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 {{ 
+        font-family: 'Cairo', sans-serif !important; color: #ffffff !important;
+        text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.15) !important;
+    }}
+    </style>
+""", unsafe_allow_html=True)
+
+# حقن كود الحاوية المستقل المعزول لمنع خطأ الـ f-string للأبد
+st.markdown(f"""
+    <style>
+    .centered-box-container {{
+        max-width: 500px !important; margin: 60px auto 20px auto !important; padding: 40px !important;
+        background: rgba(5, 5, 15, 0.95) !important; border: 2px solid {box_border_color} !important; border-radius: 20px !important;
+        box-shadow: {box_shadow_glow} !important; direction: rtl !important; text-align: right !important; backdrop-filter: blur(15px) !important;
+        {animation_trigger}
+    }}
+    </style>
+""", unsafe_allow_html=True)
+
 # ========================================================
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
 # ========================================================
