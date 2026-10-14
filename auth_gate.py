@@ -269,7 +269,7 @@ if is_boss_link:
 
 
 # ========================================================
-# القسم (4 - أ) المصحح: نظام جدار العزل والتحقق المرن للتراخيص
+# القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي للتجار
 # ========================================================
 if "active_merchant_user" in st.session_state and not is_boss_link:
     current_merchant = st.session_state["active_merchant_user"]
@@ -281,10 +281,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     chk_row = cursor_final_auth.fetchone()
     conn_final_auth.close()
     
-    # 🧠 [التصحيح الميكانيكي القاطع]: استخراج النص الصافي من كائن الـ SQL وتأمينه كلياً لكسر قفل الحظر
-    user_actual_status = str(chk_row[0]) if chk_row and chk_row is not None else ""
+    user_actual_status = str(chk_row) if chk_row and chk_row is not None else ""
     
-    # 🛡️ الفحص المرن الصارم: إذا كان النص يحتوي على تفعيل، يفتح السيرفر فورا ويلغي المستطيل الأصفر
     if not chk_row or "مفعّل" not in user_actual_status:
         st.warning("🔒 انتهت أو سُحبت تراخيص الحساب السحابي.")
         if st.button("🔄 العودة لبوابة الدخول الرئيسية"): 
@@ -292,7 +290,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             st.rerun()
         st.stop()
     
-    # 🏪 [جدار العزل الفردي التام]: عزل قاعدة فواتير ومخزون كل تاجر باسم إيميله المشفر لمنع الاندماج نهائياً
+    # 🏪 [جدار العزل الفردي]: عزل قاعدة فواتير ومخزون كل تاجر باسم إيميله المشفر لمنع التداخل نهائياً
     merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
     conne = sqlite3.connect(merchant_db_name)
     cursor = conne.cursor()
@@ -303,17 +301,15 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold; text-align:center;'>👤 التاجر النشط:<br>{current_merchant}</p>", unsafe_allow_html=True)
     choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
         "✨ صانع الفواتير الاحترافي (PDF)", 
-        "📦 إدارة وتنبيهات المخزون السلعي"
+        "📦 إدارة وتنبيهات المخزون السلعي",
+        "🧼 مطهر ملفات المبيعات وإحصائيات الولايات",
+        "🚀 مولّد الحملات والتخطيط التسويقي (AI)"
     ])
     
     if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب"):
-        st.session_state.pop("active_merchant_user")
-        st.toast("تم الخروج الآمن!")
-        time.sleep(0.5)
-        st.rerun()
-
+        st.session_state.pop("active_merchant_user"); st.toast("تم الخروج الآمن!"); time.sleep(0.5); st.rerun()
     # ========================================================
-    # القسم (4 - ب): عدادات الإحصائيات الحية وحقول الفواتير
+    # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات المدمجة
     # ========================================================
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
@@ -347,9 +343,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             
         product_total = price * quantity; final_total = product_total + shipping_cost
         current_date = datetime.now().strftime("%Y-%m-%d %H:%M"); current_month = datetime.now().strftime("%Y-%m")
-        # ========================================================
-        # القسم (4 - ج): إصدار وتوليد الفواتير الحرارية والـ PDF والإرسال السريع
-        # ========================================================
+        
         st.markdown("---")
         if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون"):
             if not customer_name or not product_name: st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
@@ -380,7 +374,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     with send_col1: st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{customer_phone}?text={encoded_msg}")
                     with send_col2: st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}")
     # ========================================================
-    # القسم (4 - د): نظام إدارة المخزون، فلترة النفاذ وزر المحو الفوري للسلع
+    # القسم (4 - ج): نظام إدارة ومراقبة مخزون المستودع والتنبيهات وزر المحو
     # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
@@ -413,3 +407,61 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
                     st.dataframe(low_stock)
             else: st.info("مستودعك خالي تماماً حالياً.")
+    # ========================================================
+    # القسم (4 - د): مطهر ملفات المبيعات وعرض الولايات ومولد حملات الـ AI وقفل الـ DB
+    # ========================================================
+    elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
+        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
+        uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
+        
+        if uploaded_file is not None:
+            df_raw, df, duplicated_rows, bad_prices = process_sales_file(uploaded_file)
+            
+            st.subheader("📋 1. جدول البيانات الأصلي المرفوع (قبل التطهير):")
+            st.dataframe(df_raw, use_container_width=True)
+            st.success("✅ تم تنظيف الداتا بنجاح وتجهيز المقارنة البصرية!")
+            
+            col_clean, col_trash = st.columns(2)
+            with col_clean:
+                st.subheader("💎 2. جدول البيانات النظيف (بعد التطهير):")
+                st.dataframe(df, use_container_width=True)
+                st.metric(label="صافي الأرباح الحقيقية المتوقعة", value=f"{df['total_row_sales'].sum():,.2f} DA")
+            with col_trash:
+                st.subheader("⚠️ 3. التكرارات والأخطاء المحذوفة:")
+                if not duplicated_rows.empty or not bad_prices.empty:
+                    if not duplicated_rows.empty:
+                        st.warning(f"تم حذف {len(duplicated_rows)} سطر مكرر!")
+                        st.dataframe(duplicated_rows)
+                    if not bad_prices.empty:
+                        st.error(f"تم حذف {len(bad_prices)} سطر أسعار سالبة!")
+                        st.dataframe(bad_prices)
+                else: st.info("الملف سليم تماماً ولا يحتوي على أخطاء.")
+                    
+            st.markdown("---")
+            render_data_insights(df)
+            
+            st.markdown("---")
+            st.subheader("📈 المخططات البيانية الملونة للولايات والمبيعات:")
+            chart_col1, chart_col2 = st.columns(2)
+            with chart_col1:
+                st.write("💰 حجم المبيعات الإجمالي الحقيقي لكل منتج:")
+                st.bar_chart(data=df, x='product_name', y='total_row_sales', color='#00ffcc')
+            with chart_col2:
+                wilaya_col = None
+                for col in df.columns:
+                    if 'address' in col.lower() or 'wilaya' in col.lower() or 'ولاية' in col:
+                        wilaya_col = col
+                        break
+                if wilaya_col:
+                    st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
+                    st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
+                else: st.info("💡 نصيحة: سمّ عمود السكن in ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
+                
+                csv_buffer = df.to_csv(index=False).encode('utf-8')
+                st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
+
+    elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
+        render_marketing_hub()
+
+    # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
+    conne.close()
