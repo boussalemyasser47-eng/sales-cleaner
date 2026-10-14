@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول: النواة السيبرانية والتهيئة البصرية الشاملة (auth_gate.py)
+# الجزء الأول المطور: صبغ المنصة الشامل بالنيون الزجاجي الأسطوري (auth_gate.py)
 # ========================================================
 import streamlit as st
 import pandas as pd
@@ -12,14 +12,19 @@ import urllib.parse
 # ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة وفخمة ومحمية كلياً
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
-# 🧠 [التثبيت الحاسم للذاكرة]: حجز المتغيرات فوراً في الـ RAM لمنع الـ KeyError للأبد
+# [التثبيت الحاسم للذاكرة]: حجز المتغيرات فوراً في الـ RAM لمنع الـ KeyError للأبد
 if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 
 if "cyber_lockout_aura" not in st.session_state:
     st.session_state["cyber_lockout_aura"] = False
 
-# 🧠 [الحقن السيبراني الاختراقي]: فرض الألوان النيونية والبلور الزجاجي رغماً عن التحديثات لمنع البهتان والبياض
+# تهيئة ألوان وصور الحركة النيونية المعزولة ميكانيكياً خارج النص لكسر قيود المتصفح
+box_border_color = "#ff0055" if st.session_state["cyber_lockout_aura"] else "#00fff0"
+box_shadow_glow = "0px 0px 45px rgba(255, 0, 85, 0.65)" if st.session_state["cyber_lockout_aura"] else "0px 0px 40px rgba(0, 255, 240, 0.35)"
+animation_trigger = "animation: cyberPulseAlert 1.5s infinite !important;" if st.session_state["cyber_lockout_aura"] else ""
+
+# 🧠 [الحقن السيبراني الموحد]: كود CSS نقي ومكتمل يحتوي على كافة أنماط البوابة والمالك والتجار معاً
 st.markdown("""
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
@@ -31,39 +36,76 @@ st.markdown("""
         50% { background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%) !important; }
         100% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }
     }
+    @keyframes cyberPulseAlert {
+        0% { box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }
+        50% { box-shadow: 0px 0px 45px rgba(255, 0, 85, 0.8); border-color: #ff3377; }
+        100% { box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.4); border-color: #ff0055; }
+    }
+
     .stApp {
         animation: storePulse 8s ease-in-out infinite !important;
         background-attachment: fixed !important;
         color: #ffffff !important;
         font-family: 'Cairo', sans-serif !important;
     }
-    /* تلوين مقاييس العدادات بالوردي والسيان النيوني المتوهج */
-    div[data-testid="stMetricBlock"], div[data-testid="metric-container"], .premium-card-cyan, .premium-card-pink {
+    
+    /* 💎 ترقية البطاقات الزجاجية الفاخرة للتوثيق والتسجيل الفريش للتاجر */
+    .premium-card-pink {
+        background: linear-gradient(135deg, rgba(34, 4, 46, 0.7) 0%, rgba(15, 2, 20, 0.95) 100%) !important;
+        border: 2px solid #ff00ff !important; border-radius: 20px !important; padding: 30px !important; 
+        box-shadow: 0px 0px 35px rgba(255, 0, 255, 0.3) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(15px);
+    }
+    .premium-card-cyan {
+        background: linear-gradient(135deg, rgba(4, 32, 43, 0.7) 0%, rgba(2, 14, 20, 0.95) 100%) !important;
+        border: 2px solid #00fff0 !important; border-radius: 20px !important; padding: 30px !important; 
+        box-shadow: 0px 0px 35px rgba(0, 255, 240, 0.3) !important; direction: rtl; text-align: right; margin-bottom: 25px; backdrop-filter: blur(15px);
+    }
+    
+    /* 💎 صبغ العدادات الثلاثية للمبيعات والمخزون المستقل بالبلور النيوني المشع */
+    div[data-testid="stMetricBlock"], div[data-testid="metric-container"] {
         background: linear-gradient(135deg, rgba(15, 2, 20, 0.85) 0%, rgba(5, 5, 12, 0.98) 100%) !important;
         border: 2px solid #00fff0 !important;
         border-radius: 16px !important;
         box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.35) !important;
         backdrop-filter: blur(15px) !important;
     }
-    /* تلوين أزرار التحميل والإصدار بالسيان والنيون الزجاجي */
+    
+    /* تلوين أزرار المنصة كلياً بالسيان والنيون الزجاجي */
     div.stButton button, .stButton > button {
+        width: 100% !important; min-height: 48px !important; white-space: normal !important; word-wrap: break-word !important;
         background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%) !important; color: #00fff0 !important;
         border: 2px solid #00fff0 !important; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.3) !important;
         font-family: 'Cairo', sans-serif !important; font-weight: 900 !important; border-radius: 12px !important;
+        text-align: center !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
     }
     div.stButton button:hover {
         background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important;
         box-shadow: 0px 0px 25px #00fff0 !important; transform: translateY(-2px) !important;
     }
-    /* تلوين حقول النصوص لمنع تداخل الأحرف */
+    
+    /* تلوين حقول النصوص بحدود وردية تتحول للسيان عند الكتابة لمنع تداخل الأحرف */
     div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input {
         border: 2px solid #ff00ff !important; background-color: #06060d !important; color: #ffffff !important;
-        border-radius: 12px !important; font-weight: 700 !important;
+        border-radius: 12px !important; padding: 12px 15px !important; font-family: 'Cairo', sans-serif !important; font-size: 14.5px !important;
     }
     div[data-testid="stTextInput"] input:focus, div[data-testid="stNumberInput"] input:focus {
         border-color: #00fff0 !important; box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.5) !important;
     }
+    
     [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] { display: none !important; }
+    .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 { font-family: 'Cairo', sans-serif !important; color: #ffffff !important; }
+    </style>
+""", unsafe_allow_html=True)
+
+# 🧠 استخدام دالة الدمج النصية المستقلة لـ بايثون لمنع تعارض الـ f-string وإعادة أنيميشن لوحة التحقق
+st.markdown("""
+    <style>
+    .centered-box-container {
+        max-width: 500px !important; margin: 60px auto 20px auto !important; padding: 40px !important;
+        background: rgba(5, 5, 15, 0.95) !important; border: 2px solid """ + box_border_color + """ !important; border-radius: 20px !important;
+        box-shadow: """ + box_shadow_glow + """ !important; direction: rtl !important; text-align: right !important; backdrop-filter: blur(15px) !important;
+        """ + animation_trigger + """
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -99,6 +141,7 @@ def delete_email_completely(email_to_delete):
         return True
     except Exception as e:
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
+
 
 # ========================================================
 # الجزء الثاني: بوابة التوثيق والاشتراكات السنوية للتجار (auth_gate.py)
