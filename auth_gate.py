@@ -269,20 +269,22 @@ if is_boss_link:
 
 
 # ========================================================
-# القسم (4 - أ): نظام جدار العزل الفردي للتجار لمنع التداخل
+# القسم (4 - أ) المصحح: نظام جدار العزل والتحقق المرن للتراخيص
 # ========================================================
 if "active_merchant_user" in st.session_state and not is_boss_link:
     current_merchant = st.session_state["active_merchant_user"]
     
-    # التحقق الأخير من استمرار الصلاحية في خزانة الأمان
+    # التحقق الأخير من استمرار الصلاحية في خزانة الأمان لقفل ثغرات المزامنة
     conn_final_auth = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor_final_auth = conn_final_auth.cursor()
     cursor_final_auth.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
     chk_row = cursor_final_auth.fetchone()
     conn_final_auth.close()
     
-    user_actual_status = chk_row if chk_row else ""
+    # 🧠 [التصحيح الميكانيكي القاطع]: استخراج النص الصافي من كائن الـ SQL وتأمينه كلياً لكسر قفل الحظر
+    user_actual_status = str(chk_row[0]) if chk_row and chk_row is not None else ""
     
+    # 🛡️ الفحص المرن الصارم: إذا كان النص يحتوي على تفعيل، يفتح السيرفر فورا ويلغي المستطيل الأصفر
     if not chk_row or "مفعّل" not in user_actual_status:
         st.warning("🔒 انتهت أو سُحبت تراخيص الحساب السحابي.")
         if st.button("🔄 العودة لبوابة الدخول الرئيسية"): 
@@ -290,7 +292,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             st.rerun()
         st.stop()
     
-    # 🏪 [جدار العزل الفردي]: عزل قاعدة فواتير ومخزون كل تاجر باسم إيميله المشفر لمنع الاندماج نهائياً
+    # 🏪 [جدار العزل الفردي التام]: عزل قاعدة فواتير ومخزون كل تاجر باسم إيميله المشفر لمنع الاندماج نهائياً
     merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
     conne = sqlite3.connect(merchant_db_name)
     cursor = conne.cursor()
@@ -305,7 +307,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     ])
     
     if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب"):
-        st.session_state.pop("active_merchant_user"); st.toast("تم الخروج الآمن!"); time.sleep(0.5); st.rerun()
+        st.session_state.pop("active_merchant_user")
+        st.toast("تم الخروج الآمن!")
+        time.sleep(0.5)
+        st.rerun()
+
     # ========================================================
     # القسم (4 - ب): عدادات الإحصائيات الحية وحقول الفواتير
     # ========================================================
