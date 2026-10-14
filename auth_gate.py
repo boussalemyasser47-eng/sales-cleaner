@@ -269,7 +269,7 @@ if is_boss_link:
 
 
 # ========================================================
-# الجزء الرابع: انبثاق صانع الفواتير والمخزون للتاجر المفعّل (auth_gate.py)
+# القسم (4 - أ): نظام جدار العزل الفردي للتجار لمنع التداخل
 # ========================================================
 if "active_merchant_user" in st.session_state and not is_boss_link:
     current_merchant = st.session_state["active_merchant_user"]
@@ -281,8 +281,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     chk_row = cursor_final_auth.fetchone()
     conn_final_auth.close()
     
-    # 🧠 [الإصلاح الميكانيكي الحاسم]: استخراج النص الصافي من الـ Tuple لمنع ثغرة الحظر الصامت
-    user_actual_status = chk_row[0] if chk_row else ""
+    user_actual_status = chk_row if chk_row else ""
     
     if not chk_row or "مفعّل" not in user_actual_status:
         st.warning("🔒 انتهت أو سُحبت تراخيص الحساب السحابي.")
@@ -291,38 +290,37 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             st.rerun()
         st.stop()
     
-    # 🏪 [نظام المتجر الأصلي الخاص بك مدمج بالمليمتر في نفس الصفحة]
-    conne = sqlite3.connect("invoices_master_v4.db")
+    # 🏪 [جدار العزل الفردي]: عزل قاعدة فواتير ومخزون كل تاجر باسم إيميله المشفر لمنع الاندماج نهائياً
+    merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
+    conne = sqlite3.connect(merchant_db_name)
     cursor = conne.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS v4_customer_invoices (invoice_id INTEGER PRIMARY KEY AUTOINCREMENT, shop_name TEXT, customer_name TEXT, customer_phone TEXT, product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT)''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS store_stock (product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER)''')
     conne.commit()
     
-    # أشرطة التحكم الجانبية للمتجر والأزرار النيونية للتاجر
-    st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold;'>👤 التاجر النشط: {current_merchant}</p>", unsafe_allow_html=True)
-    choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي"])
+    st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold; text-align:center;'>👤 التاجر النشط:<br>{current_merchant}</p>", unsafe_allow_html=True)
+    choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
+        "✨ صانع الفواتير الاحترافي (PDF)", 
+        "📦 إدارة وتنبيهات المخزون السلعي"
+    ])
     
     if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب"):
-        st.session_state.pop("active_merchant_user")
-        st.toast("تم الخروج الآمن!")
-        time.sleep(0.5)
-        st.rerun()
-        
-   # render_sidebar_helper()
-
-    
+        st.session_state.pop("active_merchant_user"); st.toast("تم الخروج الآمن!"); time.sleep(0.5); st.rerun()
+    # ========================================================
+    # القسم (4 - ب): عدادات الإحصائيات الحية وحقول الفواتير
+    # ========================================================
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
         stat_col1, stat_col2, stat_col3 = st.columns(3)
         total_sales_db = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conne)
         total_stock_db = pd.read_sql("SELECT SUM(available_qty) as total_qty FROM store_stock", conne)
         
-        with stat_col1: st.metric(label="💰 إجمالي المداخيل", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
-        with stat_col2: st.metric(label="🧾 الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
+        with stat_col1: st.metric(label="💰 إجمالي المداخيل المسجلة", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
+        with stat_col2: st.metric(label="🧾 عدد الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
         with stat_col3:
             try: stock_val = int(total_stock_db['total_qty'].values) if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
             except: stock_val = 0
-            st.metric(label="📦 قطع متوفرة", value=f"{stock_val} حبة")
+            st.metric(label="📦 قطع متوفرة بالمستودع", value=f"{stock_val} حبة")
             
         st.markdown("---")
         col_left, col_right = st.columns(2)
@@ -332,9 +330,9 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             customer_name = st.text_input("اسم الزبون الكامل:")
             customer_phone = st.text_input("رقم هاتف الزبون:")
             customer_address = st.text_input("عنوان التوصيل والولاية:")
-            uploaded_logo = st.file_uploader("اختر لوغو متجرك", type=["png", "jpg", "jpeg"])
+            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"])
         with col_right:
-            st.subheader("📦 تفاصيل السلعة")
+            st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
             product_name = st.selectbox("اختر المنتج من المخزون:", stock_products['product_name']) if not stock_products.empty else st.text_input("اسم المنتج:")
             price = st.number_input("سعر القطعة (DA):", min_value=0, value=1200)
@@ -343,33 +341,69 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             
         product_total = price * quantity; final_total = product_total + shipping_cost
         current_date = datetime.now().strftime("%Y-%m-%d %H:%M"); current_month = datetime.now().strftime("%Y-%m")
-        
+        # ========================================================
+        # القسم (4 - ج): إصدار وتوليد الفواتير الحرارية والـ PDF والإرسال السريع
+        # ========================================================
         st.markdown("---")
         if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون"):
-            if not customer_name or not product_name: st.error("❌ خطأ: يرجى ملء البيانات أولاً!")
+            if not customer_name or not product_name: st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
             else:
-                cursor.execute("INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)", (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
-                conne.commit(); st.success("💾 تم توليد المستندات بنجاح!")
-                
-                pdf_invoice = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, current_date, None)
-                pdf_label = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
-                
-                c1, c2 = st.columns(2)
-                with c1: st.download_button(label="📥 تحميل الفاتورة A4", data=pdf_invoice, file_name=f"invoice_{customer_name}.pdf", mime="application/pdf")
-                with c2: st.download_button(label="🖨️ تحميل ملصق الشحن", data=pdf_label, file_name=f"label_{customer_name}.pdf", mime="application/pdf")
-                
+                check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
+                if not check_stock.empty and check_stock['available_qty'].values < quantity:
+                    st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values} قطع فقط.")
+                else:
+                    cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
+                    cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
+                    conne.commit(); st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
+                    
+                    logo_data = uploaded_logo.read() if uploaded_logo is not None else None
+                    pdf_invoice = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, current_date, logo_data)
+                    pdf_label = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
+                    
+                    col_btn1, col_btn2 = st.columns(2)
+                    with col_btn1: st.download_button(label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", data=pdf_invoice, file_name=f"invoice_{customer_name}.pdf", mime="application/pdf")
+                    with col_btn2: st.download_button(label="🖨️ تحميل ملصق الشحن الحراري 4x4 (PDF)", data=pdf_label, file_name=f"thermal_label_{customer_name}.pdf", mime="application/pdf")
+                    
+                    if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة"): st.components.v1.html("<script>window.print();</script>", height=0)
+                    
+                    st.markdown("---")
+                    st.subheader("📲 أزرار الإرسال السريع الفوري لزبونك:")
+                    msg_text = f"مرحباً {customer_name}، تم تأكيد طلبيتك بنجاح من متجر {shop_name}. المنتج: {product_name}، الإجمالي للدفع هو: {final_total:,} DA."
+                    encoded_msg = urllib.parse.quote(msg_text)
+                    send_col1, send_col2 = st.columns(2)
+                    with send_col1: st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{customer_phone}?text={encoded_msg}")
+                    with send_col2: st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}")
+    # ========================================================
+    # القسم (4 - د): نظام إدارة المخزون، فلترة النفاذ وزر المحو الفوري للسلع
+    # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
         col_add, col_view = st.columns(2)
         with col_add:
+            st.subheader("📝 إضافة سلعة للمستودع:")
             new_prod = st.text_input("اسم السلعة الجديدة:")
             new_qty = st.number_input("الكمية المتوفرة:", min_value=1, value=50)
             if st.button("➕ حفظ في المستودع"):
                 if new_prod:
                     try:
                         cursor.execute("INSERT INTO store_stock (product_name, available_qty) VALUES (?, ?)", (new_prod, new_qty))
-                        conne.commit(); st.success("تم الإضافة!"); time.sleep(0.5); st.rerun()
-                    except: st.error("المنتج موجود مسبقاً.")
+                        conne.commit(); st.success(f"تم إضافة {new_prod} للمستودع!"); time.sleep(0.5); st.rerun()
+                    except: st.error("المنتج موجود مسبقاً في المخزون.")
         with col_view:
+            st.subheader("📋 حالة السلع المتوفرة حالياً:")
             stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
-            if not stock_df.empty: st.dataframe(stock_df)
+            if not stock_df.empty:
+                st.dataframe(stock_df, use_container_width=True)
+                st.markdown("---")
+                st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
+                delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
+                if st.button("❌ محو السلعة المحددة"):
+                    cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
+                    conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
+                
+                low_stock = stock_df[stock_df['available_qty'] <= 5]
+                if not low_stock.empty:
+                    st.markdown("---")
+                    st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
+                    st.dataframe(low_stock)
+            else: st.info("مستودعك خالي تماماً حالياً.")
