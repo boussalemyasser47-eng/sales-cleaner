@@ -12,6 +12,13 @@ import urllib.parse
 # ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة وفخمة ومحمية كلياً
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
+# 🧠 [التثبيت الحاسم للذاكرة]: حجز المتغيرات فوراً في الـ RAM لمنع الـ KeyError للأبد
+if "admin_master_logged" not in st.session_state:
+    st.session_state["admin_master_logged"] = False
+
+if "cyber_lockout_aura" not in st.session_state:
+    st.session_state["cyber_lockout_aura"] = False
+
 # 🧠 [الحقن السيبراني الاختراقي]: فرض الألوان النيونية والبلور الزجاجي رغماً عن التحديثات لمنع البهتان والبياض
 st.markdown("""
     <link rel="preconnect" href="https://googleapis.com">
@@ -92,6 +99,7 @@ def delete_email_completely(email_to_delete):
         return True
     except Exception as e:
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
+
 # ========================================================
 # الجزء الثاني: بوابة التوثيق والاشتراكات السنوية للتجار (auth_gate.py)
 # ========================================================
