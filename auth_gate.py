@@ -269,12 +269,12 @@ if is_boss_link:
 
 
 # ========================================================
-# القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي للتجار
+# القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
 # ========================================================
 if "active_merchant_user" in st.session_state and not is_boss_link:
     current_merchant = st.session_state["active_merchant_user"]
     
-    # التحقق الأخير من استمرار الصلاحية في خزانة الأمان لقفل ثغرات المزامنة
+    # الفحص السحابي الصارم لاستمرار صلاحية التراخيص لقفل ثغرات المزامنة
     conn_final_auth = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor_final_auth = conn_final_auth.cursor()
     cursor_final_auth.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
@@ -285,39 +285,61 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     
     if not chk_row or "مفعّل" not in user_actual_status:
         st.warning("🔒 انتهت أو سُحبت تراخيص الحساب السحابي.")
-        if st.button("🔄 العودة لبوابة الدخول الرئيسية"): 
+        if st.button("🔄 العودة لبوابة الدخول الرئيسية", key="back_gate_refresh_btn"): 
             st.session_state.pop("active_merchant_user")
             st.rerun()
         st.stop()
     
-    # 🏪 [جدار العزل الفردي]: عزل قاعدة فواتير ومخزون كل تاجر باسم إيميله المشفر لمنع التداخل نهائياً
+    # 🏪 [جدار العزل الفردي الأسطوري]: قفل البيانات وعزل فواتير ومخزون كل تاجر باسم إيميله المشفر
     merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
     conne = sqlite3.connect(merchant_db_name)
     cursor = conne.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS v4_customer_invoices (invoice_id INTEGER PRIMARY KEY AUTOINCREMENT, shop_name TEXT, customer_name TEXT, customer_phone TEXT, product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT)''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS store_stock (product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER)''')
-    conne.commit()
     
+    # بناء وتحديث الجداول والمدخلات التلقائية المخصصة لمتجرك الجديد
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS v4_customer_invoices (
+            invoice_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            shop_name TEXT, customer_name TEXT, customer_phone TEXT,
+            product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS store_stock (
+            product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER
+        )
+    ''')
+    conne.commit()
+
+    # --- القائمة الجانبية المحدثة للتنقل بين أدواتك المحسنة ---
     st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold; text-align:center;'>👤 التاجر النشط:<br>{current_merchant}</p>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; font-size: 24px;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
     choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
         "✨ صانع الفواتير الاحترافي (PDF)", 
         "📦 إدارة وتنبيهات المخزون السلعي",
         "🧼 مطهر ملفات المبيعات وإحصائيات الولايات",
         "🚀 مولّد الحملات والتخطيط التسويقي (AI)"
-    ])
-    
-    if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب"):
-        st.session_state.pop("active_merchant_user"); st.toast("تم الخروج الآمن!"); time.sleep(0.5); st.rerun()
+    ], key="merchant_navigation_radio")
+
+    if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", key="merchant_safe_logout_btn"):
+        st.session_state.pop("active_merchant_user")
+        st.toast("تم الخروج الآمن وتأمين المستودع كلياً!")
+        time.sleep(0.5)
+        st.rerun()
+
+    # 🤖 تشغيل الميزة الثالثة: بوت خدمة العملاء والمساعد الفوري الجانبي التابع لملفك المحسن
+    render_sidebar_helper()
     # ========================================================
-    # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات المدمجة
+    # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
     # ========================================================
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
+        st.markdown("### 📊 إحصائيات متجرك الشاملة:")
         stat_col1, stat_col2, stat_col3 = st.columns(3)
+        
         total_sales_db = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conne)
         total_stock_db = pd.read_sql("SELECT SUM(available_qty) as total_qty FROM store_stock", conne)
         
-        with stat_col1: st.metric(label="💰 إجمالي المداخيل المسجلة", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
+        with stat_col1: st.metric(label="💰 إجمالي مداخيل المبيعات", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
         with stat_col2: st.metric(label="🧾 عدد الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
         with stat_col3:
             try: stock_val = int(total_stock_db['total_qty'].values) if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
@@ -328,24 +350,30 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         col_left, col_right = st.columns(2)
         with col_left:
             st.subheader("🏪 معلومات المتجر والزبون")
-            shop_name = st.text_input("اسم متجرك الإلكتروني:", "DZ Cyber Store")
-            customer_name = st.text_input("اسم الزبون الكامل:")
-            customer_phone = st.text_input("رقم هاتف الزبون:")
-            customer_address = st.text_input("عنوان التوصيل والولاية:")
-            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"])
+            shop_name = st.text_input("اسم متجرك الإلكتروني:", "DZ Cyber Store", key="invoice_shop_name_input")
+            customer_name = st.text_input("اسم الزبون الكامل:", key="invoice_customer_name_input")
+            customer_phone = st.text_input("رقم هاتف الزبون:", key="invoice_customer_phone_input")
+            customer_address = st.text_input("عنوان التوصيل والولاية:", key="invoice_customer_address_input")
+            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
+
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
-            product_name = st.selectbox("اختر المنتج من المخزون:", stock_products['product_name']) if not stock_products.empty else st.text_input("اسم المنتج:")
-            price = st.number_input("سعر القطعة (DA):", min_value=0, value=1200)
-            quantity = st.number_input("الكمية المبيعة:", min_value=1, value=1)
-            shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600)
-            
-        product_total = price * quantity; final_total = product_total + shipping_cost
-        current_date = datetime.now().strftime("%Y-%m-%d %H:%M"); current_month = datetime.now().strftime("%Y-%m")
-        
+            if not stock_products.empty: 
+                product_name = st.selectbox("اختر المنتج من المخزون:", stock_products['product_name'], key="invoice_product_selectbox")
+            else: 
+                product_name = st.text_input("اسم المنتج (قم بإضافته للمخزون أولاً):", key="invoice_product_manual_input")
+            price = st.number_input("سعر القطعة (DA):", min_value=0, value=1200, key="invoice_price_input")
+            quantity = st.number_input("الكمية المبيعة:", min_value=1, value=1, key="invoice_quantity_input")
+            shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600, key="invoice_shipping_input")
+
+        product_total = price * quantity
+        final_total = product_total + shipping_cost
+        current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
+        current_month = datetime.now().strftime("%Y-%m")
+
         st.markdown("---")
-        if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون"):
+        if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون", key="issue_invoice_and_clear_stock_btn"):
             if not customer_name or not product_name: st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
             else:
                 check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
@@ -354,27 +382,28 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 else:
                     cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
                     cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
-                    conne.commit(); st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
-                    
+                    conne.commit()
+                    st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
+
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    pdf_invoice = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, current_date, logo_data)
+                    pdf_invoice = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
                     pdf_label = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
                     
                     col_btn1, col_btn2 = st.columns(2)
-                    with col_btn1: st.download_button(label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", data=pdf_invoice, file_name=f"invoice_{customer_name}.pdf", mime="application/pdf")
-                    with col_btn2: st.download_button(label="🖨️ تحميل ملصق الشحن الحراري 4x4 (PDF)", data=pdf_label, file_name=f"thermal_label_{customer_name}.pdf", mime="application/pdf")
-                    
-                    if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة"): st.components.v1.html("<script>window.print();</script>", height=0)
-                    
+                    with col_btn1: st.download_button(label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", data=pdf_invoice, file_name=f"invoice_{customer_name}.pdf", mime="application/pdf", key="dl_invoice_pdf_btn")
+                    with col_btn2: st.download_button(label="🖨️ تحميل ملصق الشحن الحراري 4x4 (PDF)", data=pdf_label, file_name=f"thermal_label_{customer_name}.pdf", mime="application/pdf", key="dl_label_pdf_btn")
+
+                    if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة", key="quick_thermal_print_window_btn"): st.components.v1.html("<script>window.print();</script>", height=0)
+
                     st.markdown("---")
                     st.subheader("📲 أزرار الإرسال السريع الفوري لزبونك:")
                     msg_text = f"مرحباً {customer_name}، تم تأكيد طلبيتك بنجاح من متجر {shop_name}. المنتج: {product_name}، الإجمالي للدفع هو: {final_total:,} DA."
                     encoded_msg = urllib.parse.quote(msg_text)
                     send_col1, send_col2 = st.columns(2)
-                    with send_col1: st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{customer_phone}?text={encoded_msg}")
-                    with send_col2: st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}")
+                    with send_col1: st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{customer_phone}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
+                    with send_col2: st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
     # ========================================================
-    # القسم (4 - ج): نظام إدارة ومراقبة مخزون المستودع والتنبيهات وزر المحو
+    # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
@@ -407,9 +436,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
                     st.dataframe(low_stock)
             else: st.info("مستودعك خالي تماماً حالياً.")
-    # ========================================================
-    # القسم (4 - د): مطهر ملفات المبيعات وعرض الولايات ومولد حملات الـ AI وقفل الـ DB
-    # ========================================================
+
     elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
         uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
@@ -455,10 +482,10 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 if wilaya_col:
                     st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
                     st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
-                else: st.info("💡 نصيحة: سمّ عمود السكن in ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
+                else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
                 
-                csv_buffer = df.to_csv(index=False).encode('utf-8')
-                st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
+            csv_buffer = df.to_csv(index=False).encode('utf-8')
+            st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
 
     elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
         render_marketing_hub()
