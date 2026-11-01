@@ -434,45 +434,46 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
 
     # --- حقن دالة المساعد هنا لتكون معرفة قبل الاستدعاء لمنع خطأ NameError ---
         # --- دالة المساعد الجانبي محاذية ومؤمنة سيبرانياً بنسبة 100% ---
-   def render_sidebar_helper():
-    """
-    بوت خدمة العملاء والمساعد الفوري الجانبي الذكي التابع للمتجر (Sidebar AI Chatbot)
-    """
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("<h3 style='color: #00fff0; text-align: center; margin-bottom: 0;'>🤖 المساعد الفوري الذكي</h3>", unsafe_allow_html=True)
-    
-    # تهيئة ذاكرة المحادثة المصغرة داخل الجلسة لمنع اختفاء النصوص
-    if "sidebar_chat_reply" not in st.session_state:
-        st.session_state["sidebar_chat_reply"] = "مرحباً بك! أنا هنا لمساعدتك في إدارة عمليات متجرك وتوليد الأفكار التسويقية السريعة حياً."
+    # --- دالة المساعد الجانبي محاذية ومؤمنة سيبرانياً بنسبة 100% ---
+    def render_sidebar_helper():
+        """
+        بوت خدمة العملاء والمساعد الفوري الجانبي الذكي التابع للمتجر (Sidebar AI Chatbot)
+        """
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("<h3 style='color: #00fff0; text-align: center; margin-bottom: 0;'>🤖 المساعد الفوري الذكي</h3>", unsafe_allow_html=True)
+        
+        # تهيئة ذاكرة المحادثة المصغرة داخل الجلسة لمنع اختفاء النصوص
+        if "sidebar_chat_reply" not in st.session_state:
+            st.session_state["sidebar_chat_reply"] = "مرحباً بك! أنا هنا لمساعدتك في إدارة عمليات متجرك وتوليد الأفكار التسويقية السريعة حياً."
 
-    # صندوق السؤال السريع للمساعد الجانبي
-    user_fast_query = st.sidebar.text_input("💡 اسأل المساعد الذكي عن أي فكرة أو نصيحة لمتجرك:", key="sidebar_ai_query_input", placeholder="مثال: كيف أتعامل مع الزبائن؟")
-    
-    if st.sidebar.button("🧠 استشارة العقل السيبراني", key="submit_fast_ai_query_btn"):
-        if user_fast_query:
-            with st.sidebar.spinner("⏳ جاري التفكير وصياغة الرد..."):
-                time.sleep(0.8) # محاكاة معالجة الـ AI السريعة
-                query_lower = user_fast_query.lower()
-                
-                # عقل المنطق التفاعلي المبني على الكلمات المفتاحية لمساعدة تجار الجزائر
-                if "ولاية" in query_lower or "شحن" in query_lower or "توصيل" in query_lower:
-                    st.session_state["sidebar_chat_reply"] = "📌 **نصيحة الشحن:** ركز حملاتك على ولايات الوسط والشرق (العاصمة، سطيف، قسنطينة) لسرعة التوصيل وزيادة نسبة استلام الطرود (Livraison)، وتجنب الولايات البعيدة في البداية لتفادي المرتجعات (Retour)."
-                elif "زبون" in query_lower or "تعامل" in query_lower or "اتصال" in query_lower:
-                    st.session_state["sidebar_chat_reply"] = "📞 **إستراتيجية التثبيت:** اتصل بالزبون في أقل من 30 دقيقة من تسجيل الطلبية لتأكيد الشراء (Confirmation). استخدم لهجة محترمة، ووضّح له سعر المنتج الإجمالي مع الشحن لتفادي رفض الاستلام عند باب المنزل."
-                elif "منتج" in query_lower or "بيع" in query_lower or "مخزون" in query_lower:
-                    st.session_state["sidebar_chat_reply"] = "📦 **نصيحة المخزون:** راقب جدول السلع المتوفرة بانتظام. إذا انخفضت سلعة لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية المستودع بسرعة وضخ السيولة."
-                else:
-                    st.session_state["sidebar_chat_reply"] = f"🎯 **تحليل سريع:** فكرة ممتازة! لتطبيق [{user_fast_query}] بنجاح في السوق الجزائري، ابدأ بفحص ميزانية صغيرة (Testing) على فيسبوك بقيمة 5$، وتابع تفاعل التعليقات قبل زيادة الإنفاق الإعلاني."
-                st.rerun()
+        # صندوق السؤال السريع للمساعد الجانبي
+        user_fast_query = st.sidebar.text_input("💡 اسأل المساعد الذكي عن أي فكرة أو نصيحة لمتجرك:", key="sidebar_ai_query_input", placeholder="مثال: كيف أتعامل مع الزبائن؟")
+        
+        if st.sidebar.button("🧠 استشارة العقل السيبراني", key="submit_fast_ai_query_btn"):
+            if user_fast_query:
+                with st.sidebar.spinner("⏳ جاري التفكير وصياغة الرد..."):
+                    time.sleep(0.8) # محاكاة معالجة الـ AI السريعة
+                    query_lower = user_fast_query.lower()
+                    
+                    if "ولاية" in query_lower or "شحن" in query_lower or "توصيل" in query_lower:
+                        st.session_state["sidebar_chat_reply"] = "📌 **نصيحة الشحن:** ركز حملاتك على ولايات الوسط والشرق (العاصمة، سطيف، قسنطينة) لسرعة التوصيل وزيادة نسبة استلام الطرود (Livraison)، وتجنب الولايات البعيدة في البداية لتفادي المرتجعات (Retour)."
+                    elif "زبون" in query_lower or "تعامل" in query_lower or "اتصال" in query_lower:
+                        st.session_state["sidebar_chat_reply"] = "📞 **إستراتيجية التثبيت:** اتصل بالزبون في أقل من 30 دقيقة من تسجيل الطلبية لتأكيد الشراء (Confirmation). استخدم لهجة محترمة، ووضّح له سعر المنتج الإجمالي مع الشحن لتفادي رفض الاستلام عند باب المنزل."
+                    elif "منتج" in query_lower or "بيع" in query_lower or "مخزون" in query_lower:
+                        st.session_state["sidebar_chat_reply"] = "📦 **نصيحة المخزون:** راقب جدول السلع المتوفرة بانتظام. إذا انخفضت سلعة لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية المستودع بسرعة وضخ السيولة."
+                    else:
+                        st.session_state["sidebar_chat_reply"] = f"🎯 **تحليل سريع:** فكرة ممتازة! لتطبيق [{user_fast_query}] بنجاح في السوق الجزائري، ابدأ بفحص ميزانية صغيرة (Testing) على فيسبوك بقيمة 5$، وتابع تفاعل التعليقات قبل زيادة الإنفاق الإعلاني."
+                    st.rerun()
 
-    # عرض رد المساعد الذكي داخل الصندوق النيوني الجانبي المخصص له
-    st.sidebar.markdown(f"""
-    <div style="border: 2px solid #00fff0; border-radius: 12px; padding: 15px; background: rgba(5,15,20,0.85); margin-top: 10px;">
-        <p style="color: #ffffff; font-size: 14px; line-height: 1.5; margin: 0; direction: rtl; text-align: right;">
-        {st.session_state["sidebar_chat_reply"]}
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+        # عرض رد المساعد الذكي داخل الصندوق النيوني الجانبي المخصص له
+        st.sidebar.markdown(f"""
+        <div style="border: 2px solid #00fff0; border-radius: 12px; padding: 15px; background: rgba(5,15,20,0.85); margin-top: 10px;">
+            <p style="color: #ffffff; font-size: 14px; line-height: 1.5; margin: 0; direction: rtl; text-align: right;">
+            {st.session_state["sidebar_chat_reply"]}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
 
     # --- القائمة الجانبية المحدثة للتنقل بين أدواتك المحسنة ---
     st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold; text-align:center;'>👤 التاجر النشط:<br>{current_merchant}</p>", unsafe_allow_html=True)
