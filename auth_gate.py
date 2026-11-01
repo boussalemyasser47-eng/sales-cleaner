@@ -292,7 +292,12 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     
     # 🏪 [جدار العزل الفردي الأسطوري]: قفل البيانات وعزل فواتير ومخزون كل تاجر باسم إيميله المشفر
     merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
-    conne = sqlite3.connect(merchant_db_name)
+    
+    # حقن الاتصال داخل الـ session_state لمنع قفل التزامن وقنوات الاتصال المتكررة
+    if "merchant_db_conn" not in st.session_state:
+        st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
+        
+    conne = st.session_state["merchant_db_conn"]
     cursor = conne.cursor()
     
     # بناء وتحديث الجداول والمدخلات التلقائية المخصصة لمتجرك الجديد
@@ -310,6 +315,12 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     ''')
     conne.commit()
 
+    # --- حقن دالة المساعد هنا لتكون معرفة قبل الاستدعاء لمنع خطأ NameError ---
+    def render_sidebar_helper():
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### 🤖 المساعد الفوري الذكي")
+        st.sidebar.info("مرحباً بك! أنا هنا لمساعدتك في إدارة عمليات متجرك وتوليد الأفكار التسويقية.")
+
     # --- القائمة الجانبية المحدثة للتنقل بين أدواتك المحسنة ---
     st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold; text-align:center;'>👤 التاجر النشط:<br>{current_merchant}</p>", unsafe_allow_html=True)
     st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; font-size: 24px;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
@@ -321,6 +332,10 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     ], key="merchant_navigation_radio")
 
     if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", key="merchant_safe_logout_btn"):
+        # إغلاق آمن لقناة الاتصال المخزنة قبل الخروج نهائياً لحماية قاعدة البيانات من الـ Lock
+        if "merchant_db_conn" in st.session_state:
+            st.session_state["merchant_db_conn"].close()
+            st.session_state.pop("merchant_db_conn")
         st.session_state.pop("active_merchant_user")
         st.toast("تم الخروج الآمن وتأمين المستودع كلياً!")
         time.sleep(0.5)
@@ -328,6 +343,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
 
     # 🤖 تشغيل الميزة الثالثة: بوت خدمة العملاء والمساعد الفوري الجانبي التابع لملفك المحسن
     render_sidebar_helper()
+
     # ========================================================
     # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
     # ========================================================
