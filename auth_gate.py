@@ -1,6 +1,27 @@
 # ========================================================
 # الجزء الأول المطور: صبغ المنصة الشامل بالنيون الزجاجي (auth_gate.py)
 # ========================================================
+# ========================================================
+# 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
+# ========================================================
+def create_backup_vault():
+    import os
+    import zipfile
+    import io
+    from datetime import datetime
+    
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        for file in os.listdir("."):
+            if file.endswith(".db"):
+                try:
+                    with open(file, "rb") as f:
+                        zip_file.writestr(f"backup_{datetime.now().strftime('%Y%m%d')}_{file}", f.read())
+                except Exception:
+                    pass
+    zip_buffer.seek(0)
+    return zip_buffer
+
 import streamlit as st
 import pandas as pd
 import sqlite3
@@ -12,11 +33,7 @@ import urllib.parse
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
 # ========================================================
 def create_backup_vault():
-    """
-    تقوم بجمع كافة قواعد بيانات المنصة والتجار وضغطها في ملف بايتات واحد
-    مؤمنة وجاهزة للتحميل من طرف المالك الأعلى فقط.
 
-# ضبط إعدادات الصفحة الكلية لتكون واجهة قيادة عريضة وفخمة ومحمية كلياً
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
 # 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
