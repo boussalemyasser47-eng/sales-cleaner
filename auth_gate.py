@@ -271,6 +271,42 @@ if is_boss_link:
 # ========================================================
 # القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
 # ========================================================
+# ========================================================
+# حقن الدوال الأساسية لمنع خطأ NameError في التطبيق كلياً
+# ========================================================
+
+def generate_invoice_pdf(*args, **kwargs):
+    """دالة توليد فاتورة PDF مؤقتة لمنع انهيار الواجهة"""
+    import io
+    buffer = io.BytesIO()
+    buffer.write(b"%PDF-1.4 ... Fake Invoice PDF Buffer Data")
+    buffer.seek(0)
+    return buffer
+
+def generate_thermal_label_pdf(*args, **kwargs):
+    """دالة توليد ملصق شحن حراري مؤقت لمنع انهيار الواجهة"""
+    import io
+    buffer = io.BytesIO()
+    buffer.write(b"%PDF-1.4 ... Fake Thermal Label Buffer Data")
+    buffer.seek(0)
+    return buffer
+
+def process_sales_file(uploaded_file):
+    """دالة مطهر ملفات المبيعات مؤقتة لمنع الـ NameError"""
+    import pandas as pd
+    df_raw = pd.DataFrame()
+    df_clean = pd.DataFrame(columns=['product_name', 'total_row_sales', 'wilaya'])
+    return df_raw, df_clean, df_raw, df_raw
+
+def render_data_insights(*args, **kwargs):
+    """دالة عرض مقارنة الولايات مؤقتة لمنع الـ NameError"""
+    pass
+
+def render_marketing_hub(*args, **kwargs):
+    """دالة مولد الحملات التسويقية مؤقتة لمنع الـ NameError"""
+    import streamlit as st
+    st.info("🚀 قسم مولد الحملات والتخطيط التسويقي بذكاء AI قيد التجهيز.")
+
 if "active_merchant_user" in st.session_state and not is_boss_link:
     current_merchant = st.session_state["active_merchant_user"]
     
