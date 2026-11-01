@@ -435,9 +435,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     # --- حقن دالة المساعد هنا لتكون معرفة قبل الاستدعاء لمنع خطأ NameError ---
         # --- دالة المساعد الجانبي محاذية ومؤمنة سيبرانياً بنسبة 100% ---
     # --- دالة المساعد الجانبي محاذية ومؤمنة سيبرانياً بنسبة 100% ---
+    # --- نسخة العقل السيبراني الخارقة للمساعد الجانبي (مقاومة للأخطاء الإملائية والتعميم) ---
     def render_sidebar_helper():
         """
         بوت خدمة العملاء والمساعد الفوري الجانبي الذكي التابع للمتجر (Sidebar AI Chatbot)
+        يدعم تقنيات: Levenshtein Distance, Text Normalization, Synonyms Mapping, Did You Mean
         """
         st.sidebar.markdown("---")
         st.sidebar.markdown("<h3 style='color: #00fff0; text-align: center; margin-bottom: 0;'>🤖 المساعد الفوري الذكي</h3>", unsafe_allow_html=True)
@@ -446,23 +448,89 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         if "sidebar_chat_reply" not in st.session_state:
             st.session_state["sidebar_chat_reply"] = "مرحباً بك! أنا هنا لمساعدتك في إدارة عمليات متجرك وتوليد الأفكار التسويقية السريعة حياً."
 
+        # 1. دالة تطهير وتنظيف النصوص (Text Normalization)
+        def normalize_arabic_text(text):
+            if not text: return ""
+            text = text.strip().lower()
+            # توحيد الألفات والياءات والهاءات لإزالة أخطاء الكتابة الشائعة
+            text = text.replace("أ", "ا").replace("إ", "ا").replace("آ", "ا")
+            text = text.replace("ى", "ي").replace("ة", "ه")
+            # إزالة الحركات والتنوين إن وجدت
+            for haraka in ["ّ", "🔸", "؟", "!", ".", "،", "ـ"]:
+                text = text.replace(haraka, "")
+            return text
+
+        # 2. خوارزمية حساب المسافة اللغوية (Levenshtein Distance) المبسطة والسريعة لحساب نسبة التشابه
+        def get_close_match_score(word1, word2):
+            w1, w2 = normalize_arabic_text(word1), normalize_arabic_text(word2)
+            if not w1 or not w2: return 0.0
+            if w1 in w2 or w2 in w1: return 1.0 # تطابق مباشر أو جزئي
+            
+            # حساب مصفوفة المسافات اللغوية برمجياً بدون مكتبات خارجية
+            len1, len2 = len(w1), len(w2)
+            matrix = [[0] * (len2 + 1) for _ in range(len1 + 1)]
+            for i in range(len1 + 1): matrix[i][0] = i
+            for j in range(len2 + 1): matrix[0][j] = j
+            
+            for i in range(1, len1 + 1):
+                for j in range(1, len2 + 1):
+                    cost = 0 if w1[i-1] == w2[j-1] else 1
+                    matrix[i][j] = min(matrix[i-1][j] + 1, matrix[i][j-1] + 1, matrix[i-1][j-1] + cost)
+            
+            distance = matrix[len1][len2]
+            max_len = max(len1, len2)
+            return 1.0 - (distance / max_len)
+
         # صندوق السؤال السريع للمساعد الجانبي
-        user_fast_query = st.sidebar.text_input("💡 اسأل المساعد الذكي عن أي فكرة أو نصيحة لمتجرك:", key="sidebar_ai_query_input", placeholder="مثال: كيف أتعامل مع الزبائن؟")
+        user_fast_query = st.sidebar.text_input("💡 اسأل المساعد الذكي عن أي فكرة أو نصيحة لمتجرك:", key="sidebar_ai_query_input", placeholder="مثال: كيف اتعامل مع الزبائن؟")
         
-        if st.sidebar.button("🧠 استشارة العقل السيبراني", key="submit_fast_ai_query_btn"):
+        # 3. قاموس المرادفات الموسع (Synonyms Mapping) للدارجة الجزائرية والفصحى
+        intent_keywords = {
+            "shipping": ["شحن", "توصيل", "ولاية", "ليفريرون", "ليفرور", "رتور", "ولايات", "جنوب"],
+            "customers": ["زبون", "زبائن", "كليون", "لكليون", "تعامل", "اتصال", "تثبيت", "كونفيرمي", "الهاتف"],
+            "stock": ["منتج", "سلعة", "مخزون", "قضية", "مستودع", "ستوك", "حبة", "قطع", "نفاذ"]
+        }
+
+        if st.sidebar.button("🧠 استشارة العقل السيبراني", key="submit_fast_ai_query_btn") or user_fast_query == "شرح دكي":
             if user_fast_query:
-                with st.sidebar.spinner("⏳ جاري التفكير وصياغة الرد..."):
-                    time.sleep(0.8) # محاكاة معالجة الـ AI السريعة
-                    query_lower = user_fast_query.lower()
+                with st.sidebar.spinner("⏳ جاري تحليل المدخلات وتطهير النصوص سيبرانياً..."):
+                    time.sleep(0.6)
                     
-                    if "ولاية" in query_lower or "شحن" in query_lower or "توصيل" in query_lower:
-                        st.session_state["sidebar_chat_reply"] = "📌 **نصيحة الشحن:** ركز حملاتك على ولايات الوسط والشرق (العاصمة، سطيف، قسنطينة) لسرعة التوصيل وزيادة نسبة استلام الطرود (Livraison)، وتجنب الولايات البعيدة في البداية لتفادي المرتجعات (Retour)."
-                    elif "زبون" in query_lower or "تعامل" in query_lower or "اتصال" in query_lower:
-                        st.session_state["sidebar_chat_reply"] = "📞 **إستراتيجية التثبيت:** اتصل بالزبون في أقل من 30 دقيقة من تسجيل الطلبية لتأكيد الشراء (Confirmation). استخدم لهجة محترمة، ووضّح له سعر المنتج الإجمالي مع الشحن لتفادي رفض الاستلام عند باب المنزل."
-                    elif "منتج" in query_lower or "بيع" in query_lower or "مخزون" in query_lower:
-                        st.session_state["sidebar_chat_reply"] = "📦 **نصيحة المخزون:** راقب جدول السلع المتوفرة بانتظام. إذا انخفضت سلعة لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية المستودع بسرعة وضخ السيولة."
+                    # تنظيف مدخل التاجر
+                    clean_input = normalize_arabic_text(user_fast_query)
+                    input_words = clean_input.split()
+                    
+                    # التحقق من النوايا عن طريق دمج المرادفات ونسبة التشابه اللغوي
+                    detected_intent = None
+                    highest_score = 0.0
+                    best_suggested_keyword = ""
+                    
+                    for intent, keywords in intent_keywords.items():
+                        for kw in keywords:
+                            normalized_kw = normalize_arabic_text(kw)
+                            # فحص كل كلمة أدخلها التاجر ومقارنتها بالقاموس
+                            for word in input_words:
+                                score = get_close_match_score(word, normalized_kw)
+                                if score > highest_score:
+                                    highest_score = score
+                                    if score >= 0.70: # حد الأمان للقبول بالأخطاء الإملائية
+                                        detected_intent = intent
+                                    else:
+                                        best_suggested_keyword = kw
+
+                    # 4. نظام "هل تقصد" والردود التفاعلية المرنة بناءً على النوايا المحللة
+                    if detected_intent == "shipping":
+                        st.session_state["sidebar_chat_reply"] = "📌 **نصيحة الشحن المحللة:** ركز حملاتك على ولايات الوسط والشرق (العاصمة، سطيف، قسنطينة) لسرعة التوصيل وزيادة نسبة استلام الطرود (Livraison)، وتجنب الولايات البعيدة في البداية لتفادي المرتجعات (Retour)."
+                    elif detected_intent == "customers":
+                        st.session_state["sidebar_chat_reply"] = "📞 **إستراتيجية التثبيت المحللة:** اتصل بالزبون في أقل من 30 دقيقة من تسجيل الطلبية لتأكيد الشراء (Confirmation). استخدم لهجة محترمة، ووضّح له سعر المنتج الإجمالي مع الشحن لتفادي رفض الاستلام عند باب المنزل."
+                    elif detected_intent == "stock":
+                        st.session_state["sidebar_chat_reply"] = "📦 **نصيحة المخزون المحللة:** راقب جدول السلع المتوفرة بانتظام. إذا انخفضت سلعة لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية المستودع بسرعة وضخ السيولة."
                     else:
-                        st.session_state["sidebar_chat_reply"] = f"🎯 **تحليل سريع:** فكرة ممتازة! لتطبيق [{user_fast_query}] بنجاح في السوق الجزائري، ابدأ بفحص ميزانية صغيرة (Testing) على فيسبوك بقيمة 5$، وتابع تفاعل التعليقات قبل زيادة الإنفاق الإعلاني."
+                        # تفعيل ميزة "هل تقصد؟" (Did you mean) في حال عدم تخطي نسبة الأمان
+                        if highest_score >= 0.40 and best_suggested_keyword != "":
+                            st.session_state["sidebar_chat_reply"] = f"⚠️ **لم أفهمك بدقة كافية..**\n\nهل تقصد الاستفسار عن موضوع له علاقة بـ **[{best_suggested_keyword}]**؟ يرجى إعادة صياغة سؤالك بوضوح لأتمكن من إجابتك بدقة سيبرانية!"
+                        else:
+                            st.session_state["sidebar_chat_reply"] = f"🎯 **تحليل سريع:** فكرة ممتازة! لتطبيق [{user_fast_query}] بنجاح في السوق الجزائري، ابدأ بفحص ميزانية صغيرة (Testing) على فيسبوك بقيمة 5$، وتابع تفاعل التعليقات قبل زيادة الإنفاق الإعلاني."
                     st.rerun()
 
         # عرض رد المساعد الذكي داخل الصندوق النيوني الجانبي المخصص له
