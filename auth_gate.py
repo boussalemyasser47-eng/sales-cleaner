@@ -32,7 +32,7 @@ import urllib.parse
 # ========================================================
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
 # ========================================================
-def create_backup_vault():
+
 
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
