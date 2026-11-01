@@ -294,11 +294,18 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
     
     # حقن الاتصال داخل الـ session_state لمنع قفل التزامن وقنوات الاتصال المتكررة
+        # تأمين فحص وجود الاتصال حياً داخل الجلسة وإعادة بنائه فوراً إن كان مغلقاً لمنع ProgrammingError
     if "merchant_db_conn" not in st.session_state:
         st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
+    else:
+        try:
+            st.session_state["merchant_db_conn"].execute("SELECT 1")
+        except (sqlite3.ProgrammingError, sqlite3.OperationalError):
+            st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
         
     conne = st.session_state["merchant_db_conn"]
     cursor = conne.cursor()
+
     
     # بناء وتحديث الجداول والمدخلات التلقائية المخصصة لمتجرك الجديد
     cursor.execute('''
