@@ -514,6 +514,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
 
             st.sidebar.markdown(f'<div style="border:2px solid #00fff0; border-radius:12px; padding:15px; background:rgba(5,15,20,0.85); margin-top:10px;"><p style="color:#ffffff; font-size:14px; direction:rtl; text-align:right; margin:0;">{st.session_state["boss_chat_reply"]}</p></div>', unsafe_allow_html=True)
 
+         # 1. هذا السطر موجود في ملفك، ابحث عنه لتبدأ الحذف من تحته:
         # ==========================================
         # 🏪 ثانياً: بيئة المساعد التجاري للمستأجرين (Merchant Space)
         # ==========================================
@@ -523,6 +524,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.session_state["merchant_chat_reply"] = "مرحباً بك! أنا مساعدك التجاري الذكي لمساعدتك في إدارة مبيعاتك وشحنك وتسويقك حياً."
 
             merchant_query = st.sidebar.text_input("💡 اسأل عن أي فكرة، نصيحة، أو مشكلة في متجرك:", key="merchant_ai_query_in", placeholder="مثال: عندي مشكل في التوصيل")
+            
             merchant_intents = {
                 "shipping": ["شحن", "توصيل", "ولاية", "ليفريرون", "ليفرور", "رتور", "ولايات", "جنوب", "سحن", "توسيل"],
                 "customers": ["زبون", "زبائن", "كليون", "لكليون", "تعامل", "اتصال", "تثبيت", "كونفيرمي", "الهاتف", "سبون"],
@@ -531,39 +533,52 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
 
             if st.sidebar.button("🧠 استشارة العقل التجاري", key="submit_merchant_query_btn"):
                 if merchant_query:
-                    with st.sidebar.spinner("⏳ جاري تحليل السؤال ومقاومة الأخطاء الإملائية..."):
-                        time.sleep(0.6)
-                        clean_input = normalize_arabic_text(merchant_query)
-                        input_words = clean_input.split()
-                        detected_intent = None
-                        highest_score = 0.0
-                        best_suggested_kw = ""
-                        
-                        for intent, keywords in merchant_intents.items():
-                            for kw in keywords:
-                                normalized_kw = normalize_arabic_text(kw)
-                                for word in input_words:
-                                    score = get_close_match_score(word, normalized_kw)
-                                    if score > highest_score:
-                                        highest_score = score
-                                        if score >= 0.70: detected_intent = intent
-                                        else: best_suggested_kw = kw
+                    clean_input = normalize_arabic_text(merchant_query)
+                    
+                    # 🚨 [جدار حماية الحروف العشوائية]: إذا كان النص المكتوب خربشة أو حرفاً واحداً غير مفهوم
+                    if len(clean_input) < 2 or clean_input.isdigit():
+                        st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** يبدو أنك كتبت حروفاً عشوائية أو ناقصة بالخطأ! يرجى اختيار أحد الأقسام المدعومة أدناه لمساعدتك."
+                    else:
+                        with st.sidebar.spinner("⏳ جاري تحليل السؤال ومقاومة الأخطاء الإملائية..."):
+                            time.sleep(0.5)
+                            input_words = clean_input.split()
+                            detected_intent = None
+                            highest_score = 0.0
+                            best_suggested_kw = ""
+                            
+                            for intent, keywords in merchant_intents.items():
+                                for kw in keywords:
+                                    normalized_kw = normalize_arabic_text(kw)
+                                    for word in input_words:
+                                        score = get_close_match_score(word, normalized_kw)
+                                        if score > highest_score:
+                                            highest_score = score
+                                            if score >= 0.65: detected_intent = intent
+                                            else: best_suggested_kw = kw
 
-                        if detected_intent == "shipping":
-                            st.session_state["merchant_chat_reply"] = "📌 **نصيحة الشحن للمتجر:** ركز حملاتك الإعلانية على ولايات الوسط والشرق (العاصمة، سطيف، قسنطينة) لضمان سرعة التوصيل وزيادة نسبة استلام الطرود (Livraison) وتفادي المرتجعات."
-                        elif detected_intent == "customers":
-                            st.session_state["merchant_chat_reply"] = "📞 **إستراتيجية التثبيت للمتجر:** اتصل بالزبون فوراً لتأكيد الشراء (Confirmation)، واستخدم لهجة محترمة مع توضيح السعر الإجمالي شامل الشحن لتفادي الرفض عند الباب."
-                        elif detected_intent == "stock":
-                            st.session_state["merchant_chat_reply"] = "📦 **نصيحة مراقبة المخزون:** إذا انخفضت كمية أي منتج في مستودعك لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية الستوك وضخ السيولة."
-                        else:
-                            if highest_score >= 0.40 and best_suggested_kw != "":
-                                st.session_state["merchant_chat_reply"] = f"⚠️ **لم أفهم الكلمة بدقة..** هل تقصد استشارة بخصوص **[{best_suggested_kw}]**؟ يرجى إعادة كتابة السؤال بوضوح لمساعدتك!"
+                            if detected_intent == "shipping":
+                                st.session_state["merchant_chat_reply"] = "📌 **نصيحة الشحن للمتجر:** ركز حملاتك الإعلانية على ولايات الوسط والشرق (العاصمة، سطيف، قسنطينة) لضمان سرعة التوصيل وزيادة نسبة استلام الطرود (Livraison) وتفادي المرتجعات."
+                            elif detected_intent == "customers":
+                                st.session_state["merchant_chat_reply"] = "📞 **إستراتيجية التثبيت للمتجر:** اتصل بالزبون فوراً لتأكيد الشراء (Confirmation)، واستخدم لهجة محترمة مع توضيح السعر الإجمالي شامل الشحن لتفادي الرفض عند الباب."
+                            elif detected_intent == "stock":
+                                st.session_state["merchant_chat_reply"] = "📦 **نصيحة مراقبة المخزون:** إذا انخفضت كمية أي منتج في مستودعك لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية الستوك وضخ السيولة."
                             else:
-                                st.session_state["merchant_chat_reply"] = f"🎯 **تحليل تجاري:** فكرة رائعة! للبدء في مشروع [{merchant_query}] في السوق الجزائرية، اختبر حملتك بميزانية صغيرة 5$ على فيسبوك وتتبع تفاعل الطلبيات أولاً."
+                                if highest_score >= 0.35 and best_suggested_kw != "":
+                                    st.session_state["merchant_chat_reply"] = f"⚠️ **لم أفهم الكلمة بدقة..** هل تقصد استشارة بخصوص **[{best_suggested_kw}]**؟ يرجى إعادة كتابة السؤال بوضوح لمساعدتك!"
+                                else:
+                                    st.session_state["merchant_chat_reply"] = f"🎯 **تحليل تجاري:** فكرة رائعة! للبدء في مشروع [{merchant_query}] في السوق الجزائرية، اختبر حملتك بميزانية صغيرة 5$ على فيسبوك وتتبع تفاعل الطلبيات أولاً."
                         st.rerun()
 
+            # عرض رد المساعد التجاري داخل صندوق النيون
             st.sidebar.markdown(f'<div style="border:2px solid #00fff0; border-radius:12px; padding:15px; background:rgba(5,15,20,0.85); margin-top:10px;"><p style="color:#ffffff; font-size:14px; direction:rtl; text-align:right; margin:0;">{st.session_state["merchant_chat_reply"]}</p></div>', unsafe_allow_html=True)
-
+            
+            # 💡 [حقن لوحة الإرشادات التفاعلية المساعدة للتاجر تظهر دائماً بالأسفل للتوجيه]
+            st.sidebar.markdown("""
+            <div style="margin-top: 15px; padding: 10px; background: rgba(255,170,0,0.05); border: 1px dashed #ffaa00; border-radius: 10px; text-align: right; direction: rtl;">
+                <p style="color: #ffaa00; font-size: 12px; margin: 0 0 5px 0; font-weight: bold;">💡 مواضيع يمكنك استشارتي فيها:</p>
+                <span style="color: #ffffff; font-size: 11px;">• مشاكل الشحن والـ Retour<br>• تثبيت الطلبيات والاتصال بالزبائن<br>• إدارة السلع ونفاذ الستوك (Stock)</span>
+            </div>
+            """, unsafe_allow_html=True)
 
 
     # --- القائمة الجانبية المحدثة للتنقل بين أدواتك المحسنة ---
