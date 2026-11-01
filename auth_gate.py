@@ -539,8 +539,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                                         # 🚨 [جدار حماية الحروف العشوائية المطور]: منع تخمين الحروف القصيرة جداً مثل (سي) أو خربشة الأرقام
                     if len(clean_input) < 3 or clean_input.isdigit():
                         st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** يبدو أنك كتبت حروفاً عشوائية أو ناقصة بالخطأ! يرجى الاستعانة بدليل المواضيع الموضحة في الأسفل لمساعدتك."
-                    else:
-
+                                       else:
                         with st.sidebar.spinner("⏳ جاري تحليل السؤال ومقاومة الأخطاء الإملائية..."):
                             time.sleep(0.5)
                             input_words = clean_input.split()
@@ -555,9 +554,13 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                                         score = get_close_match_score(word, normalized_kw)
                                         if score > highest_score:
                                             highest_score = score
-                                            if score >= 0.65: detected_intent = intent
-                                            else: best_suggested_kw = kw
+                                            # رفع حد الأمان البرمجي إلى 0.82 لمنع الخداع بالكلمات العشوائية الطويلة
+                                            if score >= 0.82: 
+                                                detected_intent = intent
+                                            else: 
+                                                best_suggested_kw = kw
 
+                            # معالجة النتائج بدقة سيبرانية صارمة
                             if detected_intent == "shipping":
                                 st.session_state["merchant_chat_reply"] = "📌 **نصيحة الشحن للمتجر:** ركز حملاتك الإعلانية على ولايات الوسط والشرق (العاصمة، سطيف، قسنطينة) لضمان سرعة التوصيل وزيادة نسبة استلام الطرود (Livraison) وتفادي المرتجعات."
                             elif detected_intent == "customers":
@@ -565,11 +568,10 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                             elif detected_intent == "stock":
                                 st.session_state["merchant_chat_reply"] = "📦 **نصيحة مراقبة المخزون:** إذا انخفضت كمية أي منتج في مستودعك لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية الستوك وضخ السيولة."
                             else:
-                                if highest_score >= 0.35 and best_suggested_kw != "":
-                                    st.session_state["merchant_chat_reply"] = f"⚠️ **لم أفهم الكلمة بدقة..** هل تقصد استشارة بخصوص **[{best_suggested_kw}]**؟ يرجى إعادة كتابة السؤال بوضوح لمساعدتك!"
-                                else:
-                                    st.session_state["merchant_chat_reply"] = f"🎯 **تحليل تجاري:** فكرة رائعة! للبدء في مشروع [{merchant_query}] في السوق الجزائرية، اختبر حملتك بميزانية صغيرة 5$ على فيسبوك وتتبع تفاعل الطلبيات أولاً."
+                                # إذا كانت الكلمة خربشة عشوائية تماماً مثل (مشيسويسي) ولا تشبه أي شيء حقيقي
+                                st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** لم أتمكن من تحديد مرادك بدقة! يرجى كتابة سؤال واضح أو الاستعانة بدليل المواضيع في الأسفل (مثال: شحن، ستوك، كليون)."
                         st.rerun()
+
 
             # عرض رد المساعد التجاري داخل صندوق النيون
             st.sidebar.markdown(f'<div style="border:2px solid #00fff0; border-radius:12px; padding:15px; background:rgba(5,15,20,0.85); margin-top:10px;"><p style="color:#ffffff; font-size:14px; direction:rtl; text-align:right; margin:0;">{st.session_state["merchant_chat_reply"]}</p></div>', unsafe_allow_html=True)
