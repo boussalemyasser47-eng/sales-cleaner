@@ -228,17 +228,55 @@ if is_boss_link:
     else:
         st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900; text-shadow: 0 0 25px #00fff0;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
         
-        # العدادات الثلاثية المستقلة تظهر هنا بداخل الـ else المحمية
-        col_stat1, col_stat2, col_stat3 = st.columns(3)
-        with col_stat1: 
-            st.markdown("<div style='border:2px solid #ff00ff; border-radius:15px; padding:20px; text-align:center; background:rgba(5,5,15,0.85); box-shadow: 0px 0px 25px rgba(255, 0, 255, 0.35); direction:rtl;'><h4 style='color:#ff00ff; margin:0;'>📦 حركة الفواتير المطبوعة بالـ SQL</h4><h2>142 تلبية صادرة</h2></div>", unsafe_allow_html=True)
-        with col_stat2: 
-            st.markdown("<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(5,5,15,0.85); box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.35); direction:rtl;'><h4 style='color:#00fff0; margin:0;'>👥 المشتركين النشطين حالياً بالمنصة</h4><h2>1 تجار نشطين</h2></div>", unsafe_allow_html=True)
-        with col_stat3: 
-            st.markdown("<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(5,5,15,0.85); box-shadow: 0px 0px 25px rgba(255, 170, 0, 0.35); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر</h4><h2>4,580,000.00 DA</h2></div>", unsafe_allow_html=True)
-        with col_stat3: 
-            st.markdown("<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(5,5,15,0.85); box-shadow: 0px 0px 25px rgba(255, 170, 0, 0.35); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 التدفق النقدي الكلي الممرر عبر السيرفر</h4><h2>4,580,000.00 DA</h2></div>", unsafe_allow_html=True)
+        # ========================================================
+        # 📊 [الميزة 2]: لوحة العدادات المالية الموحدة للمالك ورادار تنبيه الـ 7 أيام
+        # ========================================================
+        st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📊 لوحة العدادات المالية الموحدة (The Boss Revenue HUD)</h2>", unsafe_allow_html=True)
         
+        # فتح اتصال سريع وآمن مع قاعدة البيانات لجلب بيانات المشتركين حياً
+        conn_hud = sqlite3.connect("saas_security_vault.db", timeout=10)
+        total_merchants_query = pd.read_sql("SELECT email, registration_date, status FROM saas_users_auth", conn_hud)
+        conn_hud.close()
+        
+        active_count = len(total_merchants_query[total_merchants_query['status'] == 'مفعّل'])
+        pending_count = len(total_merchants_query[total_merchants_query['status'] == 'معلّق'])
+        
+        # عرض العدادات الحية المتغيرة تلقائياً بناءً على التجار المسجلين في سيرفرك
+        hud_col1, hud_col2, hud_col3 = st.columns(3)
+        with hud_col1:
+            st.markdown(f"<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(5,15,20,0.85); box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); direction:rtl;'><h4 style='color:#00fff0; margin:0;'>👤 المتاجر النشطة حياً</h4><h2>{active_count} متجر</h2></div>", unsafe_allow_html=True)
+        with hud_col2:
+            st.markdown(f"<div style='border:2px solid #ff0055; border-radius:15px; padding:20px; text-align:center; background:rgba(20,5,10,0.85); box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.25); direction:rtl;'><h4 style='color:#ff0055; margin:0;'>⏳ طلبات معلقة بالتفريغ</h4><h2>{pending_count} طلب</h2></div>", unsafe_allow_html=True)
+        with hud_col3:
+            # حساب الأرباح الحية بناءً على باقة الـ 45k الافتراضية لكل متجر نشط
+            estimated_revenue = active_count * 45000
+            st.markdown(f"<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(15,10,5,0.85); box-shadow: 0px 0px 20px rgba(255, 170, 0, 0.25); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 صافي التدفقات السنوية الحية</h4><h2>{estimated_revenue:,} DA</h2></div>", unsafe_allow_html=True)
+
+        # 🚨 رادار فحص التراخيص المقتربة من الانتهاء (تنبيه الـ 7 أيام)
+        st.markdown("<br>", unsafe_allow_html=True)
+        expired_alerts = []
+        
+        for index, row in total_merchants_query.iterrows():
+            try:
+                # قراءة تاريخ التسجيل ومقارنته بالوقت الحالي
+                reg_date = datetime.strptime(row['registration_date'].split()[0], "%Y-%m-%d")
+                days_passed = (datetime.now() - reg_date).days
+                days_left = 365 - days_passed
+                
+                # تفعيل رادار المراقبة إذا كانت الصلاحية أقل من 7 أيام
+                if 0 <= days_left <= 7 and row['status'] == 'مفعّل':
+                    expired_alerts.append((row['email'], days_left))
+            except:
+                pass
+        
+        # عرض صندوق التنبيهات النيوني الأحمر للمالك الأعلى إن وُجد تجار أوشكت صلاحيتهم على الانتهاء
+        if expired_alerts:
+            st.markdown("<div style='border:2px dashed #ff0055; border-radius:12px; padding:15px; background:rgba(30,5,10,0.9); margin-bottom:15px; direction:rtl; text-align:right;'>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color:#ff0055; margin:0 0 10px 0;'>🚨 رادار التراخيص المنتهية الصلاحية (خلال 7 أيام):</h4>", unsafe_allow_html=True)
+            for alert in expired_alerts:
+                st.markdown(f"<p style='color:#ffffff; margin:5px 0;'>⚠️ التاجر: <b>{alert[0]}</b> - متبقي على قفل حسابه: <span style='color:#ff0055; font-weight:bold;'>{alert[1]} أيام فقط!</span></p>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+
         # 🔒 [حقن الكود الثاني هنا بدقة متناهية]: خزانة النسخ الاحتياطي التلقائي
         st.markdown("<br><h3 style='color: #ff00ff; text-align: right; font-weight:900; direction:rtl;'>🔒 خزانة النسخ الاحتياطي التلقائي المشفرة</h3>", unsafe_allow_html=True)
         col_backup, col_empty = st.columns([1, 2])
