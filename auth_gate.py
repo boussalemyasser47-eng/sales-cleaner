@@ -536,9 +536,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     clean_input = normalize_arabic_text(merchant_query)
                     
                     # 🚨 [جدار حماية الحروف العشوائية]: إذا كان النص المكتوب خربشة أو حرفاً واحداً غير مفهوم
-                    if len(clean_input) < 2 or clean_input.isdigit():
-                        st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** يبدو أنك كتبت حروفاً عشوائية أو ناقصة بالخطأ! يرجى اختيار أحد الأقسام المدعومة أدناه لمساعدتك."
+                                        # 🚨 [جدار حماية الحروف العشوائية المطور]: منع تخمين الحروف القصيرة جداً مثل (سي) أو خربشة الأرقام
+                    if len(clean_input) < 3 or clean_input.isdigit():
+                        st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** يبدو أنك كتبت حروفاً عشوائية أو ناقصة بالخطأ! يرجى الاستعانة بدليل المواضيع الموضحة في الأسفل لمساعدتك."
                     else:
+
                         with st.sidebar.spinner("⏳ جاري تحليل السؤال ومقاومة الأخطاء الإملائية..."):
                             time.sleep(0.5)
                             input_words = clean_input.split()
