@@ -351,7 +351,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     # 🤖 تشغيل الميزة الثالثة: بوت خدمة العملاء والمساعد الفوري الجانبي التابع لملفك المحسن
     render_sidebar_helper()
 
-    # ========================================================
+        # ========================================================
     # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
     # ========================================================
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
@@ -396,36 +396,53 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         current_month = datetime.now().strftime("%Y-%m")
 
         st.markdown("---")
+        
+        # تفعيل آلية الحفظ داخل جلسة العمل لضمان ثبات أزرار التحميل وروابط السوشيال ميديا
         if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون", key="issue_invoice_and_clear_stock_btn"):
-            if not customer_name or not product_name: st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
+            if not customer_name or not product_name: 
+                st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
             else:
                 check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
-                if not check_stock.empty and check_stock['available_qty'].values < quantity:
-                    st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values} قطع فقط.")
+                if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
+                    st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
                 else:
                     cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
                     cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
                     conne.commit()
+                    
+                    # قراءة اللوغو وحفظ الملفات بداخل الـ session_state
+                    logo_data = uploaded_logo.read() if uploaded_logo is not None else None
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
+                    st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
+                    st.session_state["last_active_customer"] = customer_name
+                    st.session_state["last_active_phone"] = customer_phone
+                    st.session_state["last_active_shop"] = shop_name
+                    st.session_state["last_active_product"] = product_name
+                    st.session_state["last_active_total"] = final_total
                     st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
 
-                    logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    pdf_invoice = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
-                    pdf_label = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
-                    
-                    col_btn1, col_btn2 = st.columns(2)
-                    with col_btn1: st.download_button(label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", data=pdf_invoice, file_name=f"invoice_{customer_name}.pdf", mime="application/pdf", key="dl_invoice_pdf_btn")
-                    with col_btn2: st.download_button(label="🖨️ تحميل ملصق الشحن الحراري 4x4 (PDF)", data=pdf_label, file_name=f"thermal_label_{customer_name}.pdf", mime="application/pdf", key="dl_label_pdf_btn")
+        # عرض أزرار التحميل والإرسال إذا كانت البيانات متوفرة في جلسة التصفح الحالية
+        if "generated_pdf_invoice" in st.session_state:
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1: 
+                st.download_button(label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", data=st.session_state["generated_pdf_invoice"], file_name=f"invoice_{st.session_state['last_active_customer']}.pdf", mime="application/pdf", key="dl_invoice_pdf_btn")
+            with col_btn2: 
+                st.download_button(label="🖨️ تحميل ملصق الشحن الحراري 4x4 (PDF)", data=st.session_state["generated_pdf_label"], file_name=f"thermal_label_{st.session_state['last_active_customer']}.pdf", mime="application/pdf", key="dl_label_pdf_btn")
 
-                    if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة", key="quick_thermal_print_window_btn"): st.components.v1.html("<script>window.print();</script>", height=0)
+            if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة", key="quick_thermal_print_window_btn"): 
+                st.components.v1.html("<script>window.print();</script>", height=0)
 
-                    st.markdown("---")
-                    st.subheader("📲 أزرار الإرسال السريع الفوري لزبونك:")
-                    msg_text = f"مرحباً {customer_name}، تم تأكيد طلبيتك بنجاح من متجر {shop_name}. المنتج: {product_name}، الإجمالي للدفع هو: {final_total:,} DA."
-                    encoded_msg = urllib.parse.quote(msg_text)
-                    send_col1, send_col2 = st.columns(2)
-                    with send_col1: st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{customer_phone}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
-                    with send_col2: st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
-    # ========================================================
+            st.markdown("---")
+            st.subheader("📲 أزرار الإرسال السريع الفوري لزبونك:")
+            msg_text = f"مرحباً {st.session_state['last_active_customer']}، تم تأكيد طلبيتك بنجاح من متجر {st.session_state['last_active_shop']}. المنتج: {st.session_state['last_active_product']}، الإجمالي للدفع هو: {st.session_state['last_active_total']:,} DA."
+            encoded_msg = urllib.parse.quote(msg_text)
+            
+            send_col1, send_col2 = st.columns(2)
+            with send_col1: 
+                st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{st.session_state['last_active_phone']}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
+            with send_col2: 
+                st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
+
     # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
