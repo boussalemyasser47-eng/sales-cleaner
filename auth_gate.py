@@ -231,15 +231,25 @@ if is_boss_link:
         # ========================================================
         # 📊 [الميزة 2]: لوحة العدادات المالية الموحدة للمالك ورادار تنبيه الـ 7 أيام
         # ========================================================
+        # ========================================================
+        # 📊 [الميزة 2]: لوحة العدادات المالية الموحدة للمالك ورادار تنبيه الـ 7 أيام (نسخة الحماية القصوى)
+        # ========================================================
         st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📊 لوحة العدادات المالية الموحدة (The Boss Revenue HUD)</h2>", unsafe_allow_html=True)
         
-        # فتح اتصال سريع وآمن مع قاعدة البيانات لجلب بيانات المشتركين حياً
+        # فتح اتصال سريع وآمن مع قاعدة البيانات لجلب كافة البيانات المتوفرة بأمان
         conn_hud = sqlite3.connect("saas_security_vault.db", timeout=10)
-        total_merchants_query = pd.read_sql("SELECT email, registration_date, status FROM saas_users_auth", conn_hud)
+        try:
+            total_merchants_query = pd.read_sql("SELECT * FROM saas_users_auth", conn_hud)
+        except:
+            total_merchants_query = pd.DataFrame(columns=['email', 'status'])
         conn_hud.close()
         
-        active_count = len(total_merchants_query[total_merchants_query['status'] == 'مفعّل'])
-        pending_count = len(total_merchants_query[total_merchants_query['status'] == 'معلّق'])
+        # التحقق من وجود الأعمدة وحساب العدادات بأمان سيبراني كامل منعاً للـ OperationalError
+        active_count = 0
+        pending_count = 0
+        if not total_merchants_query.empty and 'status' in total_merchants_query.columns:
+            active_count = len(total_merchants_query[total_merchants_query['status'] == 'مفعّل'])
+            pending_count = len(total_merchants_query[total_merchants_query['status'] == 'معلّق'])
         
         # عرض العدادات الحية المتغيرة تلقائياً بناءً على التجار المسجلين في سيرفرك
         hud_col1, hud_col2, hud_col3 = st.columns(3)
@@ -252,22 +262,27 @@ if is_boss_link:
             estimated_revenue = active_count * 45000
             st.markdown(f"<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(15,10,5,0.85); box-shadow: 0px 0px 20px rgba(255, 170, 0, 0.25); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 صافي التدفقات السنوية الحية</h4><h2>{estimated_revenue:,} DA</h2></div>", unsafe_allow_html=True)
 
-        # 🚨 رادار فحص التراخيص المقتربة من الانتهاء (تنبيه الـ 7 أيام)
+        # 🚨 رادار فحص التراخيص المقتربة من الانتهاء (تنبيه الـ 7 أيام بموثوقية عالية)
         st.markdown("<br>", unsafe_allow_html=True)
         expired_alerts = []
         
-        for index, row in total_merchants_query.iterrows():
-            try:
-                # قراءة تاريخ التسجيل ومقارنته بالوقت الحالي
-                reg_date = datetime.strptime(row['registration_date'].split()[0], "%Y-%m-%d")
-                days_passed = (datetime.now() - reg_date).days
-                days_left = 365 - days_passed
+        # البحث عن اسم العمود الخاص بالتاريخ بمرونة كاملة في حال اختلاف المسميات البرمجية بملفك
+        date_col = None
+        for col in total_merchants_query.columns:
+            if 'date' in col or 'تاريخ' in col:
+                date_col = col
+                break
                 
-                # تفعيل رادار المراقبة إذا كانت الصلاحية أقل من 7 أيام
-                if 0 <= days_left <= 7 and row['status'] == 'مفعّل':
-                    expired_alerts.append((row['email'], days_left))
-            except:
-                pass
+        if date_col and not total_merchants_query.empty:
+            for index, row in total_merchants_query.iterrows():
+                try:
+                    reg_date = datetime.strptime(row[date_col].split()[0], "%Y-%m-%d")
+                    days_passed = (datetime.now() - reg_date).days
+                    days_left = 365 - days_passed
+                    if 0 <= days_left <= 7 and row['status'] == 'مفعّل':
+                        expired_alerts.append((row['email'], days_left))
+                except:
+                    pass
         
         # عرض صندوق التنبيهات النيوني الأحمر للمالك الأعلى إن وُجد تجار أوشكت صلاحيتهم على الانتهاء
         if expired_alerts:
@@ -276,6 +291,7 @@ if is_boss_link:
             for alert in expired_alerts:
                 st.markdown(f"<p style='color:#ffffff; margin:5px 0;'>⚠️ التاجر: <b>{alert[0]}</b> - متبقي على قفل حسابه: <span style='color:#ff0055; font-weight:bold;'>{alert[1]} أيام فقط!</span></p>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
+
 
         # 🔒 [حقن الكود الثاني هنا بدقة متناهية]: خزانة النسخ الاحتياطي التلقائي
         st.markdown("<br><h3 style='color: #ff00ff; text-align: right; font-weight:900; direction:rtl;'>🔒 خزانة النسخ الاحتياطي التلقائي المشفرة</h3>", unsafe_allow_html=True)
