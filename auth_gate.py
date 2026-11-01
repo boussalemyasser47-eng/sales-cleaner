@@ -303,9 +303,83 @@ def render_data_insights(*args, **kwargs):
     pass
 
 def render_marketing_hub(*args, **kwargs):
-    """دالة مولد الحملات التسويقية مؤقتة لمنع الـ NameError"""
-    import streamlit as st
-    st.info("🚀 قسم مولد الحملات والتخطيط التسويقي بذكاء AI قيد التجهيز.")
+    """
+    مركز مولد الحملات والتخطيط التسويقي الذكي المطور (AI Marketing Hub)
+    """
+    st.write("<h1 style='font-size: 32px; color: #ffaa00; text-shadow: 0 0 15px #ffaa00;'>🚀 مولّد الحملات والتخطيط التسويقي بذكاء AI</h1>", unsafe_allow_html=True)
+    st.write("مرحباً بك في مركز القيادة التسويقية. اختر نوع الحملة ودع النظام الذكي يصيغ لك الاستراتيجية الاحترافية.")
+
+    col_input, col_output = st.columns([1, 1.2])
+    
+    with col_input:
+        st.subheader("📋 مدخلات الحملة الذكية")
+        ai_prod_name = st.text_input("اسم المنتج المراد تسويقه:", "ساعة ذكية مقاومة للماء", key="ai_prod_name_in")
+        ai_prod_desc = st.text_area("وصف مختصر للمنتج وميزاته التنافسية:", "شاشة أموليد، بطارية تدوم 7 أيام، تدعم الاتصال واستقبال الإشعارات.", key="ai_prod_desc_in")
+        
+        col_m1, col_m2 = st.columns(2)
+        with col_m1:
+            target_audience = st.selectbox("الفئة المستهدفة:", ["الشباب والرياضيين", "رجال الأعمال والمهنيين", "النساء والأناقة", "عامة الناس (جميع الفئات)"])
+        with col_m2:
+            marketing_tone = st.selectbox("لهجة الخطاب الإعلاني:", ["بالدارجة الجزائرية المحفزة", "بالفصحى الإقناعية الفخمة", "حماسية وتخفيضات صدمة"])
+            
+        campaign_goal = st.radio("الهدف الرئيسي من هذه الحملة:", ["🎯 زيادة المبيعات المباشرة (Conversion)", "📢 الوعي بالالعلامة التجارية (Awareness)", "🎁 تقديم عرض ترويجي خاص (Promo Box)"])
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        generate_btn = st.button("🧠 تشغيل العقل السيبراني وتوليد الحملة فوراً", key="start_ai_marketing_brain")
+
+    with col_output:
+        st.subheader("📡 مخرجات الخطة التسويقية والإعلانات المصاغة")
+        
+        if generate_btn:
+            with st.spinner("⏳ جاري تحليل المدخلات وصياغة المحتوى الإعلاني..."):
+                # محاكاة لنموذج الذكاء الاصطناعي مع تخصيص القوالب الذكية بناءً على الخيارات
+                time.sleep(1.2) # وقت معالجة الـ AI
+                
+                st.toast("🎯 تم توليد الأفكار التسويقية بنجاح!", icon="🚀")
+                
+                # بناء النص التسويقي بناءً على اللهجة والهدف
+                if "بالدارجة" in marketing_tone:
+                    intro_text = f"✨ حابب تزيد من ستيلك وتهني راسك؟ متجرنا جابلكم الحل مع [{ai_prod_name}] الخارق! 😎"
+                    features_text = f"🔥 الميزات لي راح تتبدل بيهم حياتك:\n- {ai_prod_desc}\n- التوصيل متوفر لـ 58 ولاية والدفع عند الاستلام! 📦"
+                    cta_text = "🚨 الكمية محدودة بزاف! ابعثولنا رسالة في الصفحة أو اضغط على الرابط للطلب الفوري 🛒"
+                elif "بالفصحى" in marketing_tone:
+                    intro_text = f"👑 الفخامة والأداء يجتمعان الآن! نقدم لكم أحدث ابتكاراتنا: [{ai_prod_name}] المصمم خصيصاً ليناسب تطلعاتكم."
+                    features_text = f"📋 أبرز المواصفات الفنية:\n- {ai_prod_desc}\n- ضمان حقيقي وخدمة شحن سريعة وموثوقة لجميع الولايات."
+                    cta_text = "🎯 ارتقِ بأسلوب حياتك اليوم. اضغط على الزر واطلب منتجك الآن قبل نفاذ المخزون!"
+                else:
+                    intro_text = f"⚡️⚡️ عررررض خاص وصدمة! [{ai_prod_name}] بأفضل سعر في السوق الجزائري حالياً! لا تفوت الفرصة 😱"
+                    features_text = f"💥 كسرنا الأسعار مع ميزات خيالية:\n- {ai_prod_desc}\n- التوصيل سريع حتى لباب دارك!"
+                    cta_text = "🎁 اطلب قطعتين واحصل على الشحن مجاناً! اضغط هنا وسجل طلبيتك الآن 🛒"
+
+                # عرض خطة الاستهداف المقترحة
+                st.markdown(f"""
+                <div style="border: 2px solid #ffaa00; border-radius: 12px; padding: 20px; background: rgba(15,10,5,0.9); margin-bottom: 20px;">
+                    <h4 style="color: #ffaa00; margin-top:0;">📝 نص الإعلان المقترح لمنصات التواصل (Copywriting):</h4>
+                    <p style="color: #ffffff; font-size: 15px; white-space: pre-line;">
+                    {intro_text}\n\n{features_text}\n\n{cta_text}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # خطة الاستهداف في فيسبوك وأدووردز
+                st.markdown(f"""
+                <div style="border: 2px solid #00fff0; border-radius: 12px; padding: 20px; background: rgba(5,15,20,0.9);">
+                    <h4 style="color: #00fff0; margin-top:0;">🎯 خطة استهداف الإعلانات الموصى بها (Targeting Settings):</h4>
+                    <ul>
+                        <li><b>الاهتمامات المستهدفة:</b> التسوق عبر الإنترنت، المهتمين بـ {ai_prod_name}، التجارة الإلكترونية في الجزائر.</li>
+                        <li><b>الفئة العمرية المفضلة:</b> 18 - 45 سنة (بناءً على اختيار: {target_audience}).</li>
+                        <li><b>الولايات الأكثر تفاعلاً المقترحة للبدء:</b> الجزائر العاصمة، وهران، قسنطينة، سطيف، والبليدة.</li>
+                        <li><b>ميزانية الفحص المقترحة:</b> 5$ إلى 10$ يومياً لحملة الـ Engagement أولاً قبل الـ Conversion.</li>
+                    </ul>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # زر نسخ الإعلان
+                full_ad_copy = f"{intro_text}\n\n{features_text}\n\n{cta_text}"
+                st.download_button(label="📋 نسخ ونص الإعلان المولد كمستند نصي", data=full_ad_copy, file_name="ai_marketing_ad.txt", mime="text/plain", key="copy_ai_ad_text_btn")
+        else:
+            st.info("💡 نصيحة سيبرانية: املأ تفاصيل منتجك في الجانب الأيمن ثم اضغط على زر التشغيل ليقوم الذكاء الاصطناعي بتحليل السوق وصياغة منشوراتك الإعلانية فوراً.")
+
 
 if "active_merchant_user" in st.session_state and not is_boss_link:
     current_merchant = st.session_state["active_merchant_user"]
