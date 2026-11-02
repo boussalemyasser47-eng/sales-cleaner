@@ -244,12 +244,13 @@ if is_boss_link:
             total_merchants_query = pd.DataFrame(columns=['email', 'status'])
         conn_hud.close()
         
-        # التحقق من وجود الأعمدة وحساب العدادات بأمان سيبراني كامل منعاً للـ OperationalError
         active_count = 0
         pending_count = 0
         if not total_merchants_query.empty and 'status' in total_merchants_query.columns:
-            active_count = len(total_merchants_query[total_merchants_query['status'] == 'مفعّل'])
-            pending_count = len(total_merchants_query[total_merchants_query['status'] == 'معلّق'])
+            # معالجة مرنة: البحث عن أي نص يحتوي على "مفعّل" لتفادي اختلاف الكلمات في قاعدة البيانات
+            active_count = len(total_merchants_query[total_merchants_query['status'].str.contains('مفعّل', na=False)])
+            pending_count = len(total_merchants_query[total_merchants_query['status'].str.contains('معلّق', na=False)])
+
         
         # عرض العدادات الحية المتغيرة تلقائياً بناءً على التجار المسجلين في سيرفرك
         hud_col1, hud_col2, hud_col3 = st.columns(3)
