@@ -377,8 +377,7 @@ if is_boss_link:
                 if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                     conn = sqlite3.connect("saas_security_vault.db")
                     conn.cursor().execute("UPDATE saas_users_auth SET status = 'مفعّل ونشط' WHERE email = ?", (current_email,))
-
-                        conn.commit(); conn.close(); st.toast("🎯 تم التفعيل!"); time.sleep(0.5); st.rerun()
+                    conn.commit(); conn.close(); st.toast("🎯 تم التفعيل!"); time.sleep(0.5); st.rerun()
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
