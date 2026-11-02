@@ -330,47 +330,49 @@ if is_boss_link:
                     <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: {current_package}</p>
                 </div>
                 """, unsafe_allow_html=True)
-        st.markdown("""
-            <style>
-                /* 1. تلوين زر التفعيل الأخضر السيان */
-                button[key*="btn_act_"] {
-                    border: 2px solid #00fff0 !important;
-                    box-shadow: 0 0 15px rgba(0, 255, 240, 0.4) !important;
-                    color: #00fff0 !important;
-                    background: rgba(5, 20, 25, 0.6) !important;
-                }
-                /* 2. تلوين زر التمديد بالبرتقالي الدافئ */
-                button[key*="btn_ext_"], button[key*="extend"] {
-                    border: 2px solid #ffaa00 !important;
-                    box-shadow: 0 0 15px rgba(255, 170, 0, 0.4) !important;
-                    color: #ffaa00 !important;
-                    background: rgba(25, 15, 5, 0.6) !important;
-                }
-                /* 3. تلوين زر تدمير نهائي بالأحمر التحذيري */
-                button[key*="btn_del_"], button[key*="destroy"] {
-                    border: 2px solid #ff3333 !important;
-                    box-shadow: 0 0 15px rgba(255, 51, 51, 0.4) !important;
-                    color: #ff3333 !important;
-                    background: rgba(35, 5, 5, 0.6) !important;
-                }
-                /* 4. تلوين زر ترقية فئة الباقة بالبنفسجي */
-                button[key*="btn_up_"], button[key*="upgrade"] {
-                    border: 2px solid #aa00ff !important;
-                    box-shadow: 0 0 15px rgba(170, 0, 255, 0.4) !important;
-                    color: #aa00ff !important;
-                    background: rgba(20, 5, 30, 0.6) !important;
-                }
-                /* 5. تلوين زر حظر وقفل الحساب بالوردي النيوني */
-                button[key*="btn_blk_"], button[key*="block"] {
-                    border: 2px solid #ff0055 !important;
-                    box-shadow: 0 0 15px rgba(255, 0, 85, 0.4) !important;
-                    color: #ff0055 !important;
-                    background: rgba(30, 5, 10, 0.6) !important;
-                }
-            </style>
-        """, unsafe_allow_html=True)
+            # 🎨 [الميزة 3]: حقن الوميض اللوني لإطارات التحكم (Color-Sync Aura) بفواصل سليمة ومحاذاة دقيقة
+            st.markdown("""
+                <style>
+                    /* 1. تلوين زر التفعيل الأخضر السيان */
+                    button[key*="btn_act_"] {
+                        border: 2px solid #00fff0 !important;
+                        box-shadow: 0 0 15px rgba(0, 255, 240, 0.4) !important;
+                        color: #00fff0 !important;
+                        background: rgba(5, 20, 25, 0.6) !important;
+                    }
+                    /* 2. تلوين زر التمديد بالبرتقالي الدافئ */
+                    button[key*="btn_ext_"], button[key*="extend"] {
+                        border: 2px solid #ffaa00 !important;
+                        box-shadow: 0 0 15px rgba(255, 170, 0, 0.4) !important;
+                        color: #ffaa00 !important;
+                        background: rgba(25, 15, 5, 0.6) !important;
+                    }
+                    /* 3. تلوين زر تدمير نهائي بالأحمر التحذيري */
+                    button[key*="btn_del_"], button[key*="destroy"] {
+                        border: 2px solid #ff3333 !important;
+                        box-shadow: 0 0 15px rgba(255, 51, 51, 0.4) !important;
+                        color: #ff3333 !important;
+                        background: rgba(35, 5, 5, 0.6) !important;
+                    }
+                    /* 4. تلوين زر ترقية فئة الباقة بالبنفسجي */
+                    button[key*="btn_up_"], button[key*="upgrade"] {
+                        border: 2px solid #aa00ff !important;
+                        box-shadow: 0 0 15px rgba(170, 0, 255, 0.4) !important;
+                        color: #aa00ff !important;
+                        background: rgba(20, 5, 30, 0.6) !important;
+                    }
+                    /* 5. تلوين زر حظر وقفل الحساب بالوردي النيوني */
+                    button[key*="btn_blk_"], button[key*="block"] {
+                        border: 2px solid #ff0055 !important;
+                        box-shadow: 0 0 15px rgba(255, 0, 85, 0.4) !important;
+                        color: #ff0055 !important;
+                        background: rgba(30, 5, 10, 0.6) !important;
+                    }
+                </style>
+            """, unsafe_allow_html=True)
 
-             col_1, col_2, col_3, col_4, col_5 = st.columns(5)
+
+              col_1, col_2, col_3, col_4, col_5 = st.columns(5)
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
