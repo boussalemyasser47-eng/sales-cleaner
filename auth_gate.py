@@ -333,42 +333,77 @@ if is_boss_link:
                 """, unsafe_allow_html=True)
             # 🎨 [الميزة 3]: حقن الوميض اللوني لإطارات التحكم (Color-Sync Aura) بفواصل سليمة ومحاذاة دقيقة
             # 🎨 [الميزة 3]: حقن الوميض اللوني لإطارات التحكم باستهداف الأعمدة الخمسة مباشرة
+            # 🎨 [الميزة 3 الملوَّنة]: حقن الوميض اللوني للأزرار مع ربط توهج إطار التاجر حياً بحركة الفأرة
             st.markdown("""
                 <style>
-                    /* 1. تلوين زر التفعيل الأخضر السيان (العمود الأول) */
+                    /* إعداد التأثير البصري المسبق لإطار التاجر عند التفاعل */
+                    div[data-testid="stVerticalBlockBorderWrapper"] {
+                        transition: all 0.4s ease-in-out !important;
+                    }
+                    
+                    /* 1. تأثير زر التفعيل (السيان) على الزر والإطار */
                     div[data-testid="stHorizontalBlock"] > div:nth-child(1) button {
                         border: 2px solid #00fff0 !important;
                         box-shadow: 0 0 15px rgba(0, 255, 240, 0.4) !important;
                         color: #00fff0 !important;
                         background: rgba(5, 20, 25, 0.6) !important;
+                        transition: all 0.3s ease;
                     }
-                    /* 2. تلوين زر التمديد بالبرتقالي الدافئ (العمود الثاني) */
+                    div[data-testid="stVerticalBlockBorderWrapper"]:has(div[data-testid="stHorizontalBlock"] > div:nth-child(1) button:hover) {
+                        border-color: #00fff0 !important;
+                        box-shadow: 0 0 25px rgba(0, 255, 240, 0.4) !important;
+                    }
+                    
+                    /* 2. تأثير زر التمديد (البرتقالي) على الزر والإطار */
                     div[data-testid="stHorizontalBlock"] > div:nth-child(2) button {
                         border: 2px solid #ffaa00 !important;
                         box-shadow: 0 0 15px rgba(255, 170, 0, 0.4) !important;
                         color: #ffaa00 !important;
                         background: rgba(25, 15, 5, 0.6) !important;
+                        transition: all 0.3s ease;
                     }
-                    /* 3. تلوين زر تدمير نهائي بالأحمر التحذيري (العمود الثالث) */
+                    div[data-testid="stVerticalBlockBorderWrapper"]:has(div[data-testid="stHorizontalBlock"] > div:nth-child(2) button:hover) {
+                        border-color: #ffaa00 !important;
+                        box-shadow: 0 0 25px rgba(255, 170, 0, 0.4) !important;
+                    }
+                    
+                    /* 3. تأثير زر التدمير (الأحمر) على الزر والإطار */
                     div[data-testid="stHorizontalBlock"] > div:nth-child(3) button {
                         border: 2px solid #ff3333 !important;
                         box-shadow: 0 0 15px rgba(255, 51, 51, 0.4) !important;
                         color: #ff3333 !important;
                         background: rgba(35, 5, 5, 0.6) !important;
+                        transition: all 0.3s ease;
                     }
-                    /* 4. تلوين زر ترقية فئة الباقة بالبنفسجي (العمود الرابع) */
+                    div[data-testid="stVerticalBlockBorderWrapper"]:has(div[data-testid="stHorizontalBlock"] > div:nth-child(3) button:hover) {
+                        border-color: #ff3333 !important;
+                        box-shadow: 0 0 25px rgba(255, 51, 51, 0.5) !important;
+                    }
+                    
+                    /* 4. تأثير زر الترقية (البنفسجي) على الزر والإطار */
                     div[data-testid="stHorizontalBlock"] > div:nth-child(4) button {
                         border: 2px solid #aa00ff !important;
                         box-shadow: 0 0 15px rgba(170, 0, 255, 0.4) !important;
                         color: #aa00ff !important;
                         background: rgba(20, 5, 30, 0.6) !important;
+                        transition: all 0.3s ease;
                     }
-                    /* 5. تلوين زر حظر وقفل الحساب بالوردي النيوني (العمود الخامس) */
+                    div[data-testid="stVerticalBlockBorderWrapper"]:has(div[data-testid="stHorizontalBlock"] > div:nth-child(4) button:hover) {
+                        border-color: #aa00ff !important;
+                        box-shadow: 0 0 25px rgba(170, 0, 255, 0.4) !important;
+                    }
+                    
+                    /* 5. تأثير زر الحظر (الوردي) على الزر والإطار */
                     div[data-testid="stHorizontalBlock"] > div:nth-child(5) button {
                         border: 2px solid #ff0055 !important;
                         box-shadow: 0 0 15px rgba(255, 0, 85, 0.4) !important;
                         color: #ff0055 !important;
                         background: rgba(30, 5, 10, 0.6) !important;
+                        transition: all 0.3s ease;
+                    }
+                    div[data-testid="stVerticalBlockBorderWrapper"]:has(div[data-testid="stHorizontalBlock"] > div:nth-child(5) button:hover) {
+                        border-color: #ff0055 !important;
+                        box-shadow: 0 0 25px rgba(255, 0, 85, 0.5) !important;
                     }
                 </style>
             """, unsafe_allow_html=True)
