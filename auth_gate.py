@@ -369,14 +369,14 @@ if is_boss_link:
                         background: rgba(30, 5, 10, 0.6) !important;
                     }
                 </style>
-""", unsafe_allow_html=True)
+   """, unsafe_allow_html=True)
 col_1, col_2, col_3, col_4, col_5 = st.columns(5)
 with col_1:
     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
         conn = sqlite3.connect("saas_security_vault.db")
 
-                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
-                        conn.commit(); conn.close(); st.toast("🎯 تم التفعيل!"); time.sleep(0.5); st.rerun()
+        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
+        conn.commit(); conn.close(); st.toast("🎯 تم التفعيل!"); time.sleep(0.5); st.rerun()
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
