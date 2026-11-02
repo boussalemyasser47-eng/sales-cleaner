@@ -331,81 +331,48 @@ if is_boss_link:
                     <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: {current_package}</p>
                 </div>
                 """, unsafe_allow_html=True)
-            # 🎨 [الميزة 3]: حقن الوميض اللوني لإطارات التحكم (Color-Sync Aura) بفواصل سليمة ومحاذاة دقيقة
-            # 🎨 [الميزة 3]: حقن الوميض اللوني لإطارات التحكم باستهداف الأعمدة الخمسة مباشرة
-            # 🎨 [الميزة 3 الملوَّنة]: حقن الوميض اللوني للأزرار مع ربط توهج إطار التاجر حياً بحركة الفأرة
+            # 🎨 [الميزة 3 - النسخة الأسطورية المضمونة]: حقن السكريبت السيبراني لربط توهج الإطارات حياً بالأزرار
             st.markdown("""
                 <style>
-                    /* إعداد التأثير البصري المسبق لإطار التاجر عند التفاعل */
-                    div[data-testid="stVerticalBlockBorderWrapper"] {
-                        transition: all 0.4s ease-in-out !important;
-                    }
-                    
-                    /* 1. تأثير زر التفعيل (السيان) على الزر والإطار */
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(1) button {
-                        border: 2px solid #00fff0 !important;
-                        box-shadow: 0 0 15px rgba(0, 255, 240, 0.4) !important;
-                        color: #00fff0 !important;
-                        background: rgba(5, 20, 25, 0.6) !important;
-                        transition: all 0.3s ease;
-                    }
-                    div[data-testid="stVerticalBlockBorderWrapper"]:has(div[data-testid="stHorizontalBlock"] > div:nth-child(1) button:hover) {
-                        border-color: #00fff0 !important;
-                        box-shadow: 0 0 25px rgba(0, 255, 240, 0.4) !important;
-                    }
-                    
-                    /* 2. تأثير زر التمديد (البرتقالي) على الزر والإطار */
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) button {
-                        border: 2px solid #ffaa00 !important;
-                        box-shadow: 0 0 15px rgba(255, 170, 0, 0.4) !important;
-                        color: #ffaa00 !important;
-                        background: rgba(25, 15, 5, 0.6) !important;
-                        transition: all 0.3s ease;
-                    }
-                    div[data-testid="stVerticalBlockBorderWrapper"]:has(div[data-testid="stHorizontalBlock"] > div:nth-child(2) button:hover) {
-                        border-color: #ffaa00 !important;
-                        box-shadow: 0 0 25px rgba(255, 170, 0, 0.4) !important;
-                    }
-                    
-                    /* 3. تأثير زر التدمير (الأحمر) على الزر والإطار */
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(3) button {
-                        border: 2px solid #ff3333 !important;
-                        box-shadow: 0 0 15px rgba(255, 51, 51, 0.4) !important;
-                        color: #ff3333 !important;
-                        background: rgba(35, 5, 5, 0.6) !important;
-                        transition: all 0.3s ease;
-                    }
-                    div[data-testid="stVerticalBlockBorderWrapper"]:has(div[data-testid="stHorizontalBlock"] > div:nth-child(3) button:hover) {
-                        border-color: #ff3333 !important;
-                        box-shadow: 0 0 25px rgba(255, 51, 51, 0.5) !important;
-                    }
-                    
-                    /* 4. تأثير زر الترقية (البنفسجي) على الزر والإطار */
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(4) button {
-                        border: 2px solid #aa00ff !important;
-                        box-shadow: 0 0 15px rgba(170, 0, 255, 0.4) !important;
-                        color: #aa00ff !important;
-                        background: rgba(20, 5, 30, 0.6) !important;
-                        transition: all 0.3s ease;
-                    }
-                    div[data-testid="stVerticalBlockBorderWrapper"]:has(div[data-testid="stHorizontalBlock"] > div:nth-child(4) button:hover) {
-                        border-color: #aa00ff !important;
-                        box-shadow: 0 0 25px rgba(170, 0, 255, 0.4) !important;
-                    }
-                    
-                    /* 5. تأثير زر الحظر (الوردي) على الزر والإطار */
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(5) button {
-                        border: 2px solid #ff0055 !important;
-                        box-shadow: 0 0 15px rgba(255, 0, 85, 0.4) !important;
-                        color: #ff0055 !important;
-                        background: rgba(30, 5, 10, 0.6) !important;
-                        transition: all 0.3s ease;
-                    }
-                    div[data-testid="stVerticalBlockBorderWrapper"]:has(div[data-testid="stHorizontalBlock"] > div:nth-child(5) button:hover) {
-                        border-color: #ff0055 !important;
-                        box-shadow: 0 0 25px rgba(255, 0, 85, 0.5) !important;
-                    }
+                    /* إعداد ألوان الأزرار الخمسة النيونية الثابتة */
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(1) button { border: 2px solid #00fff0 !important; color: #00fff0 !important; background: rgba(5,20,25,0.6) !important; box-shadow: 0 0 10px rgba(0,255,240,0.3) !important; }
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) button { border: 2px solid #ffaa00 !important; color: #ffaa00 !important; background: rgba(25,15,5,0.6) !important; box-shadow: 0 0 10px rgba(255,170,0,0.3) !important; }
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(3) button { border: 2px solid #ff3333 !important; color: #ff3333 !important; background: rgba(35,5,5,0.6) !important; box-shadow: 0 0 10px rgba(255,51,51,0.3) !important; }
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(4) button { border: 2px solid #aa00ff !important; color: #aa00ff !important; background: rgba(20,5,30,0.6) !important; box-shadow: 0 0 10px rgba(170,0,255,0.3) !important; }
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(5) button { border: 2px solid #ff0055 !important; color: #ff0055 !important; background: rgba(30,5,10,0.6) !important; box-shadow: 0 0 10px rgba(255,0,85,0.3) !important; }
                 </style>
+                
+                <script>
+                    // محرك رصد برمجيات الحركة حياً فوق حاويات المنصة
+                    setTimeout(() => {
+                        const blocks = document.querySelectorAll('div[data-testid="stVerticalBlockBorderWrapper"]');
+                        blocks.forEach(block => {
+                            block.style.transition = "all 0.4s ease-in-out";
+                            const buttons = block.querySelectorAll('button');
+                            
+                            buttons.forEach((btn, index) => {
+                                // تحديد لون التوهج بناءً على ترتيب أزرارك الخمسة بدقة
+                                let auraColor = "";
+                                if(index === 0) auraColor = "#00fff0"; // تفعيل
+                                if(index === 1) auraColor = "#ffaa00"; // تمديد
+                                if(index === 2) auraColor = "#ff3333"; // تدمير
+                                if(index === 3) auraColor = "#aa00ff"; // ترقية
+                                if(index === 4) auraColor = "#ff0055"; // حظر
+                                
+                                // تفتيح وتوهيج الإطار فور ملامسة الفأرة للزر
+                                btn.onmouseenter = () => {
+                                    block.style.borderColor = auraColor;
+                                    block.style.boxShadow = `0 0 30px ${auraColor}`;
+                                };
+                                // إعادة الإطار لوضعه الطبيعي فور خروج الفأرة
+                                btn.onmouseleave = () => {
+                                    block.style.borderColor = "";
+                                    block.style.boxShadow = "";
+                                };
+                            });
+                        });
+                    }, 1000);
+                </script>
             """, unsafe_allow_html=True)
 
 
