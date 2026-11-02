@@ -331,8 +331,8 @@ if is_boss_link:
                 </div>
                 """, unsafe_allow_html=True)
             # 🎨 [الميزة 3]: حقن الوميض اللوني لإطارات التحكم (Color-Sync Aura)
-            st.markdown("""
-                <style>
+                st.markdown("""
+                  <style>
                     /* تلوين زر التفعيل الأخضر السيان */
                     button[key*="btn_act_"] {
                         border: 2px solid #00fff0 !important;
