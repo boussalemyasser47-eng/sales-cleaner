@@ -332,38 +332,39 @@ if is_boss_link:
                 </div>
                 """, unsafe_allow_html=True)
             # 🎨 [الميزة 3]: حقن الوميض اللوني لإطارات التحكم (Color-Sync Aura) بفواصل سليمة ومحاذاة دقيقة
+            # 🎨 [الميزة 3]: حقن الوميض اللوني لإطارات التحكم باستهداف الأعمدة الخمسة مباشرة
             st.markdown("""
                 <style>
-                    /* 1. تلوين زر التفعيل الأخضر السيان */
-                    button[key*="btn_act_"] {
+                    /* 1. تلوين زر التفعيل الأخضر السيان (العمود الأول) */
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(1) button {
                         border: 2px solid #00fff0 !important;
                         box-shadow: 0 0 15px rgba(0, 255, 240, 0.4) !important;
                         color: #00fff0 !important;
                         background: rgba(5, 20, 25, 0.6) !important;
                     }
-                    /* 2. تلوين زر التمديد بالبرتقالي الدافئ */
-                    button[key*="btn_ext_"], button[key*="extend"] {
+                    /* 2. تلوين زر التمديد بالبرتقالي الدافئ (العمود الثاني) */
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) button {
                         border: 2px solid #ffaa00 !important;
                         box-shadow: 0 0 15px rgba(255, 170, 0, 0.4) !important;
                         color: #ffaa00 !important;
                         background: rgba(25, 15, 5, 0.6) !important;
                     }
-                    /* 3. تلوين زر تدمير نهائي بالأحمر التحذيري */
-                    button[key*="btn_del_"], button[key*="destroy"] {
+                    /* 3. تلوين زر تدمير نهائي بالأحمر التحذيري (العمود الثالث) */
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(3) button {
                         border: 2px solid #ff3333 !important;
                         box-shadow: 0 0 15px rgba(255, 51, 51, 0.4) !important;
                         color: #ff3333 !important;
                         background: rgba(35, 5, 5, 0.6) !important;
                     }
-                    /* 4. تلوين زر ترقية فئة الباقة بالبنفسجي */
-                    button[key*="btn_up_"], button[key*="upgrade"] {
+                    /* 4. تلوين زر ترقية فئة الباقة بالبنفسجي (العمود الرابع) */
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(4) button {
                         border: 2px solid #aa00ff !important;
                         box-shadow: 0 0 15px rgba(170, 0, 255, 0.4) !important;
                         color: #aa00ff !important;
                         background: rgba(20, 5, 30, 0.6) !important;
                     }
-                    /* 5. تلوين زر حظر وقفل الحساب بالوردي النيوني */
-                    button[key*="btn_blk_"], button[key*="block"] {
+                    /* 5. تلوين زر حظر وقفل الحساب بالوردي النيوني (العمود الخامس) */
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(5) button {
                         border: 2px solid #ff0055 !important;
                         box-shadow: 0 0 15px rgba(255, 0, 85, 0.4) !important;
                         color: #ff0055 !important;
@@ -371,6 +372,7 @@ if is_boss_link:
                     }
                 </style>
             """, unsafe_allow_html=True)
+
 
             col_1, col_2, col_3, col_4, col_5 = st.columns(5)
             with col_1:
