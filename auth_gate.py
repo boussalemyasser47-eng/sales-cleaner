@@ -328,15 +328,18 @@ if is_boss_link:
                 with col_3:
                     if st.button("🗑️ تدمير نهائي فوري", key=f"btn_del_{current_email}"): 
                         st.session_state[f"ask_confirm_{current_email}"] = True
-    current_merchant = st.session_state["active_merchant_user"]
-    st.sidebar.markdown(f"👤 التاجر النشط: {current_merchant}", unsafe_allow_html=True)
-    st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; font-size: 24px;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
-    choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
-        "✨ صانع الفواتير الاحترافي (PDF)",
-        "📦 إدارة وتنبيهات المخزون السلعي",
-        "🧼 مطهر ملفات المبيعات وإحصائيات الولايات",
-        "🚀 مولّد الحملات والتخطيط التسويقي (AI)"
-    ], key="merchant_navigation_radio")
+                # تأمين فحص وجود التاجر النشط بأمان سيبراني لمنع الـ KeyError
+                if "active_merchant_user" in st.session_state:
+                    current_merchant = st.session_state["active_merchant_user"]
+                    st.sidebar.markdown(f"👤 التاجر النشط: {current_merchant}", unsafe_allow_html=True)
+                    st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; font-size: 24px;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
+                    choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
+                        "✨ صانع الفواتير الاحترافي (PDF)",
+                        "📦 إدارة وتنبيهات المخزون السلعي",
+                        "🧼 مطهر ملفات المبيعات وإحصائيات الولايات",
+                        "🚀 مولّد الحملات والتخطيط التسويقي (AI)"
+                    ], key="merchant_navigation_radio")
+
 
 
     if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", key="merchant_safe_logout_btn"):
