@@ -29,10 +29,6 @@ import time
 from datetime import datetime
 import io
 import urllib.parse
-# ========================================================
-# 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
-# ========================================================
-
 
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
@@ -138,8 +134,6 @@ def delete_email_completely(email_to_delete):
         return True
     except Exception as e:
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
-
-
 # ========================================================
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
 # ========================================================
@@ -185,7 +179,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     conn_login.close()
                     
                     if user_status_row:
-                        if "🟢 مفعّل ونشط" in user_status_row[0]:
+                        if "مفعّل" in user_status_row[0]:
                             st.session_state["active_merchant_user"] = clean_email
                             st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
                             time.sleep(0.5); st.rerun()
@@ -193,16 +187,13 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.warning(f"⏳ حالة حسابك الحالية: {user_status_row[0]}")
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
-
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py)
 # ========================================================
 if is_boss_link:
-    # تأمين وحقن الهوية علوياً لمنع خطأ NameError
     ADMIN_USERNAME = "admin_master_v4"
     ADMIN_PASSWORD = "SaasPassword2026"
 
-    # 🔒 [المستوى الأول]: إذا لم يسجل المالك دخوله، تظهر لوحة الحماية فقط وتُحجب العدادات كلياً
     if not st.session_state["admin_master_logged"]:
         st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown("<div class='centered-box-container' style='max-width: 500px; margin: 60px auto 20px auto; padding: 40px; background: rgba(5, 5, 15, 0.95); border: 2px solid #00fff0; border-radius: 20px; box-shadow: 0px 0px 40px rgba(0, 255, 240, 0.35); direction: rtl; text-align: right; backdrop-filter: blur(15px);'>", unsafe_allow_html=True)
@@ -213,30 +204,19 @@ if is_boss_link:
         boss_pass = st.text_input("Password:", type="password", key="boss_leader_pass").strip()
         
         st.markdown("<br>", unsafe_allow_html=True)
-        
         if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="submit_boss_login_btn"):
             if boss_user == ADMIN_USERNAME and boss_pass == ADMIN_PASSWORD:
                 st.session_state["admin_master_logged"] = True
                 st.toast("👑 مرحباً بك يا قائد! تم تفعيل لوحة السيادة والموافقات.", icon="🔓")
-                time.sleep(0.5)
-                st.rerun()
+                time.sleep(0.5); st.rerun()
             else:
                 st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من مفاتيح الأمان السحابية.")
         st.markdown("</div>", unsafe_allow_html=True)
         
-    # 👑 [المستوى الثاني مقفل ومحمي]: تنبثق العدادات والرادار هنا حصرياً وفقط بعد نجاح تسجيل الدخول
     else:
         st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900; text-shadow: 0 0 25px #00fff0;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
-        
-        # ========================================================
-        # 📊 [الميزة 2]: لوحة العدادات المالية الموحدة للمالك ورادار تنبيه الـ 7 أيام
-        # ========================================================
-        # ========================================================
-        # 📊 [الميزة 2]: لوحة العدادات المالية الموحدة للمالك ورادار تنبيه الـ 7 أيام (نسخة الحماية القصوى)
-        # ========================================================
         st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📊 لوحة العدادات المالية الموحدة (The Boss Revenue HUD)</h2>", unsafe_allow_html=True)
         
-        # فتح اتصال سريع وآمن مع قاعدة البيانات لجلب كافة البيانات المتوفرة بأمان
         conn_hud = sqlite3.connect("saas_security_vault.db", timeout=10)
         try:
             total_merchants_query = pd.read_sql("SELECT * FROM saas_users_auth", conn_hud)
@@ -247,27 +227,19 @@ if is_boss_link:
         active_count = 0
         pending_count = 0
         if not total_merchants_query.empty and 'status' in total_merchants_query.columns:
-            # معالجة مرنة: البحث عن أي نص يحتوي على "مفعّل" لتفادي اختلاف الكلمات في قاعدة البيانات
             active_count = len(total_merchants_query[total_merchants_query['status'].str.contains('مفعّل', na=False)])
             pending_count = len(total_merchants_query[total_merchants_query['status'].str.contains('معلّق', na=False)])
 
-        
-        # عرض العدادات الحية المتغيرة تلقائياً بناءً على التجار المسجلين في سيرفرك
         hud_col1, hud_col2, hud_col3 = st.columns(3)
         with hud_col1:
             st.markdown(f"<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(5,15,20,0.85); box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); direction:rtl;'><h4 style='color:#00fff0; margin:0;'>👤 المتاجر النشطة حياً</h4><h2>{active_count} متجر</h2></div>", unsafe_allow_html=True)
         with hud_col2:
             st.markdown(f"<div style='border:2px solid #ff0055; border-radius:15px; padding:20px; text-align:center; background:rgba(20,5,10,0.85); box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.25); direction:rtl;'><h4 style='color:#ff0055; margin:0;'>⏳ طلبات معلقة بالتفريغ</h4><h2>{pending_count} طلب</h2></div>", unsafe_allow_html=True)
         with hud_col3:
-            # حساب الأرباح الحية بناءً على باقة الـ 45k الافتراضية لكل متجر نشط
             estimated_revenue = active_count * 45000
             st.markdown(f"<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(15,10,5,0.85); box-shadow: 0px 0px 20px rgba(255, 170, 0, 0.25); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 صافي التدفقات السنوية الحية</h4><h2>{estimated_revenue:,} DA</h2></div>", unsafe_allow_html=True)
-
-        # 🚨 رادار فحص التراخيص المقتربة من الانتهاء (تنبيه الـ 7 أيام بموثوقية عالية)
         st.markdown("<br>", unsafe_allow_html=True)
         expired_alerts = []
-        
-        # البحث عن اسم العمود الخاص بالتاريخ بمرونة كاملة في حال اختلاف المسميات البرمجية بملفك
         date_col = None
         for col in total_merchants_query.columns:
             if 'date' in col or 'تاريخ' in col:
@@ -280,12 +252,11 @@ if is_boss_link:
                     reg_date = datetime.strptime(row[date_col].split()[0], "%Y-%m-%d")
                     days_passed = (datetime.now() - reg_date).days
                     days_left = 365 - days_passed
-                    if 0 <= days_left <= 7 and row['status'] == 'مفعّل':
+                    if 0 <= days_left <= 7 and 'مفعّل' in str(row['status']):
                         expired_alerts.append((row['email'], days_left))
                 except:
                     pass
         
-        # عرض صندوق التنبيهات النيوني الأحمر للمالك الأعلى إن وُجد تجار أوشكت صلاحيتهم على الانتهاء
         if expired_alerts:
             st.markdown("<div style='border:2px dashed #ff0055; border-radius:12px; padding:15px; background:rgba(30,5,10,0.9); margin-bottom:15px; direction:rtl; text-align:right;'>", unsafe_allow_html=True)
             st.markdown("<h4 style='color:#ff0055; margin:0 0 10px 0;'>🚨 رادار التراخيص المنتهية الصلاحية (خلال 7 أيام):</h4>", unsafe_allow_html=True)
@@ -293,8 +264,6 @@ if is_boss_link:
                 st.markdown(f"<p style='color:#ffffff; margin:5px 0;'>⚠️ التاجر: <b>{alert[0]}</b> - متبقي على قفل حسابه: <span style='color:#ff0055; font-weight:bold;'>{alert[1]} أيام فقط!</span></p>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-
-        # 🔒 [حقن الكود الثاني هنا بدقة متناهية]: خزانة النسخ الاحتياطي التلقائي
         st.markdown("<br><h3 style='color: #ff00ff; text-align: right; font-weight:900; direction:rtl;'>🔒 خزانة النسخ الاحتياطي التلقائي المشفرة</h3>", unsafe_allow_html=True)
         col_backup, col_empty = st.columns([1, 2])
         with col_backup:
@@ -311,8 +280,6 @@ if is_boss_link:
                 st.error(f"⚠️ فشل توليد الخزنة الاحتياطية: {e}")
 
         st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
-
-        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
         
         conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
@@ -323,530 +290,75 @@ if is_boss_link:
             for index, row in df_users.iterrows():
                 current_email = row['email']; current_pass = row['password']; current_status = row['status']; current_package = row['package']
                 
-             if "مفعل" in status_text:
-                aura_frame_color = "#00fff0"  # لون سيان لزر التفعيل
-            elif "قفل" in status_text or "حظر" in status_text:
-                aura_frame_color = "#ff0055"  # لون وردي نيوني لزر الحظر
-            elif "مهلة" in status_text or "تمديد" in status_text:
-                aura_frame_color = "#ffaa00"  # لون برتقالي لزر التمديد
-            elif "ترقية" in status_text:
-                aura_frame_color = "#aa00ff"  # لون بنفسجي لزر الترقية
-            else:
-                aura_frame_color = "#ff3333"  # لون أحمر للتدمير أو الحالات الأخرى
+                status_text = str(current_status)
+                if "مفعّل" in status_text:
+                    aura_frame_color = "#00fff0"
+                    status_color = "#00fff0"
+                elif "قفل" in status_text or "حظر" in status_text:
+                    aura_frame_color = "#ff0055"
+                    status_color = "#ff0055"
+                elif "مهلة" in status_text or "تمديد" in status_text:
+                    aura_frame_color = "#ffaa00"
+                    status_color = "#ffaa00"
+                elif "ترقية" in status_text:
+                    aura_frame_color = "#aa00ff"
+                    status_color = "#aa00ff"
+                else:
+                    aura_frame_color = "#ff3333"
+                    status_color = "#ff3333"
                 
                 st.markdown(f"""
-                <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right;">
+                <div style="border: 2px solid {aura_frame_color}; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right; box-shadow: 0 0 20px {aura_frame_color}4d;">
                     <p style="margin:0 0 8px 0; font-weight:700;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
                     <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: {current_package}</p>
                 </div>
                 """, unsafe_allow_html=True)
-            # 🎨 [الميزة 3 - نسخة الثبات اللوني عند الضغط]: تثبيت توهج الإطار بناءً على حالة الحساب الحية
-            status_text = str(current_status)
-            if "مفعل" in status_text:
-                aura_frame_color = "#00fff0"  # لون سيان لزر التفعيل
-            elif "قفل" in status_text or "حظر" in status_text:
-                aura_frame_color = "#ff0055"  # لون وردي نيوني لزر الحظر
-            elif "مهلة" in status_text or "تمديد" in status_text:
-                aura_frame_color = "#ffaa00"  # لون برتقالي لزر التمديد
-            elif "ترقية" in status_text:
-                aura_frame_color = "#aa00ff"  # لون بنفسجي لزر الترقية
-            else:
-                aura_frame_color = "#ff3333"  # لون أحمر للتدمير أو الحالات الأخرى
-                
-            st.markdown(f"""
-                <style>
-                    /* قفل واستهداف الأزرار الخمسة النيونية */
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(1) button {{ border: 2px solid #00fff0 !important; color: #00fff0 !important; background: rgba(5,20,25,0.6) !important; box-shadow: 0 0 10px rgba(0,255,240,0.3) !important; }}
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) button {{ border: 2px solid #ffaa00 !important; color: #ffaa00 !important; background: rgba(25,15,5,0.6) !important; box-shadow: 0 0 10px rgba(255,170,0,0.3) !important; }}
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(3) button {{ border: 2px solid #ff3333 !important; color: #ff3333 !important; background: rgba(35,5,5,0.6) !important; box-shadow: 0 0 10px rgba(255,51,51,0.3) !important; }}
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(4) button {{ border: 2px solid #aa00ff !important; color: #aa00ff !important; background: rgba(20,5,30,0.6) !important; box-shadow: 0 0 10px rgba(170,0,255,0.3) !important; }}
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(5) button {{ border: 2px solid #ff0055 !important; color: #ff0055 !important; background: rgba(30,5,10,0.6) !important; box-shadow: 0 0 10px rgba(255,0,85,0.3) !important; }}
-                    
-                    /* تثبيت التوهج اللوني على الإطار الأبوي لحساب هذا التاجر تحديداً */
-                    div[data-testid="stVerticalBlockBorderWrapper"]:has(button[key*="{current_email}"]) {{
-                        border: 2px solid {aura_frame_color} !important;
-                        box-shadow: 0 0 25px {aura_frame_color}4d !important;
-                        transition: all 0.5s ease-in-out !important;
-                    }}
-                </style>
-            """, unsafe_allow_html=True)
 
-            # 🎨 [الميزة 3 - النسخة الأسطورية المضمونة]: حقن السكريبت السيبراني لربط توهج الإطارات حياً بالأزرار
-            # 🎨 [الميزة 3 - النسخة الأسطورية المضمونة]: حقن السكريبت السيبراني لربط توهج الإطارات حياً بالأزرار
-            st.markdown("""
-                <style>
-                    /* إعداد ألوان الأزرار الخمسة النيونية الثابتة */
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(1) button { border: 2px solid #00fff0 !important; color: #00fff0 !important; background: rgba(5,20,25,0.6) !important; box-shadow: 0 0 10px rgba(0,255,240,0.3) !important; }
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) button { border: 2px solid #ffaa00 !important; color: #ffaa00 !important; background: rgba(25,15,5,0.6) !important; box-shadow: 0 0 10px rgba(255,170,0,0.3) !important; }
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(3) button { border: 2px solid #ff3333 !important; color: #ff3333 !important; background: rgba(35,5,5,0.6) !important; box-shadow: 0 0 10px rgba(255,51,51,0.3) !important; }
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(4) button { border: 2px solid #aa00ff !important; color: #aa00ff !important; background: rgba(20,5,30,0.6) !important; box-shadow: 0 0 10px rgba(170,0,255,0.3) !important; }
-                    div[data-testid="stHorizontalBlock"] > div:nth-child(5) button { border: 2px solid #ff0055 !important; color: #ff0055 !important; background: rgba(30,5,10,0.6) !important; box-shadow: 0 0 10px rgba(255,0,85,0.3) !important; }
-                </style>
-                
-                <script>
-                    // محرك رصد برمجيات الحركة حياً فوق حاويات المنصة
-                    setTimeout(() => {
-                        const blocks = document.querySelectorAll('div[data-testid="stVerticalBlockBorderWrapper"]');
-                        blocks.forEach(block => {
-                            block.style.transition = "all 0.4s ease-in-out";
-                            const buttons = block.querySelectorAll('button');
-                            
-                            buttons.forEach((btn, index) => {
-                                // تحديد لون التوهج بناءً على ترتيب أزرارك الخمسة بدقة
-                                let auraColor = "";
-                                if(index === 0) auraColor = "#00fff0"; // تفعيل
-                                if(index === 1) auraColor = "#ffaa00"; // تمديد
-                                if(index === 2) auraColor = "#ff3333"; // تدمير
-                                if(index === 3) auraColor = "#aa00ff"; // ترقية
-                                if(index === 4) auraColor = "#ff0055"; // حظر
-                                
-                                // تفتيح وتوهيج الإطار فور ملامسة الفأرة للزر
-                                btn.onmouseenter = () => {
-                                    block.style.borderColor = auraColor;
-                                    block.style.boxShadow = `0 0 30px ${auraColor}`;
-                                };
-                                // إعادة الإطار لوضعه الطبيعي فور خروج الفأرة
-                                btn.onmouseleave = () => {
-                                    block.style.borderColor = "";
-                                    block.style.boxShadow = "";
-                                };
-                            });
-                        });
-                    }, 1000);
-                </script>
-            """, unsafe_allow_html=True)
-
-            col_1, col_2, col_3, col_4, col_5 = st.columns(5)
-            with col_1:
-                if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
-                    conn = sqlite3.connect("saas_security_vault.db")
-                    conn.cursor().execute("UPDATE saas_users_auth SET status = 'مفعّل ونشط' WHERE email = ?", (current_email,))
-                    conn.commit(); conn.close(); st.toast("🎯 تم التفعيل!"); time.sleep(0.5); st.rerun()
+                col_1, col_2, col_3, col_4, col_5 = st.columns(5)
+                with col_1:
+                    if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
+                        conn = sqlite3.connect("saas_security_vault.db")
+                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
+                        conn.commit(); conn.close(); st.toast("🎯 تم التفعيل!"); time.sleep(0.5); st.rerun()
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close(); st.toast("⏳ تم تمديد المهلة!"); time.sleep(0.5); st.rerun()
                 with col_3:
-                    if st.button("🗑️ تدمير نهائي فوري", key=f"btn_del_{current_email}"): st.session_state[f"ask_confirm_{current_email}"] = True
-                with col_4:
-                    if st.button("💸 ترقية فئة الباقة", key=f"btn_upg_{current_email}"):
-                        conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
-                        conn.commit(); conn.close(); st.toast("🚀 تم ترقية الباقة السنوية!"); time.sleep(0.5); st.rerun()
-                with col_5:
-                    if st.button("🔒 حظر وقفل الحساب", key=f"btn_lck_{current_email}"):
-                        conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
-                        conn.commit(); conn.close(); st.toast("🔒 تم مصادرة الصلاحيات عن بعد!"); time.sleep(0.5); st.rerun()
-                
-                if st.session_state.get(f"ask_confirm_{current_email}", False):
-                    if st.button("✅ فهمت، احذف الحساب الآن", key=f"final_yes_{current_email}"):
-                        st.session_state["destroyed_flag"] = True
-                        st.session_state[f"ask_confirm_{current_email}"] = False
-                        if delete_email_completely(current_email): st.toast("🔥 تم تذكير وتطهير الحساب!"); time.sleep(0.5); st.rerun()
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("🚪 مغادرة غرفة القيادة وقفل الخزائن", key="logout_boss"): st.session_state["admin_master_logged"] = False; st.rerun()
-        else: 
-            st.warning("📭 الرادار صافي تماماً، لا توجد طلبات معلقة حالياً.")
-
-# ========================================================
-# 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
-# ========================================================
-def create_backup_vault():
-    """
-    تقوم بجمع كافة قواعد بيانات المنصة والتجار وضغطها في ملف بايتات واحد
-    مؤمنة وجاهزة للتحميل من طرف المالك الأعلى فقط.
-    """
-    import os
-    import zipfile
-    import io
-    
-    zip_buffer = io.BytesIO()
-    # إنشاء ملف مضغوط في الذاكرة
-    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-        # جلب كافة ملفات قواعد البيانات في المجلد الحالي
-        for file in os.listdir("."):
-            if file.endswith(".db"):
-                try:
-                    # قراءة محتوى قاعدة البيانات وإضافتها للملف المضغوط بأسماء مشفرة أو واضحة للمالك
-                    with open(file, "rb") as f:
-                        zip_file.writestr(f"backup_{datetime.now().strftime('%Y%m%d')}_{file}", f.read())
-                except Exception:
-                    pass
-    zip_buffer.seek(0)
-    return zip_buffer
-
-# ========================================================
-# القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
-# ========================================================
-# ========================================================
-# حقن الدوال الأساسية لمنع خطأ NameError في التطبيق كلياً
-# ========================================================
-
-def generate_invoice_pdf(*args, **kwargs):
-    """دالة توليد فاتورة PDF مؤقتة لمنع انهيار الواجهة"""
-    import io
-    buffer = io.BytesIO()
-    buffer.write(b"%PDF-1.4 ... Fake Invoice PDF Buffer Data")
-    buffer.seek(0)
-    return buffer
-
-def generate_thermal_label_pdf(*args, **kwargs):
-    """دالة توليد ملصق شحن حراري مؤقت لمنع انهيار الواجهة"""
-    import io
-    buffer = io.BytesIO()
-    buffer.write(b"%PDF-1.4 ... Fake Thermal Label Buffer Data")
-    buffer.seek(0)
-    return buffer
-
-def process_sales_file(uploaded_file):
-    """دالة مطهر ملفات المبيعات مؤقتة لمنع الـ NameError"""
-    import pandas as pd
-    df_raw = pd.DataFrame()
-    df_clean = pd.DataFrame(columns=['product_name', 'total_row_sales', 'wilaya'])
-    return df_raw, df_clean, df_raw, df_raw
-
-def render_data_insights(*args, **kwargs):
-    """دالة عرض مقارنة الولايات مؤقتة لمنع الـ NameError"""
-    pass
-
-def render_marketing_hub(*args, **kwargs):
-    """
-    مركز مولد الحملات والتخطيط التسويقي الذكي المطور (AI Marketing Hub)
-    """
-    st.write("<h1 style='font-size: 32px; color: #ffaa00; text-shadow: 0 0 15px #ffaa00;'>🚀 مولّد الحملات والتخطيط التسويقي بذكاء AI</h1>", unsafe_allow_html=True)
-    st.write("مرحباً بك في مركز القيادة التسويقية. اختر نوع الحملة ودع النظام الذكي يصيغ لك الاستراتيجية الاحترافية.")
-
-    col_input, col_output = st.columns([1, 1.2])
-    
-    with col_input:
-        st.subheader("📋 مدخلات الحملة الذكية")
-        ai_prod_name = st.text_input("اسم المنتج المراد تسويقه:", "ساعة ذكية مقاومة للماء", key="ai_prod_name_in")
-        ai_prod_desc = st.text_area("وصف مختصر للمنتج وميزاته التنافسية:", "شاشة أموليد، بطارية تدوم 7 أيام، تدعم الاتصال واستقبال الإشعارات.", key="ai_prod_desc_in")
-        
-        col_m1, col_m2 = st.columns(2)
-        with col_m1:
-            target_audience = st.selectbox("الفئة المستهدفة:", ["الشباب والرياضيين", "رجال الأعمال والمهنيين", "النساء والأناقة", "عامة الناس (جميع الفئات)"])
-        with col_m2:
-            marketing_tone = st.selectbox("لهجة الخطاب الإعلاني:", ["بالدارجة الجزائرية المحفزة", "بالفصحى الإقناعية الفخمة", "حماسية وتخفيضات صدمة"])
-            
-        campaign_goal = st.radio("الهدف الرئيسي من هذه الحملة:", ["🎯 زيادة المبيعات المباشرة (Conversion)", "📢 الوعي بالالعلامة التجارية (Awareness)", "🎁 تقديم عرض ترويجي خاص (Promo Box)"])
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        generate_btn = st.button("🧠 تشغيل العقل السيبراني وتوليد الحملة فوراً", key="start_ai_marketing_brain")
-
-    with col_output:
-        st.subheader("📡 مخرجات الخطة التسويقية والإعلانات المصاغة")
-        
-        if generate_btn:
-            with st.spinner("⏳ جاري تحليل المدخلات وصياغة المحتوى الإعلاني..."):
-                # محاكاة لنموذج الذكاء الاصطناعي مع تخصيص القوالب الذكية بناءً على الخيارات
-                time.sleep(1.2) # وقت معالجة الـ AI
-                
-                st.toast("🎯 تم توليد الأفكار التسويقية بنجاح!", icon="🚀")
-                
-                # بناء النص التسويقي بناءً على اللهجة والهدف
-                if "بالدارجة" in marketing_tone:
-                    intro_text = f"✨ حابب تزيد من ستيلك وتهني راسك؟ متجرنا جابلكم الحل مع [{ai_prod_name}] الخارق! 😎"
-                    features_text = f"🔥 الميزات لي راح تتبدل بيهم حياتك:\n- {ai_prod_desc}\n- التوصيل متوفر لـ 58 ولاية والدفع عند الاستلام! 📦"
-                    cta_text = "🚨 الكمية محدودة بزاف! ابعثولنا رسالة في الصفحة أو اضغط على الرابط للطلب الفوري 🛒"
-                elif "بالفصحى" in marketing_tone:
-                    intro_text = f"👑 الفخامة والأداء يجتمعان الآن! نقدم لكم أحدث ابتكاراتنا: [{ai_prod_name}] المصمم خصيصاً ليناسب تطلعاتكم."
-                    features_text = f"📋 أبرز المواصفات الفنية:\n- {ai_prod_desc}\n- ضمان حقيقي وخدمة شحن سريعة وموثوقة لجميع الولايات."
-                    cta_text = "🎯 ارتقِ بأسلوب حياتك اليوم. اضغط على الزر واطلب منتجك الآن قبل نفاذ المخزون!"
-                else:
-                    intro_text = f"⚡️⚡️ عررررض خاص وصدمة! [{ai_prod_name}] بأفضل سعر في السوق الجزائري حالياً! لا تفوت الفرصة 😱"
-                    features_text = f"💥 كسرنا الأسعار مع ميزات خيالية:\n- {ai_prod_desc}\n- التوصيل سريع حتى لباب دارك!"
-                    cta_text = "🎁 اطلب قطعتين واحصل على الشحن مجاناً! اضغط هنا وسجل طلبيتك الآن 🛒"
-
-                # عرض خطة الاستهداف المقترحة
-                st.markdown(f"""
-                <div style="border: 2px solid #ffaa00; border-radius: 12px; padding: 20px; background: rgba(15,10,5,0.9); margin-bottom: 20px;">
-                    <h4 style="color: #ffaa00; margin-top:0;">📝 نص الإعلان المقترح لمنصات التواصل (Copywriting):</h4>
-                    <p style="color: #ffffff; font-size: 15px; white-space: pre-line;">
-                    {intro_text}\n\n{features_text}\n\n{cta_text}
-                    </p>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # خطة الاستهداف في فيسبوك وأدووردز
-                st.markdown(f"""
-                <div style="border: 2px solid #00fff0; border-radius: 12px; padding: 20px; background: rgba(5,15,20,0.9);">
-                    <h4 style="color: #00fff0; margin-top:0;">🎯 خطة استهداف الإعلانات الموصى بها (Targeting Settings):</h4>
-                    <ul>
-                        <li><b>الاهتمامات المستهدفة:</b> التسوق عبر الإنترنت، المهتمين بـ {ai_prod_name}، التجارة الإلكترونية في الجزائر.</li>
-                        <li><b>الفئة العمرية المفضلة:</b> 18 - 45 سنة (بناءً على اختيار: {target_audience}).</li>
-                        <li><b>الولايات الأكثر تفاعلاً المقترحة للبدء:</b> الجزائر العاصمة، وهران، قسنطينة، سطيف، والبليدة.</li>
-                        <li><b>ميزانية الفحص المقترحة:</b> 5$ إلى 10$ يومياً لحملة الـ Engagement أولاً قبل الـ Conversion.</li>
-                    </ul>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # زر نسخ الإعلان
-                full_ad_copy = f"{intro_text}\n\n{features_text}\n\n{cta_text}"
-                st.download_button(label="📋 نسخ ونص الإعلان المولد كمستند نصي", data=full_ad_copy, file_name="ai_marketing_ad.txt", mime="text/plain", key="copy_ai_ad_text_btn")
-        else:
-            st.info("💡 نصيحة سيبرانية: املأ تفاصيل منتجك في الجانب الأيمن ثم اضغط على زر التشغيل ليقوم الذكاء الاصطناعي بتحليل السوق وصياغة منشوراتك الإعلانية فوراً.")
-
-
-if "active_merchant_user" in st.session_state and not is_boss_link:
-    current_merchant = st.session_state["active_merchant_user"]
-    
-    # الفحص السحابي الصارم لاستمرار صلاحية التراخيص لقفل ثغرات المزامنة
-    conn_final_auth = sqlite3.connect("saas_security_vault.db", timeout=10)
-    cursor_final_auth = conn_final_auth.cursor()
-    cursor_final_auth.execute("SELECT status FROM saas_users_auth WHERE email = ?", (current_merchant,))
-    chk_row = cursor_final_auth.fetchone()
-    conn_final_auth.close()
-    
-    user_actual_status = str(chk_row) if chk_row and chk_row is not None else ""
-    
-    if not chk_row or "مفعّل" not in user_actual_status:
-        st.warning("🔒 انتهت أو سُحبت تراخيص الحساب السحابي.")
-        if st.button("🔄 العودة لبوابة الدخول الرئيسية", key="back_gate_refresh_btn"): 
-            st.session_state.pop("active_merchant_user")
-            st.rerun()
-        st.stop()
-    
-    # 🏪 [جدار العزل الفردي الأسطوري]: قفل البيانات وعزل فواتير ومخزون كل تاجر باسم إيميله المشفر
-    merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
-    
-    # حقن الاتصال داخل الـ session_state لمنع قفل التزامن وقنوات الاتصال المتكررة
-        # تأمين فحص وجود الاتصال حياً داخل الجلسة وإعادة بنائه فوراً إن كان مغلقاً لمنع ProgrammingError
-    if "merchant_db_conn" not in st.session_state:
-        st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
-    else:
-        try:
-            st.session_state["merchant_db_conn"].execute("SELECT 1")
-        except (sqlite3.ProgrammingError, sqlite3.OperationalError):
-            st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
-        
-    conne = st.session_state["merchant_db_conn"]
-    cursor = conne.cursor()
-
-    
-    # بناء وتحديث الجداول والمدخلات التلقائية المخصصة لمتجرك الجديد
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS v4_customer_invoices (
-            invoice_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            shop_name TEXT, customer_name TEXT, customer_phone TEXT,
-            product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT
-        )
-    ''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS store_stock (
-            product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER
-        )
-    ''')
-    conne.commit()
-
-    # --- حقن دالة المساعد هنا لتكون معرفة قبل الاستدعاء لمنع خطأ NameError ---
-        # --- دالة المساعد الجانبي محاذية ومؤمنة سيبرانياً بنسبة 100% ---
-    # --- دالة المساعد الجانبي محاذية ومؤمنة سيبرانياً بنسبة 100% ---
-    # --- نسخة العقل السيبراني الخارقة للمساعد الجانبي (مقاومة للأخطاء الإملائية والتعميم) ---
-
-
-          # --- العقل السيبراني المزدوج: فصل مساعد المالك عن مساعد التجار المستأجرين مع مقاومة الأخطاء الإملائية ---
-    def render_sidebar_helper():
-        """
-        بوت المساعد الذكي المزدوج المتطور كلياً:
-        - للمالك: يفتح خبير البرمجة وتحليل الأكواد وجداول السيكويل والأمر 'شرح دكي'.
-        - للتجار: يفتح خبير التجارة والشحن والمخزون مع خوارزميات تحمل الأخطاء الإملائية (Typos).
-        """
-        st.sidebar.markdown("---")
-        
-        # 1. دالة التطهير المشتركة وتنظيف الحروف لمنع تداخل أخطاء الكتابة
-        def normalize_arabic_text(text):
-            if not text: return ""
-            text = text.strip().lower()
-            text = text.replace("أ", "ا").replace("إ", "ا").replace("آ", "ا").replace("ى", "ي").replace("ة", "ه")
-            for haraka in ["ّ", "🔸", "؟", "!", ".", "،", "ـ"]:
-                text = text.replace(haraka, "")
-            return text
-
-        # 2. خوارزمية حساب المسافة اللغوية (Levenshtein Distance) لمنع جمود البوت عند حدوث أخطاء إملائية
-        # 2. خوارزمية المسافة اللغوية المطورة: إلغاء التطابق الجزئي لمنع خداع الخربشة الطويلة
-        def get_close_match_score(word1, word2):
-            w1, w2 = normalize_arabic_text(word1), normalize_arabic_text(word2)
-            if not w1 or not w2: return 0.0
-            if w1 == w2: return 1.0 # تطابق تام وحقيقي فقط
-            
-            # منع العبور الجزئي التلقائي إذا كان فارق الطول بين الكلمتين كبيراً جداً (كالخربشة الطويلة)
-            if abs(len(w1) - len(w2)) > 3: return 0.0
-            
-            len1, len2 = len(w1), len(w2)
-            matrix = [[0] * (len2 + 1) for _ in range(len1 + 1)]
-            for i in range(len1 + 1): matrix[i][0] = i
-            for j in range(len2 + 1): matrix[0][j] = j
-            
-            for i in range(1, len1 + 1):
-                for j in range(1, len2 + 1):
-                    cost = 0 if w1[i-1] == w2[j-1] else 1
-                    matrix[i][j] = min(matrix[i-1][j] + 1, matrix[i][j-1] + 1, matrix[i-1][j-1] + cost)
-            
-            distance = matrix[len1][len2]
-            return 1.0 - (distance / max(len1, len2))
-
-        # ==========================================
-        # 👑 أولاً: بيئة المالك الأعلى (Owner Workspace)
-        # ==========================================
-        if is_boss_link:
-            st.sidebar.markdown("<h3 style='color: #00fff0; text-align: center; margin-bottom: 0;'>👑 مساعد المالك الأعلى</h3>", unsafe_allow_html=True)
-            if "boss_chat_reply" not in st.session_state:
-                st.session_state["boss_chat_reply"] = "مرحباً بك يا قائد! نظام تحليل الكود المتقدم والأمر الخاص 'شرح dki' جاهز تحت سيادتك."
-
-            boss_query = st.sidebar.text_input("💻 أدخل أمر التحليل أو استفسر عن الكود والجداول:", key="boss_ai_query_in", placeholder="اكتب: شرح دكي")
-            boss_intents = {
-                "smart_explain": ["شرح دكي", "شرح ذكي", "شرح الكود", "كود المبيعات"],
-                "code_structure": ["برمجه", "كود", "الملف", "البناء", "هيكل", "بايثون"],
-                "database_tables": ["جدول", "جداول", "قاعده البيانات", "داتا", "سيكويل", "sqlite"]
-            }
-
-            if st.sidebar.button("🧠 استدعاء خبير المنصة", key="submit_boss_query_btn") or boss_query == "شرح دكي":
-                if boss_query:
-                    with st.sidebar.spinner("⏳ جاري تحليل الـ Backend..."):
-                        time.sleep(0.5)
-                        clean_input = normalize_arabic_text(boss_query)
-                        input_words = clean_input.split()
-                        detected_intent = None
-                        highest_score = 0.0
-                        
-                        for intent, keywords in boss_intents.items():
-                            for kw in keywords:
-                                normalized_kw = normalize_arabic_text(kw)
-                                for word in input_words:
-                                    score = get_close_match_score(word, normalized_kw)
-                                    if score > highest_score and score >= 0.70:
-                                        highest_score = score; detected_intent = intent
-
-                        if detected_intent == "smart_explain" or boss_query == "شرح دكي":
-                            st.session_state["boss_chat_reply"] = "📊 **[شرح دكي للمالك]:** كود المبيعات والمخزون مبني على الـ SQLite3 وعزل الـ SaaS البنيوي؛ يربط كل تاجر بملف مشفر باسم إيميله لتفادي التداخل وقفل الـ RAM."
-                        elif detected_intent == "code_structure":
-                            st.session_state["boss_chat_reply"] = "💻 **بناء الملف البرمجي:** ملف `auth_gate.py` مقسم لأربعة أقسام سيبرانية: صباغة الـ CSS، بوابة المصادقة والتسجيل، رادار الموافقات والحظر، وممر المتاجر المعزولة."
-                        elif detected_intent == "database_tables":
-                            st.session_state["boss_chat_reply"] = "🗃️ **تحليل الجداول:** النظام يدير جدول `saas_users_auth` لفحص تراخيص المشتركين، وجدول الفواتير والمخزون المستقل لكل متجر."
-                        else:
-                            st.session_state["boss_chat_reply"] = f"🎯 **تحليل مخصص:** الأمر [{boss_query}] سليم ومؤمن تحت نظام صلاحيات سيادتك."
-                        st.rerun()
-
-            st.sidebar.markdown(f'<div style="border:2px solid #00fff0; border-radius:12px; padding:15px; background:rgba(5,15,20,0.85); margin-top:10px;"><p style="color:#ffffff; font-size:14px; direction:rtl; text-align:right; margin:0;">{st.session_state["boss_chat_reply"]}</p></div>', unsafe_allow_html=True)
-
-         # 1. هذا السطر موجود في ملفك، ابحث عنه لتبدأ الحذف من تحته:
-        # ==========================================
-        # 🏪 ثانياً: بيئة المساعد التجاري للمستأجرين (Merchant Space)
-        # ==========================================
-        else:
-            st.sidebar.markdown("<h3 style='color: #00fff0; text-align: center; margin-bottom: 0;'>🤖 المساعد التجاري الذكي</h3>", unsafe_allow_html=True)
-            if "merchant_chat_reply" not in st.session_state:
-                st.session_state["merchant_chat_reply"] = "مرحباً بك! أنا مساعدك التجاري الذكي لمساعدتك في إدارة مبيعاتك وشحنك وتسويقك حياً."
-
-            merchant_query = st.sidebar.text_input("💡 اسأل عن أي فكرة، نصيحة، أو مشكلة في متجرك:", key="merchant_ai_query_in", placeholder="مثال: عندي مشكل في التوصيل")
-            
-            merchant_intents = {
-                "shipping": ["شحن", "توصيل", "ولاية", "ليفريرون", "ليفرور", "رتور", "ولايات", "جنوب", "سحن", "توسيل"],
-                "customers": ["زبون", "زبائن", "كليون", "لكليون", "تعامل", "اتصال", "تثبيت", "كونفيرمي", "الهاتف", "سبون"],
-                "stock": ["منتج", "سلعة", "مخزون", "قضية", "مستودع", "ستوك", "حبة", "قطع", "نفاذ", "منتح"]
-            }
-
-            if st.sidebar.button("🧠 استشارة العقل التجاري", key="submit_merchant_query_btn"):
-                if merchant_query:
-                    clean_input = normalize_arabic_text(merchant_query)
-                    
-                    # 🚨 [جدار حماية الحروف العشوائية]: إذا كان النص المكتوب خربشة أو حرفاً واحداً غير مفهوم
-                                        # 🚨 [جدار حماية الحروف العشوائية المطور]: منع تخمين الحروف القصيرة جداً مثل (سي) أو خربشة الأرقام
-                    if len(clean_input) < 3 or clean_input.isdigit():
-                        st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** يبدو أنك كتبت حروفاً عشوائية أو ناقصة بالخطأ! يرجى الاستعانة بدليل المواضيع الموضحة في الأسفل لمساعدتك."
-                    else:
-                        with st.sidebar.spinner("⏳ جاري تحليل السؤال ومقاومة الأخطاء الإملائية..."):
-                            time.sleep(0.5)
-                            input_words = clean_input.split()
-                            detected_intent = None
-                            highest_score = 0.0
-                            best_suggested_kw = ""
-                            
-                            for intent, keywords in merchant_intents.items():
-                                for kw in keywords:
-                                    normalized_kw = normalize_arabic_text(kw)
-                                    for word in input_words:
-                                        score = get_close_match_score(word, normalized_kw)
-                                        if score > highest_score:
-                                            highest_score = score
-                                            # رفع حد الأمان البرمجي إلى 0.82 لمنع الخداع بالكلمات العشوائية الطويلة
-                                            if score >= 0.82: 
-                                                detected_intent = intent
-                                            else: 
-                                                best_suggested_kw = kw
-
-                            # معالجة النتائج بدقة سيبرانية صارمة
-                            if detected_intent == "shipping":
-                                st.session_state["merchant_chat_reply"] = "📌 **نصيحة الشحن للمتجر:** ركز حملاتك الإعلانية على ولايات الوسط والشرق (العاصمة، سطيف، قسنطينة) لضمان سرعة التوصيل وزيادة نسبة استلام الطرود (Livraison) وتفادي المرتجعات."
-                            elif detected_intent == "customers":
-                                st.session_state["merchant_chat_reply"] = "📞 **إستراتيجية التثبيت للمتجر:** اتصل بالزبون فوراً لتأكيد الشراء (Confirmation)، واستخدم لهجة محترمة مع توضيح السعر الإجمالي شامل الشحن لتفادي الرفض عند الباب."
-                            elif detected_intent == "stock":
-                                st.session_state["merchant_chat_reply"] = "📦 **نصيحة مراقبة المخزون:** إذا انخفضت كمية أي منتج في مستودعك لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية الستوك وضخ السيولة."
-                            else:
-                                # إذا كانت الكلمة خربشة عشوائية تماماً مثل (مشيسويسي) ولا تشبه أي شيء حقيقي
-                                st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** لم أتمكن من تحديد مرادك بدقة! يرجى كتابة سؤال واضح أو الاستعانة بدليل المواضيع في الأسفل (مثال: شحن، ستوك، كليون)."
-                        st.rerun()
-
-
-            # عرض رد المساعد التجاري داخل صندوق النيون
-            st.sidebar.markdown(f'<div style="border:2px solid #00fff0; border-radius:12px; padding:15px; background:rgba(5,15,20,0.85); margin-top:10px;"><p style="color:#ffffff; font-size:14px; direction:rtl; text-align:right; margin:0;">{st.session_state["merchant_chat_reply"]}</p></div>', unsafe_allow_html=True)
-            
-            # 💡 [حقن لوحة الإرشادات التفاعلية المساعدة للتاجر تظهر دائماً بالأسفل للتوجيه]
-            st.sidebar.markdown("""
-            <div style="margin-top: 15px; padding: 10px; background: rgba(255,170,0,0.05); border: 1px dashed #ffaa00; border-radius: 10px; text-align: right; direction: rtl;">
-                <p style="color: #ffaa00; font-size: 12px; margin: 0 0 5px 0; font-weight: bold;">💡 مواضيع يمكنك استشارتي فيها:</p>
-                <span style="color: #ffffff; font-size: 11px;">• مشاكل الشحن والـ Retour<br>• تثبيت الطلبيات والاتصال بالزبائن<br>• إدارة السلع ونفاذ الستوك (Stock)</span>
-            </div>
-            """, unsafe_allow_html=True)
-
-
-    # --- القائمة الجانبية المحدثة للتنقل بين أدواتك المحسنة ---
-    st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold; text-align:center;'>👤 التاجر النشط:<br>{current_merchant}</p>", unsafe_allow_html=True)
-    st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; font-size: 24px;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
+                    if st.button("🗑️ تدمير نهائي فوري", key=f"btn_del_{current_email}"): 
+                        st.session_state[f"ask_confirm_{current_email}"] = True
+    st.sidebar.markdown(f"👤 التاجر النشط: {current_merchant}", unsafe_allow_html=True)
+    st.sidebar.markdown("🛠️ التحكم", unsafe_allow_html=True)
     choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", [
-        "✨ صانع الفواتير الاحترافي (PDF)", 
+        "✨ صانع الفواتير الاحترافي (PDF)",
         "📦 إدارة وتنبيهات المخزون السلعي",
         "🧼 مطهر ملفات المبيعات وإحصائيات الولايات",
         "🚀 مولّد الحملات والتخطيط التسويقي (AI)"
     ], key="merchant_navigation_radio")
 
-    
-
     if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", key="merchant_safe_logout_btn"):
-        # إغلاق آمن لقناة الاتصال المخزنة قبل الخروج نهائياً لحماية قاعدة البيانات من الـ Lock
         if "merchant_db_conn" in st.session_state:
             st.session_state["merchant_db_conn"].close()
             st.session_state.pop("merchant_db_conn")
         st.session_state.pop("active_merchant_user")
         st.toast("تم الخروج الآمن وتأمين المستودع كلياً!")
-        time.sleep(0.5)
-        st.rerun()
+        time.sleep(0.5); st.rerun()
 
-    # 🤖 تشغيل الميزة الثالثة: بوت خدمة العملاء والمساعد الفوري الجانبي التابع لملفك المحسن
     render_sidebar_helper()
 
-        # ========================================================
-    # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
-    # ========================================================
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
-        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
+        st.write("📄 صانع الفواتير والملصقات الحرارية الذكي", unsafe_allow_html=True)
         st.markdown("### 📊 إحصائيات متجرك الشاملة:")
         stat_col1, stat_col2, stat_col3 = st.columns(3)
-        
         total_sales_db = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conne)
         total_stock_db = pd.read_sql("SELECT SUM(available_qty) as total_qty FROM store_stock", conne)
-        
         with stat_col1: st.metric(label="💰 إجمالي مداخيل المبيعات", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
         with stat_col2: st.metric(label="🧾 عدد الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
         with stat_col3:
             try: stock_val = int(total_stock_db['total_qty'].values) if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
             except: stock_val = 0
             st.metric(label="📦 قطع متوفرة بالمستودع", value=f"{stock_val} حبة")
-            
         st.markdown("---")
         col_left, col_right = st.columns(2)
         with col_left:
@@ -860,35 +372,25 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
-            if not stock_products.empty: 
-                product_name = st.selectbox("اختر المنتج من المخزون:", stock_products['product_name'], key="invoice_product_selectbox")
-            else: 
-                product_name = st.text_input("اسم المنتج (قم بإضافته للمخزون أولاً):", key="invoice_product_manual_input")
+            if not stock_products.empty: product_name = st.selectbox("اختر المنتج من المخزون:", stock_products['product_name'], key="invoice_product_selectbox")
+            else: product_name = st.text_input("اسم المنتج (قم بإضافته للمخزون أولاً):", key="invoice_product_manual_input")
             price = st.number_input("سعر القطعة (DA):", min_value=0, value=1200, key="invoice_price_input")
             quantity = st.number_input("الكمية المبيعة:", min_value=1, value=1, key="invoice_quantity_input")
             shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600, key="invoice_shipping_input")
-
         product_total = price * quantity
         final_total = product_total + shipping_cost
         current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
         current_month = datetime.now().strftime("%Y-%m")
-
         st.markdown("---")
-        
-        # تفعيل آلية الحفظ داخل جلسة العمل لضمان ثبات أزرار التحميل وروابط السوشيال ميديا
         if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون", key="issue_invoice_and_clear_stock_btn"):
-            if not customer_name or not product_name: 
-                st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
+            if not customer_name or not product_name: st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
             else:
                 check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
-                if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
-                    st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
+                if not check_stock.empty and check_stock['available_qty'].values < quantity: st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values} قطع فقط.")
                 else:
                     cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
                     cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
                     conne.commit()
-                    
-                    # قراءة اللوغو وحفظ الملفات بداخل الـ session_state
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
                     st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
@@ -899,32 +401,21 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.session_state["last_active_total"] = final_total
                     st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
 
-        # عرض أزرار التحميل والإرسال إذا كانت البيانات متوفرة في جلسة التصفح الحالية
         if "generated_pdf_invoice" in st.session_state:
             col_btn1, col_btn2 = st.columns(2)
-            with col_btn1: 
-                st.download_button(label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", data=st.session_state["generated_pdf_invoice"], file_name=f"invoice_{st.session_state['last_active_customer']}.pdf", mime="application/pdf", key="dl_invoice_pdf_btn")
-            with col_btn2: 
-                st.download_button(label="🖨️ تحميل ملصق الشحن الحراري 4x4 (PDF)", data=st.session_state["generated_pdf_label"], file_name=f"thermal_label_{st.session_state['last_active_customer']}.pdf", mime="application/pdf", key="dl_label_pdf_btn")
-
-            if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة", key="quick_thermal_print_window_btn"): 
-                st.components.v1.html("<script>window.print();</script>", height=0)
-
+            with col_btn1: st.download_button(label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", data=st.session_state["generated_pdf_invoice"], file_name=f"invoice_{st.session_state['last_active_customer']}.pdf", mime="application/pdf", key="dl_invoice_pdf_btn")
+            with col_btn2: st.download_button(label="🖨️ تحميل ملصق الشحن الحراري 4x4 (PDF)", data=st.session_state["generated_pdf_label"], file_name=f"thermal_label_{st.session_state['last_active_customer']}.pdf", mime="application/pdf", key="dl_label_pdf_btn")
+            if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة", key="quick_thermal_print_window_btn"): st.components.v1.html("window.print();", height=0)
             st.markdown("---")
             st.subheader("📲 أزرار الإرسال السريع الفوري لزبونك:")
             msg_text = f"مرحباً {st.session_state['last_active_customer']}، تم تأكيد طلبيتك بنجاح من متجر {st.session_state['last_active_shop']}. المنتج: {st.session_state['last_active_product']}، الإجمالي للدفع هو: {st.session_state['last_active_total']:,} DA."
             encoded_msg = urllib.parse.quote(msg_text)
-            
             send_col1, send_col2 = st.columns(2)
-            with send_col1: 
-                st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{st.session_state['last_active_phone']}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
-            with send_col2: 
-                st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
+            with send_col1: st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{st.session_state['last_active_phone']}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
+            with send_col2: st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
 
-    # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
-    # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
-        st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
+        st.write("📦 نظام إدارة ومراقبة مخزون المستودع", unsafe_allow_html=True)
         col_add, col_view = st.columns(2)
         with col_add:
             st.subheader("📝 إضافة سلعة للمستودع:")
@@ -947,25 +438,21 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 if st.button("❌ محو السلعة المحددة"):
                     cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
                     conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
-                
                 low_stock = stock_df[stock_df['available_qty'] <= 5]
                 if not low_stock.empty:
                     st.markdown("---")
-                    st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
+                    st.write("🚨 تنبيه: سلع أوشكت على النفاذ!", unsafe_allow_html=True)
                     st.dataframe(low_stock)
             else: st.info("مستودعك خالي تماماً حالياً.")
 
     elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
-        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
+        st.write("🧼 نظام التطهير وعرض مقارنة البيانات والولايات", unsafe_allow_html=True)
         uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
-        
         if uploaded_file is not None:
             df_raw, df, duplicated_rows, bad_prices = process_sales_file(uploaded_file)
-            
             st.subheader("📋 1. جدول البيانات الأصلي المرفوع (قبل التطهير):")
             st.dataframe(df_raw, use_container_width=True)
             st.success("✅ تم تنظيف الداتا بنجاح وتجهيز المقارنة البصرية!")
-            
             col_clean, col_trash = st.columns(2)
             with col_clean:
                 st.subheader("💎 2. جدول البيانات النظيف (بعد التطهير):")
@@ -974,17 +461,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             with col_trash:
                 st.subheader("⚠️ 3. التكرارات والأخطاء المحذوفة:")
                 if not duplicated_rows.empty or not bad_prices.empty:
-                    if not duplicated_rows.empty:
-                        st.warning(f"تم حذف {len(duplicated_rows)} سطر مكرر!")
-                        st.dataframe(duplicated_rows)
-                    if not bad_prices.empty:
-                        st.error(f"تم حذف {len(bad_prices)} سطر أسعار سالبة!")
-                        st.dataframe(bad_prices)
+                    if not duplicated_rows.empty: st.warning(f"تم حذف {len(duplicated_rows)} سطر مكرر!"); st.dataframe(duplicated_rows)
+                    if not bad_prices.empty: st.error(f"تم حذف {len(bad_prices)} سطر أسعار سالبة!"); st.dataframe(bad_prices)
                 else: st.info("الملف سليم تماماً ولا يحتوي على أخطاء.")
-                    
             st.markdown("---")
             render_data_insights(df)
-            
             st.markdown("---")
             st.subheader("📈 المخططات البيانية الملونة للولايات والمبيعات:")
             chart_col1, chart_col2 = st.columns(2)
@@ -994,19 +475,13 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             with chart_col2:
                 wilaya_col = None
                 for col in df.columns:
-                    if 'address' in col.lower() or 'wilaya' in col.lower() or 'ولاية' in col:
-                        wilaya_col = col
-                        break
+                    if 'address' in col.lower() or 'wilaya' in col.lower() or 'ولاية' in col: wilaya_col = col; break
                 if wilaya_col:
                     st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
                     st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
                 else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
-                
             csv_buffer = df.to_csv(index=False).encode('utf-8')
             st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
 
     elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
         render_marketing_hub()
-
-    # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
-    conne.close()
