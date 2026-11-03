@@ -323,7 +323,17 @@ if is_boss_link:
             for index, row in df_users.iterrows():
                 current_email = row['email']; current_pass = row['password']; current_status = row['status']; current_package = row['package']
                 
-                status_color = "#00ff66" if "مفعّل" in current_status else "#ffaa00" if "انتظار" in current_status else "#ff0055"
+             if "مفعل" in status_text:
+                aura_frame_color = "#00fff0"  # لون سيان لزر التفعيل
+            elif "قفل" in status_text or "حظر" in status_text:
+                aura_frame_color = "#ff0055"  # لون وردي نيوني لزر الحظر
+            elif "مهلة" in status_text or "تمديد" in status_text:
+                aura_frame_color = "#ffaa00"  # لون برتقالي لزر التمديد
+            elif "ترقية" in status_text:
+                aura_frame_color = "#aa00ff"  # لون بنفسجي لزر الترقية
+            else:
+                aura_frame_color = "#ff3333"  # لون أحمر للتدمير أو الحالات الأخرى
+                
                 st.markdown(f"""
                 <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right;">
                     <p style="margin:0 0 8px 0; font-weight:700;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
