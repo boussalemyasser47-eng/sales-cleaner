@@ -330,6 +330,37 @@ if is_boss_link:
                     <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: {current_package}</p>
                 </div>
                 """, unsafe_allow_html=True)
+            # 🎨 [الميزة 3 - نسخة الثبات اللوني عند الضغط]: تثبيت توهج الإطار بناءً على حالة الحساب الحية
+            status_text = str(current_status)
+            if "مفعل" in status_text:
+                aura_frame_color = "#00fff0"  # لون سيان لزر التفعيل
+            elif "قفل" in status_text or "حظر" in status_text:
+                aura_frame_color = "#ff0055"  # لون وردي نيوني لزر الحظر
+            elif "مهلة" in status_text or "تمديد" in status_text:
+                aura_frame_color = "#ffaa00"  # لون برتقالي لزر التمديد
+            elif "ترقية" in status_text:
+                aura_frame_color = "#aa00ff"  # لون بنفسجي لزر الترقية
+            else:
+                aura_frame_color = "#ff3333"  # لون أحمر للتدمير أو الحالات الأخرى
+                
+            st.markdown(f"""
+                <style>
+                    /* قفل واستهداف الأزرار الخمسة النيونية */
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(1) button {{ border: 2px solid #00fff0 !important; color: #00fff0 !important; background: rgba(5,20,25,0.6) !important; box-shadow: 0 0 10px rgba(0,255,240,0.3) !important; }}
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) button {{ border: 2px solid #ffaa00 !important; color: #ffaa00 !important; background: rgba(25,15,5,0.6) !important; box-shadow: 0 0 10px rgba(255,170,0,0.3) !important; }}
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(3) button {{ border: 2px solid #ff3333 !important; color: #ff3333 !important; background: rgba(35,5,5,0.6) !important; box-shadow: 0 0 10px rgba(255,51,51,0.3) !important; }}
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(4) button {{ border: 2px solid #aa00ff !important; color: #aa00ff !important; background: rgba(20,5,30,0.6) !important; box-shadow: 0 0 10px rgba(170,0,255,0.3) !important; }}
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(5) button {{ border: 2px solid #ff0055 !important; color: #ff0055 !important; background: rgba(30,5,10,0.6) !important; box-shadow: 0 0 10px rgba(255,0,85,0.3) !important; }}
+                    
+                    /* تثبيت التوهج اللوني على الإطار الأبوي لحساب هذا التاجر تحديداً */
+                    div[data-testid="stVerticalBlockBorderWrapper"]:has(button[key*="{current_email}"]) {{
+                        border: 2px solid {aura_frame_color} !important;
+                        box-shadow: 0 0 25px {aura_frame_color}4d !important;
+                        transition: all 0.5s ease-in-out !important;
+                    }}
+                </style>
+            """, unsafe_allow_html=True)
+
             # 🎨 [الميزة 3 - النسخة الأسطورية المضمونة]: حقن السكريبت السيبراني لربط توهج الإطارات حياً بالأزرار
             # 🎨 [الميزة 3 - النسخة الأسطورية المضمونة]: حقن السكريبت السيبراني لربط توهج الإطارات حياً بالأزرار
             st.markdown("""
