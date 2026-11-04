@@ -4,12 +4,6 @@
 # ========================================================
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
 # ========================================================
-# ========================================================
-# الجزء الأول المطور: صبغ المنصة الشامل بالنيون الزجاجي (auth_gate.py)
-# ========================================================
-# ========================================================
-# 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
-# ========================================================
 def create_backup_vault():
     import os
     import zipfile
@@ -114,51 +108,56 @@ st.markdown("""
         text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.15) !important;
     }
 
-    /* 🟢 🔴 🟡 تخصيص الأزرار الخماسية السيبرانية التفاعلية لرادار المشتركين */
+    /* 🟢 🔴 🟡 تلوين الأزرار الخماسية المتتالية بالترتيب العددي للأعمدة لمنع التشفير العشوائي */
     
-    /* 1. زر التفعيل والقبول (btn_act_): أخضر نيوني سيبراني */
-    div[data-testid="stButton"] button[key*="btn_act_"], div.stButton > button[key*="btn_act_"] {
-        color: #39ff14 !important; border: 2px solid #39ff14 !important; box-shadow: 0px 0px 15px rgba(57, 255, 20, 0.2) !important;
+    /* 1. الزر الأول (العمود الأول): أخضر نيوني */
+    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button {
+        color: #00ff66 !important; border: 2px solid #00ff66 !important; box-shadow: 0px 0px 15px rgba(0, 255, 102, 0.2) !important;
     }
-    div[data-testid="stButton"] button[key*="btn_act_"]:hover, div[data-testid="stButton"] button[key*="btn_act_"]:active {
-        background: linear-gradient(135deg, #39ff14 0%, #00ff87 100%) !important; color: #000000 !important;
-        box-shadow: 0px 0px 30px #39ff14 !important; border-color: #39ff14 !important;
-    }
-
-    /* 2. زر التمديد والتجديد (btn_ext_): أزرق نيوني جليدي */
-    div[data-testid="stButton"] button[key*="btn_ext_"], div.stButton > button[key*="btn_ext_"] {
-        color: #00e5ff !important; border: 2px solid #00e5ff !important; box-shadow: 0px 0px 15px rgba(0, 229, 255, 0.2) !important;
-    }
-    div[data-testid="stButton"] button[key*="btn_ext_"]:hover, div[data-testid="stButton"] button[key*="btn_ext_"]:active {
-        background: linear-gradient(135deg, #00e5ff 0%, #0088ff 100%) !important; color: #000000 !important;
-        box-shadow: 0px 0px 30px #00e5ff !important; border-color: #00e5ff !important;
+    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button:active {
+        background: linear-gradient(135deg, #00ff66 0%, #00ea11 100%) !important; color: #000000 !important;
+        box-shadow: 0px 0px 30px #00ff66 !important; border-color: #00ff66 !important;
     }
 
-    /* 3. زر التدمير والحذف (btn_del_): أحمر نيوني دموي للتحذير */
-    div[data-testid="stButton"] button[key*="btn_del_"], div.stButton > button[key*="btn_del_"] {
-        color: #ff003c !important; border: 2px solid #ff003c !important; box-shadow: 0px 0px 15px rgba(255, 0, 60, 0.2) !important;
+    /* 2. الزر الثاني (العمود الثاني): أصفر نيوني */
+    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button {
+        color: #ffaa00 !important; border: 2px solid #ffaa00 !important; box-shadow: 0px 0px 15px rgba(255, 170, 0, 0.2) !important;
     }
-    div[data-testid="stButton"] button[key*="btn_del_"]:hover, div[data-testid="stButton"] button[key*="btn_del_"]:active {
-        background: linear-gradient(135deg, #ff003c 0%, #ff5500 100%) !important; color: #ffffff !important;
-        box-shadow: 0px 0px 30px #ff003c !important; border-color: #ff003c !important;
-    }
-
-    /* 4. زر الترقية والتطوير (btn_upg_): بنفسجي نيوني ملكي */
-    div[data-testid="stButton"] button[key*="btn_upg_"], div.stButton > button[key*="btn_upg_"] {
-        color: #bd00ff !important; border: 2px solid #bd00ff !important; box-shadow: 0px 0px 15px rgba(189, 0, 255, 0.2) !important;
-    }
-    div[data-testid="stButton"] button[key*="btn_upg_"]:hover, div[data-testid="stButton"] button[key*="btn_upg_"]:active {
-        background: linear-gradient(135deg, #bd00ff 0%, #ff00b8 100%) !important; color: #ffffff !important;
-        box-shadow: 0px 0px 30px #bd00ff !important; border-color: #bd00ff !important;
+    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button:active {
+        background: linear-gradient(135deg, #ffaa00 0%, #ff8800 100%) !important; color: #000000 !important;
+        box-shadow: 0px 0px 30px #ffaa00 !important; border-color: #ffaa00 !important;
     }
 
-    /* 5. زر القفل والتعليق (btn_lck_): أصفر نيوني فسفوري */
-    div[data-testid="stButton"] button[key*="btn_lck_"], div.stButton > button[key*="btn_lck_"] {
-        color: #fffb00 !important; border: 2px solid #fffb00 !important; box-shadow: 0px 0px 15px rgba(255, 251, 0, 0.2) !important;
+    /* 3. الزر الثالث (العمود الثالث): أحمر نيوني */
+    div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button {
+        color: #ff0055 !important; border: 2px solid #ff0055 !important; box-shadow: 0px 0px 15px rgba(255, 0, 85, 0.2) !important;
     }
-    div[data-testid="stButton"] button[key*="btn_lck_"]:hover, div[data-testid="stButton"] button[key*="btn_lck_"]:active {
-        background: linear-gradient(135deg, #fffb00 0%, #ffaa00 100%) !important; color: #000000 !important;
-        box-shadow: 0px 0px 30px #fffb00 !important; border-color: #fffb00 !important;
+    div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button:active {
+        background: linear-gradient(135deg, #ff0055 0%, #ff0000 100%) !important; color: #ffffff !important;
+        box-shadow: 0px 0px 30px #ff0055 !important; border-color: #ff0055 !important;
+    }
+
+    /* 4. الزر الرابع (العمود الرابع): بنفسجي نيوني */
+    div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button {
+        color: #ff00ff !important; border: 2px solid #ff00ff !important; box-shadow: 0px 0px 15px rgba(255, 0, 255, 0.2) !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button:active {
+        background: linear-gradient(135deg, #ff00ff 0%, #cc00cc 100%) !important; color: #ffffff !important;
+        box-shadow: 0px 0px 30px #ff00ff !important; border-color: #ff00ff !important;
+    }
+
+    /* 5. الزر الخامس (العمود الخامس): برتقالي ناري */
+    div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button {
+        color: #ff4500 !important; border: 2px solid #ff4500 !important; box-shadow: 0px 0px 15px rgba(255, 69, 0, 0.2) !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button:active {
+        background: linear-gradient(135deg, #ff4500 0%, #ff2200 100%) !important; color: #ffffff !important;
+        box-shadow: 0px 0px 30px #ff4500 !important; border-color: #ff4500 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -193,7 +192,6 @@ def delete_email_completely(email_to_delete):
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
 
 # === الإضافات والتعديلات الجديدة ===
-# تم دمج الأكواد الجديدة بأمان تام في هيكل الـ CSS العلوي دون المساس بأي من منطق البرمجة أو أسماء الدوال.
 
 # ========================================================
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
