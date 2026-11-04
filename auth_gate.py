@@ -934,61 +934,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
 
     # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
- # === إضافة مؤشر المخزون الناري المتوهج ===
-def render_neon_stock_fire_bar(stock_df):
-    """
-    توليد وحقن أشرطة الحالة المتوهجة ديناميكياً بجانب عرض الجدول للمخزون
-    بإصلاح شرط التحقق البصري لتعديل الألوان بنسب رياضية حقيقية.
-    """
-    st.markdown("<p style='font-size: 14px; color: #b0b0b0; margin-top: 15px;'>🔥 مؤشر تدفق المستودع المباشر (تحديث لحظي النيون):</p>", unsafe_allow_html=True)
-    
-    # تحديد القيمة القصوى للمخزون بشكل ديناميكي لتفادي ثبات المؤشر البصري وحساب الحجم الفعلي
-    max_qty_in_stock = int(stock_df['available_qty'].max()) if not stock_df.empty else 100
-    if max_qty_in_stock < 20:
-        max_qty_in_stock = 20
-
-    for _, row in stock_df.iterrows():
-        prod_name = row['product_name']
-        qty = int(row['available_qty'])
-        
-        # حساب النسبة المئوية الفعلية للشريط بناء على أكبر قيمة متوفرة بالمستودع لضمان حركة الأنيميشن
-        width_pct = max(5, min(100, int((qty / max_qty_in_stock) * 100)))
-        
-        # تصحيح شروط if/else الصارمة لفصل تدفق الألوان ديناميكياً بناءً على القيمة الفعلية المتبقية
-        if qty <= 5:
-            # حالة الخطر الحرج: فوشيا/أحمر نبضي متوهج شديد
-            bar_color = "#ff0055"
-            shadow_color = "rgba(255, 0, 85, 0.9)"
-            status_text = "🚨 خطر - مخزون حرج جداً!"
-        elif 5 < qty <= 20:
-            # حالة متوسطة وانتباه: أصفر نيوني دافئ
-            bar_color = "#ffcc00"
-            shadow_color = "rgba(255, 204, 0, 0.8)"
-            status_text = "⚠️ انتباه - مخزون متوسط"
-        else:
-            # حالة آمنة ومستقرة: أخضر فوسفوري مضيء
-            bar_color = "#00ff66"
-            shadow_color = "rgba(0, 255, 102, 0.8)"
-            status_text = "✅ آمن - مستودع مستقر"
-            
-        # بناء عنصر العرض البصري المطور بـ CSS
-        neon_html = f"""
-        <div style="margin-bottom: 12px; background: #0f0f12; padding: 10px; border-radius: 8px; border: 1px solid #222; box-shadow: inset 0 0 5px rgba(255,255,255,0.05);">
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #fff; margin-bottom: 6px;">
-                <span><strong>{prod_name}</strong> <span style="color: #888;">({qty} قطعة)</span></span>
-                <span style="color: {bar_color}; text-shadow: 0 0 8px {bar_color}; font-weight: bold; font-size: 12px;">{status_text}</span>
-            </div>
-            <div style="width: 100%; background-color: #1a1a24; border-radius: 5px; overflow: hidden; height: 8px;">
-                <div style="width: {width_pct}%; background-color: {bar_color}; height: 8px; border-radius: 5px; box-shadow: 0 0 12px {shadow_color}, 0 0 4px {shadow_color}; transition: all 0.4s ease-in-out;"></div>
-            </div>
-        </div>
-        """
-        st.write(neon_html, unsafe_allow_html=True)
-
-
-    # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
-    # ========================================================
-     # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
