@@ -4,6 +4,12 @@
 # ========================================================
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
 # ========================================================
+# ========================================================
+# الجزء الأول المطور: صبغ المنصة الشامل بالنيون الزجاجي (auth_gate.py)
+# ========================================================
+# ========================================================
+# 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
+# ========================================================
 def create_backup_vault():
     import os
     import zipfile
@@ -107,6 +113,53 @@ st.markdown("""
         font-family: 'Cairo', sans-serif !important; color: #ffffff !important;
         text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.15) !important;
     }
+
+    /* 🟢 🔴 🟡 تخصيص الأزرار الخماسية السيبرانية التفاعلية لرادار المشتركين */
+    
+    /* 1. زر التفعيل والقبول (btn_act_): أخضر نيوني سيبراني */
+    div[data-testid="stButton"] button[key*="btn_act_"], div.stButton > button[key*="btn_act_"] {
+        color: #39ff14 !important; border: 2px solid #39ff14 !important; box-shadow: 0px 0px 15px rgba(57, 255, 20, 0.2) !important;
+    }
+    div[data-testid="stButton"] button[key*="btn_act_"]:hover, div[data-testid="stButton"] button[key*="btn_act_"]:active {
+        background: linear-gradient(135deg, #39ff14 0%, #00ff87 100%) !important; color: #000000 !important;
+        box-shadow: 0px 0px 30px #39ff14 !important; border-color: #39ff14 !important;
+    }
+
+    /* 2. زر التمديد والتجديد (btn_ext_): أزرق نيوني جليدي */
+    div[data-testid="stButton"] button[key*="btn_ext_"], div.stButton > button[key*="btn_ext_"] {
+        color: #00e5ff !important; border: 2px solid #00e5ff !important; box-shadow: 0px 0px 15px rgba(0, 229, 255, 0.2) !important;
+    }
+    div[data-testid="stButton"] button[key*="btn_ext_"]:hover, div[data-testid="stButton"] button[key*="btn_ext_"]:active {
+        background: linear-gradient(135deg, #00e5ff 0%, #0088ff 100%) !important; color: #000000 !important;
+        box-shadow: 0px 0px 30px #00e5ff !important; border-color: #00e5ff !important;
+    }
+
+    /* 3. زر التدمير والحذف (btn_del_): أحمر نيوني دموي للتحذير */
+    div[data-testid="stButton"] button[key*="btn_del_"], div.stButton > button[key*="btn_del_"] {
+        color: #ff003c !important; border: 2px solid #ff003c !important; box-shadow: 0px 0px 15px rgba(255, 0, 60, 0.2) !important;
+    }
+    div[data-testid="stButton"] button[key*="btn_del_"]:hover, div[data-testid="stButton"] button[key*="btn_del_"]:active {
+        background: linear-gradient(135deg, #ff003c 0%, #ff5500 100%) !important; color: #ffffff !important;
+        box-shadow: 0px 0px 30px #ff003c !important; border-color: #ff003c !important;
+    }
+
+    /* 4. زر الترقية والتطوير (btn_upg_): بنفسجي نيوني ملكي */
+    div[data-testid="stButton"] button[key*="btn_upg_"], div.stButton > button[key*="btn_upg_"] {
+        color: #bd00ff !important; border: 2px solid #bd00ff !important; box-shadow: 0px 0px 15px rgba(189, 0, 255, 0.2) !important;
+    }
+    div[data-testid="stButton"] button[key*="btn_upg_"]:hover, div[data-testid="stButton"] button[key*="btn_upg_"]:active {
+        background: linear-gradient(135deg, #bd00ff 0%, #ff00b8 100%) !important; color: #ffffff !important;
+        box-shadow: 0px 0px 30px #bd00ff !important; border-color: #bd00ff !important;
+    }
+
+    /* 5. زر القفل والتعليق (btn_lck_): أصفر نيوني فسفوري */
+    div[data-testid="stButton"] button[key*="btn_lck_"], div.stButton > button[key*="btn_lck_"] {
+        color: #fffb00 !important; border: 2px solid #fffb00 !important; box-shadow: 0px 0px 15px rgba(255, 251, 0, 0.2) !important;
+    }
+    div[data-testid="stButton"] button[key*="btn_lck_"]:hover, div[data-testid="stButton"] button[key*="btn_lck_"]:active {
+        background: linear-gradient(135deg, #fffb00 0%, #ffaa00 100%) !important; color: #000000 !important;
+        box-shadow: 0px 0px 30px #fffb00 !important; border-color: #fffb00 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -123,7 +176,7 @@ db_conn.commit()
 # [إصلاح الثغرة الذكية]: منع حقن الحساب الافتراضي تلقائياً إذا قام المالك بحذفه يدوياً
 db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
 account_exists = db_cursor.fetchone()
-if account_exists[0] == 0 and "destroyed_flag" not in st.session_state:
+if account_exists == 0 and "destroyed_flag" not in st.session_state:
     db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
     db_conn.commit()
 db_conn.close()
@@ -139,6 +192,8 @@ def delete_email_completely(email_to_delete):
     except Exception as e:
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
 
+# === الإضافات والتعديلات الجديدة ===
+# تم دمج الأكواد الجديدة بأمان تام في هيكل الـ CSS العلوي دون المساس بأي من منطق البرمجة أو أسماء الدوال.
 
 # ========================================================
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
