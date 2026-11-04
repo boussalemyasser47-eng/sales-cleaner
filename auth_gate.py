@@ -934,99 +934,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
 
     # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
-     # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
-    # ========================================================
-    elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
-        st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
-        col_add, col_view = st.columns(2)
-        with col_add:
-            st.subheader("📝 إضافة سلعة للمستودع:")
-            new_prod = st.text_input("اسم السلعة الجديدة:")
-            new_qty = st.number_input("الكمية المتوفرة:", min_value=1, value=50)
-            if st.button("➕ حفظ في المستودع"):
-                if new_prod:
-                    try:
-                        cursor.execute("INSERT INTO store_stock (product_name, available_qty) VALUES (?, ?)", (new_prod, new_qty))
-                        conne.commit(); st.success(f"تم إضافة {new_prod} للمستودع!"); time.sleep(0.5); st.rerun()
-                    except: st.error("المنتج موجود مسبقاً في المخزون.")
-        with col_view:
-            st.subheader("📋 حالة السلع المتوفرة حالياً:")
-            stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
-            if not stock_df.empty:
-                st.dataframe(stock_df, use_container_width=True)
-                
-                # استدعاء مؤشر المخزون الناري المتوهج المصلح والمعدل ديناميكياً
-                render_neon_stock_fire_bar(stock_df)
-                
-                st.markdown("---")
-                st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
-                delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
-                if st.button("❌ محو السلعة المحددة"):
-                    cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
-                    conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
-                
-                low_stock = stock_df[stock_df['available_qty'] <= 5]
-                if not low_stock.empty:
-                    st.markdown("---")
-                    st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
-                    st.dataframe(low_stock)
-            else: st.info("مستودعك خالي تماماً حالياً.")
-    elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
-        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
-        uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
-        
-        if uploaded_file is not None:
-            df_raw, df, duplicated_rows, bad_prices = process_sales_file(uploaded_file)
-            
-            st.subheader("📋 1. جدول البيانات الأصلي المرفوع (قبل التطهير):")
-            st.dataframe(df_raw, use_container_width=True)
-            st.success("✅ تم تنظيف الداتا بنجاح وتجهيز المقارنة البصرية!")
-            
-            col_clean, col_trash = st.columns(2)
-            with col_clean:
-                st.subheader("💎 2. جدول البيانات النظيف (بعد التطهير):")
-                st.dataframe(df, use_container_width=True)
-                st.metric(label="صافي الأرباح الحقيقية المتوقعة", value=f"{df['total_row_sales'].sum():,.2f} DA")
-            with col_trash:
-                st.subheader("⚠️ 3. التكرارات والأخطاء المحذوفة:")
-                if not duplicated_rows.empty or not bad_prices.empty:
-                    if not duplicated_rows.empty:
-                        st.warning(f"تم حذف {len(duplicated_rows)} سطر مكرر!")
-                        st.dataframe(duplicated_rows)
-                    if not bad_prices.empty:
-                        st.error(f"تم حذف {len(bad_prices)} سطر أسعار سالبة!")
-                        st.dataframe(bad_prices)
-                else: st.info("الملف سليم تماماً ولا يحتوي على أخطاء.")
-                    
-            st.markdown("---")
-            render_data_insights(df)
-            
-            st.markdown("---")
-            st.subheader("📈 المخططات البيانية الملونة للولايات والمبيعات:")
-            chart_col1, chart_col2 = st.columns(2)
-            with chart_col1:
-                st.write("💰 حجم المبيعات الإجمالي الحقيقي لكل منتج:")
-                st.bar_chart(data=df, x='product_name', y='total_row_sales', color='#00ffcc')
-            with chart_col2:
-                wilaya_col = None
-                for col in df.columns:
-                    if 'address' in col.lower() or 'wilaya' in col.lower() or 'ولاية' in col:
-                        wilaya_col = col
-                        break
-                if wilaya_col:
-                    st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
-                    st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
-                else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
-                
-            csv_buffer = df.to_csv(index=False).encode('utf-8')
-            st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
-    elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
-        render_marketing_hub()
-    # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
-    conne.close()
-
-
-# === إضافة مؤشر المخزون الناري المتوهج ===
+ # === إضافة مؤشر المخزون الناري المتوهج ===
 def render_neon_stock_fire_bar(stock_df):
     """
     توليد وحقن أشرطة الحالة المتوهجة ديناميكياً بجانب عرض الجدول للمخزون
@@ -1076,3 +984,95 @@ def render_neon_stock_fire_bar(stock_df):
         </div>
         """
         st.write(neon_html, unsafe_allow_html=True)
+
+
+# القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
+# ========================================================
+elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
+    st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
+    col_add, col_view = st.columns(2)
+    with col_add:
+        st.subheader("📝 إضافة سلعة للمستودع:")
+        new_prod = st.text_input("اسم السلعة الجديدة:")
+        new_qty = st.number_input("الكمية المتوفرة:", min_value=1, value=50)
+        if st.button("➕ حفظ في المستودع"):
+            if new_prod:
+                try:
+                    cursor.execute("INSERT INTO store_stock (product_name, available_qty) VALUES (?, ?)", (new_prod, new_qty))
+                    conne.commit(); st.success(f"تم إضافة {new_prod} للمستودع!"); time.sleep(0.5); st.rerun()
+                except: st.error("المنتج موجود مسبقاً في المخزون.")
+    with col_view:
+        st.subheader("📋 حالة السلع المتوفرة حالياً:")
+        stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
+        if not stock_df.empty:
+            st.dataframe(stock_df, use_container_width=True)
+            
+            # استدعاء المؤشر بعد تعريفه بأعلى الملف بنجاح لمنع الـ NameError
+            render_neon_stock_fire_bar(stock_df)
+            
+            st.markdown("---")
+            st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
+            delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
+            if st.button("❌ محو السلعة المحددة"):
+                cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
+                conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
+            
+            low_stock = stock_df[stock_df['available_qty'] <= 5]
+            if not low_stock.empty:
+                st.markdown("---")
+                st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
+                st.dataframe(low_stock)
+        else: st.info("مستودعك خالي تماماً حالياً.")
+elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
+    st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
+    uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
+    
+    if uploaded_file is not None:
+        df_raw, df, duplicated_rows, bad_prices = process_sales_file(uploaded_file)
+        
+        st.subheader("📋 1. جدول البيانات الأصلي المرفوع (قبل التطهير):")
+        st.dataframe(df_raw, use_container_width=True)
+        st.success("✅ تم تنظيف الداتا بنجاح وتجهيز المقارنة البصرية!")
+        
+        col_clean, col_trash = st.columns(2)
+        with col_clean:
+            st.subheader("💎 2. جدول البيانات النظيف (بعد التطهير):")
+            st.dataframe(df, use_container_width=True)
+            st.metric(label="صافي الأرباح الحقيقية المتوقعة", value=f"{df['total_row_sales'].sum():,.2f} DA")
+        with col_trash:
+            st.subheader("⚠️ 3. التكرارات والأخطاء المحذوفة:")
+            if not duplicated_rows.empty or not bad_prices.empty:
+                if not duplicated_rows.empty:
+                    st.warning(f"تم حذف {len(duplicated_rows)} سطر مكرر!")
+                    st.dataframe(duplicated_rows)
+                if not bad_prices.empty:
+                    st.error(f"تم حذف {len(bad_prices)} سطر أسعار سالبة!")
+                    st.dataframe(bad_prices)
+            else: st.info("الملف سليم تماماً ولا يحتوي على أخطاء.")
+                
+        st.markdown("---")
+        render_data_insights(df)
+        
+        st.markdown("---")
+        st.subheader("📈 المخططات البيانية الملونة للولايات والمبيعات:")
+        chart_col1, chart_col2 = st.columns(2)
+        with chart_col1:
+            st.write("💰 حجم المبيعات الإجمالي الحقيقي لكل منتج:")
+            st.bar_chart(data=df, x='product_name', y='total_row_sales', color='#00ffcc')
+        with chart_col2:
+            wilaya_col = None
+            for col in df.columns:
+                if 'address' in col.lower() or 'wilaya' in col.lower() or 'ولاية' in col:
+                    wilaya_col = col
+                    break
+            if wilaya_col:
+                st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
+                st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
+            else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
+            
+        csv_buffer = df.to_csv(index=False).encode('utf-8')
+        st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
+elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
+    render_marketing_hub()
+# قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
+conne.close()
