@@ -70,10 +70,10 @@ st.markdown("""
         backdrop-filter: blur(15px) !important;
     }
     
-    /* صبغ وتلوين البطاقات النيونية المحيطة ببيانات التجار */
+    /* صبغ وتلوين البطاقات النيونية المحيطة ببيانات التجار بشكل مرن وديناميكي */
     div[data-testid="stMarkdownContainer"] > div {
         background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%) !important;
-        border: 2px solid #00fff0 !important;
+        border: 2px solid var(--custom-border-color, #00fff0);
         border-radius: 15px !important;
         box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.2) !important;
     }
@@ -191,7 +191,6 @@ def delete_email_completely(email_to_delete):
     except Exception as e:
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
 
-# === الإضافات والتعديلات الجديدة ===
 
 # ========================================================
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
@@ -248,7 +247,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
 
 # ========================================================
-# الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py)
+# الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
 # ========================================================
 if is_boss_link:
     # تأمين وحقن الهوية علوياً لمنع خطأ NameError
@@ -280,10 +279,7 @@ if is_boss_link:
     # 👑 [المستوى الثاني مقفل ومحمي]: تنبثق العدادات والرادار هنا حصرياً وفقط بعد نجاح تسجيل الدخول
     else:
         st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900; text-shadow: 0 0 25px #00fff0;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
-        
-        # ========================================================
-        # 📊 [الميزة 2]: لوحة العدادات المالية الموحدة للمالك ورادار تنبيه الـ 7 أيام
-        # ========================================================
+
         # ========================================================
         # 📊 [الميزة 2]: لوحة العدادات المالية الموحدة للمالك ورادار تنبيه الـ 7 أيام (نسخة الحماية القصوى)
         # ========================================================
@@ -301,11 +297,9 @@ if is_boss_link:
         active_count = 0
         pending_count = 0
         if not total_merchants_query.empty and 'status' in total_merchants_query.columns:
-            # معالجة مرنة: البحث عن أي نص يحتوي على "مفعّل" لتفادي اختلاف الكلمات في قاعدة البيانات
             active_count = len(total_merchants_query[total_merchants_query['status'].str.contains('مفعّل', na=False)])
             pending_count = len(total_merchants_query[total_merchants_query['status'].str.contains('معلّق', na=False)])
 
-        
         # عرض العدادات الحية المتغيرة تلقائياً بناءً على التجار المسجلين في سيرفرك
         hud_col1, hud_col2, hud_col3 = st.columns(3)
         with hud_col1:
@@ -313,7 +307,6 @@ if is_boss_link:
         with hud_col2:
             st.markdown(f"<div style='border:2px solid #ff0055; border-radius:15px; padding:20px; text-align:center; background:rgba(20,5,10,0.85); box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.25); direction:rtl;'><h4 style='color:#ff0055; margin:0;'>⏳ طلبات معلقة بالتفريغ</h4><h2>{pending_count} طلب</h2></div>", unsafe_allow_html=True)
         with hud_col3:
-            # حساب الأرباح الحية بناءً على باقة الـ 45k الافتراضية لكل متجر نشط
             estimated_revenue = active_count * 45000
             st.markdown(f"<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(15,10,5,0.85); box-shadow: 0px 0px 20px rgba(255, 170, 0, 0.25); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 صافي التدفقات السنوية الحية</h4><h2>{estimated_revenue:,} DA</h2></div>", unsafe_allow_html=True)
 
@@ -321,7 +314,6 @@ if is_boss_link:
         st.markdown("<br>", unsafe_allow_html=True)
         expired_alerts = []
         
-        # البحث عن اسم العمود الخاص بالتاريخ بمرونة كاملة في حال اختلاف المسميات البرمجية بملفك
         date_col = None
         for col in total_merchants_query.columns:
             if 'date' in col or 'تاريخ' in col:
@@ -339,7 +331,6 @@ if is_boss_link:
                 except:
                     pass
         
-        # عرض صندوق التنبيهات النيوني الأحمر للمالك الأعلى إن وُجد تجار أوشكت صلاحيتهم على الانتهاء
         if expired_alerts:
             st.markdown("<div style='border:2px dashed #ff0055; border-radius:12px; padding:15px; background:rgba(30,5,10,0.9); margin-bottom:15px; direction:rtl; text-align:right;'>", unsafe_allow_html=True)
             st.markdown("<h4 style='color:#ff0055; margin:0 0 10px 0;'>🚨 رادار التراخيص المنتهية الصلاحية (خلال 7 أيام):</h4>", unsafe_allow_html=True)
@@ -347,8 +338,7 @@ if is_boss_link:
                 st.markdown(f"<p style='color:#ffffff; margin:5px 0;'>⚠️ التاجر: <b>{alert[0]}</b> - متبقي على قفل حسابه: <span style='color:#ff0055; font-weight:bold;'>{alert[1]} أيام فقط!</span></p>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-
-        # 🔒 [حقن الكود الثاني هنا بدقة متناهية]: خزانة النسخ الاحتياطي التلقائي
+        # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة]:
         st.markdown("<br><h3 style='color: #ff00ff; text-align: right; font-weight:900; direction:rtl;'>🔒 خزانة النسخ الاحتياطي التلقائي المشفرة</h3>", unsafe_allow_html=True)
         col_backup, col_empty = st.columns([1, 2])
         with col_backup:
@@ -365,8 +355,9 @@ if is_boss_link:
                 st.error(f"⚠️ فشل توليد الخزنة الاحتياطية: {e}")
 
         st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
-
-        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
+# ========================================================
+# الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 2]
+# ========================================================
         st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
         
         conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
@@ -378,8 +369,13 @@ if is_boss_link:
                 current_email = row['email']; current_pass = row['password']; current_status = row['status']; current_package = row['package']
                 
                 status_color = "#00ff66" if "مفعّل" in current_status else "#ffaa00" if "انتظار" in current_status else "#ff0055"
+                
+                # 🧠 [قراءة حالة اللون الديناميكي المخصصة للتاجر من الجلسة أو وضع اللون الافتراضي النيوني]
+                current_border_color = st.session_state.get(f"border_color_{current_email}", "#00fff0")
+                
+                # بناء الحاوية الذكية لتتأثر برمجياً بلون الإجراء المتخذ
                 st.markdown(f"""
-                <div style="border: 2px solid #00fff0; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right;">
+                <div style="border: 2px solid {current_border_color}; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right; box-shadow: 0px 0px 15px {current_border_color}40;">
                     <p style="margin:0 0 8px 0; font-weight:700;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
                     <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: {current_package}</p>
                 </div>
@@ -390,24 +386,34 @@ if is_boss_link:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
-                        conn.commit(); conn.close(); st.toast("🎯 تم التفعيل!"); time.sleep(0.5); st.rerun()
+                        conn.commit(); conn.close()
+                        st.session_state[f"border_color_{current_email}"] = "#00ff66"  # حفظ اللون الأخضر
+                        st.toast("🎯 تم التفعيل!"); time.sleep(0.5); st.rerun()
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
-                        conn.commit(); conn.close(); st.toast("⏳ تم تمديد المهلة!"); time.sleep(0.5); st.rerun()
+                        conn.commit(); conn.close()
+                        st.session_state[f"border_color_{current_email}"] = "#ffaa00"  # حفظ اللون الأصفر
+                        st.toast("⏳ تم تمديد المهلة!"); time.sleep(0.5); st.rerun()
                 with col_3:
-                    if st.button("🗑️ تدمير نهائي فوري", key=f"btn_del_{current_email}"): st.session_state[f"ask_confirm_{current_email}"] = True
+                    if st.button("🗑️ تدمير نهائي فوري", key=f"btn_del_{current_email}"):
+                        st.session_state[f"border_color_{current_email}"] = "#ff0055"  # حفظ اللون الأحمر للإطار
+                        st.session_state[f"ask_confirm_{current_email}"] = True
                 with col_4:
                     if st.button("💸 ترقية فئة الباقة", key=f"btn_upg_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
-                        conn.commit(); conn.close(); st.toast("🚀 تم ترقية الباقة السنوية!"); time.sleep(0.5); st.rerun()
+                        conn.commit(); conn.close()
+                        st.session_state[f"border_color_{current_email}"] = "#ff00ff"  # حفظ اللون البنفسجي
+                        st.toast("🚀 تم ترقية الباقة السنوية!"); time.sleep(0.5); st.rerun()
                 with col_5:
                     if st.button("🔒 حظر وقفل الحساب", key=f"btn_lck_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
-                        conn.commit(); conn.close(); st.toast("🔒 تم مصادرة الصلاحيات عن بعد!"); time.sleep(0.5); st.rerun()
+                        conn.commit(); conn.close()
+                        st.session_state[f"border_color_{current_email}"] = "#ff4500"  # حفظ اللون البرتقالي الناري
+                        st.toast("🔒 تم مصادرة الصلاحيات عن بعد!"); time.sleep(0.5); st.rerun()
                 
                 if st.session_state.get(f"ask_confirm_{current_email}", False):
                     if st.button("✅ فهمت، احذف الحساب الآن", key=f"final_yes_{current_email}"):
@@ -420,32 +426,9 @@ if is_boss_link:
         else: 
             st.warning("📭 الرادار صافي تماماً، لا توجد طلبات معلقة حالياً.")
 
-# ========================================================
-# 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
-# ========================================================
-def create_backup_vault():
-    """
-    تقوم بجمع كافة قواعد بيانات المنصة والتجار وضغطها في ملف بايتات واحد
-    مؤمنة وجاهزة للتحميل من طرف المالك الأعلى فقط.
-    """
-    import os
-    import zipfile
-    import io
-    
-    zip_buffer = io.BytesIO()
-    # إنشاء ملف مضغوط في الذاكرة
-    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-        # جلب كافة ملفات قواعد البيانات في المجلد الحالي
-        for file in os.listdir("."):
-            if file.endswith(".db"):
-                try:
-                    # قراءة محتوى قاعدة البيانات وإضافتها للملف المضغوط بأسماء مشفرة أو واضحة للمالك
-                    with open(file, "rb") as f:
-                        zip_file.writestr(f"backup_{datetime.now().strftime('%Y%m%d')}_{file}", f.read())
-                except Exception:
-                    pass
-    zip_buffer.seek(0)
-    return zip_buffer
+# === الإضافات والتعديلات الجديدة لغرفة المالك ===
+# (يتم حقن الدوال أو الواجهات التكميلية المستقبلية هنا بشكل مستقل تماماً)
+
 
 # ========================================================
 # القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
