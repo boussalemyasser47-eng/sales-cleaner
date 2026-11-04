@@ -353,11 +353,19 @@ if is_boss_link:
                 except:
                     pass
         
+        # عرض صندوق التنبيهات النيوني المطور باستخدام الحقن المظهري للمؤشرات الدائرية المشعة
         if expired_alerts:
-            st.markdown("<div style='border:2px dashed #ff0055; border-radius:12px; padding:15px; background:rgba(30,5,10,0.9); margin-bottom:15px; direction:rtl; text-align:right;'>", unsafe_allow_html=True)
-            st.markdown("<h4 style='color:#ff0055; margin:0 0 10px 0;'>🚨 رادار التراخيص المنتهية الصلاحية (خلال 7 أيام):</h4>", unsafe_allow_html=True)
+            st.markdown("<div style='border:2px dashed #ff0055; border-radius:12px; padding:20px; background:rgba(20,5,10,0.95); margin-bottom:15px; direction:rtl; text-align:right; box-shadow: 0px 0px 30px rgba(255, 0, 85, 0.15);'>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color:#ff0055; margin:0 0 15px 0; font-weight:900;'>🚨 رادار التراخيص المنتهية الصلاحية (خلال 7 أيام):</h4>", unsafe_allow_html=True)
+            
             for alert in expired_alerts:
-                st.markdown(f"<p style='color:#ffffff; margin:5px 0;'>⚠️ التاجر: <b>{alert[0]}</b> - متبقي على قفل حسابه: <span style='color:#ff0055; font-weight:bold;'>{alert[1]} أيام فقط!</span></p>", unsafe_allow_html=True)
+                merchant_email = alert[0]
+                days_remain = alert[1]
+                
+                # استدعاء دالة بناء المؤشر النيوني الدائري لحقن التصميم الفخم
+                html_ring = render_neon_license_ring(merchant_email, days_remain)
+                st.markdown(html_ring, unsafe_allow_html=True)
+                
             st.markdown("</div>", unsafe_allow_html=True)
 
         # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة]:
@@ -389,13 +397,11 @@ if is_boss_link:
         if not df_users.empty:
             for index, row in df_users.iterrows():
                 current_email = row['email']; current_pass = row['password']; current_status = row['status']; current_package = row['package']
-                
                 status_color = "#00ff66" if "مفعّل" in current_status else "#ffaa00" if "انتظار" in current_status else "#ff0055"
                 
                 # 🧠 [قراءة حالة اللون الديناميكي المخصصة للتاجر من الجلسة أو وضع اللون الافتراضي النيوني]
                 current_border_color = st.session_state.get(f"border_color_{current_email}", "#00fff0")
                 
-                # بناء الحاوية الذكية لتتأثر برمجياً بلون الإجراء المتخذ
                 st.markdown(f"""
                 <div style="border: 2px solid {current_border_color}; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right; box-shadow: 0px 0px 15px {current_border_color}40;">
                     <p style="margin:0 0 8px 0; font-weight:700;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
@@ -409,32 +415,32 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-                        st.session_state[f"border_color_{current_email}"] = "#00ff66"  # حفظ اللون الأخضر
+                        st.session_state[f"border_color_{current_email}"] = "#00ff66"
                         st.toast("🎯 تم التفعيل!"); time.sleep(0.5); st.rerun()
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-                        st.session_state[f"border_color_{current_email}"] = "#ffaa00"  # حفظ اللون الأصفر
+                        st.session_state[f"border_color_{current_email}"] = "#ffaa00"
                         st.toast("⏳ تم تمديد المهلة!"); time.sleep(0.5); st.rerun()
                 with col_3:
                     if st.button("🗑️ تدمير نهائي فوري", key=f"btn_del_{current_email}"):
-                        st.session_state[f"border_color_{current_email}"] = "#ff0055"  # حفظ اللون الأحمر للإطار
+                        st.session_state[f"border_color_{current_email}"] = "#ff0055"
                         st.session_state[f"ask_confirm_{current_email}"] = True
                 with col_4:
                     if st.button("💸 ترقية فئة الباقة", key=f"btn_upg_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-                        st.session_state[f"border_color_{current_email}"] = "#ff00ff"  # حفظ اللون البنفسجي
+                        st.session_state[f"border_color_{current_email}"] = "#ff00ff"
                         st.toast("🚀 تم ترقية الباقة السنوية!"); time.sleep(0.5); st.rerun()
                 with col_5:
                     if st.button("🔒 حظر وقفل الحساب", key=f"btn_lck_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-                        st.session_state[f"border_color_{current_email}"] = "#ff4500"  # حفظ اللون البرتقالي الناري
+                        st.session_state[f"border_color_{current_email}"] = "#ff4500"
                         st.toast("🔒 تم مصادرة الصلاحيات عن بعد!"); time.sleep(0.5); st.rerun()
                 
                 if st.session_state.get(f"ask_confirm_{current_email}", False):
@@ -449,7 +455,38 @@ if is_boss_link:
             st.warning("📭 الرادار صافي تماماً، لا توجد طلبات معلقة حالياً.")
 
 # === الإضافات والتعديلات الجديدة لغرفة المالك ===
-# (يتم حقن الدوال أو الواجهات التكميلية المستقبلية هنا بشكل مستقل تماماً)
+# === إضافة مؤشر التراخيص الدائري المشع للرادار ===
+def render_neon_license_ring(email, days_left):
+    """
+    تقوم بتوليد واجهة HTML/SVG مخصصة تحتوي على حلقة نيوني متغيرة الحجم واللون ديناميكياً
+    تبدأ من الأصفر وتتحول للأحمر الناري كلما اقتربت الأيام من الصفر.
+    """
+    clamped_days = max(0, min(7, days_left))
+    percentage = clamped_days / 7.0
+    total_circumference = 113
+    stroke_offset = total_circumference * (1 - percentage)
+    
+    if clamped_days > 4:
+        glow_color = "#ffaa00"  # أصفر نيوني
+    elif clamped_days > 2:
+        glow_color = "#ff5500"  # برتقالي حرج
+    else:
+        glow_color = "#ff0055"  # أحمر ناري دمي
+        
+    html_template = f"""
+    <div style='display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(5,5,15,0.6); border-radius: 8px; margin-bottom: 8px; border-left: 4px solid {glow_color};'>
+        <div style='display: flex; align-items: center; gap: 15px;'>
+            <svg width="45" height="45" viewBox="0 0 45 45" style="transform: rotate(-90deg); filter: drop-shadow(0px 0px 6px {glow_color});">
+                <circle cx="22.5" cy="22.5" r="18" stroke="rgba(255,255,255,0.1)" stroke-width="3" fill="transparent" />
+                <circle cx="22.5" cy="22.5" r="18" stroke="{glow_color}" stroke-width="3.5" fill="transparent" 
+                        stroke-dasharray="{total_circumference}" stroke-dashoffset="{stroke_offset}" stroke-linecap="round" />
+            </svg>
+            <span style='color:#ffffff; font-size: 15px;'>⚠️ التاجر: <b>{email}</b></span>
+        </div>
+        <span style='color:{glow_color}; font-weight:bold; font-size: 14px;'>متبقي: {days_left} أيام فقط!</span>
+    </div>
+    """
+    return html_template
 
 
 # ========================================================
