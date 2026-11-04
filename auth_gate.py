@@ -21,7 +21,7 @@ def create_backup_vault():
                     pass
     zip_buffer.seek(0)
     return zip_buffer
-from utils import render_neon_stock_fire_bar
+
 
 import streamlit as st
 import pandas as pd
