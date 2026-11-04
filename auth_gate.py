@@ -988,6 +988,8 @@ def render_neon_stock_fire_bar(stock_df):
 
     # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
+     # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
+    # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
         col_add, col_view = st.columns(2)
@@ -1006,6 +1008,42 @@ def render_neon_stock_fire_bar(stock_df):
             stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
             if not stock_df.empty:
                 st.dataframe(stock_df, use_container_width=True)
+                
+                # === إضافة مؤشر المخزون الناري المتوهج ===
+                # دالة داخلية محاذية تماماً لمنع فصل السلسلة الشرطية عن الـ elif
+                def render_neon_stock_fire_bar(df_data):
+                    st.markdown("<p style='font-size: 14px; color: #b0b0b0; margin-top: 15px;'>🔥 مؤشر تدفق المستودع المباشر (تحديث لحظي النيون):</p>", unsafe_allow_html=True)
+                    max_qty = int(df_data['available_qty'].max()) if not df_data.empty else 100
+                    if max_qty < 20: max_qty = 20
+                    
+                    for _, row in df_data.iterrows():
+                        p_name = row['product_name']
+                        p_qty = int(row['available_qty'])
+                        width_pct = max(5, min(100, int((p_qty / max_qty) * 100)))
+                        
+                        if p_qty <= 5:
+                            bar_color, shadow_color, status_text = "#ff0055", "rgba(255, 0, 85, 0.9)", "🚨 خطر - مخزون حرج جداً!"
+                        elif 5 < p_qty <= 20:
+                            bar_color, shadow_color, status_text = "#ffcc00", "rgba(255, 204, 0, 0.8)", "⚠️ انتباه - مخزون متوسط"
+                        else:
+                            bar_color, shadow_color, status_text = "#00ff66", "rgba(0, 255, 102, 0.8)", "✅ آمن - مستودع مستقر"
+                            
+                        neon_html = f"""
+                        <div style="margin-bottom: 12px; background: #0f0f12; padding: 10px; border-radius: 8px; border: 1px solid #222;">
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #fff; margin-bottom: 6px;">
+                                <span><strong>{p_name}</strong> <span style="color: #888;">({p_qty} قطعة)</span></span>
+                                <span style="color: {bar_color}; text-shadow: 0 0 8px {bar_color}; font-weight: bold;">{status_text}</span>
+                            </div>
+                            <div style="width: 100%; background-color: #1a1a24; border-radius: 5px; overflow: hidden; height: 8px;">
+                                <div style="width: {width_pct}%; background-color: {bar_color}; height: 8px; border-radius: 5px; box-shadow: 0 0 12px {shadow_color}; transition: all 0.4s ease;"></div>
+                            </div>
+                        </div>
+                        """
+                        st.write(neon_html, unsafe_allow_html=True)
+                
+                # استدعاء الدالة بأمان ومحاذاة صحيحة تماماً
+                render_neon_stock_fire_bar(stock_df)
+                
                 st.markdown("---")
                 st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
                 delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
@@ -1019,7 +1057,7 @@ def render_neon_stock_fire_bar(stock_df):
                     st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
                     st.dataframe(low_stock)
             else: st.info("مستودعك خالي تماماً حالياً.")
-
+            
     elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
         uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
@@ -1065,13 +1103,13 @@ def render_neon_stock_fire_bar(stock_df):
                 if wilaya_col:
                     st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
                     st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
-                else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
+                else: st.info("💡 نصيحة: سمّ عمود السكن in ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
                 
             csv_buffer = df.to_csv(index=False).encode('utf-8')
             st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
-
+            
     elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
         render_marketing_hub()
-
+        
     # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
     conne.close()
