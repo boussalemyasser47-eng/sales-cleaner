@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول المطور: صبغ المنصة الشامل بالنيون الزجاجي (auth_gate.py)
+# الجزء الأول المطور (أ): صبغ المنصة الشامل بالنيون الزجاجي (auth_gate_part1.py)
 # ========================================================
 # ========================================================
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
@@ -32,7 +32,6 @@ import urllib.parse
 # ========================================================
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
 # ========================================================
-
 
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
@@ -159,8 +158,29 @@ st.markdown("""
         background: linear-gradient(135deg, #ff4500 0%, #ff2200 100%) !important; color: #ffffff !important;
         box-shadow: 0px 0px 30px #ff4500 !important; border-color: #ff4500 !important;
     }
+
+    /* # === تأثيرات التوهج والأنيميشن لعدادات المالك === */
+    @keyframes hudPulse {
+        0% { box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); border-color: #00fff0; }
+        50% { box-shadow: 0px 0px 35px rgba(0, 255, 240, 0.55); border-color: #00ffaa; }
+        100% { box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); border-color: #00fff0; }
+    }
+    @keyframes hudIntro {
+        0% { opacity: 0; transform: scale(0.96); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+    div[data-testid="stMetricBlock"], div[data-testid="metric-container"], .premium-card-cyan, .premium-card-pink {
+        animation: hudIntro 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards, hudPulse 4s ease-in-out infinite alternate !important;
+    }
+    div[data-testid="stMetricBlock"] [data-testid="stMetricValue"], div[data-testid="metric-container"] .stMetricValue {
+        text-shadow: 0px 0px 15px rgba(0, 255, 240, 0.6) !important;
+        font-weight: 900 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
+# ========================================================
+# الجزء الأول المطور (ب): إدارة قاعدة بيانات الـ Auth (auth_gate_part2.py)
+# ========================================================
 
 # صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
@@ -175,7 +195,7 @@ db_conn.commit()
 # [إصلاح الثغرة الذكية]: منع حقن الحساب الافتراضي تلقائياً إذا قام المالك بحذفه يدوياً
 db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
 account_exists = db_cursor.fetchone()
-if account_exists == 0 and "destroyed_flag" not in st.session_state:
+if account_exists[0] == 0 and "destroyed_flag" not in st.session_state:
     db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
     db_conn.commit()
 db_conn.close()
@@ -190,6 +210,8 @@ def delete_email_completely(email_to_delete):
         return True
     except Exception as e:
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
+
+# === الإضافات والتعديلات الجديدة ===
 
 
 # ========================================================
