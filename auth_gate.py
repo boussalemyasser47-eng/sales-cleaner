@@ -934,6 +934,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
 
     # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
+       # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
+    # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
         col_add, col_view = st.columns(2)
@@ -952,6 +954,10 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
             if not stock_df.empty:
                 st.dataframe(stock_df, use_container_width=True)
+                
+                # استدعاء مؤشر المخزون الناري المتوهج التكميلي لتعزيز الرؤية البصرية للتجار
+                render_neon_stock_fire_bar(stock_df)
+                
                 st.markdown("---")
                 st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
                 delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
@@ -965,7 +971,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
                     st.dataframe(low_stock)
             else: st.info("مستودعك خالي تماماً حالياً.")
-
     elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
         uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
@@ -1015,9 +1020,55 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
             csv_buffer = df.to_csv(index=False).encode('utf-8')
             st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
-
     elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
         render_marketing_hub()
-
     # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
     conne.close()
+
+
+# === إضافة مؤشر المخزون الناري المتوهج ===
+def render_neon_stock_fire_bar(stock_df):
+    """
+    توليد وحقن أشرطة الحالة المتوهجة ديناميكياً بجانب عرض الجدول للمخزون
+    دون تعديل منطق البيانات الأساسي أو الاستعلامات.
+    """
+    st.markdown("<p style='font-size: 14px; color: #b0b0b0; margin-top: 10px;'>🔥 مؤشر تدفق المستودع النيوني المباشر:</p>", unsafe_allow_html=True)
+    
+    for _, row in stock_df.iterrows():
+        prod_name = row['product_name']
+        qty = row['available_qty']
+        
+        # تحديد الألوان النيونية والخصائص بناءً على كمية السلعة المتوفرة
+        if qty <= 5:
+            # حالة الخطر: فوشيا/أحمر نبضي مضيء
+            bar_color = "#ff0055"
+            shadow_color = "rgba(255, 0, 85, 0.8)"
+            status_text = "🚨 خطر - مخزون حرج!"
+            width_pct = min(100, (qty / 5) * 20)  # تمثيل نسبي ضمن نطاق الخطر
+        elif 5 < qty <= 20:
+            # حالة متوسطة: أصفر نيوني
+            bar_color = "#ffcc00"
+            shadow_color = "rgba(255, 204, 0, 0.8)"
+            status_text = "⚠️ انتباه - مخزون متوسط"
+            width_pct = min(100, (qty / 20) * 100)
+        else:
+            # حالة آمنة: أخضر نيوني
+            bar_color = "#00ff66"
+            shadow_color = "rgba(0, 255, 102, 0.8)"
+            status_text = "✅ آمن - مستقر"
+            width_pct = min(100, (qty / 100) * 100)
+            
+        # بناء العنصر البصري بـ HTML و CSS متطور
+        neon_html = f"""
+        <div style="margin-bottom: 12px; background: #121212; padding: 8px; border-radius: 6px; border: 1px solid #222;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #fff; margin-bottom: 4px;">
+                <span><strong>{prod_name}</strong> ({qty} قطعة)</span>
+                <span style="color: {bar_color}; text-shadow: 0 0 5px {bar_color};">{status_text}</span>
+            </div>
+            <div style="width: 100%; background-color: #222; border-radius: 4px; overflow: hidden; height: 10px;">
+                <div style="width: {width_pct}%; background-color: {bar_color}; height: 10px; border-radius: 4px; box-shadow: 0 0 10px {shadow_color}, 0 0 4px {shadow_color}; transition: width 0.5s ease-in-out;"></div>
+            </div>
+        </div>
+        """
+        st.write(neon_html, unsafe_allow_html=True)
+
