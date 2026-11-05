@@ -1330,10 +1330,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         
                         time.sleep(0.5)
                         st.rerun()
-                    except: st.error("المنتج موجود مسبقاً في المخزون.")
-        with col_view:
-            st.subheader("📋 حالة السلع المتوفرة حالياً:")
-            stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
+
             if not stock_df.empty:
                 st.dataframe(stock_df, use_container_width=True)
                 
