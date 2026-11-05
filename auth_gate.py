@@ -1093,8 +1093,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
             csv_buffer = df.to_csv(index=False).encode('utf-8')
             st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
-    elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
-        st.write("<h1 style='font-size: 32px; color: #ffaa00; text-shadow: 0 0 15px #ffaa00;'>🚀 مركز التخطيط ومولد الحملات الإعلانية بذكاء AI</h1>", unsafe_allow_html=True)
+elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
+        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🚀 مركز التخطيط ومولد الحملات الإعلانية بذكاء AI</h1>", unsafe_allow_html=True)
         
         col_input, col_output = st.columns(2)
         with col_input:
@@ -1104,74 +1104,179 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             run_ai = st.button("✨ توليد الخطة التسويقية والإعلان المحترف")
             
         with col_output:
-            st.subheader("🖥️ شاشة معاينة المخرجات الذكية:")
+            st.subheader("📱 محاكي المنشور الإعلاني الحي:")
             if run_ai or 'marketing_generated' in st.session_state:
                 st.session_state['marketing_generated'] = True
                 
-                # المحتوى النصي المولد (بدون أي تعديل على المتغيرات)
+                # المحتوى النصي المولد من الذكاء الاصطناعي (ثابت تماماً دون تغيير)
                 intro_text = "🔥 العرض الأقوى لفترة محدودة! احصل على منتجك المميز الآن واستمتع بالجودة الفائقة."
                 features_text = "💎 مميزات لا مثيل لها:\n✅ شحن سريع لجميع الولايات الجزائرية\n✅ الدفع عند الاستلام وضمان حقيقي\n✅ خدمة عملاء على مدار الساعة"
                 cta_text = "📥 أرسل رسالة الآن لطلب المنتج أو اضغط على رابط الشراء أسفل المنشور!"
                 targeting_strategy = "🎯 خطة الاستهداف المقترحة:\n- الفئة العمرية: 18 - 45 سنة\n- الاهتمامات: التسوق الإلكتروني، التجارة، المنتجات العصرية\n- المناطق المستهدفة: الولايات الكبرى ذات الكثافة البيعية العالية."
                 
-                # === تحسين مخرجات التسويق إلى الشاشة السيبرانية المتوهجة ===
-                def render_cyber_ad_terminal(intro, features, cta, strategy):
-                    cyber_html = f"""
+                # === تحسين مخرجات التسويق إلى محاكي إعلانات الهاتف الحية ===
+                def render_live_ad_phone_mockup(intro, features, cta, strategy):
+                    mockup_html = f"""
                     <style>
-                        @keyframes pulse-gold {{
-                            0% {{ box-shadow: 0 0 8px rgba(255, 170, 0, 0.4), inset 0 0 8px rgba(255, 170, 0, 0.2); }}
-                            50% {{ box-shadow: 0 0 18px rgba(255, 170, 0, 0.8), inset 0 0 12px rgba(255, 170, 0, 0.4); }}
-                            100% {{ box-shadow: 0 0 8px rgba(255, 170, 0, 0.4), inset 0 0 8px rgba(255, 170, 0, 0.2); }}
-                        }}
-                        .cyber-terminal {{
-                            background-color: #050508 !important;
-                            border: 2px solid #ffaa00 !important;
-                            border-radius: 12px !important;
-                            padding: 18px !important;
-                            font-family: 'Courier New', Courier, monospace !important;
-                            color: #f0f0f5 !important;
-                            animation: pulse-gold 3s infinite ease-in-out;
-                            margin-bottom: 15px;
+                        .phone-container {{
+                            max-width: 360px;
+                            margin: 15px auto;
+                            background: rgba(255, 255, 255, 0.03);
+                            border: 2px solid #00fff0;
+                            border-radius: 36px;
+                            box-shadow: 0 0 20px rgba(0, 255, 240, 0.2), inset 0 0 15px rgba(0, 255, 240, 0.1);
+                            padding: 16px;
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            color: #ffffff;
                             direction: rtl;
+                            backdrop-filter: blur(10px);
                         }}
-                        .terminal-header {{
-                            border-bottom: 1px solid rgba(255, 170, 0, 0.3);
-                            padding-bottom: 6px;
+                        .phone-notch {{
+                            width: 140px;
+                            height: 18px;
+                            background: #111;
+                            margin: -16px auto 12px auto;
+                            border-radius: 0 0 15px 15px;
+                            border: 1px solid rgba(0, 255, 240, 0.3);
+                            border-top: none;
+                        }}
+                        .ad-feed-card {{
+                            background: #1e1e24;
+                            border-radius: 16px;
+                            padding: 12px;
+                            border: 1px solid rgba(255, 255, 255, 0.05);
+                        }}
+                        .ad-header {{
+                            display: flex;
+                            align-items: center;
+                            margin-bottom: 10px;
+                        }}
+                        .ad-avatar {{
+                            width: 38px;
+                            height: 38px;
+                            background: linear-gradient(135deg, #00fff0, #ff00ff);
+                            border-radius: 50%;
+                            margin-left: 10px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-weight: bold;
+                            font-size: 12px;
+                        }}
+                        .ad-meta {{
+                            display: flex;
+                            flex-direction: column;
+                        }}
+                        .ad-profile-name {{
+                            font-weight: bold;
+                            font-size: 13px;
+                            color: #fff;
+                        }}
+                        .ad-sponsored {{
+                            font-size: 10px;
+                            color: #00fff0;
+                            text-shadow: 0 0 3px rgba(0, 255, 240, 0.5);
+                        }}
+                        .ad-body-text {{
+                            font-size: 12.5px;
+                            line-height: 1.5;
+                            color: #e2e2e8;
+                            white-space: pre-line;
                             margin-bottom: 12px;
+                        }}
+                        .ad-media-placeholder {{
+                            width: 100%;
+                            height: 180px;
+                            background: linear-gradient(to bottom, #252530, #15151a);
+                            border-radius: 8px;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            border: 1px dashed rgba(0, 255, 240, 0.3);
+                            margin-bottom: 8px;
+                        }}
+                        .ad-action-bar {{
                             display: flex;
                             justify-content: space-between;
-                            font-size: 11px;
-                            color: #ffaa00;
-                            text-shadow: 0 0 5px #ffaa00;
+                            align-items: center;
+                            background: #252530;
+                            padding: 8px 12px;
+                            border-radius: 8px;
+                            border: 1px solid rgba(255,255,255,0.05);
                         }}
-                        .terminal-section {{
-                            background: rgba(255, 170, 0, 0.02);
-                            padding: 12px;
+                        .ad-btn {{
+                            background: #00fff0;
+                            color: #111;
+                            font-weight: bold;
+                            font-size: 11px;
+                            padding: 6px 14px;
                             border-radius: 6px;
-                            border-right: 3px solid #ffaa00;
-                            margin-bottom: 12px;
+                            box-shadow: 0 0 8px rgba(0, 255, 240, 0.4);
+                        }}
+                        .ad-interactions {{
+                            display: flex;
+                            justify-content: space-around;
+                            border-top: 1px solid rgba(255,255,255,0.05);
+                            margin-top: 8px;
+                            padding-top: 8px;
+                            font-size: 11px;
+                            color: #a0a0b0;
+                        }}
+                        .strategy-box {{
+                            background: rgba(0, 255, 240, 0.03);
+                            border-radius: 12px;
+                            padding: 10px;
+                            margin-top: 12px;
+                            font-size: 11.5px;
+                            border: 1px solid rgba(0, 255, 240, 0.15);
                         }}
                     </style>
                     
-                    <div class="cyber-terminal">
-                        <div class="terminal-header">
-                            <span>📡 CYBER AD TERMINAL v4.0 // OUTPUT SECURE</span>
-                            <span>● LIVE AI PREVIEW</span>
+                    <div class="phone-container">
+                        <div class="phone-notch"></div>
+                        
+                        <div class="ad-feed-card">
+                            <div class="ad-header">
+                                <div class="ad-avatar">NEX</div>
+                                <div class="ad-meta">
+                                    <span class="ad-profile-name">متجر التاجر المحترف</span>
+                                    <span class="ad-sponsored">ممول 🌐 Sponsored</span>
+                                </div>
+                            </div>
+                            
+                            <div class="ad-body-text">{intro}\n\n{features}\n\n{cta}</div>
+                            
+                            <div class="ad-media-placeholder">
+                                <span style="font-size: 24px;">🖼️</span>
+                                <span style="font-size: 11px; color: #888; margin-top: 5px;">[ صورة المنتج تظهر هنا عند النشر ]</span>
+                            </div>
+                            
+                            <div class="ad-action-bar">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-size: 10px; color: #aaa;">تسوّق الآن بخصم مميز</span>
+                                    <span style="font-size: 12px; font-weight: bold; color: #fff;">رابط الطلب السريع</span>
+                                </div>
+                                <div class="ad-btn">إرسال رسالة</div>
+                            </div>
+                            
+                            <div class="ad-interactions">
+                                <span>👍 تفاعل (4.2k)</span>
+                                <span>💬 تعليق (380)</span>
+                                <span>🔄 مشاركة (120)</span>
+                            </div>
                         </div>
-                        <div class="terminal-section">
-                            <span style="color: #ffaa00; font-weight: bold;">📝 نص الإعلان (Copywriting):</span><br>
-                            <p style="white-space: pre-line; margin-top: 5px;">{intro}<br><br>{features}<br><br>{cta}</p>
-                        </div>
-                        <div class="terminal-section">
-                            <span style="color: #ffaa00; font-weight: bold;">🎯 خطة الاستهداف والجمهور:</span><br>
-                            <p style="white-space: pre-line; margin-top: 5px;">{strategy}</p>
+                        
+                        <div class="strategy-box">
+                            <strong style="color: #00fff0;">🎯 كواليس استهداف الـ AI:</strong><br>
+                            <p style="white-space: pre-line; margin-top: 5px; color: #ccc; font-size: 11px;">{strategy}</p>
                         </div>
                     </div>
                     """
-                    st.write(cyber_html, unsafe_allow_html=True)
+                    st.write(mockup_html, unsafe_allow_html=True)
                 
-                # استدعاء دالة التحسين البصري لتجميل مخرجات التاجر مباشرة بمحاذاة برمجية مستقرة
-                render_cyber_ad_terminal(intro_text, features_text, cta_text, targeting_strategy)
+                # استدعاء دالة العرض المتطورة لمحاكي الهاتف الفيروزي بمحاذاة برمجية كاملة الاستقرار
+                render_live_ad_phone_mockup(intro_text, features_text, cta_text, targeting_strategy)
             else:
                 st.info("💡 في انتظار توجيهاتك.. حدد الإعدادات ثم اضغط على زر التوليد لتنبثق شاشة العرض السيبرانية الذهبية.")
                 
