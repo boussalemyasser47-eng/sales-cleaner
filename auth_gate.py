@@ -1093,14 +1093,14 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
             csv_buffer = df.to_csv(index=False).encode('utf-8')
             st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
-elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
+    elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🚀 مركز التخطيط ومولد الحملات الإعلانية بذكاء AI</h1>", unsafe_allow_html=True)
         
         col_input, col_output = st.columns(2)
         with col_input:
             st.subheader("⚙️ إعدادات وتوجيه الـ AI:")
             ad_target = st.selectbox("الهدف من الحملة:", ["مبيعات مباشرة Conversion", "وعي بالعلامة التجارية Awareness", "تفاعل وجلب عملاء Leads"])
-            ad_tone = st.selectbox("لهجة الإعلان المقترح:", ["حماسية وبسيطة", "مهنية واحترافية", "فكاهية وقريبة للمستهلك"])
+            ad_tone = st.selectbox("لهجة الإعلان المقترح:", ["حماسية وبسيطة", "مهنية وااحترافية", "فكاهية وقريبة للمستهلك"])
             run_ai = st.button("✨ توليد الخطة التسويقية والإعلان المحترف")
             
         with col_output:
@@ -1108,7 +1108,6 @@ elif choice == "🚀 مولّد الحملات والتخطيط التسويقي
             if run_ai or 'marketing_generated' in st.session_state:
                 st.session_state['marketing_generated'] = True
                 
-                # المحتوى النصي المولد من الذكاء الاصطناعي (ثابت تماماً دون تغيير)
                 intro_text = "🔥 العرض الأقوى لفترة محدودة! احصل على منتجك المميز الآن واستمتع بالجودة الفائقة."
                 features_text = "💎 مميزات لا مثيل لها:\n✅ شحن سريع لجميع الولايات الجزائرية\n✅ الدفع عند الاستلام وضمان حقيقي\n✅ خدمة عملاء على مدار الساعة"
                 cta_text = "📥 أرسل رسالة الآن لطلب المنتج أو اضغط على رابط الشراء أسفل المنشور!"
@@ -1235,7 +1234,6 @@ elif choice == "🚀 مولّد الحملات والتخطيط التسويقي
                     
                     <div class="phone-container">
                         <div class="phone-notch"></div>
-                        
                         <div class="ad-feed-card">
                             <div class="ad-header">
                                 <div class="ad-avatar">NEX</div>
@@ -1244,14 +1242,11 @@ elif choice == "🚀 مولّد الحملات والتخطيط التسويقي
                                     <span class="ad-sponsored">ممول 🌐 Sponsored</span>
                                 </div>
                             </div>
-                            
                             <div class="ad-body-text">{intro}\n\n{features}\n\n{cta}</div>
-                            
                             <div class="ad-media-placeholder">
                                 <span style="font-size: 24px;">🖼️</span>
                                 <span style="font-size: 11px; color: #888; margin-top: 5px;">[ صورة المنتج تظهر هنا عند النشر ]</span>
                             </div>
-                            
                             <div class="ad-action-bar">
                                 <div style="display: flex; flex-direction: column;">
                                     <span style="font-size: 10px; color: #aaa;">تسوّق الآن بخصم مميز</span>
@@ -1259,14 +1254,12 @@ elif choice == "🚀 مولّد الحملات والتخطيط التسويقي
                                 </div>
                                 <div class="ad-btn">إرسال رسالة</div>
                             </div>
-                            
                             <div class="ad-interactions">
                                 <span>👍 تفاعل (4.2k)</span>
                                 <span>💬 تعليق (380)</span>
                                 <span>🔄 مشاركة (120)</span>
                             </div>
                         </div>
-                        
                         <div class="strategy-box">
                             <strong style="color: #00fff0;">🎯 كواليس استهداف الـ AI:</strong><br>
                             <p style="white-space: pre-line; margin-top: 5px; color: #ccc; font-size: 11px;">{strategy}</p>
@@ -1275,13 +1268,12 @@ elif choice == "🚀 مولّد الحملات والتخطيط التسويقي
                     """
                     st.write(mockup_html, unsafe_allow_html=True)
                 
-                # استدعاء دالة العرض المتطورة لمحاكي الهاتف الفيروزي بمحاذاة برمجية كاملة الاستقرار
                 render_live_ad_phone_mockup(intro_text, features_text, cta_text, targeting_strategy)
-                else:
-                    st.info("💡 في انتظار توجيهاتك.. حدد الإعدادات ثم اضغط على زر التوليد لتنبثق شاشة محاكي الهاتف الذكي الفيروزي.")
+            else:
+                st.info("💡 في انتظار توجيهاتك.. حدد الإعدادات ثم اضغط على زر التوليد لتنبثق شاشة محاكي الهاتف الذكي الفيروزي.")
                 
-        # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
-        conne.close()
+    # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
+    conne.close()
 
 
 
