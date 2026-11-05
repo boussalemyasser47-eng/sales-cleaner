@@ -840,7 +840,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
 
     # 🤖 تشغيل الميزة الثالثة: بوت خدمة العملاء والمساعد الفوري الجانبي التابع لملفك المحسن
     render_sidebar_helper()
-     # ========================================================
+ # ========================================================
     # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
     # ========================================================
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
@@ -883,7 +883,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         current_month = datetime.now().strftime("%Y-%m")
         st.markdown("---")
         
-        # تفعيل آلية الحفظ داخل جلسة العمل لضمان ثبات أزرار التحميل وروابط السوشيال ميديا
         if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون", key="issue_invoice_and_clear_stock_btn"):
             if not customer_name or not product_name: 
                 st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
@@ -896,7 +895,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
                     conne.commit()
                     
-                    # قراءة اللوغو وحفظ الملفات بداخل الـ session_state
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
                     st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
@@ -906,7 +904,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.session_state["last_active_product"] = product_name
                     st.session_state["last_active_total"] = final_total
                     st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
-        # عرض أزرار التحميل والإرسال إذا كانت البيانات متوفرة في جلسة التصفح الحالية
+                    
         if "generated_pdf_invoice" in st.session_state:
             col_btn1, col_btn2 = st.columns(2)
             with col_btn1: 
@@ -925,8 +923,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{st.session_state['last_active_phone']}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
             with send_col2: 
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
-
-        # === إضافة صندوق المعاينة الحية للفاتورة النيونية ===
+                
         st.markdown("---")
         st.subheader("👁️ معاينة حية فورية قبل الحفظ:")
         
@@ -935,39 +932,15 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         preview_product = product_name if product_name else "<i>لم يتم الاختيار بعد</i>"
         
         neon_card_html = f"""
-        <div style="
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 25px;
-            border: 1px solid rgba(0, 255, 240, 0.2);
-            box-shadow: 0 0 20px rgba(0, 255, 240, 0.1), inset 0 0 15px rgba(0, 255, 240, 0.05);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: right;
-            direction: rtl;
-        ">
+        <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border-radius: 12px; padding: 25px; border: 1px solid rgba(0, 255, 240, 0.2); box-shadow: 0 0 20px rgba(0, 255, 240, 0.1), inset 0 0 15px rgba(0, 255, 240, 0.05); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: right; direction: rtl;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(0, 255, 240, 0.3); padding-bottom: 12px; margin-bottom: 15px;">
                 <span style="font-size: 18px; font-weight: bold; color: #00fff0; text-shadow: 0 0 10px rgba(0, 255, 240, 0.5);">🏪 {shop_name}</span>
                 <span style="font-size: 12px; color: #888;">📅 {current_date}</span>
             </div>
-            <div style="margin-bottom: 10px; color: #e0e0e0; font-size: 14px;">
-                <strong>👤 العميل:</strong> <span style="color: #fff;">{preview_customer}</span>
-            </div>
-            <div style="margin-bottom: 10px; color: #e0e0e0; font-size: 14px;">
-                <strong>📞 الهاتف:</strong> <span style="color: #fff; direction: ltr; display: inline-block;">{preview_phone}</span>
-            </div>
-            <div style="margin-bottom: 15px; color: #e0e0e0; font-size: 14px;">
-                <strong>📦 المنتج المطلوب:</strong> <span style="color: #00fff0;">{preview_product} (×{quantity})</span>
-            </div>
-            <div style="
-                background: rgba(0, 255, 240, 0.05);
-                border-radius: 8px;
-                padding: 12px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                border: 1px solid rgba(0, 255, 240, 0.15);
-            ">
+            <div style="margin-bottom: 10px; color: #e0e0e0; font-size: 14px;"><strong>👤 العميل:</strong> <span style="color: #fff;">{preview_customer}</span></div>
+            <div style="margin-bottom: 10px; color: #e0e0e0; font-size: 14px;"><strong>📞 الهاتف:</strong> <span style="color: #fff; direction: ltr; display: inline-block;">{preview_phone}</span></div>
+            <div style="margin-bottom: 15px; color: #e0e0e0; font-size: 14px;"><strong>📦 المنتج المطلوب:</strong> <span style="color: #00fff0;">{preview_product} (×{quantity})</span></div>
+            <div style="background: rgba(0, 255, 240, 0.05); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0, 255, 240, 0.15);">
                 <span style="font-size: 15px; font-weight: bold; color: #fff;">💰 الصافي الإجمالي (شامل الشحن):</span>
                 <span style="font-size: 20px; font-weight: bold; color: #00fff0; text-shadow: 0 0 12px #00fff0;">{final_total:,.2f} DA</span>
             </div>
@@ -975,8 +948,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         """
         st.markdown(neon_card_html, unsafe_allow_html=True)
 
-   
-  
        # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
