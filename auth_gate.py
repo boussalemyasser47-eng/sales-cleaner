@@ -952,22 +952,9 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
 
     # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
     # ========================================================
-    if choice == "✨ صانع الفواتير الاحترافي (PDF)":
-        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
-        st.markdown("### 📊 إحصائيات متجرك الشاملة:")
-        stat_col1, stat_col2, stat_col3 = st.columns(3)
-        
-        total_sales_db = pd.read_sql("SELECT final_total FROM v4_customer_invoices", conne)
-        total_stock_db = pd.read_sql("SELECT SUM(available_qty) as total_qty FROM store_stock", conne)
-        
-        with stat_col1: st.metric(label="💰 إجمالي مداخيل المبيعات", value=f"{total_sales_db['final_total'].sum():,.2f} DA")
-        with stat_col2: st.metric(label="🧾 عدد الفواتير الصادرة", value=f"{len(total_sales_db)} فاتورة")
-        with stat_col3:
-            try: stock_val = int(total_stock_db['total_qty'].values) if not total_stock_db.empty and total_stock_db['total_qty'].values is not None else 0
-            except: stock_val = 0
-            st.metric(label="📦 قطع متوفرة بالمستودع", value=f"{stock_val} حبة")
-            
 
+
+        
         
 
 
