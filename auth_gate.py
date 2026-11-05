@@ -976,7 +976,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         """
         st.markdown(neon_card_html, unsafe_allow_html=True)
 
-     # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
+    # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
@@ -1114,7 +1114,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.download_button(label="📥 تحميل النص نقياً (السريع)", data=hub_data['copy_short'].encode('utf-8'), file_name=f"ad_copy_short_{prod_name}.txt", mime="text/plain")
             
             with tab_hooks:
-                st.write("⚡ **أفضل 5 عناوين مثيرة لجذب انتباه المستهلك الجزائري في أول 3 ثوان:**")
+                st.write("⚡ **أفضل 5 عناوين إعلانية لجذب الانتباه في أول 3 ثوان:**")
                 for hook in hub_data['hooks']:
                     st.info(hook)
                 all_hooks_text = "\n".join(hub_data['hooks'])
@@ -1125,7 +1125,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 col_t1, col_t2 = st.columns(2)
                 with col_t1:
                     st.markdown("🔹 **الاهتمامات والكلمات المفتاحية المقترحة:**")
-                    st.code(f"1. Engaged Shoppers (المتسوقون المتفاعلون)\n2. Online Shopping (التسوق عبر الإنترنت)\n3. E-commerce / Retail\n4. اهتمامات صلة بالمنتج: {prod_name}", language="text")
+                    st.code(f"1. Engaged Shoppers (المتسوقون المتفاعلون)\n2. Online Shopping\n3. E-commerce / Retail\n4. اهتمامات صلة بالمنتج: {prod_name}", language="text")
                     st.markdown("- **الفئة العمرية المثالية:** 22 - 45 سنة\n- **الجنس المستهدف:** رجال ونساء")
                 with col_t2:
                     st.markdown("🗺️ **الولايات الجزائرية الأكثر تفاعلاً وطلباً للسلع:**")
