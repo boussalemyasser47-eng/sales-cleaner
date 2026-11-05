@@ -1418,13 +1418,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold; text-align:center;'>👤 التاجر النشط:<br>{current_merchant}</p>", unsafe_allow_html=True)
     choice = st.sidebar.radio("اختر الأداة:", ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي", "🧼 مطهر ملفات المبيعات وإحصائيات الولايات", "🚀 مولّد الحملات والتخطيط التسويقي (AI)"], key="merchant_nav_radio")
     
-    if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", key="merchant_safe_logout_btn"):
-        if "merchant_db_conn" in st.session_state:
-            st.session_state["merchant_db_conn"].close()
-            st.session_state.pop("merchant_db_conn")
-        st.session_state.pop("active_merchant_user")
-        st.rerun()
-    render_sidebar_helper()
+
 # ========================================================
 # 🏪 الجزء 3 من 5: صانع الفواتير والملصقات الحرارية (PDF)
 # ========================================================
