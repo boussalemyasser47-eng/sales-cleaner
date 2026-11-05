@@ -1349,24 +1349,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         width_pct = max(6, min(100, int((p_qty / max_qty) * 100)))
                         
 
-                        neon_html = f"""
-                        <div style="margin-bottom: 12px; background: #0f0f12; padding: 10px; border-radius: 8px; border: 1px solid #222;">
-                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #fff; margin-bottom: 6px;">
-                                <span><strong>{p_name}</strong> <span style="color: #888;">({p_qty} قطعة)</span></span>
-                                <span style="color: {bar_color}; text-shadow: 0 0 8px {bar_color}; font-weight: bold; font-size: 12px;">{status_text}</span>
-                            </div>
-                            <div style="width: 100%; background-color: #1a1a24; border-radius: 5px; overflow: hidden; height: 8px;">
-                                <div style="width: {width_pct}%; background-color: {bar_color}; height: 8px; border-radius: 5px; box-shadow: 0 0 12px {shadow_color}; transition: all 0.4s ease-in-out;"></div>
-                            </div>
-                        </div>
-                        """
-                        st.write(neon_html, unsafe_allow_html=True)
-                
-                render_neon_stock_fire_bar(stock_df)
-                
-                st.markdown("---")
-                st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
-
                 
                 low_stock = stock_df[stock_df['available_qty'] <= 5]
                 if not low_stock.empty:
