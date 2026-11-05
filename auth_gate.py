@@ -1278,14 +1278,14 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             with send_col2: 
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
 
-    # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
+       # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
         col_add, col_view = st.columns(2)
         with col_add:
 
-
+            if st.button("➕ حفظ في المستودع"):
                 if new_prod:
                     try:
                         cursor.execute("INSERT INTO store_stock (product_name, available_qty) VALUES (?, ?)", (new_prod, new_qty))
@@ -1343,7 +1343,41 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         p_qty = int(row['available_qty'])
                         width_pct = max(6, min(100, int((p_qty / max_qty) * 100)))
                         
-
+                        if p_qty < 5:
+                            bar_color, shadow_color, status_text = "#ff0055", "rgba(255, 0, 85, 0.9)", "🚨 خطر - مخزون حرج جداً!"
+                        elif 5 <= p_qty <= 15:
+                            bar_color, shadow_color, status_text = "#ffcc00", "rgba(255, 204, 0, 0.8)", "⚠️ انتباه - مخزون متوسط"
+                        else:
+                            bar_color, shadow_color, status_text = "#00ff66", "rgba(0, 255, 102, 0.8)", "✅ آمن - مستودع مستقر"
+                            
+                        neon_html = f"""
+                        <div style="margin-bottom: 12px; background: #0f0f12; padding: 10px; border-radius: 8px; border: 1px solid #222;">
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #fff; margin-bottom: 6px;">
+                                <span><strong>{p_name}</strong> <span style="color: #888;">({p_qty} قطعة)</span></span>
+                                <span style="color: {bar_color}; text-shadow: 0 0 8px {bar_color}; font-weight: bold; font-size: 12px;">{status_text}</span>
+                            </div>
+                            <div style="width: 100%; background-color: #1a1a24; border-radius: 5px; overflow: hidden; height: 8px;">
+                                <div style="width: {width_pct}%; background-color: {bar_color}; height: 8px; border-radius: 5px; box-shadow: 0 0 12px {shadow_color}; transition: all 0.4s ease-in-out;"></div>
+                            </div>
+                        </div>
+                        """
+                        st.write(neon_html, unsafe_allow_html=True)
+                
+                render_neon_stock_fire_bar(stock_df)
+                
+                st.markdown("---")
+                st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
+                delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
+                if st.button("❌ محو السلعة المحددة"):
+                    cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
+                    conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
+                
+                low_stock = stock_df[stock_df['available_qty'] <= 5]
+                if not low_stock.empty:
+                    st.markdown("---")
+                    st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
+                    st.dataframe(low_stock)
+            else: st.info("مستودعك خالي تماماً حالياً.")
             
         # === دمج وتطوير منصة بطاقات الاستهداف والإعلانات الذكية للسلع الجديدة ===
         if st.session_state.get("show_premium_ai_hub", False) and "active_ai_marketing_prod" in st.session_state:
@@ -1372,7 +1406,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.rerun()
 
         
-
+        if uploaded_file is not None:
             df_raw, df, duplicated_rows, bad_prices = process_sales_file(uploaded_file)
             st.subheader("📋 1. جدول البيانات الأصلي المرفوع (قبل التطهير):")
             st.dataframe(df_raw, use_container_width=True)
