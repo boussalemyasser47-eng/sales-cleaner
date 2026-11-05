@@ -840,8 +840,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
 
     # 🤖 تشغيل الميزة الثالثة: بوت خدمة العملاء والمساعد الفوري الجانبي التابع لملفك المحسن
     render_sidebar_helper()
- # ========================================================
-    # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
+    # ========================================================
+    # القسم (4 - b): صانع الفواتير والملصقات الحرارية والإحصائيات
     # ========================================================
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
@@ -877,12 +877,12 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             price = st.number_input("سعر القطعة (DA):", min_value=0, value=1200, key="invoice_price_input")
             quantity = st.number_input("الكمية المبيعة:", min_value=1, value=1, key="invoice_quantity_input")
             shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600, key="invoice_shipping_input")
+            
         product_total = price * quantity
         final_total = product_total + shipping_cost
         current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
         current_month = datetime.now().strftime("%Y-%m")
         st.markdown("---")
-        
         if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون", key="issue_invoice_and_clear_stock_btn"):
             if not customer_name or not product_name: 
                 st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
@@ -923,7 +923,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{st.session_state['last_active_phone']}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
             with send_col2: 
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
-                
+        # === إضافة صندوق المعاينة الحية للفاتورة النيونية ===
         st.markdown("---")
         st.subheader("👁️ معاينة حية فورية قبل الحفظ:")
         
@@ -947,6 +947,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         </div>
         """
         st.markdown(neon_card_html, unsafe_allow_html=True)
+
 
        # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
