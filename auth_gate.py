@@ -1290,7 +1290,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         col_add, col_view = st.columns(2)
         with col_add:
 
-            if st.button("➕ حفظ في المستودع"):
+
                 if new_prod:
                     try:
                         cursor.execute("INSERT INTO store_stock (product_name, available_qty) VALUES (?, ?)", (new_prod, new_qty))
