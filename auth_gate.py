@@ -1317,23 +1317,49 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     # ========================================================
       # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
+    # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
+    # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
         col_add, col_view = st.columns(2)
         with col_add:
             st.subheader("📝 إضافة سلعة للمستودع:")
-            new_prod = st.text_input("اسم السلعة الجديدة:")
-            new_qty = st.number_input("الكمية المتوفرة:", min_value=1, value=50)
-            if st.button("➕ حفظ في المستودع"):
+            new_prod = st.text_input("اسم السلعة الجديدة:", key="stock_input_prod_unique_v4")
+            new_qty = st.number_input("الكمية المتوفرة:", min_value=1, value=50, key="stock_input_qty_unique_v4")
+            if st.button("➕ حفظ في المستودع", key="btn_save_prod_stock_v4"):
                 if new_prod:
                     try:
                         cursor.execute("INSERT INTO store_stock (product_name, available_qty) VALUES (?, ?)", (new_prod, new_qty))
                         conne.commit()
                         st.success(f"تم إضافة {new_prod} للمستودع!")
                         
-                        # حقن منطق توليد البيانات الإعلانية الذكية وحفظها فوراً داخل جلسة العمل المستمرة لكي لا تختفي عند إعادة التحديث
-                        st.session_state["active_ai_marketing_prod"] = new_prod
-                        st.session_state["show_premium_ai_hub"] = True
+                        # حساب تفاصيل الإعلان مسبقاً وتخزينها في ذاكرة الجلسة المستمرة لتفادي مسحها بالـ rerun
+                        current_merchant = st.session_state.get('user_email', st.session_state.get('username', "merchant.nexus@nexus-gate.com"))
+                        
+                        copy_dz = f"يا جماعة الخير جبتلكم اليوم حاجة فور بزاف لغادي تهنيكم كامل! 😍\nالمنتج المتميز والمطلوب بقوة [{new_prod}] راهو دخل للمستودع تعنا وبكمية محدودة جداً.\n💎 جودة عالية، كفاءة مثالية، وسعر مدهش ما تلقاوه في حتى بلاصة.\n🚚 التوصيل سريع ومتوفر لـ 58 ولاية جزائرية حتى لباب الدار، والدفع حتى تستلم سلعتك وتفحصها بيدك!\n📥 دبر راسك ما تخليش الفرصة تفوتك وأرسل رسالة لصفحتنا للطلب الآن قبل ما تخلص الكمية!"
+                        copy_ar = f"أخيراً، المنتج الأكثر طلباً وتميزاً [{new_prod}] متوفر الآن بين يديك وبأعلى مواصفات الجودة!\n💎 صُمم هذا المنتج خصيصاً ليلبي احتياجاتكم اليومية بكفاءة لا مثيل لها وبسعر تنافسي للغاية.\n🚚 يسعدنا أن نعلن عن توفر شحن سريع وموثوق إلى جميع الولايات الجزائرية مع ميزة الدفع عند الاستلام.\n📥 لا تترددوا، الكمية محدودة جداً! اضغط على زر 'تسوق الآن' أو أرسل رسالة إلى حسابنا لتأكيد طلبك اليوم."
+                        copy_short = f"السلعة لڨاع تحوسو عليها [{new_prod}] دخلت من جديد وبقوة! 🔥 جودة توب وسعر هبال. الشحن متوفر لـ 58 ولاية والدفع عند الاستلام 🚚 اضغط على الرابط أو ابعت مساج في الخاص واطلب ديالك قبل نفاذ المخزون! 📥"
+                        
+                        h1 = f"1. قبل ما تشري أي حاجة في الجزائر.. شوف واش دخل جديد في [{new_prod}]! 😱"
+                        h2 = f"2. المنتج لڨاع التجار والزبائن يحوسو عليه راهو متوفر أخيراً في المستودع! 🔥"
+                        h3 = f"3. هادي هي السلعة لغادي تهنيك وتوفر عليك الوقت والتعب تع الصح! 💎"
+                        h4 = f"4. ضياع للمال لو كان ما تطلبش [{new_prod}] بسعر الجملة تع اليوم! 💸"
+                        h5 = f"5. الكمية راهي تخلص بزاف.. شوف وعلاش ڨاع الناس تطلب في هذا المنتج المدهش! 📦"
+                        
+                        testing_budget_usd = 20.0
+                        exchange_rate_parallel = 240.0
+                        testing_budget_dzd = testing_budget_usd * exchange_rate_parallel
+                        
+                        st.session_state['premium_marketing_hub'] = {
+                            'merchant': current_merchant,
+                            'product_name': new_prod,
+                            'copy_dz': copy_dz,
+                            'copy_ar': copy_ar,
+                            'copy_short': copy_short,
+                            'hooks': [h1, h2, h3, h4, h5],
+                            'budget_usd': testing_budget_usd,
+                            'budget_dzd': testing_budget_dzd
+                        }
                         
                         time.sleep(0.5)
                         st.rerun()
@@ -1345,8 +1371,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.dataframe(stock_df, use_container_width=True)
                 st.markdown("---")
                 st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
-                delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
-                if st.button("❌ محو السلعة المحددة"):
+                delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'], key="sb_delete_stock_prod_v4")
+                if st.button("❌ محو السلعة المحددة", key="btn_execute_delete_stock_v4"):
                     cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
                     conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
                 
@@ -1391,33 +1417,72 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             else: st.info("مستودعك خالي تماماً حالياً.")
 
         # === دمج وتطوير منصة بطاقات الاستهداف والإعلانات الذكية للسلع الجديدة ===
-        if st.session_state.get("show_premium_ai_hub", False) and "active_ai_marketing_prod" in st.session_state:
+        if 'premium_marketing_hub' in st.session_state:
             st.markdown("---")
-            hub_data = st.session_state.get('premium_marketing_hub', {})
-            if hub_data:
-                prod_name = hub_data.get('product_name', '')
-                merchant_user = hub_data.get('merchant', '')
-                st.write(f"""
-                <div style="background: linear-gradient(135deg, #0c0822, #180030); border: 2px solid #00fff0; border-radius: 16px; padding: 20px; text-align: right; direction: rtl;">
-                    <h3 style="color: #ffffff; margin: 0;">📡 PREMIUM AI MARKETING HUB // المسؤول: {merchant_user}</h3>
-                    <p style="color: #a4a4ba; font-size: 13px; margin: 5px 0 0 0;">تم تأمين السلعة [{prod_name}] تلقائياً وبناء بطاقة فحص مبيعاتها السريعة في المستودع بنجاح.</p>
+            hub_data = st.session_state['premium_marketing_hub']
+            prod_name = hub_data['product_name']
+            merchant_user = hub_data['merchant']
+            
+            st.write(f"""
+            <div style="background: linear-gradient(135deg, #0f0c20, #15002a); border: 2px solid #00fff0; border-radius: 16px; padding: 20px; box-shadow: 0 0 25px rgba(0, 255, 240, 0.2); direction: rtl; text-align: right;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0, 255, 240, 0.3); padding-bottom: 10px; margin-bottom: 15px;">
+                    <span style="color: #00fff0; font-weight: bold; font-size: 16px; text-shadow: 0 0 8px #00fff0;">📡 PREMIUM AI MARKETING HUB v4.0</span>
+                    <span style="color: #e2e2e8; font-family: monospace;">👤 الحساب النشط: {merchant_user}</span>
                 </div>
-                """, unsafe_allow_html=True)
+                <h3 style="color: #ffffff; margin: 0 0 5px 0;">🎉 تم تأمين وحفظ السلعة [{prod_name}] بنجاح في قاعدة البيانات</h3>
+                <p style="color: #b0b0c0; font-size: 13px; margin: 0;">يقوم محرك الذكاء الاصطناعي الآن باستعراض استراتيجية التسويق الشاملة وفحص السوق المستمر دون أي اختفاء للبيانات.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("### 🛠️ لوحة تكتيكات الحملة وصانع المحتوى الذكي")
+            tab_copy, tab_hooks, tab_targeting, tab_budget = st.tabs([
+                "📝 2. نصوص الإعلانات (Ad-Copy)", "⚡ 3. العناوين الصادمة (Hooks)", 
+                "🎯 4. رادار الاستهداف والجمهور", "💰 5. حاسبة ميزانية الفحص"
+            ])
+            
+            with tab_copy:
+                st.write("✨ **اختر القالب النصي المناسب لمنصتك وقم بنسخه أو تحميله نقياً مباشرة:**")
+                sub_tab1, sub_tab2, sub_tab3 = st.tabs(["🇩🇿 قالب الدارجة المحفزة", "✨ قالب الفصحى الإقناعية", "📱 قالب تيك توك وإنستغرام السريع"])
+                with sub_tab1:
+                    st.text_area("نص الدارجة الجزائرية:", value=hub_data['copy_dz'], height=180, key="txt_dz_unique_v4", disabled=True)
+                    st.download_button(label="📥 تحميل النص نقياً (الدارجة)", data=hub_data['copy_dz'].encode('utf-8'), file_name=f"ad_copy_dz_{prod_name}.txt", mime="text/plain", key="dl_dz_unique_v4")
+                with sub_tab2:
+                    st.text_area("نص الفصحى الإقناعية:", value=hub_data['copy_ar'], height=180, key="txt_ar_unique_v4", disabled=True)
+                    st.download_button(label="📥 تحميل النص نقياً (الفصحى)", data=hub_data['copy_ar'].encode('utf-8'), file_name=f"ad_copy_ar_{prod_name}.txt", mime="text/plain", key="dl_ar_unique_v4")
+                with sub_tab3:
+                    st.text_area("نص الخاص القصير:", value=hub_data['copy_short'], height=120, key="txt_short_unique_v4", disabled=True)
+                    st.download_button(label="📥 تحميل النص نقياً (السريع)", data=hub_data['copy_short'].encode('utf-8'), file_name=f"ad_copy_short_{prod_name}.txt", mime="text/plain", key="dl_short_unique_v4")
+            
+            with tab_hooks:
+                st.write("⚡ **أفضل 5 عناوين إعلانية لجذب الانتباه في أول 3 ثوان:**")
+                for i, hook in enumerate(hub_data['hooks']):
+                    st.info(hook)
+                all_hooks_text = "\n".join(hub_data['hooks'])
+                st.download_button(label="📥 تحميل قائمة العناوين بالكامل", data=all_hooks_text.encode('utf-8'), file_name=f"hooks_{prod_name}.txt", mime="text/plain", key="dl_hooks_unique_v4")
                 
-                t_c, t_h, t_b = st.tabs(["📝 النصوص الإعلانية", "⚡ العناوين الصادمة", "💰 الميزانية المقترحة"])
-                with t_c:
-                    st.text_area("قالب الدارجة:", value=hub_data.get('copy_dz', ''), height=120, disabled=True)
-                with t_h:
-                    for h in hub_data.get('hooks', []): st.info(h)
-                with t_b:
-                    st.metric(label="ميزانية الفحص اليومية", value=f"{hub_data.get('budget_usd', 0)} USD", delta=f"{hub_data.get('budget_dzd', 0)} DA")
-                if st.button("❌ إغلاق المعاينة التسويقية"):
-                    if "active_ai_marketing_prod" in st.session_state: del st.session_state["active_ai_marketing_prod"]
-                    st.session_state["show_premium_ai_hub"] = False
-                    st.rerun()
+            with tab_targeting:
+                st.write("🎯 **رادار البيانات والاهتمامات الدقيقة لمدير إعلانات فيسبوك (Facebook Ads):**")
+                col_t1, col_t2 = st.columns(2)
+                with col_t1:
+                    st.markdown("🔹 **الاهتمامات والكلمات المفتاحية المقترحة:**")
+                    st.code(f"1. Engaged Shoppers (المتسوقون المتفاعلون)\n2. Online Shopping\n3. E-commerce / Retail\n4. اهتمامات صلة بالمنتج: {prod_name}", language="text")
+                    st.markdown("- **الفئة العمرية المثالية:** 22 - 45 سنة\n- **الجنس المستهدف:** رجال ونساء")
+                with col_t2:
+                    st.markdown("🗺️ **الولايات الجزائرية الأكثر تفاعلاً وطلباً للسلع:**")
+                    st.write("1. **الجزائر العاصمة** (طلب قياسي)\n2. **وهران** (القوة الشرائية العالية بالغرب)\n3. **سطيف وقسنطينة** (مراكز تجارية كبرى بالشرق)\n4. **البليدة وتيبازة** (معدل تسليم وتوصيل جد مرتفع)")
+                    
+            with tab_budget:
+                st.write("💰 **حاسبة ميزانية الفحص والـ Testing لحماية رأس مال التاجر من الخسارة:**")
+                st.metric(label="ميزانية الفحص اليومية المقترحة (Testing Budget)", value=f"{hub_data['budget_usd']:,.2f} USD")
+                st.metric(label="ما يقابلها في السوق الجزائرية الموازية (Square Rate)", value=f"{hub_data['budget_dzd']:,.2f} DA", delta="معدل تفادي خسارة مسبق")
+                st.write("💡 **نصيحة التسويق:** يُنصح بإطلاق إعلان الفحص لمدة **3 أيام كاملة** على ولايات محددة قبل رفع الميزانية وتكبير كميات التوريد.")
+                
+            if st.button("❌ إغلاق المعاينة", key="btn_close_hub_preview_v4"):
+                del st.session_state['premium_marketing_hub']
+                st.rerun()
     elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
-        uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
+        uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"], key="sales_uploader_file_unique_v4")
         
         if uploaded_file is not None:
             df_raw, df, duplicated_rows, bad_prices = process_sales_file(uploaded_file)
@@ -1454,7 +1519,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
                 else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
             csv_buffer = df.to_csv(index=False).encode('utf-8')
-            st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
+            st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv", key="dl_clean_sales_csv_v4")
+            
     elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
         # === إضافات المستودع ومطهر البيانات ومولد حملات الـ AI ===
         def render_marketing_hub_cyber_edition():
@@ -1463,12 +1529,12 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             col_input, col_output = st.columns(2)
             with col_input:
                 st.subheader("⚙️ موجه الأتمتة الإعلانية:")
-                ai_prod_name = st.text_input("اسم المنتج المراد تسويقه:", value="خلاط كهربائي محمول ذكي")
-                prod_desc = st.text_area("وصف مختصر أو مميزات السلعة الرئيسية:", value="شحن سريع، شفرات حادة من الفولاذ، بطارية تدوم طويلاً، مثالي للرياضيين والمكتب.")
-                prod_price = st.number_input("سعر بيع المنتج النهائي في الجزائر (DA):", min_value=100, value=3500)
-                daily_budget = st.number_input("الميزانية الإعلانية اليومية المستهدفة (USD):", min_value=5, value=20)
-                platform_choice = st.radio("🎯 منصة إطلاق الإعلان المستهدفة:", ["Facebook Ads", "TikTok Ads"], horizontal=True)
-                run_generation = st.button("🧠 تشغيل العقل السيبراني وتوليد الحملة فوراً")
+                ai_prod_name = st.text_input("اسم المنتج المراد تسويقه:", value="خلاط كهربائي محمول ذكي", key="cyber_input_title_v4")
+                prod_desc = st.text_area("وصف مختصر أو مميزات السلعة الرئيسية:", value="شحن سريع، شفرات حادة من الفولاذ، بطارية تدوم طويلاً، مثالي للرياضيين والمكتب.", key="cyber_input_desc_v4")
+                prod_price = st.number_input("سعر بيع المنتج النهائي في الجزائر (DA):", min_value=100, value=3500, key="cyber_input_price_v4")
+                daily_budget = st.number_input("الميزانية الإعلانية اليومية المستهدفة (USD):", min_value=5, value=20, key="cyber_input_budget_v4")
+                platform_choice = st.radio("🎯 منصة إطلاق الإعلان المستهدفة:", ["Facebook Ads", "TikTok Ads"], horizontal=True, key="cyber_input_platform_v4")
+                run_generation = st.button("🧠 تشغيل العقل السيبراني وتوليد الحملة فوراً", key="btn_run_cyber_gen_v4")
                 
             with col_output:
                 st.subheader("📱 مستعرض المنشورات والبطاقات الزجاجية المفتوحة:")
@@ -1520,15 +1586,21 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                             ang1 = f"عيت من الخلاطات الكبار ل يرفدو البلاصة ويديرو الحس؟ 🤦 واش رايك في خلاط ذكي محمول يروح معاك وين تروح! **{clean_input}** يخلطلك العواصير والبروتين ديالك في ثواني وبلا تعب، خفيف وشاحن سريع وعملي بزاف تهنى من المشكل اليوم!"
                             ang2 = f"الأناقة تلتقي مع الأداء العالي الرائع ✨ ارتقِ بأسلوب حياتك اليومي مع **[{clean_input}]**، التصميم الزجاجي الفريد واللمسة العصرية تمنحك برستيج خاص ومميز في مكتبك أو النادي الرياضي."
                             ang3 = f"🚨 تخفيض صدمة ومؤقت لفترة جد محدودة! المنتج الأكثر طلباً **[{clean_input}]** متوفر الآن بخصم خاص يعادل 30% من السعر الأصلي والمخزون أوشك على النفاذ تماماً بالمستودع!"
-                            st.markdown(f"**🛠️ زاوية حل المشكلة (بالدارجة الجزائرية):**\n{ang1}")
-                            st.markdown(f"**💎 زاوية الفخامة والبرستيج الاجتماعي:**\n{ang2}")
-                            st.markdown(f"**🚨 زاوية العرض الاستعجالي الصادم:**\n{ang3}")
+                            
+                            st.markdown(f"""<div style="background: rgba(255, 0, 255, 0.02); border: 1px solid #ff00ff; border-radius: 10px; padding: 14px; margin-bottom: 12px; direction: rtl; text-align: right;"><b style="color: #ff00ff; font-size: 14px;">🛠️ زاوية حل المشكلة (بالدارجة الجزائرية):</b><br><p style="color: #ffffff; font-size: 14.5px; line-height: 1.6; font-weight: 500; margin-top: 6px; margin-bottom: 0;">{ang1}</p></div>""", unsafe_allow_html=True)
+                            st.download_button(label="📥 نسخ كود نص حل المشكلة نقياً", data=ang1.encode('utf-8'), file_name="angle_problem.txt", mime="text/plain", key="dl_cyber_ang1_v4")
+                            
+                            st.markdown(f"""<div style="background: rgba(255, 0, 255, 0.02); border: 1px solid #ff00ff; border-radius: 10px; padding: 14px; margin-bottom: 12px; direction: rtl; text-align: right;"><b style="color: #ff00ff; font-size: 14px;">💎 زاوية الفخامة والبرستيج الاجتماعي:</b><br><p style="color: #ffffff; font-size: 14.5px; line-height: 1.6; font-weight: 500; margin-top: 6px; margin-bottom: 0;">{ang2}</p></div>""", unsafe_allow_html=True)
+                            st.download_button(label="📥 نسخ كود نص البرستيج نقياً", data=ang2.encode('utf-8'), file_name="angle_prestige.txt", mime="text/plain", key="dl_cyber_ang2_v4")
+                            
+                            st.markdown(f"""<div style="background: rgba(255, 0, 255, 0.02); border: 1px solid #ff00ff; border-radius: 10px; padding: 14px; margin-bottom: 12px; direction: rtl; text-align: right;"><b style="color: #ff00ff; font-size: 14px;">🚨 زاوية العرض الاستعجالي الصادم:</b><br><p style="color: #ffffff; font-size: 14.5px; line-height: 1.6; font-weight: 500; margin-top: 6px; margin-bottom: 0;">{ang3}</p></div>""", unsafe_allow_html=True)
+                            st.download_button(label="📥 نسخ كود نص العرض الاستعجالي نقياً", data=ang3.encode('utf-8'), file_name="angle_flash_sale.txt", mime="text/plain", key="dl_cyber_ang3_v4")
                         with t_script:
                             s1 = f"**[00:00 - 00:03] الـ Hook الصادم:** لقطة سريعة لشخص يعاني مع خلاط قديم ثقيل يصدر ضوضاء، مع كتابة نص عريض (حبس! هاد السلعة غادي تبدل حياتك تع الصح! 😱)\n"
                             s2 = f"**[00:03 - 00:10] عرض المشكلة والحاجة:** الخلاطات الكبار يعطلو في الكوزينة وصعاب في الغسيل خاصة كي تكون زربان ورايح للخدمة.\n"
                             s3 = f"**[00:10 - 00:20] استعراض السلعة وطريقة العمل:** لقطة مقربة لمنتج **[{clean_input}]** وهو يطحن المكونات والفاكهة بسلاسة بفضل الشفرات الفولاذية الحادة.\n"
                             s4 = f"**[00:20 - 00:30] الـ Call To Action النهائي:** التوصيل متوفر وسريع لـ 58 ولاية جزائرية كاملة لباب دارك والدفع عند الاستلام 🚚 اضغط على زر الرابط واطلب ديالك الآن!"
-                            st.markdown(f"**🎥 خطة إنتاج وفيديو السيناريو:**\n{s1}\n{s2}\n{s3}\n{s4}")
+                            st.markdown(f"""**🎥 خطة إنتاج وفيديو السيناريو (Ad Video Script):**\n{s1}\n{s2}\n{s3}\n{s4}""", unsafe_allow_html=True)
                         with t_radar:
                             st.write("📡 **رادار الاستهداف الذكي وتصنيف الولايات الجغرافية الأعلى تسليماً:**")
                             col_r1, col_r2 = st.columns(2)
@@ -1544,13 +1616,13 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                             expected_net_profit = (estimated_sales * prod_price) - ((daily_budget * 240.0) + (estimated_sales * (prod_price * 0.4)))
                             st.metric(label="عدد المبيعات اليومية المتوقعة تقريباً", value=f"~ {estimated_sales} مبيعة / يوم")
                             st.metric(label="صافي الأرباح الحقيقية المتوقعة (DA)", value=f"{expected_net_profit:,.2f} DA")
-                        if st.button("🧼 تصفية الواجهة ومحو بيانات الفحص"):
+                        if st.button("🧼 تصفية الواجهة ومحو بيانات الفحص", key="btn_clear_cyber_hub_v4"):
                             if 'cyber_hub_active' in st.session_state: del st.session_state['cyber_hub_active']
                             st.rerun()
-                            
+                else:
+                    st.info("💡 في انتظار تحديد الإعدادات.. أدخل بيانات منتجك وسعر بيعه وميزانيتك واضغط على زر التوليد لتنبثق المنصة السيبرانية الفاخرة المفتوحة.")
+                    
         render_marketing_hub_cyber_edition()
         
     # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
     conne.close()
-
-
