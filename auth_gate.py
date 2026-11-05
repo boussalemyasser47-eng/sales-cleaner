@@ -1411,9 +1411,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     if "active_ai_marketing_prod" in st.session_state: del st.session_state["active_ai_marketing_prod"]
                     st.session_state["show_premium_ai_hub"] = False
                     st.rerun()
-    elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
-        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
-        uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
+
         
         if uploaded_file is not None:
             df_raw, df, duplicated_rows, bad_prices = process_sales_file(uploaded_file)
