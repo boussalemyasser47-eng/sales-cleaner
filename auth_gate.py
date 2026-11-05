@@ -1289,9 +1289,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
         col_add, col_view = st.columns(2)
         with col_add:
-            st.subheader("📝 إضافة سلعة للمستودع:")
-            new_prod = st.text_input("اسم السلعة الجديدة:")
-            new_qty = st.number_input("الكمية المتوفرة:", min_value=1, value=50)
+
             if st.button("➕ حفظ في المستودع"):
                 if new_prod:
                     try:
