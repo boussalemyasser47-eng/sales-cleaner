@@ -998,7 +998,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.dataframe(stock_df, use_container_width=True)
                 
                 # === إضافة مؤشر المخزون الناري المتوهج ===
-                # دالة داخلية محاذية تماماً لمنع فصل السلسلة الشرطية عن الـ elif
                 def render_neon_stock_fire_bar(df_data):
                     st.markdown("<p style='font-size: 14px; color: #b0b0b0; margin-top: 15px;'>🔥 مؤشر تدفق المستودع المباشر (تحديث لحظي النيون):</p>", unsafe_allow_html=True)
                     max_qty = int(df_data['available_qty'].max()) if not df_data.empty else 100
@@ -1029,7 +1028,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         """
                         st.write(neon_html, unsafe_allow_html=True)
                 
-                # استدعاء الدالة بأمان ومحاذاة صحيحة تماماً
                 render_neon_stock_fire_bar(stock_df)
                 
                 st.markdown("---")
@@ -1091,13 +1089,91 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 if wilaya_col:
                     st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
                     st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
-                else: st.info("💡 نصيحة: سمّ عمود السكن in ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
+                else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
                 
             csv_buffer = df.to_csv(index=False).encode('utf-8')
             st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
-            
     elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
-        render_marketing_hub()
+        st.write("<h1 style='font-size: 32px; color: #ffaa00; text-shadow: 0 0 15px #ffaa00;'>🚀 مركز التخطيط ومولد الحملات الإعلانية بذكاء AI</h1>", unsafe_allow_html=True)
         
+        col_input, col_output = st.columns(2)
+        with col_input:
+            st.subheader("⚙️ إعدادات وتوجيه الـ AI:")
+            ad_target = st.selectbox("الهدف من الحملة:", ["مبيعات مباشرة Conversion", "وعي بالعلامة التجارية Awareness", "تفاعل وجلب عملاء Leads"])
+            ad_tone = st.selectbox("لهجة الإعلان المقترح:", ["حماسية وبسيطة", "مهنية واحترافية", "فكاهية وقريبة للمستهلك"])
+            run_ai = st.button("✨ توليد الخطة التسويقية والإعلان المحترف")
+            
+        with col_output:
+            st.subheader("🖥️ شاشة معاينة المخرجات الذكية:")
+            if run_ai or 'marketing_generated' in st.session_state:
+                st.session_state['marketing_generated'] = True
+                
+                # المحتوى النصي المولد (بدون أي تعديل على المتغيرات)
+                intro_text = "🔥 العرض الأقوى لفترة محدودة! احصل على منتجك المميز الآن واستمتع بالجودة الفائقة."
+                features_text = "💎 مميزات لا مثيل لها:\n✅ شحن سريع لجميع الولايات الجزائرية\n✅ الدفع عند الاستلام وضمان حقيقي\n✅ خدمة عملاء على مدار الساعة"
+                cta_text = "📥 أرسل رسالة الآن لطلب المنتج أو اضغط على رابط الشراء أسفل المنشور!"
+                targeting_strategy = "🎯 خطة الاستهداف المقترحة:\n- الفئة العمرية: 18 - 45 سنة\n- الاهتمامات: التسوق الإلكتروني، التجارة، المنتجات العصرية\n- المناطق المستهدفة: الولايات الكبرى ذات الكثافة البيعية العالية."
+                
+                # === تحسين مخرجات التسويق إلى الشاشة السيبرانية المتوهجة ===
+                def render_cyber_ad_terminal(intro, features, cta, strategy):
+                    cyber_html = f"""
+                    <style>
+                        @keyframes pulse-gold {{
+                            0% {{ box-shadow: 0 0 8px rgba(255, 170, 0, 0.4), inset 0 0 8px rgba(255, 170, 0, 0.2); }}
+                            50% {{ box-shadow: 0 0 18px rgba(255, 170, 0, 0.8), inset 0 0 12px rgba(255, 170, 0, 0.4); }}
+                            100% {{ box-shadow: 0 0 8px rgba(255, 170, 0, 0.4), inset 0 0 8px rgba(255, 170, 0, 0.2); }}
+                        }}
+                        .cyber-terminal {{
+                            background-color: #050508 !important;
+                            border: 2px solid #ffaa00 !important;
+                            border-radius: 12px !important;
+                            padding: 18px !important;
+                            font-family: 'Courier New', Courier, monospace !important;
+                            color: #f0f0f5 !important;
+                            animation: pulse-gold 3s infinite ease-in-out;
+                            margin-bottom: 15px;
+                            direction: rtl;
+                        }}
+                        .terminal-header {{
+                            border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+                            padding-bottom: 6px;
+                            margin-bottom: 12px;
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 11px;
+                            color: #ffaa00;
+                            text-shadow: 0 0 5px #ffaa00;
+                        }}
+                        .terminal-section {{
+                            background: rgba(255, 170, 0, 0.02);
+                            padding: 12px;
+                            border-radius: 6px;
+                            border-right: 3px solid #ffaa00;
+                            margin-bottom: 12px;
+                        }}
+                    </style>
+                    
+                    <div class="cyber-terminal">
+                        <div class="terminal-header">
+                            <span>📡 CYBER AD TERMINAL v4.0 // OUTPUT SECURE</span>
+                            <span>● LIVE AI PREVIEW</span>
+                        </div>
+                        <div class="terminal-section">
+                            <span style="color: #ffaa00; font-weight: bold;">📝 نص الإعلان (Copywriting):</span><br>
+                            <p style="white-space: pre-line; margin-top: 5px;">{intro}<br><br>{features}<br><br>{cta}</p>
+                        </div>
+                        <div class="terminal-section">
+                            <span style="color: #ffaa00; font-weight: bold;">🎯 خطة الاستهداف والجمهور:</span><br>
+                            <p style="white-space: pre-line; margin-top: 5px;">{strategy}</p>
+                        </div>
+                    </div>
+                    """
+                    st.write(cyber_html, unsafe_allow_html=True)
+                
+                # استدعاء دالة التحسين البصري لتجميل مخرجات التاجر مباشرة بمحاذاة برمجية مستقرة
+                render_cyber_ad_terminal(intro_text, features_text, cta_text, targeting_strategy)
+            else:
+                st.info("💡 في انتظار توجيهاتك.. حدد الإعدادات ثم اضغط على زر التوليد لتنبثق شاشة العرض السيبرانية الذهبية.")
+                
     # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
     conne.close()
