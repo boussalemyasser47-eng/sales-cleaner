@@ -969,28 +969,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             
         st.markdown("---")
         col_left, col_right = st.columns(2)
-        with col_left:
-            st.subheader("🏪 معلومات المتجر والزبون")
-            shop_name = st.text_input("اسم متجرك الإلكتروني:", "DZ Cyber Store", key="invoice_shop_name_input")
-            customer_name = st.text_input("اسم الزبون الكامل:", key="invoice_customer_name_input")
-            customer_phone = st.text_input("رقم هاتف الزبون:", key="invoice_customer_phone_input")
-            customer_address = st.text_input("عنوان التوصيل والولاية:", key="invoice_customer_address_input")
-            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
-        with col_right:
-            st.subheader("📦 تفاصيل السلعة والحسابات")
-            stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
-            if not stock_products.empty: 
-                product_name = st.selectbox("اختر المنتج من المخزون:", stock_products['product_name'], key="invoice_product_selectbox")
-            else: 
-                product_name = st.text_input("اسم المنتج (قم بإضافته للمخزون أولاً):", key="invoice_product_manual_input")
-            price = st.number_input("سعر القطعة (DA):", min_value=0, value=1200, key="invoice_price_input")
-            quantity = st.number_input("الكمية المبيعة:", min_value=1, value=1, key="invoice_quantity_input")
-            shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600, key="invoice_shipping_input")
-        product_total = price * quantity
-        final_total = product_total + shipping_cost
-        current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
-        current_month = datetime.now().strftime("%Y-%m")
-        st.markdown("---")
+
         
 
 
