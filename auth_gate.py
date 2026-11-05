@@ -1035,12 +1035,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
                 render_neon_stock_fire_bar(stock_df)
                 
-                st.markdown("---")
-                st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
-                delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
-                if st.button("❌ محو السلعة المحددة"):
-                    cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
-                    conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
+
                 
                 low_stock = stock_df[stock_df['available_qty'] <= 5]
                 if not low_stock.empty:
