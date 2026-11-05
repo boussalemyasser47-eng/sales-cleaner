@@ -1036,7 +1036,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
 
 
-         # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
+ 
+       # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
@@ -1122,7 +1123,12 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
                 render_neon_stock_fire_bar(stock_df)
                 
-
+                st.markdown("---")
+                st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
+                delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
+                if st.button("❌ محو السلعة المحددة"):
+                    cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
+                    conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
                 
                 low_stock = stock_df[stock_df['available_qty'] <= 5]
                 if not low_stock.empty:
@@ -1279,4 +1285,4 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         
                         st.markdown(f"""<div style="background: rgba(0, 255, 240, 0.02); border: 1px solid #00fff0; border-radius: 10px; padding: 16px; margin-bottom: 12px; box-shadow: 0 0 10px rgba(0, 255, 240, 0.1); direction: rtl; text-align: right;"><b style="color: #00fff0; font-size: 14px;">🎥 خطة إنتاج وفيديو السيناريو (Ad Video Script):</b><br><div style="color: #ffffff; font-size: 14px; line-height: 1.8; margin-top: 10px; white-space: pre-line;">{full_script_markdown}</div></div>""", unsafe_allow_html=True)
                         st.download_button(label="📥 تحميل ملف السيناريو بالثواني كاملاً", data=full_script_markdown.encode('utf-8'), file_name="video_script.txt", mime="text/plain")
-    # ========================================================
+                        
