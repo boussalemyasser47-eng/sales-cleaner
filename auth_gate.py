@@ -1279,7 +1279,9 @@ elif choice == "🚀 مولّد الحملات والتخطيط التسويقي
                 render_live_ad_phone_mockup(intro_text, features_text, cta_text, targeting_strategy)
             else:
                 st.info("💡 في انتظار توجيهاتك.. حدد الإعدادات ثم اضغط على زر التوليد لتنبثق شاشة محاكي الهاتف الذكي الفيروزي.")
-
+                
     # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
     conne.close()
+
+
 
