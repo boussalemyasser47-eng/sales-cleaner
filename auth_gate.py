@@ -841,7 +841,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     # 🤖 تشغيل الميزة الثالثة: بوت خدمة العملاء والمساعد الفوري الجانبي التابع لملفك المحسن
     render_sidebar_helper()
 
-        # ========================================================
+     # ========================================================
     # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
     # ========================================================
     if choice == "✨ صانع الفواتير الاحترافي (PDF)":
@@ -868,7 +868,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             customer_phone = st.text_input("رقم هاتف الزبون:", key="invoice_customer_phone_input")
             customer_address = st.text_input("عنوان التوصيل والولاية:", key="invoice_customer_address_input")
             uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
-
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
@@ -879,12 +878,10 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             price = st.number_input("سعر القطعة (DA):", min_value=0, value=1200, key="invoice_price_input")
             quantity = st.number_input("الكمية المبيعة:", min_value=1, value=1, key="invoice_quantity_input")
             shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600, key="invoice_shipping_input")
-
         product_total = price * quantity
         final_total = product_total + shipping_cost
         current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
         current_month = datetime.now().strftime("%Y-%m")
-
         st.markdown("---")
         
         # تفعيل آلية الحفظ داخل جلسة العمل لضمان ثبات أزرار التحميل وروابط السوشيال ميديا
@@ -910,7 +907,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.session_state["last_active_product"] = product_name
                     st.session_state["last_active_total"] = final_total
                     st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
-
         # عرض أزرار التحميل والإرسال إذا كانت البيانات متوفرة في جلسة التصفح الحالية
         if "generated_pdf_invoice" in st.session_state:
             col_btn1, col_btn2 = st.columns(2)
@@ -918,10 +914,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.download_button(label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", data=st.session_state["generated_pdf_invoice"], file_name=f"invoice_{st.session_state['last_active_customer']}.pdf", mime="application/pdf", key="dl_invoice_pdf_btn")
             with col_btn2: 
                 st.download_button(label="🖨️ تحميل ملصق الشحن الحراري 4x4 (PDF)", data=st.session_state["generated_pdf_label"], file_name=f"thermal_label_{st.session_state['last_active_customer']}.pdf", mime="application/pdf", key="dl_label_pdf_btn")
-
             if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة", key="quick_thermal_print_window_btn"): 
                 st.components.v1.html("<script>window.print();</script>", height=0)
-
             st.markdown("---")
             st.subheader("📲 أزرار الإرسال السريع الفوري لزبونك:")
             msg_text = f"مرحباً {st.session_state['last_active_customer']}، تم تأكيد طلبيتك بنجاح من متجر {st.session_state['last_active_shop']}. المنتج: {st.session_state['last_active_product']}، الإجمالي للدفع هو: {st.session_state['last_active_total']:,} DA."
@@ -932,6 +926,55 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{st.session_state['last_active_phone']}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
             with send_col2: 
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
+
+        # === إضافة صندوق المعاينة الحية للفاتورة النيونية ===
+        st.markdown("---")
+        st.subheader("👁️ معاينة حية فورية قبل الحفظ:")
+        
+        preview_customer = customer_name if customer_name else "<i>لم يتم الإدخال بعد</i>"
+        preview_phone = customer_phone if customer_phone else "<i>لم يتم الإدخال بعد</i>"
+        preview_product = product_name if product_name else "<i>لم يتم الاختيار بعد</i>"
+        
+        neon_card_html = f"""
+        <div style="
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid rgba(0, 255, 240, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 240, 0.1), inset 0 0 15px rgba(0, 255, 240, 0.05);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: right;
+            direction: rtl;
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(0, 255, 240, 0.3); padding-bottom: 12px; margin-bottom: 15px;">
+                <span style="font-size: 18px; font-weight: bold; color: #00fff0; text-shadow: 0 0 10px rgba(0, 255, 240, 0.5);">🏪 {shop_name}</span>
+                <span style="font-size: 12px; color: #888;">📅 {current_date}</span>
+            </div>
+            <div style="margin-bottom: 10px; color: #e0e0e0; font-size: 14px;">
+                <strong>👤 العميل:</strong> <span style="color: #fff;">{preview_customer}</span>
+            </div>
+            <div style="margin-bottom: 10px; color: #e0e0e0; font-size: 14px;">
+                <strong>📞 الهاتف:</strong> <span style="color: #fff; direction: ltr; display: inline-block;">{preview_phone}</span>
+            </div>
+            <div style="margin-bottom: 15px; color: #e0e0e0; font-size: 14px;">
+                <strong>📦 المنتج المطلوب:</strong> <span style="color: #00fff0;">{preview_product} (×{quantity})</span>
+            </div>
+            <div style="
+                background: rgba(0, 255, 240, 0.05);
+                border-radius: 8px;
+                padding: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border: 1px solid rgba(0, 255, 240, 0.15);
+            ">
+                <span style="font-size: 15px; font-weight: bold; color: #fff;">💰 الصافي الإجمالي (شامل الشحن):</span>
+                <span style="font-size: 20px; font-weight: bold; color: #00fff0; text-shadow: 0 0 12px #00fff0;">{final_total:,.2f} DA</span>
+            </div>
+        </div>
+        """
+        st.markdown(neon_card_html, unsafe_allow_html=True)
 
     # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
