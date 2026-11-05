@@ -1036,13 +1036,15 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
 
 
-    # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
+         # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
         col_add, col_view = st.columns(2)
         with col_add:
-
+            st.subheader("📝 إضافة سلعة للمستودع:")
+            new_prod = st.text_input("اسم السلعة الجديدة:")
+            new_qty = st.number_input("الكمية المتوفرة:", min_value=1, value=50)
             if st.button("➕ حفظ في المستودع"):
                 if new_prod:
                     try:
@@ -1077,9 +1079,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                             'budget_usd': testing_budget_usd,
                             'budget_dzd': testing_budget_dzd
                         }
-                        
-                        st.session_state["active_ai_marketing_prod"] = new_prod
-                        st.session_state["show_premium_ai_hub"] = True
                         
                         time.sleep(0.5)
                         st.rerun()
@@ -1123,12 +1122,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
                 render_neon_stock_fire_bar(stock_df)
                 
-                st.markdown("---")
-                st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
-                delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
-                if st.button("❌ محو السلعة المحددة"):
-                    cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
-                    conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
+
                 
                 low_stock = stock_df[stock_df['available_qty'] <= 5]
                 if not low_stock.empty:
@@ -1136,14 +1130,14 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
                     st.dataframe(low_stock)
             else: st.info("مستودعك خالي تماماً حالياً.")
-            
+
         # === دمج وتطوير منصة بطاقات الاستهداف والإعلانات الذكية للسلع الجديدة ===
         if st.session_state.get("show_premium_ai_hub", False) and "active_ai_marketing_prod" in st.session_state:
             st.markdown("---")
             hub_data = st.session_state.get('premium_marketing_hub', {})
             if hub_data:
-                prod_name = hub_data.get('product_name', '')
-                merchant_user = hub_data.get('merchant', '')
+                prod_name = hub_data['product_name']
+                merchant_user = hub_data['merchant']
                 st.write(f"""
                 <div style="background: linear-gradient(135deg, #0c0822, #180030); border: 2px solid #00fff0; border-radius: 16px; padding: 20px; text-align: right; direction: rtl;">
                     <h3 style="color: #ffffff; margin: 0;">📡 PREMIUM AI MARKETING HUB // المسؤول: {merchant_user}</h3>
@@ -1153,16 +1147,18 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
                 t_c, t_h, t_b = st.tabs(["📝 النصوص الإعلانية", "⚡ العناوين الصادمة", "💰 الميزانية المقترحة"])
                 with t_c:
-                    st.text_area("قالب الدارجة:", value=hub_data.get('copy_dz', ''), height=120, disabled=True)
+                    st.text_area("قالب الدارجة:", value=hub_data['copy_dz'], height=120, disabled=True)
                 with t_h:
-                    for h in hub_data.get('hooks', []): st.info(h)
+                    for h in hub_data['hooks']: st.info(h)
                 with t_b:
-                    st.metric(label="ميزانية الفحص اليومية", value=f"{hub_data.get('budget_usd', 0)} USD", delta=f"{hub_data.get('budget_dzd', 0)} DA")
+                    st.metric(label="ميزانية الفحص اليومية", value=f"{hub_data['budget_usd']} USD", delta=f"{hub_data['budget_dzd']} DA")
                 if st.button("❌ إغلاق المعاينة التسويقية"):
-                    if "active_ai_marketing_prod" in st.session_state: del st.session_state["active_ai_marketing_prod"]
+                    del st.session_state["active_ai_marketing_prod"]
                     st.session_state["show_premium_ai_hub"] = False
                     st.rerun()
-
+    elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
+        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
+        uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
         
         if uploaded_file is not None:
             df_raw, df, duplicated_rows, bad_prices = process_sales_file(uploaded_file)
@@ -1200,7 +1196,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
             csv_buffer = df.to_csv(index=False).encode('utf-8')
             st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
-            
+
     elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
         # === إضافات المستودع ومطهر البيانات ومولد حملات الـ AI ===
         def render_marketing_hub_cyber_edition():
@@ -1209,92 +1205,78 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             col_input, col_output = st.columns(2)
             with col_input:
                 st.subheader("⚙️ موجه الأتمتة الإعلانية:")
-                ai_prod_name = st.text_input("اسم المنتج المراد تسويقه:", value="خلاط كهربائي محمول ذكي")
+                prod_title = st.text_input("اسم المنتج المراد تسويقه:", value="خلاط كهربائي محمول ذكي")
                 prod_desc = st.text_area("وصف مختصر أو مميزات السلعة الرئيسية:", value="شحن سريع، شفرات حادة من الفولاذ، بطارية تدوم طويلاً، مثالي للرياضيين والمكتب.")
                 prod_price = st.number_input("سعر بيع المنتج النهائي في الجزائر (DA):", min_value=100, value=3500)
                 daily_budget = st.number_input("الميزانية الإعلانية اليومية المستهدفة (USD):", min_value=5, value=20)
                 platform_choice = st.radio("🎯 منصة إطلاق الإعلان المستهدفة:", ["Facebook Ads", "TikTok Ads"], horizontal=True)
-                run_generation = st.button("🧠 تشغيل العقل السيبراني وتوليد الحملة فوراً")
+                run_generation = st.button("✨ تشغيل الأتمتة وصياغة الحملة الفاخرة")
                 
             with col_output:
                 st.subheader("📱 مستعرض المنشورات والبطاقات الزجاجية المفتوحة:")
                 if run_generation or 'cyber_hub_active' in st.session_state:
-                    clean_input = ai_prod_name.strip()
-                    is_gibberish = False
+                    st.session_state['cyber_hub_active'] = True
                     
-                    if len(clean_input) > 0:
-                        unique_chars = set(clean_input.replace(" ", ""))
-                        char_ratio = len(unique_chars) / len(clean_input.replace(" ", "")) if len(clean_input.replace(" ", "")) > 0 else 1
-                        forbidden_gibberish = ["مي اونيبثب", "مشيسويسي", "asdasd", "qwerty", "zxcv"]
-                        if any(gib in clean_input.lower() for gib in forbidden_gibberish) or (len(clean_input) >= 6 and char_ratio < 0.35):
-                            is_gibberish = True
+                    # 5. عداد تقييم قوة الإعلان (AI Ad Score Meter)
+                    score = 40
+                    if len(prod_title) > 5: score += 20
+                    if len(prod_desc) > 30: score += 25
+                    if "شحن" in prod_desc or "ضمان" in prod_desc or "سريع" in prod_desc: score += 10
+                    score = min(100, score)
                     
-                    if is_gibberish or not clean_input:
-                        st.write(f"""
-                        <div style="background: rgba(255, 0, 85, 0.05); border: 2px dashed #ff0055; padding: 18px; border-radius: 12px; box-shadow: 0 0 15px rgba(255, 0, 85, 0.2); direction: rtl; text-align: right; margin-bottom: 20px;">
-                            <b style="color: #ff0055; font-size: 15px; text-shadow: 0 0 5px #ff0055;">⚠️ إدخال غير مفهوم أو عشوائي:</b>
-                            <p style="color: #e2e2e8; font-size: 13.5px; line-height: 1.6; margin-top: 8px; margin-bottom: 12px;">يرجى كتابة اسم منتج أو سلعة حقيقية لكي يتمكن الذكاء الاصطناعي من صياغة إعلاناتك واستراتيجية استهدافك بدقة متناهية تفادياً لضياع ميزانيتك.</p>
-                            <span style="color: #00fff0; font-size: 12.5px; font-weight: bold;">💡 أمثلة ومنتجات مقترحة لتوجيهك:</span>
-                            <ul style="color: #aaa; font-size: 12.5px; margin-top: 5px; padding-right: 20px; line-height: 1.5;">
-                                <li>حذاء رياضي طبي مريح</li>
-                                <li>مكواة بخارية عمودية للملابس</li>
-                                <li>محفظة جلدية ذكية مضادة للسرقة</li>
-                            </ul>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        if 'cyber_hub_active' in st.session_state: del st.session_state['cyber_hub_active']
+                    if score >= 80:
+                        meter_color, meter_text = "#00ff66", "🔥 إعلان قوي جداً وجاذب للمستهلك!"
+                    elif 50 <= score < 80:
+                        meter_color, meter_text = "#ffcc00", "⚠️ إعلان متوسط القوة بحاجة لميزات تنافسية إضافية."
                     else:
-                        st.session_state['cyber_hub_active'] = True
-                        score = min(100, 40 + (20 if len(clean_input) > 5 else 0) + (25 if len(prod_desc) > 30 else 0) + (10 if any(k in prod_desc for k in ["شحن", "ضمان", "سريع"]) else 0))
-                        meter_color = "#00ff66" if score >= 80 else ("#ffcc00" if score >= 50 else "#ff0055")
-                        meter_text = "🔥 إعلان قوي جداً!" if score >= 80 else ("⚠️ إعلان متوسط." if score >= 50 else "🚨 إعلان ضعيف!")
-                        
-                        st.write(f"""
-                        <div style="background: #0f0f14; border: 1px solid #222; padding: 12px; border-radius: 8px; margin-bottom: 20px; direction: rtl; text-align: right;">
-                            <span style="color: #aaa; font-size: 12.5px;">📊 عداد قوة الإعلان الذكي (AI Ad Score):</span>
-                            <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; color: {meter_color}; margin-top: 4px; margin-bottom: 4px;">
-                                <span>معدل الجاذبية المتوقع: {score}%</span><span>{meter_text}</span>
-                            </div>
-                            <div style="width: 100%; background: #222; height: 6px; border-radius: 3px; overflow: hidden;">
-                                <div style="width: {score}%; background: {meter_color}; height: 6px; box-shadow: 0 0 10px {meter_color}; transition: width 0.5s ease;"></div>
-                            </div>
+                        meter_color, meter_text = "#ff0055", "🚨 إعلان ضعيف! أضف كلمات دلالية مثل (شحن مجاني، ضمان، توصيل)."
+                    
+                    st.write(f"""
+                    <div style="background: #0f0f14; border: 1px solid #222; padding: 12px; border-radius: 8px; margin-bottom: 20px; direction: rtl; text-align: right;">
+                        <span style="color: #aaa; font-size: 12.5px;">📊 عداد قوة الإعلان الذكي (AI Ad Score):</span>
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; color: {meter_color}; margin-top: 4px; margin-bottom: 4px;">
+                            <span>معدل الجاذبية المتوقع: {score}%</span>
+                            <span>{meter_text}</span>
                         </div>
-                        """, unsafe_allow_html=True)
+                        <div style="width: 100%; background: #222; height: 6px; border-radius: 3px; overflow: hidden;">
+                            <div style="width: {score}%; background: {meter_color}; height: 6px; box-shadow: 0 0 10px {meter_color}; transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # إنشاء التبويبات السيبرانية الأربعة لتنظيم كروت العرض الزجاجية المفتوحة بالكامل وبكامل طولها الطبيعي
+                    t_angles, t_script, t_radar, t_roi = st.tabs([
+                        "🎯 1. زوايا البيع النفسية", 
+                        "🎬 2. سيناريو الفيديو بالثواني", 
+                        "📡 3. فلاتر الاستهداف والولايات", 
+                        "💎 4. العوائد والأرباح المتوقعة"
+                    ])
+                    
+                    with t_angles:
+                        st.write("🔒 **الإعلانات الحرة الممتدة بكامل الطول داخل الكروت الزجاجية المتوهجة بالأرجواني:**")
+                        ang1 = f"عيت من الخلاطات الكبار ل يرفدو البلاصة ويديرو الحس؟ 🤦 واش رايك في خلاط ذكي محمول يروح معاك وين تروح! **{prod_title}** يخلطلك العواصير والبروتين ديالك في ثواني وبلا تعب، خفيف وشاحن سريع وعملي بزاف تهنى من المشكل اليوم!"
+                        ang2 = f"الأناقة تلتقي مع الأداء العالي الرائع ✨ ارتقِ بأسلوب حياتك اليومي مع **[{prod_title}]**، التصميم الزجاجي الفريد واللمسة العصرية تمنحك برستيج خاص ومميز في مكتبك أو النادي الرياضي، إنه ليس مجرد خلاط بل عنوان لتميزك الفاخر."
+                        ang3 = f"🚨 تخفيض صدمة ومؤقت لفترة جد محدودة! المنتج الأكثر طلباً **[{prod_title}]** متوفر الآن بخصم خاص يعادل 30% من السعر الأصلي والمخزون أوشك على النفاذ تماماً بالمستودع! اطلب الآن واستفد من التوصيل السريع والدفع عند الاستلام!"
                         
-                        t_angles, t_script, t_radar, t_roi = st.tabs(["🎯 1. زوايا البيع النفسية", "🎬 2. سيناريو الفيديو بالثواني", "📡 3. فلاتر الاستهداف والولايات", "💎 4. العوائد والأرباح المتوقعة"])
-                        with t_angles:
-                            ang1 = f"عيت من الخلاطات الكبار ل يرفدو البلاصة ويديرو الحس؟ 🤦 واش رايك في خلاط ذكي محمول يروح معاك وين تروح! **{clean_input}** يخلطلك العواصير والبروتين ديالك في ثواني وبلا تعب، خفيف وشاحن سريع وعملي بزاف تهنى من المشكل اليوم!"
-                            ang2 = f"الأناقة تلتقي مع الأداء العالي الرائع ✨ ارتقِ بأسلوب حياتك اليومي مع **[{clean_input}]**، التصميم الزجاجي الفريد واللمسة العصرية تمنحك برستيج خاص ومميز في مكتبك أو النادي الرياضي."
-                            ang3 = f"🚨 تخفيض صدمة ومؤقت لفترة جد محدودة! المنتج الأكثر طلباً **[{clean_input}]** متوفر الآن بخصم خاص يعادل 30% من السعر الأصلي والمخزون أوشك على النفاذ تماماً بالمستودع!"
-                            st.markdown(f"**🛠️ زاوية حل المشكلة (بالدارجة الجزائرية):**\n{ang1}")
-                            st.markdown(f"**💎 زاوية الفخامة والبرستيج الاجتماعي:**\n{ang2}")
-                            st.markdown(f"**🚨 زاوية العرض الاستعجالي الصادم:**\n{ang3}")
-                        with t_script:
-                            s1 = f"**[00:00 - 00:03] الـ Hook الصادم:** لقطة سريعة لشخص يعاني مع خلاط قديم ثقيل يصدر ضوضاء، مع كتابة نص عريض (حبس! هاد السلعة غادي تبدل حياتك تع الصح! 😱)\n"
-                            s2 = f"**[00:03 - 00:10] عرض المشكلة والحاجة:** الخلاطات الكبار يعطلو في الكوزينة وصعاب في الغسيل خاصة كي تكون زربان ورايح للخدمة.\n"
-                            s3 = f"**[00:10 - 00:20] استعراض السلعة وطريقة العمل:** لقطة مقربة لمنتج **[{clean_input}]** وهو يطحن المكونات والفاكهة بسلاسة بفضل الشفرات الفولاذية الحادة.\n"
-                            s4 = f"**[00:20 - 00:30] الـ Call To Action النهائي:** التوصيل متوفر وسريع لـ 58 ولاية جزائرية كاملة لباب دارك والدفع عند الاستلام 🚚 اضغط على زر الرابط واطلب ديالك الآن!"
-                            st.markdown(f"**🎥 خطة إنتاج وفيديو السيناريو:**\n{s1}\n{s2}\n{s3}\n{s4}")
-                        with t_radar:
-                            st.write("📡 **رادار الاستهداف الذكي وتصنيف الولايات الجغرافية الأعلى تسليماً:**")
-                            col_r1, col_r2 = st.columns(2)
-                            with col_r1:
-                                if platform_choice == "Facebook Ads":
-                                    st.code(f"1. Engaged Shoppers\n2. Online Shopping\n3. الكلمة المفتاحية: {clean_input}", language="text")
-                                else:
-                                    st.code(f"#AlgeriaShopping\n#Trending_Products\n#المنتج: {clean_input}", language="text")
-                            with col_r2:
-                                st.write("1. **Tier 1:** الجزائر العاصمة (طلب قياسي وسرعة تسليم).\n2. **Tier 1:** وهران والبليدة (أعلى نسب استلام للـ Livraison).\n3. **Tier 2:** سطيف وقسنطينة (طلب تجاري ممتاز).")
-                        with t_roi:
-                            estimated_sales = int(daily_budget / 3.5)
-                            expected_net_profit = (estimated_sales * prod_price) - ((daily_budget * 240.0) + (estimated_sales * (prod_price * 0.4)))
-                            st.metric(label="عدد المبيعات اليومية المتوقعة تقريباً", value=f"~ {estimated_sales} مبيعة / يوم")
-                            st.metric(label="صافي الأرباح الحقيقية المتوقعة (DA)", value=f"{expected_net_profit:,.2f} DA")
-                        if st.button("🧼 تصفية الواجهة ومحو بيانات الفحص"):
-                            if 'cyber_hub_active' in st.session_state: del st.session_state['cyber_hub_active']
-                            st.rerun()
-                            
-        render_marketing_hub_cyber_edition()
-        
-    # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
-    conne.close()
+                        # حقن البطاقات الزجاجية المفتوحة والمصبوغة نيونياً بخطوط واضحة عريضة لسهولة القراءة والنسخ
+                        st.markdown(f"""<div style="background: rgba(255, 0, 255, 0.02); border: 1px solid #ff00ff; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 0 10px rgba(255, 0, 255, 0.1); direction: rtl; text-align: right;"><b style="color: #ff00ff; font-size: 14px;">🛠️ زاوية حل المشكلة (بالدارجة الجزائرية):</b><br><p style="color: #ffffff; font-size: 14.5px; line-height: 1.6; font-weight: 500; margin-top: 6px; margin-bottom: 0;">{ang1}</p></div>""", unsafe_allow_html=True)
+                        st.download_button(label="📥 نسخ كود نص حل المشكلة نقياً", data=ang1.encode('utf-8'), file_name="angle_problem.txt", mime="text/plain")
+                        
+                        st.markdown(f"""<div style="background: rgba(255, 0, 255, 0.02); border: 1px solid #ff00ff; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 0 10px rgba(255, 0, 255, 0.1); direction: rtl; text-align: right;"><b style="color: #ff00ff; font-size: 14px;">💎 زاوية الفخامة والبرستيج الاجتماعي:</b><br><p style="color: #ffffff; font-size: 14.5px; line-height: 1.6; font-weight: 500; margin-top: 6px; margin-bottom: 0;">{ang2}</p></div>""", unsafe_allow_html=True)
+                        st.download_button(label="📥 نسخ كود نص البرستيج نقياً", data=ang2.encode('utf-8'), file_name="angle_prestige.txt", mime="text/plain")
+                        
+                        st.markdown(f"""<div style="background: rgba(255, 0, 255, 0.02); border: 1px solid #ff00ff; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 0 10px rgba(255, 0, 255, 0.1); direction: rtl; text-align: right;"><b style="color: #ff00ff; font-size: 14px;">🚨 زاوية العرض الاستعجالي الصادم:</b><br><p style="color: #ffffff; font-size: 14.5px; line-height: 1.6; font-weight: 500; margin-top: 6px; margin-bottom: 0;">{ang3}</p></div>""", unsafe_allow_html=True)
+                        st.download_button(label="📥 نسخ كود نص العرض الاستعجالي نقياً", data=ang3.encode('utf-8'), file_name="angle_flash_sale.txt", mime="text/plain")
+                        
+                    with t_script:
+                        st.write("🎬 **السيناريو الكامل والاحترافي لتصوير الإعلان متمدد بالكامل حسب الثواني المقترحة:**")
+                        s1 = f"**[00:00 - 00:03] الـ Hook الصادم:** لقطة سريعة لشخص يعاني مع خلاط قديم ثقيل يصدر ضوضاء، مع كتابة نص عريض (حبس! هاد السلعة غادي تبدل حياتك تع الصح! 😱)"
+                        s2 = f"**[00:03 - 00:10] عرض المشكلة والحاجة:** الخلاطات الكبار يعطلو في الكوزينة وصعاب في الغسيل خاصة كي تكون زربان ورايح للخدمة أو لـ لsub سبور ونشاطك الرياضي اليومي."
+                        s3 = f"**[00:10 - 00:20] استعراض السلعة وطريقة العمل:** لقطة مقربة لمنتج **[{prod_title}]** وهو يطحن المكونات والفاكهة بسلاسة وسرعة فائقة بفضل الشفرات الفولاذية الحادة والبطارية القوية المستقرة."
+                        s4 = f"**[00:20 - 00:30] الـ Call To Action النهائي:** التوصيل متوفر وسريع لـ 58 ولاية جزائرية كاملة لباب دارك، والدفع حتى تستلم وتفحص السلعة بيدك 🚚 اضغط على زر الرابط واطلب ديالك الآن!"
+                        
+                        full_script_markdown = f"{s1}\n\n{s2}\n\n{s3}\n\n{s4}"
+                        
+                        st.markdown(f"""<div style="background: rgba(0, 255, 240, 0.02); border: 1px solid #00fff0; border-radius: 10px; padding: 16px; margin-bottom: 12px; box-shadow: 0 0 10px rgba(0, 255, 240, 0.1); direction: rtl; text-align: right;"><b style="color: #00fff0; font-size: 14px;">🎥 خطة إنتاج وفيديو السيناريو (Ad Video Script):</b><br><div style="color: #ffffff; font-size: 14px; line-height: 1.8; margin-top: 10px; white-space: pre-line;">{full_script_markdown}</div></div>""", unsafe_allow_html=True)
+                        st.download_button(label="📥 تحميل ملف السيناريو بالثواني كاملاً", data=full_script_markdown.encode('utf-8'), file_name="video_script.txt", mime="text/plain")
+    # ========================================================
