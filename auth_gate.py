@@ -967,8 +967,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             except: stock_val = 0
             st.metric(label="📦 قطع متوفرة بالمستودع", value=f"{stock_val} حبة")
             
-        st.markdown("---")
-        col_left, col_right = st.columns(2)
 
         
 
