@@ -978,7 +978,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
 
    
   
-    # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
+      # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
@@ -991,13 +991,91 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 if new_prod:
                     try:
                         cursor.execute("INSERT INTO store_stock (product_name, available_qty) VALUES (?, ?)", (new_prod, new_qty))
-                        conne.commit(); st.success(f"تم إضافة {new_prod} للمستودع!"); time.sleep(0.5); st.rerun()
+                        conne.commit()
+                        st.success(f"تم إضافة {new_prod} للمستودع!")
+                        
+                        # حساب تفاصيل الإعلان مسبقاً وتخزينها في ذاكرة الجلسة المستمرة لتفادي مسحها بالـ rerun
+                        current_merchant = st.session_state.get('user_email', st.session_state.get('username', "merchant.nexus@nexus-gate.com"))
+                        
+                        copy_dz = f"يا جماعة الخير جبتلكم اليوم حاجة فور بزاف لغادي تهنيكم كامل! 😍\nالمنتج المتميز والمطلوب بقوة [{new_prod}] راهو دخل للمستودع تعنا وبكمية محدودة جداً.\n💎 جودة عالية، كفاءة مثالية، وسعر مدهش ما تلقاوه في حتى بلاصة.\n🚚 التوصيل سريع ومتوفر لـ 58 ولاية جزائرية حتى لباب الدار، والدفع حتى تستلم سلعتك وتفحصها بيدك!\n📥 دبر راسك ما تخليش الفرصة تفوتك وأرسل رسالة لصفحتنا للطلب الآن قبل ما تخلص الكمية!"
+                        copy_ar = f"أخيراً، المنتج الأكثر طلباً وتميزاً [{new_prod}] متوفر الآن بين يديك وبأعلى مواصفات الجودة!\n💎 صُمم هذا المنتج خصيصاً ليلبي احتياجاتكم اليومية بكفاءة لا مثيل لها وبسعر تنافسي للغاية.\n🚚 يسعدنا أن نعلن عن توفر شحن سريع وموثوق إلى جميع الولايات الجزائرية مع ميزة الدفع عند الاستلام.\n📥 لا تترددوا، الكمية محدودة جداً! اضغط على زر 'تسوق الآن' أو أرسل رسالة إلى حسابنا لتأكيد طلبك اليوم."
+                        copy_short = f"السلعة لڨاع تحوسو عليها [{new_prod}] دخلت من جديد وبقوة! 🔥 جودة توب وسعر هبال. الشحن متوفر لـ 58 ولاية والدفع عند الاستلام 🚚 اضغط على الرابط أو ابعت مساج في الخاص واطلب ديالك قبل نفاذ المخزون! 📥"
+                        
+                        h1 = f"1. قبل ما تشري أي حاجة في الجزائر.. شوف واش دخل جديد في [{new_prod}]! 😱"
+                        h2 = f"2. المنتج لڨاع التجار والزبائن يحوسو عليه راهو متوفر أخيراً في المستودع! 🔥"
+                        h3 = f"3. هادي هي السلعة لغادي تهنيك وتوفر عليك الوقت والتعب تع الصح! 💎"
+                        h4 = f"4. ضياع للمال لو كان ما تطلبش [{new_prod}] بسعر الجملة تع اليوم! 💸"
+                        h5 = f"5. الكمية راهي تخلص بزاف.. شوف وعلاش ڨاع الناس تطلب في هذا المنتج المدهش! 📦"
+                        
+                        testing_budget_usd = 20.0
+                        exchange_rate_parallel = 240.0
+                        testing_budget_dzd = testing_budget_usd * exchange_rate_parallel
+                        
+                        st.session_state['premium_marketing_hub'] = {
+                            'merchant': current_merchant,
+                            'product_name': new_prod,
+                            'copy_dz': copy_dz,
+                            'copy_ar': copy_ar,
+                            'copy_short': copy_short,
+                            'hooks': [h1, h2, h3, h4, h5],
+                            'budget_usd': testing_budget_usd,
+                            'budget_dzd': testing_budget_dzd
+                        }
+                        
+                        time.sleep(0.5)
+                        st.rerun()
                     except: st.error("المنتج موجود مسبقاً في المخزون.")
         with col_view:
             st.subheader("📋 حالة السلع المتوفرة حالياً:")
             stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
             if not stock_df.empty:
                 st.dataframe(stock_df, use_container_width=True)
+                
+                # === إضافة مؤشر المخزون الناري المتوهج ===
+                # دالة تكميلية داخلية مضبوطة المسافات تماماً لفرز الألوان والنسب حركياً
+                def render_neon_stock_fire_bar(df_data):
+                    st.markdown("<p style='font-size: 14px; color: #b0b0b0; margin-top: 15px;'>🔥 مؤشر تدفق المستودع المباشر (تحديث لحظي النيون):</p>", unsafe_allow_html=True)
+                    max_qty = int(df_data['available_qty'].max()) if not df_data.empty else 100
+                    if max_qty < 30: max_qty = 30
+                    
+                    for _, row in df_data.iterrows():
+                        p_name = row['product_name']
+                        p_qty = int(row['available_qty'])
+                        width_pct = max(6, min(100, int((p_qty / max_qty) * 100)))
+                        
+                        # ضبط واختبار كتلة الـ if/else للكميات لحماية انسياب بايثون البصري
+                        if p_qty < 5:
+                            # 1. أقل من 5 قطع: فوشيا/أحمر نبضي مضيء كتحذير صارم
+                            bar_color = "#ff0055"
+                            shadow_color = "rgba(255, 0, 85, 0.9)"
+                            status_text = "🚨 خطر - مخزون حرج جداً!"
+                        elif 5 <= p_qty <= 15:
+                            # 2. بين 5 و 15 قطعة: أصفر نيوني
+                            bar_color = "#ffcc00"
+                            shadow_color = "rgba(255, 204, 0, 0.8)"
+                            status_text = "⚠️ انتباه - مخزون متوسط"
+                        else:
+                            # 3. أكثر من 15 قطعة: أخضر نيوني آمن ومستقر
+                            bar_color = "#00ff66"
+                            shadow_color = "rgba(0, 255, 102, 0.8)"
+                            status_text = "✅ آمن - مستودع مستقر"
+                            
+                        neon_html = f"""
+                        <div style="margin-bottom: 12px; background: #0f0f12; padding: 10px; border-radius: 8px; border: 1px solid #222;">
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #fff; margin-bottom: 6px;">
+                                <span><strong>{p_name}</strong> <span style="color: #888;">({p_qty} قطعة)</span></span>
+                                <span style="color: {bar_color}; text-shadow: 0 0 8px {bar_color}; font-weight: bold; font-size: 12px;">{status_text}</span>
+                            </div>
+                            <div style="width: 100%; background-color: #1a1a24; border-radius: 5px; overflow: hidden; height: 8px;">
+                                <div style="width: {width_pct}%; background-color: {bar_color}; height: 8px; border-radius: 5px; box-shadow: 0 0 12px {shadow_color}, 0 0 4px {shadow_color}; transition: all 0.4s ease-in-out;"></div>
+                            </div>
+                        </div>
+                        """
+                        st.write(neon_html, unsafe_allow_html=True)
+                
+                # استدعاء مؤشر النيون الناري بمحاذاة برمجية صحيحة 
+                render_neon_stock_fire_bar(stock_df)
+                
                 st.markdown("---")
                 st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
                 delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
@@ -1012,6 +1090,70 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.dataframe(low_stock)
             else: st.info("مستودعك خالي تماماً حالياً.")
 
+        # === دمج وتطوير منصة بطاقات الاستهداف والإعلانات الذكية للسلع الجديدة ===
+        if 'premium_marketing_hub' in st.session_state:
+            st.markdown("---")
+            hub_data = st.session_state['premium_marketing_hub']
+            prod_name = hub_data['product_name']
+            merchant_user = hub_data['merchant']
+            
+            st.write(f"""
+            <div style="background: linear-gradient(135deg, #0f0c20, #15002a); border: 2px solid #00fff0; border-radius: 16px; padding: 20px; box-shadow: 0 0 25px rgba(0, 255, 240, 0.2); direction: rtl; text-align: right;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0, 255, 240, 0.3); padding-bottom: 10px; margin-bottom: 15px;">
+                    <span style="color: #00fff0; font-weight: bold; font-size: 16px; text-shadow: 0 0 8px #00fff0;">📡 PREMIUM AI MARKETING HUB v4.0</span>
+                    <span style="color: #e2e2e8; font-family: monospace;">👤 الحساب النشط: {merchant_user}</span>
+                </div>
+                <h3 style="color: #ffffff; margin: 0 0 5px 0;">🎉 تم تأمين وحفظ السلعة [{prod_name}] بنجاح في قاعدة البيانات</h3>
+                <p style="color: #b0b0c0; font-size: 13px; margin: 0;">يقوم محرك الذكاء الاصطناعي الآن باستعراض استراتيجية التسويق الشاملة وفحص السوق المستمر دون أي اختفاء للبيانات.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("### 🛠️ لوحة تكتيكات الحملة وصانع المحتوى الذكي")
+            tab_copy, tab_hooks, tab_targeting, tab_budget = st.tabs([
+                "📝 2. نصوص الإعلانات (Ad-Copy)", "⚡ 3. العناوين الصادمة (Hooks)", 
+                "🎯 4. رادار الاستهداف والجمهور", "💰 5. حاسبة ميزانية الفحص"
+            ])
+            
+            with tab_copy:
+                st.write("✨ **اختر القالب النصي المناسب لمنصتك وقم بنسخه أو تحميله نقياً مباشرة:**")
+                sub_tab1, sub_tab2, sub_tab3 = st.tabs(["🇩🇿 قالب الدارجة المحفزة", "✨ قالب الفصحى الإقناعية", "📱 قالب تيك توك وإنستغرام السريع"])
+                with sub_tab1:
+                    st.text_area("نص الدارجة الجزائرية:", value=hub_data['copy_dz'], height=180, key="txt_dz", disabled=True)
+                    st.download_button(label="📥 تحميل النص نقياً (الدارجة)", data=hub_data['copy_dz'].encode('utf-8'), file_name=f"ad_copy_dz_{prod_name}.txt", mime="text/plain")
+                with sub_tab2:
+                    st.text_area("نص الفصحى الإقناعية:", value=hub_data['copy_ar'], height=180, key="txt_ar", disabled=True)
+                    st.download_button(label="📥 تحميل النص نقياً (الفصحى)", data=hub_data['copy_ar'].encode('utf-8'), file_name=f"ad_copy_ar_{prod_name}.txt", mime="text/plain")
+                with sub_tab3:
+                    st.text_area("نص الخاص القصير:", value=hub_data['copy_short'], height=120, key="txt_short", disabled=True)
+                    st.download_button(label="📥 تحميل النص نقياً (السريع)", data=hub_data['copy_short'].encode('utf-8'), file_name=f"ad_copy_short_{prod_name}.txt", mime="text/plain")
+            
+            with tab_hooks:
+                st.write("⚡ **أفضل 5 عناوين إعلانية لجذب الانتباه في أول 3 ثوان:**")
+                for hook in hub_data['hooks']:
+                    st.info(hook)
+                all_hooks_text = "\n".join(hub_data['hooks'])
+                st.download_button(label="📥 تحميل قائمة العناوين بالكامل", data=all_hooks_text.encode('utf-8'), file_name=f"hooks_{prod_name}.txt", mime="text/plain")
+                
+            with tab_targeting:
+                st.write("🎯 **رادار البيانات والاهتمامات الدقيقة لمدير إعلانات فيسبوك (Facebook Ads):**")
+                col_t1, col_t2 = st.columns(2)
+                with col_t1:
+                    st.markdown("🔹 **الاهتمامات والكلمات المفتاحية المقترحة:**")
+                    st.code(f"1. Engaged Shoppers (المتسوقون المتفاعلون)\n2. Online Shopping\n3. E-commerce / Retail\n4. اهتمامات صلة بالمنتج: {prod_name}", language="text")
+                    st.markdown("- **الفئة العمرية المثالية:** 22 - 45 سنة\n- **الجنس المستهدف:** رجال ونساء")
+                with col_t2:
+                    st.markdown("🗺️ **الولايات الجزائرية الأكثر تفاعلاً وطلباً للسلع:**")
+                    st.write("1. **الجزائر العاصمة** (طلب قياسي)\n2. **وهران** (القوة الشرائية العالية بالغرب)\n3. **سطيف وقسنطينة** (مراكز تجارية كبرى بالشرق)\n4. **البليدة وتيبازة** (معدل تسليم وتوصيل جد مرتفع)")
+                    
+            with tab_budget:
+                st.write("💰 **حاسبة ميزانية الفحص والـ Testing لحماية رأس مال التاجر من الخسارة:**")
+                st.metric(label="ميزانية الفحص اليومية المقترحة (Testing Budget)", value=f"{hub_data['budget_usd']:,.2f} USD")
+                st.metric(label="ما يقابلها في السوق الجزائرية الموازية (Square Rate)", value=f"{hub_data['budget_dzd']:,.2f} DA", delta="معدل تفادي خسارة مسبق")
+                st.write("💡 **نصيحة التسويق:** يُنصح بإطلاق إعلان الفحص لمدة **3 أيام كاملة** على ولايات محددة قبل رفع الميزانية وتكبير كميات التوريد.")
+                
+            if st.button("❌ إغلاق المعاينة"):
+                del st.session_state['premium_marketing_hub']
+                st.rerun()
     elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات الولايات":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🧼 نظام التطهير وعرض مقارنة البيانات والولايات</h1>", unsafe_allow_html=True)
         uploaded_file = st.file_uploader("اختر ملف المبيعات (CSV أو Excel)", type=["csv", "xlsx"])
@@ -1061,9 +1203,78 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
             csv_buffer = df.to_csv(index=False).encode('utf-8')
             st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
-
+            
     elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
-        render_marketing_hub()
-
+        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🚀 مركز التخطيط ومولد الحملات الإعلانية بذكاء AI</h1>", unsafe_allow_html=True)
+        col_input, col_output = st.columns(2)
+        with col_input:
+            st.subheader("⚙️ إعدادات وتوجيه الـ AI:")
+            ad_target = st.selectbox("الهدف من الحملة:", ["مبيعات مباشرة Conversion", "وعي بالعلامة التجارية Awareness", "تفاعل وجلب عملاء Leads"])
+            ad_tone = st.selectbox("لهجة الإعلان المقترح:", ["حماسية وبسيطة", "مهنية واحترافية", "فكاهية وقريبة للمستهلك"])
+            run_ai = st.button("✨ توليد الخطة التسويقية والإعلان المحترف")
+            
+        with col_output:
+            st.subheader("📱 محاكي المنشور الإعلاني الحي:")
+            if run_ai or 'marketing_generated' in st.session_state:
+                st.session_state['marketing_generated'] = True
+                intro_text = "🔥 العرض الأقوى لفترة محدودة! احصل على منتجك المميز الآن واستمتع بالجودة الفائقة."
+                features_text = "💎 مميزات لا مثيل لها:\n✅ شحن سريع لجميع الولايات الجزائرية\n✅ الدفع عند الاستلام وضمان حقيقي\n✅ خدمة عملاء على مدار الساعة"
+                cta_text = "📥 أرسل رسالة الآن لطلب المنتج أو اضغط على رابط الشراء أسفل المنشور!"
+                targeting_strategy = "🎯 خطة الاستهداف المقترحة:\n- الفئة العمرية: 18 - 45 سنة\n- الاهتمامات: التسوق الإلكتروني, التجارة, المنتجات العصرية\n- المناطق المستهدفة: الولايات الكبرى ذات الكثافة البيعية العالية."
+                
+                def render_live_ad_phone_mockup(intro, features, cta, strategy):
+                    mockup_html = f"""
+                    <style>
+                        .phone-container {{ max-width: 360px; margin: 15px auto; background: rgba(255, 255, 255, 0.03); border: 2px solid #00fff0; border-radius: 36px; box-shadow: 0 0 20px rgba(0, 255, 240, 0.2); padding: 16px; font-family: 'Segoe UI', sans-serif; color: #fff; direction: rtl; }}
+                        .phone-notch {{ width: 140px; height: 18px; background: #111; margin: -16px auto 12px auto; border-radius: 0 0 15px 15px; border: 1px solid rgba(0, 255, 240, 0.3); }}
+                        .ad-feed-card {{ background: #1e1e24; border-radius: 16px; padding: 12px; }}
+                        .ad-header {{ display: flex; align-items: center; margin-bottom: 10px; }}
+                        .ad-avatar {{ width: 38px; height: 38px; background: linear-gradient(135deg, #00fff0, #ff00ff); border-radius: 50%; margin-left: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; }}
+                        .ad-meta {{ display: flex; flex-direction: column; }}
+                        .ad-profile-name {{ font-weight: bold; font-size: 13px; }}
+                        .ad-sponsored {{ font-size: 10px; color: #00fff0; }}
+                        .ad-body-text {{ font-size: 12.5px; line-height: 1.5; white-space: pre-line; margin-bottom: 12px; }}
+                        .ad-media-placeholder {{ width: 100%; height: 180px; background: linear-gradient(to bottom, #252530, #15151a); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px dashed rgba(0, 255, 240, 0.3); margin-bottom: 8px; }}
+                        .ad-action-bar {{ display: flex; justify-content: space-between; align-items: center; background: #252530; padding: 8px 12px; border-radius: 8px; }}
+                        .ad-btn {{ background: #00fff0; color: #111; font-weight: bold; font-size: 11px; padding: 6px 14px; border-radius: 6px; }}
+                        .ad-interactions {{ display: flex; justify-content: space-around; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 8px; padding-top: 8px; font-size: 11px; color: #a0a0b0; }}
+                        .strategy-box {{ background: rgba(0, 255, 240, 0.03); border-radius: 12px; padding: 10px; margin-top: 12px; font-size: 11.5px; border: 1px solid rgba(0, 255, 240, 0.15); }}
+                    </style>
+                    <div class="phone-container">
+                        <div class="phone-notch"></div>
+                        <div class="ad-feed-card">
+                            <div class="ad-header">
+                                <div class="ad-avatar">NEX</div>
+                                <div class="ad-meta">
+                                    <span class="ad-profile-name">متجر التاجر المحترف</span>
+                                    <span class="ad-sponsored">ممول 🌐 Sponsored</span>
+                                </div>
+                            </div>
+                            <div class="ad-body-text">{intro_text}\n\n{features_text}\n\n{cta_text}</div>
+                            <div class="ad-media-placeholder">
+                                <span style="font-size: 24px;">🖼️</span>
+                                <span style="font-size: 11px; color: #888; margin-top: 5px;">[ صورة المنتج تظهر هنا عند النشر ]</span>
+                            </div>
+                            <div class="ad-action-bar">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-size: 10px; color: #aaa;">تسوّق الآن بخصم مميز</span>
+                                    <span style="font-size: 12px; font-weight: bold; color: #fff;">رابط الطلب السريع</span>
+                                </div>
+                                <div class="ad-btn">إرسال رسالة</div>
+                            </div>
+                            <div class="ad-interactions"><span>👍 تفاعل (4.2k)</span><span>💬 تعليق (380)</span><span>🔄 مشاركة (120)</span></div>
+                        </div>
+                        <div class="strategy-box">
+                            <strong style="color: #00fff0;">🎯 كواليس استهداف الـ AI:</strong><br>
+                            <p style="white-space: pre-line; margin-top: 5px; color: #ccc; font-size: 11px;">{targeting_strategy}</p>
+                        </div>
+                    </div>
+                    """
+                    st.write(mockup_html, unsafe_allow_html=True)
+                render_live_ad_phone_mockup(intro_text, features_text, cta_text, targeting_strategy)
+            else:
+                st.info("💡 في انتظار توجيهاتك.. حدد الإعدادات ثم اضغط على زر التوليد لتنبثق شاشة محاكي الهاتف الذكي الفيروزي.")
+                
     # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
     conne.close()
+
