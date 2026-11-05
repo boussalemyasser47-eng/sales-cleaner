@@ -1283,7 +1283,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             with send_col2: 
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
 
-
     # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
@@ -1300,7 +1299,34 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         conne.commit()
                         st.success(f"تم إضافة {new_prod} للمستودع!")
                         
-                        # حقن منطق توليد البيانات الإعلانية الذكية وحفظها فوراً داخل جلسة العمل المستمرة لكي لا تختفي عند إعادة التحديث
+                        # حساب تفاصيل الإعلان مسبقاً وتخزينها في ذاكرة الجلسة المستمرة لتفادي مسحها بالـ rerun
+                        current_merchant = st.session_state.get('user_email', st.session_state.get('username', "merchant.nexus@nexus-gate.com"))
+                        
+                        copy_dz = f"يا جماعة الخير جبتلكم اليوم حاجة فور بزاف لغادي تهنيكم كامل! 😍\nالمنتج المتميز والمطلوب بقوة [{new_prod}] راهو دخل للمستودع تعنا وبكمية محدودة جداً.\n💎 جودة عالية، كفاءة مثالية، وسعر مدهش ما تلقاوه في حتى بلاصة.\n🚚 التوصيل سريع ومتوفر لـ 58 ولاية جزائرية حتى لباب الدار، والدفع حتى تستلم سلعتك وتفحصها بيدك!\n📥 دبر راسك ما تخليش الفرصة تفوتك وأرسل رسالة لصفحتنا للطلب الآن قبل ما تخلص الكمية!"
+                        copy_ar = f"أخيراً، المنتج الأكثر طلباً وتميزاً [{new_prod}] متوفر الآن بين يديك وبأعلى مواصفات الجودة!\n💎 صُمم هذا المنتج خصيصاً ليلبي احتياجاتكم اليومية بكفاءة لا مثيل لها وبسعر تنافسي للغاية.\n🚚 يسعدنا أن نعلن عن توفر شحن سريع وموثوق إلى جميع الولايات الجزائرية مع ميزة الدفع عند الاستلام.\n📥 لا تترددوا، الكمية محدودة جداً! اضغط على زر 'تسوق الآن' أو أرسل رسالة إلى حسابنا لتأكيد طلبك اليوم."
+                        copy_short = f"السلعة لڨاع تحوسو عليها [{new_prod}] دخلت من جديد وبقوة! 🔥 جودة توب وسعر هبال. الشحن متوفر لـ 58 ولاية والدفع عند الاستلام 🚚 اضغط على الرابط أو ابعت مساج في الخاص واطلب ديالك قبل نفاذ المخزون! 📥"
+                        
+                        h1 = f"1. قبل ما تشري أي حاجة في الجزائر.. شوف واش دخل جديد في [{new_prod}]! 😱"
+                        h2 = f"2. المنتج لڨاع التجار والزبائن يحوسو عليه راهو متوفر أخيراً في المستودع! 🔥"
+                        h3 = f"3. هادي هي السلعة لغادي تهنيك وتوفر عليك الوقت والتعب تع الصح! 💎"
+                        h4 = f"4. ضياع للمال لو كان ما تطلبش [{new_prod}] بسعر الجملة تع اليوم! 💸"
+                        h5 = f"5. الكمية راهي تخلص بزاف.. شوف وعلاش ڨاع الناس تطلب في هذا المنتج المدهش! 📦"
+                        
+                        testing_budget_usd = 20.0
+                        exchange_rate_parallel = 240.0
+                        testing_budget_dzd = testing_budget_usd * exchange_rate_parallel
+                        
+                        st.session_state['premium_marketing_hub'] = {
+                            'merchant': current_merchant,
+                            'product_name': new_prod,
+                            'copy_dz': copy_dz,
+                            'copy_ar': copy_ar,
+                            'copy_short': copy_short,
+                            'hooks': [h1, h2, h3, h4, h5],
+                            'budget_usd': testing_budget_usd,
+                            'budget_dzd': testing_budget_dzd
+                        }
+                        
                         st.session_state["active_ai_marketing_prod"] = new_prod
                         st.session_state["show_premium_ai_hub"] = True
                         
@@ -1312,12 +1338,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
             if not stock_df.empty:
                 st.dataframe(stock_df, use_container_width=True)
-                st.markdown("---")
-                st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
-                delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
-                if st.button("❌ محو السلعة المحددة"):
-                    cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
-                    conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
                 
                 # === إضافة مؤشر المخزون الناري المتوهج ===
                 def render_neon_stock_fire_bar(df_data):
@@ -1352,13 +1372,20 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
                 render_neon_stock_fire_bar(stock_df)
                 
+                st.markdown("---")
+                st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
+                delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
+                if st.button("❌ محو السلعة المحددة"):
+                    cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
+                    conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
+                
                 low_stock = stock_df[stock_df['available_qty'] <= 5]
                 if not low_stock.empty:
                     st.markdown("---")
                     st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
                     st.dataframe(low_stock)
             else: st.info("مستودعك خالي تماماً حالياً.")
-
+            
         # === دمج وتطوير منصة بطاقات الاستهداف والإعلانات الذكية للسلع الجديدة ===
         if st.session_state.get("show_premium_ai_hub", False) and "active_ai_marketing_prod" in st.session_state:
             st.markdown("---")
@@ -1424,6 +1451,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
             csv_buffer = df.to_csv(index=False).encode('utf-8')
             st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
+            
     elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
         # === إضافات المستودع ومطهر البيانات ومولد حملات الـ AI ===
         def render_marketing_hub_cyber_edition():
