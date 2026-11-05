@@ -1290,7 +1290,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         col_add, col_view = st.columns(2)
         with col_add:
 
-
+            if st.button("➕ حفظ في المستودع"):
                 if new_prod:
                     try:
                         cursor.execute("INSERT INTO store_stock (product_name, available_qty) VALUES (?, ?)", (new_prod, new_qty))
@@ -1330,7 +1330,10 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         
                         time.sleep(0.5)
                         st.rerun()
-
+                    except: st.error("المنتج موجود مسبقاً في المخزون.")
+        with col_view:
+            st.subheader("📋 حالة السلع المتوفرة حالياً:")
+            stock_df = pd.read_sql("SELECT * FROM store_stock", conne)
             if not stock_df.empty:
                 st.dataframe(stock_df, use_container_width=True)
                 
@@ -1345,7 +1348,12 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         p_qty = int(row['available_qty'])
                         width_pct = max(6, min(100, int((p_qty / max_qty) * 100)))
                         
-                      
+                        if p_qty < 5:
+                            bar_color, shadow_color, status_text = "#ff0055", "rgba(255, 0, 85, 0.9)", "🚨 خطر - مخزون حرج جداً!"
+                        elif 5 <= p_qty <= 15:
+                            bar_color, shadow_color, status_text = "#ffcc00", "rgba(255, 204, 0, 0.8)", "⚠️ انتباه - مخزون متوسط"
+                        else:
+                            bar_color, shadow_color, status_text = "#00ff66", "rgba(0, 255, 102, 0.8)", "✅ آمن - مستودع مستقر"
                             
                         neon_html = f"""
                         <div style="margin-bottom: 12px; background: #0f0f12; padding: 10px; border-radius: 8px; border: 1px solid #222;">
@@ -1364,8 +1372,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
                 st.markdown("---")
                 st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
-
-             
+                delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
+                if st.button("❌ محو السلعة المحددة"):
+                    cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
+                    conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
+                
                 low_stock = stock_df[stock_df['available_qty'] <= 5]
                 if not low_stock.empty:
                     st.markdown("---")
@@ -1400,7 +1411,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.rerun()
 
         
-        
+        if uploaded_file is not None:
+            df_raw, df, duplicated_rows, bad_prices = process_sales_file(uploaded_file)
+            st.subheader("📋 1. جدول البيانات الأصلي المرفوع (قبل التطهير):")
+            st.dataframe(df_raw, use_container_width=True)
+            st.success("✅ تم تنظيف الداتا بنجاح وتجهيز المقارنة البصرية!")
             
             col_clean, col_trash = st.columns(2)
             with col_clean:
