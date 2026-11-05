@@ -1408,11 +1408,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.rerun()
 
         
-        if uploaded_file is not None:
-            df_raw, df, duplicated_rows, bad_prices = process_sales_file(uploaded_file)
-            st.subheader("📋 1. جدول البيانات الأصلي المرفوع (قبل التطهير):")
-            st.dataframe(df_raw, use_container_width=True)
-            st.success("✅ تم تنظيف الداتا بنجاح وتجهيز المقارنة البصرية!")
+        
             
             col_clean, col_trash = st.columns(2)
             with col_clean:
