@@ -1348,13 +1348,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         p_qty = int(row['available_qty'])
                         width_pct = max(6, min(100, int((p_qty / max_qty) * 100)))
                         
-                        if p_qty < 5:
-                            bar_color, shadow_color, status_text = "#ff0055", "rgba(255, 0, 85, 0.9)", "🚨 خطر - مخزون حرج جداً!"
-                        elif 5 <= p_qty <= 15:
-                            bar_color, shadow_color, status_text = "#ffcc00", "rgba(255, 204, 0, 0.8)", "⚠️ انتباه - مخزون متوسط"
-                        else:
-                            bar_color, shadow_color, status_text = "#00ff66", "rgba(0, 255, 102, 0.8)", "✅ آمن - مستودع مستقر"
-                            
+
                         neon_html = f"""
                         <div style="margin-bottom: 12px; background: #0f0f12; padding: 10px; border-radius: 8px; border: 1px solid #222;">
                             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #fff; margin-bottom: 6px;">
