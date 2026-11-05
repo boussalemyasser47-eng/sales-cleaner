@@ -1037,7 +1037,12 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
 
                 
-
+                low_stock = stock_df[stock_df['available_qty'] <= 5]
+                if not low_stock.empty:
+                    st.markdown("---")
+                    st.write("<h3 style='color: #ff007f !important; text-shadow: 0 0 10px #ff007f;'>🚨 تنبيه: سلع أوشكت على النفاذ!</h3>", unsafe_allow_html=True)
+                    st.dataframe(low_stock)
+            else: st.info("مستودعك خالي تماماً حالياً.")
 
         # === دمج وتطوير منصة بطاقات الاستهداف والإعلانات الذكية للسلع الجديدة ===
         if st.session_state.get("show_premium_ai_hub", False) and "active_ai_marketing_prod" in st.session_state:
