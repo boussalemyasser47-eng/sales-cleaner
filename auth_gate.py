@@ -231,8 +231,8 @@ import re
 def render_premium_neon_packages():
     """
     تقوم هذه الدالة بتنفيذ ميكانيكية الهولوغرام الفاخرة (Holographic Phase-In Effect)،
-    حيث تختفي الباقات غير المختارة تماماً من وجود الشاشة (تطهير بصري كامل)،
-    وتنبثق الباقة المختارة من العدم بتأثير سينمائي ناعم وصعود مشع.
+    حيث تعكس بدقة التحديث الشامل لمستويات الباقات السلوية ومميزاتها الفنية،
+    لتنبثق الباقة المختارة وحدها من العدم بناءً على رادار اختيار التاجر الحي.
     """
     # 1. قراءة الاختيار الحي من عنصر الراديو المعتمد تلقائياً
     current_choice = st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
@@ -242,10 +242,9 @@ def render_premium_neon_packages():
     phase_pro = "hologram-visible" if "الاحترافية" in current_choice else "hologram-hidden"
     phase_basic = "hologram-visible" if "الأساسية" in current_choice else "hologram-hidden"
 
-    # 3. حقن قواعد الهندسة الحركية الصارمة والـ CSS السينمائي
+    # 3. حقن قواعد الهندسة الحركية والـ CSS السينمائي والميزات المحدثة للشركات
     st.markdown(f"""
         <style>
-        /* البنية الأساسية لكروت الهولوغرام */
         .hologram-card {{
             transform: translateY(20px);
             transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
@@ -257,7 +256,6 @@ def render_premium_neon_packages():
             border-radius: 14px;
         }}
         
-        /* حالة التطهير البصري والتلاشي الكامل للباقات غير المختارة */
         .hologram-hidden {{
             max-height: 0px !important;
             opacity: 0 !important;
@@ -269,9 +267,8 @@ def render_premium_neon_packages():
             pointer-events: none;
         }}
         
-        /* حالة الانبثاق والولادة من العدم للباقة المختارة حصرياً */
         .hologram-visible {{
-            max-height: 500px !important; /* طول كافٍ لانسكاب الخدمات بالكامل */
+            max-height: 800px !important; /* ارتفاع متسع لانسكاب الخدمات المحدثة بالكامل */
             opacity: 1 !important;
             transform: translateY(0px) scale(1);
             background: rgba(0, 255, 240, 0.05);
@@ -287,9 +284,6 @@ def render_premium_neon_packages():
             font-size: 17px;
             margin-bottom: 6px;
             text-shadow: 0 0 15px rgba(0, 255, 240, 0.5);
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }}
         .holo-price {{
             color: #ffffff;
@@ -304,46 +298,51 @@ def render_premium_neon_packages():
             font-size: 13px;
             margin: 5px 0;
             padding-right: 5px;
-            animation: fadeInFeat 0.6s ease-in-out forwards;
+            line-height: 1.5;
         }}
         </style>
         
-        <!-- باقة 1: السيبرانية الخارقة -->
-        <div class='hologram-card {phase_cyber}'>
-            <div class='holo-title'>⚡ الباقة السيبرانية الخارقة (65k)</div>
-            <div class='holo-price'>💰 السعر السنوي: 65,000 DA</div>
-            <div class='holo-feat'>✓ جدران حماية سحابية معزولة بالكامل</div>
-            <div class='holo-feat'>✓ ربط متزامن فوري برادار المالك الخماسي</div>
-            <div class='holo-feat'>✓ نسخ احتياطي فوري مشفر على مدار الساعة</div>
+        <!-- باقة 1: الأساسية المبتدئة -->
+        <div class='hologram-card {phase_basic}'>
+            <div class='holo-title'>🌱 الباقة الأساسية المبتدئة (29k)</div>
+            <div class='holo-price'>💰 السعر السنوي: 29,000 DA</div>
+            <div class='holo-feat'>✓ إصدار فواتير الزبائن الكبيرة (A4) والملصقات الحرارية اللحظية.</div>
+            <div class='holo-feat'>✓ إرسال سريع للفاتورة وتفاصيل الطلب عبر WhatsApp للزبائن يدويًا.</div>
+            <div class='holo-feat'>✓ مستودع سلع مبسط لإضافة المنتجات ومراقبة الكميات المتوفرة.</div>
+            <div class='holo-feat'>✓ 🔒 قفل المساعد الجانبي الذكي (يفتح الردود العامة فقط ويحظر ميزات الـ AI المتقدمة).</div>
         </div>
         
         <!-- باقة 2: الاحترافية المتوسطة -->
         <div class='hologram-card {phase_pro}'>
             <div class='holo-title'>💎 الباقة الاحترافية المتوسطة (45k)</div>
             <div class='holo-price'>💰 السعر السنوي: 45,000 DA</div>
-            <div class='holo-feat'>✓ بوابات دفع متكاملة مخصصة للمتاجر</div>
-            <div class='holo-feat'>✓ لوحة تحكم ذكية لإدارة عمليات المخزون</div>
-            <div class='holo-feat'>✓ حماية متطورة ضد هجمات حظر الخدمة</div>
+            <div class='holo-feat'><b>✓ تشمل كافة ميزات الباقة الأساسية المبتدئة بالكامل.</b></div>
+            <div class='holo-feat'>✓ 🔥 مؤشر المخزون الناري الذكي: تنبيهات بصرية متحركة عند نفاذ السلع (أقل من 5 قطع).</div>
+            <div class='holo-feat'>✓ 🧼 مطهر ملفات المبيعات: رفع وتطهير ملفات Excel من التكرارات والأسعار السالبة.</div>
+            <div class='holo-feat'>✓ 🗺️ رادار المبيعات الجغرافي: مخطط بياني حي لفرز الولايات الجزائرية الأكثر مبيعاً لشحن آمن.</div>
+            <div class='holo-feat'>✓ 🤖 فتح ذكاء المساعد الجانبي المتوسط: تقديم نصائح وحلول لمشاكل الشحن والـ Retour وتثبيت الكليون.</div>
         </div>
         
-        <!-- باقة 3: الأساسية المبتدئة -->
-        <div class='hologram-card {phase_basic}'>
-            <div class='holo-title'>🌱 الباقة الأساسية المبتدئة (29k)</div>
-            <div class='holo-price'>💰 السعر السنوي: 29,000 DA</div>
-            <div class='holo-feat'>✓ لوحة مصادقة وتوثيق هوية تجارية موحدة</div>
-            <div class='holo-feat'>✓ ربط مباشر مع خوادم الدعم الفني</div>
-            <div class='holo-feat'>✓ تقارير دورية مبسطة لأداء السيرفر</div>
+        <!-- باقة 3: السيبرانية الخارقة -->
+        <div class='hologram-card {phase_cyber}'>
+            <div class='holo-title'>⚡ الباقة السيبرانية الخارقة (65k)</div>
+            <div class='holo-price'>💰 السعر السنوي: 65,000 DA</div>
+            <div class='holo-feat'><b>✓ تشمل كافة ميزات الباقتين السابقتين بالكامل (العقل الشامل للمنصة).</b></div>
+            <div class='holo-feat'>✓ 🚀 منصة الأتمتة الإعلانية الكاملة (AI Hub): صياغة الإعلانات التلقائية بـ 3 لهجات مختلفة فوراً.</div>
+            <div class='holo-feat'>✓ 🎬 صانع سيناريوهات الفيديو بالثواني: خطة إنتاج كاملة لتصوير فيديوهات TikTok و Reels للسلع.</div>
+            <div class='holo-feat'>✓ 📊 عداد تقييم قوة الإعلان الفوري (AI Ad Score Meter) لتحليل جاذبية المنشور قبل إطلاقه.</div>
+            <div class='holo-feat'>✓ 💰 حاسبة الـ ROI وميزانية الفحص الموازية بالدولار وما يقابلها بالدينار الجزائري (Square).</div>
+            <div class='holo-feat'>✓ 🧠 العقل الخارق للمساعد الجانبي: إجابات استخباراتية فورية عن استهدافات فيسبوك وهاشتاغات تيك توك وحصانة ضد الخربشة.</div>
         </div>
     """, unsafe_allow_html=True)
     
-    # تحكم الراديو النقي الذي يوجه نبضات الأنيمايشن بدون تشويه بصري
+    # أزرار الراديو النقية لمزامنة الميكانيكية الحركية وتمرير الاختيار بدقة
     chosen_package = st.radio(
         "اختر فئة الباقة السنوية لمتجرك لتفعيل عرض مميزاتها فوراً:",
-        ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"],
+        ["الباقة الأساسية المبتدئة (29k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة السيبرانية الخارقة (65k)"],
         key="selected_neon_package"
     )
     return chosen_package
-
 
 def validate_and_process_registration(email, password):
     """
@@ -401,7 +400,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         clean_pass = input_password.strip()
         
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-            # استدعاء دالة الانبثاق الهولوغرامية الفاخرة المحدثة بنجاح كامل وصفر أخطاء
+            # استدعاء منصة العرض الهولوغرامية الفاخرة بالميزات الجديدة المحدثة 100%
             user_package_choice = render_premium_neon_packages()
             st.markdown("</div>", unsafe_allow_html=True)
             
