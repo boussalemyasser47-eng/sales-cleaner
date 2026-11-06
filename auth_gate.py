@@ -230,123 +230,115 @@ import re
 
 def render_premium_neon_packages():
     """
-    تقوم هذه الدالة بحقن تأثير الأكورديون الديناميكي الميكانيكي (Dynamic Neon Accordion)
-    لعرض الباقة المختارة حياً بتأثير انسيابي، مع إخفاء وانكماش الباقات الأخرى تماماً.
+    تقوم هذه الدالة بتنفيذ ميكانيكية الهولوغرام الفاخرة (Holographic Phase-In Effect)،
+    حيث تختفي الباقات غير المختارة تماماً من وجود الشاشة (تطهير بصري كامل)،
+    وتنبثق الباقة المختارة من العدم بتأثير سينمائي ناعم وصعود مشع.
     """
-    # 1. قراءة الاختيار حياً عبر التحقق المسبق من عنصر التحكم لمنع أخطاء التزامن
+    # 1. قراءة الاختيار الحي من عنصر الراديو المعتمد تلقائياً
     current_choice = st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
 
-    # 2. إعداد فئات النشاط البصري بناءً على المدخل الحي للتاجر
-    active_cyber = "active" if "السيبرانية" in current_choice else ""
-    active_pro = "active" if "الاحترافية" in current_choice else ""
-    active_basic = "active" if "الأساسية" in current_choice else ""
+    # 2. توليد فئات الحالة الهولوغرامية الديناميكية للباقات الثلاث
+    phase_cyber = "hologram-visible" if "السيبرانية" in current_choice else "hologram-hidden"
+    phase_pro = "hologram-visible" if "الاحترافية" in current_choice else "hologram-hidden"
+    phase_basic = "hologram-visible" if "الأساسية" in current_choice else "hologram-hidden"
 
-    # 3. حقن كود الـ HTML والهيكل الحركي الفاخر
+    # 3. حقن قواعد الهندسة الحركية الصارمة والـ CSS السينمائي
     st.markdown(f"""
         <style>
-        .neon-accordion-card {{
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(0, 255, 240, 0.1);
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 12px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            transition: all 0.4s ease-in-out;
+        /* البنية الأساسية لكروت الهولوغرام */
+        .hologram-card {{
+            transform: translateY(20px);
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                        border 0.5s ease-in-out,
+                        box-shadow 0.5s ease-in-out;
             overflow: hidden;
+            border-radius: 14px;
         }}
-        .neon-accordion-card.active {{
-            background: rgba(0, 255, 240, 0.04);
-            border: 1px solid rgba(0, 255, 240, 0.5);
-            box-shadow: 0 0 20px rgba(0, 255, 240, 0.15);
+        
+        /* حالة التطهير البصري والتلاشي الكامل للباقات غير المختارة */
+        .hologram-hidden {{
+            max-height: 0px !important;
+            opacity: 0 !important;
+            transform: translateY(20px) scale(0.95);
+            padding: 0px !important;
+            margin: 0px !important;
+            border: 1px solid transparent !important;
+            box-shadow: none !important;
+            pointer-events: none;
         }}
-        .accordion-header {{
+        
+        /* حالة الانبثاق والولادة من العدم للباقة المختارة حصرياً */
+        .hologram-visible {{
+            max-height: 500px !important; /* طول كافٍ لانسكاب الخدمات بالكامل */
+            opacity: 1 !important;
+            transform: translateY(0px) scale(1);
+            background: rgba(0, 255, 240, 0.05);
+            border: 1px solid rgba(0, 255, 240, 0.6);
+            padding: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 25px rgba(0, 255, 240, 0.2);
+        }}
+        
+        .holo-title {{
+            color: #00fff0;
+            font-weight: 900;
+            font-size: 17px;
+            margin-bottom: 6px;
+            text-shadow: 0 0 15px rgba(0, 255, 240, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }}
+        .holo-price {{
             color: #ffffff;
             font-weight: 700;
             font-size: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: color 0.4s ease-in-out;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 255, 240, 0.2);
+            padding-bottom: 6px;
         }}
-        .neon-accordion-card.active .accordion-header {{
-            color: #00fff0;
-            text-shadow: 0 0 10px rgba(0, 255, 240, 0.4);
-        }}
-        .accordion-content {{
-            max-height: 0px;
-            opacity: 0;
-            visibility: hidden;
-            transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, visibility 0.4s;
-            padding-top: 0px;
-        }}
-        .neon-accordion-card.active .accordion-content {{
-            max-height: 200px;
-            opacity: 1;
-            visibility: visible;
-            padding-top: 12px;
-            border-top: 1px solid rgba(0, 255, 240, 0.15);
-            margin-top: 8px;
-        }}
-        .neon-price-tag {{
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 14px;
-            margin-bottom: 6px;
-        }}
-        .neon-feat-item {{
-            color: #b0b0b0;
-            font-size: 12px;
-            margin: 4px 0;
-            padding-right: 8px;
+        .holo-feat {{
+            color: #e0e0e0;
+            font-size: 13px;
+            margin: 5px 0;
+            padding-right: 5px;
+            animation: fadeInFeat 0.6s ease-in-out forwards;
         }}
         </style>
         
         <!-- باقة 1: السيبرانية الخارقة -->
-        <div class='neon-accordion-card {active_cyber}'>
-            <div class='accordion-header'>
-                <span>⚡ الباقة السيبرانية الخارقة (65k)</span>
-                <span>{"🔽" if active_cyber else "◀"}</span>
-            </div>
-            <div class='accordion-content'>
-                <div class='neon-price-tag'>💰 السعر السنوي: 65,000 DA</div>
-                <div class='neon-feat-item'>✓ جدران حماية سحابية معزولة بالكامل</div>
-                <div class='neon-feat-item'>✓ ربط متزامن فوري برادار المالك الخماسي</div>
-                <div class='neon-feat-item'>✓ نسخ احتياطي فوري مشفر على مدار الساعة</div>
-            </div>
+        <div class='hologram-card {phase_cyber}'>
+            <div class='holo-title'>⚡ الباقة السيبرانية الخارقة (65k)</div>
+            <div class='holo-price'>💰 السعر السنوي: 65,000 DA</div>
+            <div class='holo-feat'>✓ جدران حماية سحابية معزولة بالكامل</div>
+            <div class='holo-feat'>✓ ربط متزامن فوري برادار المالك الخماسي</div>
+            <div class='holo-feat'>✓ نسخ احتياطي فوري مشفر على مدار الساعة</div>
         </div>
         
         <!-- باقة 2: الاحترافية المتوسطة -->
-        <div class='neon-accordion-card {active_pro}'>
-            <div class='accordion-header'>
-                <span>💎 الباقة الاحترافية المتوسطة (45k)</span>
-                <span>{"🔽" if active_pro else "◀"}</span>
-            </div>
-            <div class='accordion-content'>
-                <div class='neon-price-tag'>💰 السعر السنوي: 45,000 DA</div>
-                <div class='neon-feat-item'>✓ بوابات دفع متكاملة مخصصة للمتاجر</div>
-                <div class='neon-feat-item'>✓ لوحة تحكم ذكية لإدارة عمليات المخزون</div>
-                <div class='neon-feat-item'>✓ حماية متطورة ضد هجمات حظر الخدمة</div>
-            </div>
+        <div class='hologram-card {phase_pro}'>
+            <div class='holo-title'>💎 الباقة الاحترافية المتوسطة (45k)</div>
+            <div class='holo-price'>💰 السعر السنوي: 45,000 DA</div>
+            <div class='holo-feat'>✓ بوابات دفع متكاملة مخصصة للمتاجر</div>
+            <div class='holo-feat'>✓ لوحة تحكم ذكية لإدارة عمليات المخزون</div>
+            <div class='holo-feat'>✓ حماية متطورة ضد هجمات حظر الخدمة</div>
         </div>
         
         <!-- باقة 3: الأساسية المبتدئة -->
-        <div class='neon-accordion-card {active_basic}'>
-            <div class='accordion-header'>
-                <span>🌱 الباقة الأساسية المبتدئة (29k)</span>
-                <span>{"🔽" if active_basic else "◀"}</span>
-            </div>
-            <div class='accordion-content'>
-                <div class='neon-price-tag'>💰 السعر السنوي: 29,000 DA</div>
-                <div class='neon-feat-item'>✓ لوحة مصادقة وتوثيق هوية تجارية موحدة</div>
-                <div class='neon-feat-item'>✓ ربط مباشر مع خوادم الدعم الفني</div>
-                <div class='neon-feat-item'>✓ تقارير دورية مبسطة لأداء السيرفر</div>
-            </div>
+        <div class='hologram-card {phase_basic}'>
+            <div class='holo-title'>🌱 الباقة الأساسية المبتدئة (29k)</div>
+            <div class='holo-price'>💰 السعر السنوي: 29,000 DA</div>
+            <div class='holo-feat'>✓ لوحة مصادقة وتوثيق هوية تجارية موحدة</div>
+            <div class='holo-feat'>✓ ربط مباشر مع خوادم الدعم الفني</div>
+            <div class='holo-feat'>✓ تقارير دورية مبسطة لأداء السيرفر</div>
         </div>
     """, unsafe_allow_html=True)
     
-    # عنصر التحكم بالراديو الذي يغذي الحالة الحركية لحظياً بنقاء تام
+    # تحكم الراديو النقي الذي يوجه نبضات الأنيمايشن بدون تشويه بصري
     chosen_package = st.radio(
-        "اختر الباقة المطلوبة لمتجرك لتفعيل عرض تفاصيلها وسيظهر الاختيار تلقائياً:",
+        "اختر فئة الباقة السنوية لمتجرك لتفعيل عرض مميزاتها فوراً:",
         ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"],
         key="selected_neon_package"
     )
@@ -409,7 +401,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         clean_pass = input_password.strip()
         
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-            # استدعاء دالة الأكورديون التفاعلية المحدثة بنجاح هندسي كامل
+            # استدعاء دالة الانبثاق الهولوغرامية الفاخرة المحدثة بنجاح كامل وصفر أخطاء
             user_package_choice = render_premium_neon_packages()
             st.markdown("</div>", unsafe_allow_html=True)
             
@@ -434,15 +426,14 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     conn_login.close()
                     
                     if user_status_row:
-                        if "🟢 مفعّل ونشط" in user_status_row[0]:
+                        if "🟢 مفعّل ونشط" in user_status_row:
                             st.session_state["active_merchant_user"] = clean_email
                             st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
                             time.sleep(0.5); st.rerun()
                         else:
-                            st.warning(f"⏳ حالة حسابك الحالية: {user_status_row[0]}")
+                            st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
-
 
 
 # ========================================================
