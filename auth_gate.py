@@ -215,6 +215,11 @@ def delete_email_completely(email_to_delete):
 # === الإضافات والتعديلات الجديدة ===
 
 
+
+# ====================================================================
+# === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
+# ====================================================================
+
 import streamlit as st
 import sqlite3
 import time
@@ -226,76 +231,128 @@ import re
 
 def render_premium_neon_packages():
     """
-    تقوم هذه الدالة بحقن كروت نيونية زجاجية فاخرة (HTML Cards) متتالية لعرض تفاصيل ومميزات الباقات السنوية
-    للشركات بالـ (DA) بشكل نقي، وتوفر آلية تحديد آمنة وسلسة عبر أزرار الراديو المدمجة بصرياً.
+    تقوم هذه الدالة بحقن تأثير الأكورديون الديناميكي الميكانيكي (Dynamic Neon Accordion)
+    لعرض الباقة المختارة حياً بتأثير انسيابي، مع إخفاء وانكماش الباقات الأخرى تماماً.
     """
-    st.markdown("""
+    # 1. قراءة الاختيار حياً عبر التحقق المسبق من عنصر التحكم لمنع أخطاء التزامن
+    current_choice = st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
+
+    # 2. إعداد فئات النشاط البصري بناءً على المدخل الحي للتاجر
+    active_cyber = "active" if "السيبرانية" in current_choice else ""
+    active_pro = "active" if "الاحترافية" in current_choice else ""
+    active_basic = "active" if "الأساسية" in current_choice else ""
+
+    # 3. حقن كود الـ HTML والهيكل الحركي الفاخر
+    st.markdown(f"""
         <style>
-        .neon-pkg-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(0, 255, 240, 0.2);
+        .neon-accordion-card {{
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(0, 255, 240, 0.1);
             border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 15px;
-            box-shadow: 0 0 15px rgba(0, 255, 240, 0.05);
-            transition: all 0.3s ease;
-        }
-        .neon-pkg-title {
-            color: #00fff0;
-            font-weight: 800;
-            font-size: 16px;
-            margin-bottom: 5px;
-            text-shadow: 0 0 10px rgba(0, 255, 240, 0.3);
-        }
-        .neon-pkg-price {
+            padding: 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.4s ease-in-out;
+            overflow: hidden;
+        }}
+        .neon-accordion-card.active {{
+            background: rgba(0, 255, 240, 0.04);
+            border: 1px solid rgba(0, 255, 240, 0.5);
+            box-shadow: 0 0 20px rgba(0, 255, 240, 0.15);
+        }}
+        .accordion-header {{
             color: #ffffff;
             font-weight: 700;
             font-size: 15px;
-            margin-bottom: 8px;
-        }
-        .neon-pkg-feat {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: color 0.4s ease-in-out;
+        }}
+        .neon-accordion-card.active .accordion-header {{
+            color: #00fff0;
+            text-shadow: 0 0 10px rgba(0, 255, 240, 0.4);
+        }}
+        .accordion-content {{
+            max-height: 0px;
+            opacity: 0;
+            visibility: hidden;
+            transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, visibility 0.4s;
+            padding-top: 0px;
+        }}
+        .neon-accordion-card.active .accordion-content {{
+            max-height: 200px;
+            opacity: 1;
+            visibility: visible;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 255, 240, 0.15);
+            margin-top: 8px;
+        }}
+        .neon-price-tag {{
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }}
+        .neon-feat-item {{
             color: #b0b0b0;
             font-size: 12px;
-            margin: 3px 0;
-            padding-right: 10px;
-        }
+            margin: 4px 0;
+            padding-right: 8px;
+        }}
         </style>
         
-        <!-- الكرت النيوني الأول -->
-        <div class='neon-pkg-card'>
-            <div class='neon-pkg-title'>⚡ الباقة السيبرانية الخارقة</div>
-            <div class='neon-pkg-price'>💰 السعر السنوي: 65,000 DA</div>
-            <div class='neon-pkg-feat'>✓ جدران حماية سحابية معزولة بالكامل</div>
-            <div class='neon-pkg-feat'>✓ ربط متزامن فوري برادار المالك الخماسي</div>
-            <div class='neon-pkg-feat'>✓ نسخة احتياطية فوري مشفر على مدار الساعة</div>
+        <!-- باقة 1: السيبرانية الخارقة -->
+        <div class='neon-accordion-card {active_cyber}'>
+            <div class='accordion-header'>
+                <span>⚡ الباقة السيبرانية الخارقة (65k)</span>
+                <span>{"🔽" if active_cyber else "◀"}</span>
+            </div>
+            <div class='accordion-content'>
+                <div class='neon-price-tag'>💰 السعر السنوي: 65,000 DA</div>
+                <div class='neon-feat-item'>✓ جدران حماية سحابية معزولة بالكامل</div>
+                <div class='neon-feat-item'>✓ ربط متزامن فوري برادار المالك الخماسي</div>
+                <div class='neon-feat-item'>✓ نسخ احتياطي فوري مشفر على مدار الساعة</div>
+            </div>
         </div>
         
-        <!-- الكرت النيوني الثاني -->
-        <div class='neon-pkg-card'>
-            <div class='neon-pkg-title'>💎 الباقة الاحترافية المتوسطة</div>
-            <div class='neon-pkg-price'>💰 السعر السنوي: 45,000 DA</div>
-            <div class='neon-pkg-feat'>✓ بوابات دفع متكاملة مخصصة للمتاجر</div>
-            <div class='neon-pkg-feat'>✓ لوحة تحكم ذكية لإدارة عمليات المخزون</div>
-            <div class='neon-pkg-feat'>✓ حماية متطورة ضد هجمات حظر الخدمة</div>
+        <!-- باقة 2: الاحترافية المتوسطة -->
+        <div class='neon-accordion-card {active_pro}'>
+            <div class='accordion-header'>
+                <span>💎 الباقة الاحترافية المتوسطة (45k)</span>
+                <span>{"🔽" if active_pro else "◀"}</span>
+            </div>
+            <div class='accordion-content'>
+                <div class='neon-price-tag'>💰 السعر السنوي: 45,000 DA</div>
+                <div class='neon-feat-item'>✓ بوابات دفع متكاملة مخصصة للمتاجر</div>
+                <div class='neon-feat-item'>✓ لوحة تحكم ذكية لإدارة عمليات المخزون</div>
+                <div class='neon-feat-item'>✓ حماية متطورة ضد هجمات حظر الخدمة</div>
+            </div>
         </div>
         
-        <!-- الكرت النيوني الثالث -->
-        <div class='neon-pkg-card'>
-            <div class='neon-pkg-title'>🌱 الباقة الأساسية المبتدئة</div>
-            <div class='neon-pkg-price'>💰 السعر السنوي: 29,000 DA</div>
-            <div class='neon-pkg-feat'>✓ لوحة مصادقة وتوثيق هوية تجارية موحدة</div>
-            <div class='neon-pkg-feat'>✓ ربط مباشر مع خوادم الدعم الفني</div>
-            <div class='neon-pkg-feat'>✓ تقارير دورية مبسطة لأداء السيرفر</div>
+        <!-- باقة 3: الأساسية المبتدئة -->
+        <div class='neon-accordion-card {active_basic}'>
+            <div class='accordion-header'>
+                <span>🌱 الباقة الأساسية المبتدئة (29k)</span>
+                <span>{"🔽" if active_basic else "◀"}</span>
+            </div>
+            <div class='accordion-content'>
+                <div class='neon-price-tag'>💰 السعر السنوي: 29,000 DA</div>
+                <div class='neon-feat-item'>✓ لوحة مصادقة وتوثيق هوية تجارية موحدة</div>
+                <div class='neon-feat-item'>✓ ربط مباشر مع خوادم الدعم الفني</div>
+                <div class='neon-feat-item'>✓ تقارير دورية مبسطة لأداء السيرفر</div>
+            </div>
         </div>
     """, unsafe_allow_html=True)
     
-    selected_pkg = st.radio(
-        "اضغط لتأكيد فئة الباقة المختارة لمتجرك:",
+    # عنصر التحكم بالراديو الذي يغذي الحالة الحركية لحظياً بنقاء تام
+    chosen_package = st.radio(
+        "اختر الباقة المطلوبة لمتجرك لتفعيل عرض تفاصيلها وسيظهر الاختيار تلقائياً:",
         ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"],
-        key="selected_neon_package",
-        label_visibility="visible"
+        key="selected_neon_package"
     )
-    return selected_pkg
+    return chosen_package
+
 
 def validate_and_process_registration(email, password):
     """
@@ -332,9 +389,8 @@ def validate_and_process_registration(email, password):
         return None
         
     return st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
-
 # ========================================================
-# الجزء الثاني: centre توثيق هوية التاجر وعزل البوابات (auth_gate.py)
+# الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
 # ========================================================
 if not is_boss_link and "active_merchant_user" not in st.session_state:
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
@@ -354,6 +410,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         clean_pass = input_password.strip()
         
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+            # استدعاء دالة الأكورديون التفاعلية المحدثة بنجاح هندسي كامل
             user_package_choice = render_premium_neon_packages()
             st.markdown("</div>", unsafe_allow_html=True)
             
