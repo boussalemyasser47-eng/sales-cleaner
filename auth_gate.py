@@ -4,6 +4,9 @@
 # ========================================================
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
 # ========================================================
+# ========================================================
+# [القسم الأول]: إعدادات البيئة، خزانة النسخ الاحتياطي، وجدار حماية الشبح المتقدم
+# ========================================================
 def create_backup_vault():
     import os
     import zipfile
@@ -29,23 +32,18 @@ import time
 from datetime import datetime
 import io
 import urllib.parse
-# ========================================================
-# 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
-# ========================================================
 
+# 🔒 ضبط إعدادات الشاشة الأساسية للمنصة الموحدة
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
 # 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
 query_params = st.query_params
 is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
-
 if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 # ========================================================
-# الجزء الأول المطور - [2 من 4]: هندسة ستايلات النيون والأزرار (gate_styles_buttons.py)
+# [القسم الثاني]: الحقن السيبراني وتصميم واجهات النيون الزجاجي للأزرار والعدادات
 # ========================================================
-
-# 🧠 [الحقن السيبراني الصافي]: كود CSS نقي 100% بدون f-string يخترق المتصفح ويصبغ العدادات والبطاقات بالنيون
 st.markdown("""
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
@@ -80,7 +78,7 @@ st.markdown("""
         box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.2) !important;
     }
     
-    /* إجبار الأزرار الخماسية التفاعلية على التوهج الكامل بالألوان السيبرانية الموضحة بالصورة */
+    /* إجبار الأزرار الخماسية التفاعلية على التوهج الكامل بالألوان السيبرانية */
     div.stButton button, .stButton > button {
         width: 100% !important; min-height: 48px !important;
         font-family: 'Cairo', sans-serif !important; font-size: 14px !important; font-weight: 900 !important; border-radius: 12px !important;
@@ -109,62 +107,49 @@ st.markdown("""
         font-family: 'Cairo', sans-serif !important; color: #ffffff !important;
         text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.15) !important;
     }
-
-    /* 🟢 🔴 🟡 تلوين الأزرار الخماسية المتتالية بالترتيب العددي للأعمدة لمنع التشفير العشوائي */
     
+    /* 🟢 🔴 🟡 تلوين الأزرار الخماسية المتتالية بالترتيب العددي للأعمدة لمنع التشفير العشوائي */
     /* 1. الزر الأول (العمود الأول): أخضر نيوني */
     div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button {
         color: #00ff66 !important; border: 2px solid #00ff66 !important; box-shadow: 0px 0px 15px rgba(0, 255, 102, 0.2) !important;
     }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button:hover,
-    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button:active {
+    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button:hover {
         background: linear-gradient(135deg, #00ff66 0%, #00ea11 100%) !important; color: #000000 !important;
         box-shadow: 0px 0px 30px #00ff66 !important; border-color: #00ff66 !important;
     }
-
     /* 2. الزر الثاني (العمود الثاني): أصفر نيوني */
     div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button {
         color: #ffaa00 !important; border: 2px solid #ffaa00 !important; box-shadow: 0px 0px 15px rgba(255, 170, 0, 0.2) !important;
     }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button:hover,
-    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button:active {
+    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button:hover {
         background: linear-gradient(135deg, #ffaa00 0%, #ff8800 100%) !important; color: #000000 !important;
         box-shadow: 0px 0px 30px #ffaa00 !important; border-color: #ffaa00 !important;
     }
-
     /* 3. الزر الثالث (العمود الثالث): أحمر نيوني */
     div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button {
         color: #ff0055 !important; border: 2px solid #ff0055 !important; box-shadow: 0px 0px 15px rgba(255, 0, 85, 0.2) !important;
     }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button:hover,
-    div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button:active {
+    div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button:hover {
         background: linear-gradient(135deg, #ff0055 0%, #ff0000 100%) !important; color: #ffffff !important;
         box-shadow: 0px 0px 30px #ff0055 !important; border-color: #ff0055 !important;
     }
-
     /* 4. الزر الرابع (العمود الرابع): بنفسجي نيوني */
     div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button {
         color: #ff00ff !important; border: 2px solid #ff00ff !important; box-shadow: 0px 0px 15px rgba(255, 0, 255, 0.2) !important;
     }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button:hover,
-    div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button:active {
+    div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button:hover {
         background: linear-gradient(135deg, #ff00ff 0%, #cc00cc 100%) !important; color: #ffffff !important;
         box-shadow: 0px 0px 30px #ff00ff !important; border-color: #ff00ff !important;
     }
-
     /* 5. الزر الخامس (العمود الخامس): برتقالي ناري */
     div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button {
         color: #ff4500 !important; border: 2px solid #ff4500 !important; box-shadow: 0px 0px 15px rgba(255, 69, 0, 0.2) !important;
     }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button:hover,
-    div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button:active {
+    div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button:hover {
         background: linear-gradient(135deg, #ff4500 0%, #ff2200 100%) !important; color: #ffffff !important;
         box-shadow: 0px 0px 30px #ff4500 !important; border-color: #ff4500 !important;
     }
-# ========================================================
-# الجزء الأول المطور - [3 من 4]: جدار الانبثاق السينمائي الموحد (gate_cyber_animation.py)
-# ========================================================
-
+    
     /* # === تأثيرات التوهج والأنيميشن لعدادات المالك === */
     @keyframes hudPulse {
         0% { box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); border-color: #00fff0; }
@@ -182,53 +167,64 @@ st.markdown("""
         text-shadow: 0px 0px 15px rgba(0, 255, 240, 0.6) !important;
         font-weight: 900 !important;
     }
-
-    /* # === جدار الأنيميشن الموحد والانبثاق الميكانيكي لكافة عناصر المنصة === */
+    /* ========================================================
+       [القسم الثالث]: # === جدار الأنيميشن الموحد والانبثاق الميكانيكي لكافة عناصر المنصة ===
+       ======================================================== */
     @keyframes elasticPop {
-        0% { opacity: 0; transform: translateY(15px) scale(0.98); }
-        100% { opacity: 1; transform: translateY(0) scale(1); }
+        0% {
+            opacity: 0;
+            transform: translateY(15px) scale(0.98);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
     }
-    @keyframes errorGlow {
-        0% { box-shadow: 0px 0px 15px rgba(255, 0, 85, 0.2); border-color: #ff0055; }
-        100% { box-shadow: 0px 0px 25px rgba(255, 0, 85, 0.5); border-color: #ff0000; }
+    @keyframes alertPulseRed {
+        0% { box-shadow: 0px 0px 12px rgba(255, 0, 85, 0.2); border-color: #ff0055; }
+        50% { box-shadow: 0px 0px 25px rgba(255, 0, 85, 0.55); border-color: #ff3377; }
+        100% { box-shadow: 0px 0px 12px rgba(255, 0, 85, 0.2); border-color: #ff0055; }
     }
-    @keyframes warnGlow {
-        0% { box-shadow: 0px 0px 15px rgba(255, 170, 0, 0.2); border-color: #ffaa00; }
-        100% { box-shadow: 0px 0px 25px rgba(255, 170, 0, 0.5); border-color: #ffaa00; }
+    @keyframes alertPulseGold {
+        0% { box-shadow: 0px 0px 12px rgba(255, 170, 0, 0.2); border-color: #ffaa00; }
+        50% { box-shadow: 0px 0px 25px rgba(255, 170, 0, 0.55); border-color: #ffcc33; }
+        100% { box-shadow: 0px 0px 12px rgba(255, 170, 0, 0.2); border-color: #ffaa00; }
     }
-    @keyframes successGlow {
-        0% { box-shadow: 0px 0px 15px rgba(0, 255, 102, 0.2); border-color: #00ff66; }
-        100% { box-shadow: 0px 0px 25px rgba(0, 255, 102, 0.5); border-color: #00ff66; }
+    @keyframes alertPulseGreen {
+        0% { box-shadow: 0px 0px 12px rgba(0, 255, 102, 0.2); border-color: #00ff66; }
+        50% { box-shadow: 0px 0px 25px rgba(0, 255, 102, 0.55); border-color: #33ff99; }
+        100% { box-shadow: 0px 0px 12px rgba(0, 255, 102, 0.2); border-color: #00ff66; }
     }
 
-    /* تطبيق الانبثاق الميكانيكي على جميع حاويات التنبيهات الرسمية وعناصر التنبيه */
-    div[data-testid="stNotification"], div[data-testid="stAlert"], div.element-container:has(div.stAlert), .stAlert {
+    /* استهداف وإجبار جميع صناديق تنبيهات وأخطاء وحاويات المخرجات في الـ DOM على الانبثاق الميكانيكي الفوري حياً */
+    div[data-testid="stNotification"], div[data-testid="stAlert"], div.element-container:has(div[data-testid="stNotification"]), div.stAlert {
         animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
-        backdrop-filter: blur(10px) !important;
-        border-radius: 12px !important;
     }
 
-    div[data-testid="stAlert"] {
-        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+    /* صناديق الأخطاء والتوثيق الفاشل st.error بالتوهج النبضي الأحمر النيوني الفاخر */
+    div[data-testid="stAlert"]:has(div[data-baseinstance="error"]), div.stAlert:has([aria-label="Error"]) {
+        border: 2px solid #ff0055 !important;
+        background: linear-gradient(135deg, rgba(20, 2, 10, 0.9) 0%, rgba(5, 1, 3, 0.98) 100%) !important;
+        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, alertPulseRed 3s ease-in-out infinite alternate !important;
     }
 
-    /* ربط حالات صناديق التنبيه بالتوهج اللوني المخصص بناءً على الأيقونات المتولدة سيبرانياً */
-    div div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconError"]) {
-        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, errorGlow 2s ease-in-out infinite alternate !important;
-        background: rgba(20, 2, 10, 0.85) !important;
+    /* صناديق التحذيرات st.warning بالتوهج النبضي الذهبي الدافئ للسرية التامة */
+    div[data-testid="stAlert"]:has(div[data-baseinstance="warning"]), div.stAlert:has([aria-label="Warning"]) {
+        border: 2px solid #ffaa00 !important;
+        background: linear-gradient(135deg, rgba(20, 12, 2, 0.9) 0%, rgba(5, 3, 1, 0.98) 100%) !important;
+        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, alertPulseGold 3s ease-in-out infinite alternate !important;
     }
-    div div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconWarning"]) {
-        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, warnGlow 2s ease-in-out infinite alternate !important;
-        background: rgba(20, 15, 2, 0.85) !important;
-    }
-    div div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconSuccess"]) {
-        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, successGlow 2s ease-in-out infinite alternate !important;
-        background: rgba(2, 20, 10, 0.85) !important;
+
+    /* صناديق التوثيق الناجح st.success بالتوهج النبضي الأخضر السيبراني الرائع */
+    div[data-testid="stAlert"]:has(div[data-baseinstance="success"]), div.stAlert:has([aria-label="Success"]) {
+        border: 2px solid #00ff66 !important;
+        background: linear-gradient(135deg, rgba(2, 20, 10, 0.9) 0%, rgba(1, 5, 2, 0.98) 100%) !important;
+        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, alertPulseGreen 3s ease-in-out infinite alternate !important;
     }
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الأول المطور - [4 من 4]: مزامنة قاعدة البيانات والتوثيق (gate_db.py)
+# [القسم الرابع]: إدارة ومزامنة جدول قاعدة بيانات الـ Auth وجدار الحماية الاستباقي للثغرات
 # ========================================================
 
 # صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
@@ -245,11 +241,11 @@ db_conn.commit()
 db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
 account_exists = db_cursor.fetchone()
 if account_exists[0] == 0 and "destroyed_flag" not in st.session_state:
-    db_cursor.execute("INSERT OR IGNNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
+    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
     db_conn.commit()
 db_conn.close()
 
-# دالة التدمير الفوري لأي حساب في قاعدة البيانات
+# دالة التدمير الفوري لأي حساب في قاعدة البيانات دون إعطاب الاتصالات المفتوحة حياً
 def delete_email_completely(email_to_delete):
     try:
         conn = sqlite3.connect("saas_security_vault.db", timeout=10)
@@ -261,10 +257,7 @@ def delete_email_completely(email_to_delete):
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
 
 # === الإضافات والتعديلات الجديدة ===
-
-
-# === الإضافات والتعديلات الجديدة ===
-
+# جاهز لاستقبال أي دالات أو إضافات مستقبلية مكملة هنا دون المساس بالأعلى...
 
 
 # ====================================================================
