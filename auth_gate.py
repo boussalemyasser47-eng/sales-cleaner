@@ -236,15 +236,17 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         clean_pass = input_password.strip()
         
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-            user_package_choice = st.selectbox("اختر فئة الباقة السنوية لمتجرك:", ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"])
+            # تفعيل منصة العرض البصرية الفخمة بدلاً من القائمة التقليدية المنهارة
+            render_premium_neon_packages()
             st.markdown("</div>", unsafe_allow_html=True)
             
             if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
-                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
-                else:
+                # استدعاء جدار الحماية الأمني المطور لفحص المدخلات قبل الإدخال لقاعدة البيانات
+                validated_package = validate_and_process_registration(clean_email, clean_pass)
+                if validated_package:
                     conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                     cursor_reg = conn_reg.cursor()
-                    cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, user_package_choice))
+                    cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, validated_package))
                     conn_reg.commit(); conn_reg.close()
                     st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
                     time.sleep(0.5); st.rerun()
@@ -268,6 +270,122 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.warning(f"⏳ حالة حسابك الحالية: {user_status_row[0]}")
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
+# === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
+
+def render_premium_neon_packages():
+    """
+    تقوم هذه الدالة بحقن كروت نيونية زجاجية فاخرة (HTML Cards) متتالية لعرض تفاصيل ومميزات الباقات السنوية
+    للشركات بالـ (DA) بشكل نقي، وتوفر آلية تحديد آمنة وسلسة عبر أزرار الراديو المدمجة بصرياً.
+    """
+    st.markdown("""
+        <style>
+        .neon-pkg-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 255, 240, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 15px rgba(0, 255, 240, 0.05);
+            transition: all 0.3s ease;
+        }
+        .neon-pkg-title {
+            color: #00fff0;
+            font-weight: 800;
+            font-size: 16px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(0, 255, 240, 0.3);
+        }
+        .neon-pkg-price {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+        .neon-pkg-feat {
+            color: #b0b0b0;
+            font-size: 12px;
+            margin: 3px 0;
+            padding-right: 10px;
+        }
+        </style>
+        
+        <!-- الكرت النيوني الأول -->
+        <div class='neon-pkg-card'>
+            <div class='neon-pkg-title'>⚡ الباقة السيبرانية الخارقة</div>
+            <div class='neon-pkg-price'>💰 السعر السنوي: 65,000 DA</div>
+            <div class='neon-pkg-feat'>✓ جدران حماية سحابية معزولة بالكامل</div>
+            <div class='neon-pkg-feat'>✓ ربط متزامن فوري برادار المالك الخماسي</div>
+            <div class='neon-pkg-feat'>✓ نسخ احتياطي فوري مشفر على مدار الساعة</div>
+        </div>
+        
+        <!-- الكرت النيوني الثاني -->
+        <div class='neon-pkg-card'>
+            <div class='neon-pkg-title'>💎 الباقة الاحترافية المتوسطة</div>
+            <div class='neon-pkg-price'>💰 السعر السنوي: 45,000 DA</div>
+            <div class='neon-pkg-feat'>✓ بوابات دفع متكاملة مخصصة للمتاجر</div>
+            <div class='neon-pkg-feat'>✓ لوحة تحكم ذكية لإدارة عمليات المخزون</div>
+            <div class='neon-pkg-feat'>✓ حماية متطورة ضد هجمات حظر الخدمة</div>
+        </div>
+        
+        <!-- الكرت النيوني الثالث -->
+        <div class='neon-pkg-card'>
+            <div class='neon-pkg-title'>🌱 الباقة الأساسية المبتدئة</div>
+            <div class='neon-pkg-price'>💰 السعر السنوي: 29,000 DA</div>
+            <div class='neon-pkg-feat'>✓ لوحة مصادقة وتوثيق هوية تجارية موحدة</div>
+            <div class='neon-pkg-feat'>✓ ربط مباشر مع خوادم الدعم الفني</div>
+            <div class='neon-pkg-feat'>✓ تقارير دورية مبسطة لأداء السيرفر</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # اختيار الباقة برابط تحكم خفي ونقي يمنع التداخل البصري
+    st.radio(
+        "اضغط لتأكيد فئة الباقة المختارة لمتجرك:",
+        ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"],
+        key="selected_neon_package",
+        label_visibility="visible"
+    )
+
+
+def validate_and_process_registration(email, password):
+    """
+    ممر الأمان الذكي المكون من 3 طبقات فحص صارمة لمنع حقن البيانات العشوائية وحظر الحسابات المتكررة.
+    """
+    import re
+    
+    # 1. جدار التحقق من صيغة البريد (Email Format Guard)
+    if email == "" or password == "":
+        st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
+        return None
+        
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@gmail\.com$'
+    if not re.match(email_pattern, email):
+        st.warning("⚠️ يرجى كتابة بريد إلكتروني منطقي وصحيح ينتهي بـ @gmail.com")
+        return None
+        
+    # 2. قوة كلمة المرور (Password Strength Check)
+    if len(password) < 6:
+        st.warning("⚠️ يجب أن تحتوي كلمة السر على 6 حروف أو أكثر لحماية متجرك")
+        return None
+        
+    # 3. منع تكرار الحسابات (Unique Email Guard)
+    try:
+        conn_check = sqlite3.connect("saas_security_vault.db", timeout=10)
+        cursor_check = conn_check.cursor()
+        cursor_check.execute("SELECT email FROM saas_users_auth WHERE email = ?", (email,))
+        existing_user = cursor_check.fetchone()
+        conn_check.close()
+        
+        if existing_user:
+            st.error("❌ هذا البريد الإلكتروني مسجل مسبقاً في رادار المنصة السحابية!")
+            return None
+    except Exception as e:
+        # التعامل الآمن مع أخطاء قواعد البيانات لحماية استقرار السيرفر
+        st.error(f"❌ خطأ في فحص جدار الأمان: {str(e)}")
+        return None
+        
+    # إرجاع الباقة المحددة بنجاح بعد اجتياز كافة جدران الحماية
+    return st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
+
 
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
