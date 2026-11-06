@@ -215,62 +215,14 @@ def delete_email_completely(email_to_delete):
 # === الإضافات والتعديلات الجديدة ===
 
 
-# ========================================================
-# الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
-# ========================================================
-if not is_boss_link and "active_merchant_user" not in st.session_state:
-    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
-    
-    col_side_left, col_center_box, col_side_right = st.columns(3)
-    with col_center_box:
-        st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
-        st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
-        
-        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
-        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
-        
-        input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
-        input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
-        
-        clean_email = input_email.strip()
-        clean_pass = input_password.strip()
-        
-        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-            # تفعيل منصة العرض البصرية الفخمة بدلاً من القائمة التقليدية المنهارة
-            render_premium_neon_packages()
-            st.markdown("</div>", unsafe_allow_html=True)
-            
-            if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
-                # استدعاء جدار الحماية الأمني المطور لفحص المدخلات قبل الإدخال لقاعدة البيانات
-                validated_package = validate_and_process_registration(clean_email, clean_pass)
-                if validated_package:
-                    conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
-                    cursor_reg = conn_reg.cursor()
-                    cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, validated_package))
-                    conn_reg.commit(); conn_reg.close()
-                    st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
-                    time.sleep(0.5); st.rerun()
-        else:
-            st.markdown("</div>", unsafe_allow_html=True)
-            if st.button("🔑 تسجيل الدخول إلى المتجر"):
-                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
-                else:
-                    conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
-                    cursor_login = conn_login.cursor()
-                    cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
-                    user_status_row = cursor_login.fetchone()
-                    conn_login.close()
-                    
-                    if user_status_row:
-                        if "🟢 مفعّل ونشط" in user_status_row[0]:
-                            st.session_state["active_merchant_user"] = clean_email
-                            st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
-                            time.sleep(0.5); st.rerun()
-                        else:
-                            st.warning(f"⏳ حالة حسابك الحالية: {user_status_row[0]}")
-                    else:
-                        st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
+import streamlit as st
+import sqlite3
+import time
+import re
+
+# ====================================================================
 # === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
+# ====================================================================
 
 def render_premium_neon_packages():
     """
@@ -315,7 +267,7 @@ def render_premium_neon_packages():
             <div class='neon-pkg-price'>💰 السعر السنوي: 65,000 DA</div>
             <div class='neon-pkg-feat'>✓ جدران حماية سحابية معزولة بالكامل</div>
             <div class='neon-pkg-feat'>✓ ربط متزامن فوري برادار المالك الخماسي</div>
-            <div class='neon-pkg-feat'>✓ نسخ احتياطي فوري مشفر على مدار الساعة</div>
+            <div class='neon-pkg-feat'>✓ نسخة احتياطية فوري مشفر على مدار الساعة</div>
         </div>
         
         <!-- الكرت النيوني الثاني -->
@@ -337,26 +289,23 @@ def render_premium_neon_packages():
         </div>
     """, unsafe_allow_html=True)
     
-    # اختيار الباقة برابط تحكم خفي ونقي يمنع التداخل البصري
-    st.radio(
+    selected_pkg = st.radio(
         "اضغط لتأكيد فئة الباقة المختارة لمتجرك:",
         ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة الأساسية المبتدئة (29k)"],
         key="selected_neon_package",
         label_visibility="visible"
     )
-
+    return selected_pkg
 
 def validate_and_process_registration(email, password):
     """
     ممر الأمان الذكي المكون من 3 طبقات فحص صارمة لمنع حقن البيانات العشوائية وحظر الحسابات المتكررة.
     """
-    import re
-    
-    # 1. جدار التحقق من صيغة البريد (Email Format Guard)
     if email == "" or password == "":
         st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
         return None
         
+    # 1. جدار التحقق من صيغة البريد (Email Format Guard)
     email_pattern = r'^[a-zA-Z0-9._%+-]+@gmail\.com$'
     if not re.match(email_pattern, email):
         st.warning("⚠️ يرجى كتابة بريد إلكتروني منطقي وصحيح ينتهي بـ @gmail.com")
@@ -379,12 +328,64 @@ def validate_and_process_registration(email, password):
             st.error("❌ هذا البريد الإلكتروني مسجل مسبقاً في رادار المنصة السحابية!")
             return None
     except Exception as e:
-        # التعامل الآمن مع أخطاء قواعد البيانات لحماية استقرار السيرفر
         st.error(f"❌ خطأ في فحص جدار الأمان: {str(e)}")
         return None
         
-    # إرجاع الباقة المحددة بنجاح بعد اجتياز كافة جدران الحماية
     return st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
+
+# ========================================================
+# الجزء الثاني: centre توثيق هوية التاجر وعزل البوابات (auth_gate.py)
+# ========================================================
+if not is_boss_link and "active_merchant_user" not in st.session_state:
+    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
+    
+    col_side_left, col_center_box, col_side_right = st.columns(3)
+    with col_center_box:
+        st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
+        
+        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
+        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
+        
+        input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
+        input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
+        
+        clean_email = input_email.strip()
+        clean_pass = input_password.strip()
+        
+        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+            user_package_choice = render_premium_neon_packages()
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+            if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
+                validated_package = validate_and_process_registration(clean_email, clean_pass)
+                if validated_package:
+                    conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_reg = conn_reg.cursor()
+                    cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, validated_package))
+                    conn_reg.commit(); conn_reg.close()
+                    st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
+                    time.sleep(0.5); st.rerun()
+        else:
+            st.markdown("</div>", unsafe_allow_html=True)
+            if st.button("🔑 تسجيل الدخول إلى المتجر"):
+                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
+                else:
+                    conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_login = conn_login.cursor()
+                    cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
+                    user_status_row = cursor_login.fetchone()
+                    conn_login.close()
+                    
+                    if user_status_row:
+                        if "🟢 مفعّل ونشط" in user_status_row[0]:
+                            st.session_state["active_merchant_user"] = clean_email
+                            st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
+                            time.sleep(0.5); st.rerun()
+                        else:
+                            st.warning(f"⏳ حالة حسابك الحالية: {user_status_row[0]}")
+                    else:
+                        st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
 
 
 # ========================================================
