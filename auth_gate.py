@@ -1,5 +1,5 @@
 # ========================================================
-# الجزء الأول المطور (أ): صبغ المنصة الشامل بالنيون الزجاجي (auth_gate_part1.py)
+# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
 # ========================================================
 # ========================================================
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
@@ -22,7 +22,6 @@ def create_backup_vault():
     zip_buffer.seek(0)
     return zip_buffer
 
-
 import streamlit as st
 import pandas as pd
 import sqlite3
@@ -42,6 +41,9 @@ is_boss_link = query_params.get("role") == "boss" if "role" in query_params else
 
 if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
+# ========================================================
+# الجزء الأول المطور - [2 من 4]: هندسة ستايلات النيون والأزرار (gate_styles_buttons.py)
+# ========================================================
 
 # 🧠 [الحقن السيبراني الصافي]: كود CSS نقي 100% بدون f-string يخترق المتصفح ويصبغ العدادات والبطاقات بالنيون
 st.markdown("""
@@ -159,6 +161,9 @@ st.markdown("""
         background: linear-gradient(135deg, #ff4500 0%, #ff2200 100%) !important; color: #ffffff !important;
         box-shadow: 0px 0px 30px #ff4500 !important; border-color: #ff4500 !important;
     }
+# ========================================================
+# الجزء الأول المطور - [3 من 4]: جدار الانبثاق السينمائي الموحد (gate_cyber_animation.py)
+# ========================================================
 
     /* # === تأثيرات التوهج والأنيميشن لعدادات المالك === */
     @keyframes hudPulse {
@@ -177,10 +182,53 @@ st.markdown("""
         text-shadow: 0px 0px 15px rgba(0, 255, 240, 0.6) !important;
         font-weight: 900 !important;
     }
+
+    /* # === جدار الأنيميشن الموحد والانبثاق الميكانيكي لكافة عناصر المنصة === */
+    @keyframes elasticPop {
+        0% { opacity: 0; transform: translateY(15px) scale(0.98); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes errorGlow {
+        0% { box-shadow: 0px 0px 15px rgba(255, 0, 85, 0.2); border-color: #ff0055; }
+        100% { box-shadow: 0px 0px 25px rgba(255, 0, 85, 0.5); border-color: #ff0000; }
+    }
+    @keyframes warnGlow {
+        0% { box-shadow: 0px 0px 15px rgba(255, 170, 0, 0.2); border-color: #ffaa00; }
+        100% { box-shadow: 0px 0px 25px rgba(255, 170, 0, 0.5); border-color: #ffaa00; }
+    }
+    @keyframes successGlow {
+        0% { box-shadow: 0px 0px 15px rgba(0, 255, 102, 0.2); border-color: #00ff66; }
+        100% { box-shadow: 0px 0px 25px rgba(0, 255, 102, 0.5); border-color: #00ff66; }
+    }
+
+    /* تطبيق الانبثاق الميكانيكي على جميع حاويات التنبيهات الرسمية وعناصر التنبيه */
+    div[data-testid="stNotification"], div[data-testid="stAlert"], div.element-container:has(div.stAlert), .stAlert {
+        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+        backdrop-filter: blur(10px) !important;
+        border-radius: 12px !important;
+    }
+
+    div[data-testid="stAlert"] {
+        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+    }
+
+    /* ربط حالات صناديق التنبيه بالتوهج اللوني المخصص بناءً على الأيقونات المتولدة سيبرانياً */
+    div div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconError"]) {
+        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, errorGlow 2s ease-in-out infinite alternate !important;
+        background: rgba(20, 2, 10, 0.85) !important;
+    }
+    div div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconWarning"]) {
+        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, warnGlow 2s ease-in-out infinite alternate !important;
+        background: rgba(20, 15, 2, 0.85) !important;
+    }
+    div div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconSuccess"]) {
+        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, successGlow 2s ease-in-out infinite alternate !important;
+        background: rgba(2, 20, 10, 0.85) !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 # ========================================================
-# الجزء الأول المطور (ب): إدارة قاعدة بيانات الـ Auth (auth_gate_part2.py)
+# الجزء الأول المطور - [4 من 4]: مزامنة قاعدة البيانات والتوثيق (gate_db.py)
 # ========================================================
 
 # صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
@@ -197,7 +245,7 @@ db_conn.commit()
 db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
 account_exists = db_cursor.fetchone()
 if account_exists[0] == 0 and "destroyed_flag" not in st.session_state:
-    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
+    db_cursor.execute("INSERT OR IGNNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
     db_conn.commit()
 db_conn.close()
 
@@ -211,6 +259,9 @@ def delete_email_completely(email_to_delete):
         return True
     except Exception as e:
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
+
+# === الإضافات والتعديلات الجديدة ===
+
 
 # === الإضافات والتعديلات الجديدة ===
 
