@@ -823,8 +823,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         st.toast("تم الخروج الآمن وتأمين المستودع كلياً!")
         time.sleep(0.5)
         st.rerun()
+# ======================================================================
 # === إضافات نظام العزل والاتصال والمساعد الذكي ===
-# حقن أنماط علبة الرد وحركة الانبثاق الميكانيكي الصاعد من العدم
+# ======================================================================
+
+# 1. حقن أنماط علبة الرد وحركة الانبثاق الميكانيكي الصاعد من العدم
 st.sidebar.markdown("""
 <style>
 @keyframes elasticPop {
@@ -843,14 +846,14 @@ st.sidebar.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
+
+# 2. بناء دالة المساعد المزدوج الموحدة كاملاً
 def render_sidebar_helper():
     """
     بوت المساعد الذكي المزدوج المتطور كلياً:
     - للمالك: يفتح خبير البرمجة والأمر 'شرح دكي'.
     - للتجار: يفتح خبير التجارة الملون حركياً بحسب النوايا الاستشارية المكتشفة حياً.
     """
-    st.sidebar.markdown("---")
-    
     # تهيئة مفتاح حفظ لون الإطار ديناميكياً داخل الـ session_state
     if "intent_frame_color" not in st.session_state:
         st.session_state["intent_frame_color"] = "#00fff0"
@@ -870,7 +873,6 @@ def render_sidebar_helper():
         if abs(len(w1) - len(w2)) > 3: return 0.0
         
         len1, len2 = len(w1), len(w2)
-        # تصحيح بناء المصفوفة البرمجية ثنائية الأبعاد بالكامل لمنع ظهور كود صغير
         matrix = [[0] * (len2 + 1) for _ in range(len1 + 1)]
         for i in range(len1 + 1): matrix[i][0] = i
         for j in range(len2 + 1): matrix[0][j] = j
@@ -880,10 +882,13 @@ def render_sidebar_helper():
                 cost = 0 if w1[i-1] == w2[j-1] else 1
                 matrix[i][j] = min(matrix[i-1][j] + 1, matrix[i][j-1] + 1, matrix[i-1][j-1] + cost)
         return 1.0 - (matrix[len1][len2] / max(len1, len2))
+
+    # فحص إذا كان المستخدم هو المالك الأعلى
     if is_boss_link:
         st.sidebar.markdown("<h3 style='color: #00fff0; text-align: center; margin-bottom: 0;'>👑 مساعد المالك الأعلى</h3>", unsafe_allow_html=True)
         if "boss_chat_reply" not in st.session_state:
-            st.session_state["boss_chat_reply"] = "مرحباً بك يا قائد! نظام تحليل الكود المتقدم والأمر الخاص 'شرح dki' جاهز تحت سيادتك."
+            st.session_state["boss_chat_reply"] = "مرحباً بك يا قائد! نظام تحليل الكود المتقدم جاهز تحت سيادتك."
+        
         boss_query = st.sidebar.text_input("💻 أدخل أمر التحليل أو استفسر عن الكود والجداول:", key="boss_ai_query_in", placeholder="اكتب: شرح دكي")
         if st.sidebar.button("🧠 استدعاء خبير المنصة", key="submit_boss_query_btn") or boss_query == "شرح دكي":
             if boss_query:
@@ -892,6 +897,7 @@ def render_sidebar_helper():
                 st.rerun()
         st.sidebar.markdown(f'<div class="cyber-dynamic-box" style="border:2px solid {st.session_state["intent_frame_color"]};"><p style="color:#ffffff; font-size:14px; direction:rtl; text-align:right; margin:0;">{st.session_state["boss_chat_reply"]}</p></div>', unsafe_allow_html=True)
     
+    # واجهة التجار المستأجرين
     else:
         st.sidebar.markdown("<h3 style='color: #00fff0; text-align: center; margin-bottom: 0;'>🤖 المساعد التجاري الذكي</h3>", unsafe_allow_html=True)
         if "merchant_chat_reply" not in st.session_state:
@@ -905,6 +911,7 @@ def render_sidebar_helper():
             "customers": ["زبون", "زبائن", "كليون", "لكليون", "تعامل", "اتصال", "تثبيت", "كونفيرمي", "الهاتف", "سبون"],
             "stock": ["منتج", "سلعة", "مخزون", "قضية", "مستودع", "ستوك", "حبة", "قطع", "نفاذ", "منتح"]
         }
+
         if st.sidebar.button("🧠 استشارة العقل التجاري", key="submit_merchant_query_btn"):
             if merchant_query:
                 clean_input = normalize_arabic_text(merchant_query)
@@ -926,9 +933,9 @@ def render_sidebar_helper():
                                     highest_score = score
                                     detected_intent = intent
                                     
-                    # 🎨 ميكانيكية التحويل اللوني التلقائي لبوابات الـ HTML بناءً على الـ Intent المكتشف
+                    # ميكانيكية التحويل اللوني التلقائي بناءً على الـ Intent
                     if detected_intent == "shipping":
-                        st.session_state["merchant_chat_reply"] = "📌 **نصيحة الشحن للمتجر:** ركز حملاتك الإعلانية على ولايات الوسط والشرق (العاصمة، سطيف، قسنطينة) لضمان سرعة التوصيل وزيادة نسبة استلاف الطرود وتفادي المرتجعات."
+                        st.session_state["merchant_chat_reply"] = "📌 **نصيحة الشحن للمتجر:** ركز حملاتك الإعلانية على ولايات الوسط والشرق (العاصمة، سطيف، قسنطينة) لضمان سرعة التوصيل وزيادة نسبة استلام الطرود وتفادي المرتجعات."
                         st.session_state["intent_frame_color"] = "#00fff0" 
                     elif detected_intent == "customers":
                         st.session_state["merchant_chat_reply"] = "📞 **إستراتيجية التثبيت للمتجر:** اتصل بالزبون فوراً لتأكيد الشراء، واستخدم لهجة محترمة مع توضيح السعر الإجمالي شامل الشحن لتفادي الرفض عند الباب."
@@ -941,7 +948,7 @@ def render_sidebar_helper():
                         st.session_state["intent_frame_color"] = "#ff0055" 
                 st.rerun()
                 
-        # 🚀 إخراج علبة الرد السيبرانية المحدثة ميكانيكياً ولونياً وحركياً بنقاء كامل
+        # إخراج علبة الرد السيبرانية المحدثة ميكانيكياً ولونياً وحركياً بنقاء كامل
         st.sidebar.markdown(f'<div class="cyber-dynamic-box" style="border: 2px solid {st.session_state["intent_frame_color"]};"><p style="color:#ffffff; font-size:14px; direction:rtl; text-align:right; margin:0;">{st.session_state["merchant_chat_reply"]}</p></div>', unsafe_allow_html=True)
         
         st.sidebar.markdown("""
@@ -950,9 +957,9 @@ def render_sidebar_helper():
             <span style="color: #ffffff; font-size: 11px;">• مشاكل الشحن والـ Retour<br>• تثبيت الطلبيات والاتصال بالزبائن<br>• إدارة السلع ونفاذ الستوك (Stock)</span>
         </div>
         """, unsafe_allow_html=True)
-    
-    # تشغيل الميزة الثالثة وبوت المساعد الفوري الجانبي التابع لملفك المحسن
-    render_sidebar_helper()
+
+# 3. استدعاء الدالة الموحدة لتعمل تلقائياً
+render_sidebar_helper()
 
 
 
