@@ -583,7 +583,6 @@ if is_boss_link:
                 merchant_email = alert[0]
                 days_remain = alert[1]
                 
-                # استدعاء دالة بناء المؤشر النيوني الدائري لحقن التصميم الفخم
                 html_ring = render_neon_license_ring(merchant_email, days_remain)
                 st.markdown(html_ring, unsafe_allow_html=True)
                 
@@ -626,11 +625,12 @@ if is_boss_link:
                 st.markdown(f"""
                 <div style="border: 2px solid {current_border_color}; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right; box-shadow: 0px 0px 15px {current_border_color}40;">
                     <p style="margin:0 0 8px 0; font-weight:700;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
-                    <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: {current_package}</p>
+                    <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: <span style="color:{current_border_color}; font-weight:bold;">{current_package}</span></p>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                col_1, col_2, col_3, col_4, col_5 = st.columns(5)
+                # إنشاء 6 أعمدة تفاعلية مخصصة لاحتواء الزر السادس الجديد للفئات السنوية
+                col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
@@ -663,6 +663,41 @@ if is_boss_link:
                         conn.commit(); conn.close()
                         st.session_state[f"border_color_{current_email}"] = "#ff4500"
                         st.toast("🔒 تم مصادرة الصلاحيات عن بعد!"); time.sleep(0.5); st.rerun()
+                with col_6:
+                    # 💎 [الزر السادس المتوهج بالفيروزي]: تعيين فئة الاشتراك السنوي
+                    if st.button("🏷️ تعيين فئة الاشتراك", key=f"btn_pkg_select_{current_email}"):
+                        st.session_state[f"show_pkg_slide_{current_email}"] = not st.session_state.get(f"show_pkg_slide_{current_email}", False)
+                        st.rerun()
+                
+                # 🔄 [ميكانيكية الـ Slide-down البرمجية المخصصة للزر السادس للتحكم بالباقات والتوهج]
+                if st.session_state.get(f"show_pkg_slide_{current_email}", False):
+                    st.markdown(f"<div style='border: 1px solid #00fff0; border-radius: 10px; padding: 15px; background: rgba(5,20,30,0.9); margin-top: 10px; direction: rtl; text-align: right;'>", unsafe_allow_html=True)
+                    st.markdown("<p style='color: #00fff0; margin: 0 0 10px 0; font-weight: bold;'>🎯 اختر فئة الاشتراك السنوي المحددة لهذا التاجر للترقية الفورية ولتلوين الإطار:</p>", unsafe_allow_html=True)
+                    
+                    selected_opt = st.radio(
+                        "الباقات المتوفرة:",
+                        ["الباقة الأساسية (29k)", "الباقة الاحترافية (45k)", "الباقة السيبرانية الخارقة (65k)"],
+                        key=f"radio_pkg_{current_email}",
+                        label_visibility="collapsed"
+                    )
+                    
+                    if st.button("💾 تأمين وحفظ الباقة برمجياً حياً", key=f"btn_confirm_pkg_{current_email}"):
+                        conn = sqlite3.connect("saas_security_vault.db")
+                        conn.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE email = ?", (selected_opt, current_email))
+                        conn.commit(); conn.close()
+                        
+                        if "29k" in selected_opt:
+                            st.session_state[f"border_color_{current_email}"] = "#00ff66"
+                        elif "45k" in selected_opt:
+                            st.session_state[f"border_color_{current_email}"] = "#ffaa00"
+                        else:
+                            st.session_state[f"border_color_{current_email}"] = "#ff00ff"
+                            
+                        st.session_state[f"show_pkg_slide_{current_email}"] = False
+                        st.toast(f"✅ تم تحديث باقة المتجر إلى {selected_opt} وتلوين الكود حياً!")
+                        time.sleep(0.5); st.rerun()
+                        
+                    st.markdown("</div>", unsafe_allow_html=True)
                 
                 if st.session_state.get(f"ask_confirm_{current_email}", False):
                     if st.button("✅ فهمت، احذف الحساب الآن", key=f"final_yes_{current_email}"):
@@ -688,26 +723,27 @@ def render_neon_license_ring(email, days_left):
     stroke_offset = total_circumference * (1 - percentage)
     
     if clamped_days > 4:
-        glow_color = "#ffaa00"  # أصفر نيوني
+        glow_color = "#ffaa00"
     elif clamped_days > 2:
-        glow_color = "#ff5500"  # برتقالي حرج
+        glow_color = "#ff5500"
     else:
-        glow_color = "#ff0055"  # أحمر ناري دمي
+        glow_color = "#ff0055"
         
     html_template = f"""
-    <div style='display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(5,5,15,0.6); border-radius: 8px; margin-bottom: 8px; border-left: 4px solid {glow_color};'>
+    <div style='display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(5,5,15,0.6); border-radius: 8px; margin-bottom: 8px; border-left: 4px solid {glow_color}; direction: rtl; text-align: right;'>
         <div style='display: flex; align-items: center; gap: 15px;'>
             <svg width="45" height="45" viewBox="0 0 45 45" style="transform: rotate(-90deg); filter: drop-shadow(0px 0px 6px {glow_color});">
                 <circle cx="22.5" cy="22.5" r="18" stroke="rgba(255,255,255,0.1)" stroke-width="3" fill="transparent" />
                 <circle cx="22.5" cy="22.5" r="18" stroke="{glow_color}" stroke-width="3.5" fill="transparent" 
                         stroke-dasharray="{total_circumference}" stroke-dashoffset="{stroke_offset}" stroke-linecap="round" />
             </svg>
-            <span style='color:#ffffff; font-size: 15px;'>⚠️ التاجر: <b>{email}</b></span>
+            <span style='color:#ffffff; font-size: 15px;'>⚠️ التاجر: <span style='color: #00fff0;'>{email}</span></span>
         </div>
         <span style='color:{glow_color}; font-weight:bold; font-size: 14px;'>متبقي: {days_left} أيام فقط!</span>
     </div>
     """
     return html_template
+
 
 
 # ========================================================
