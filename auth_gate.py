@@ -277,83 +277,104 @@ import streamlit as st
 import sqlite3
 import time
 import re
+import random
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # ====================================================================
-# === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
+# === الإضافات والتعديلات الجديدة لبوابة التوثيق والتحقق بالبريد الآلي ===
 # ====================================================================
 
+def send_professional_acceptance_email(merchant_email):
+    """
+    بناء وتوليد قالب رسالة القبول الفخمة المصممة بالـ HTML والـ CSS النيوني الفاخر للشركات.
+    يتم استدعاء هذه الدالة لاحقاً من لوحة المالك لإعلام التاجر بقبول متجره رسمياً.
+    """
+    sender_email = "security@nexus-central.com"
+    subject = "🎯 تم قبول متجرك رسميًا في منصة NEXUS CENTRAL GATE v4"
+    
+    html_content = f"""
+    <html>
+    <body style="background-color: #050b14; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: right; direction: rtl; padding: 40px; color: #ffffff;">
+        <div style="max-width: 600px; margin: 0 auto; background: rgba(255, 255, 255, 0.02); border: 1px solid #00fff0; border-radius: 16px; padding: 30px; box-shadow: 0 0 30px rgba(0, 255, 240, 0.15);">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #00fff0; font-size: 28px; font-weight: 900; text-shadow: 0 0 15px #00fff0; margin: 0;">NEXUS CENTRAL GATE</h1>
+                <p style="color: #b0b0b0; font-size: 14px; margin-top: 5px;">إشعار أتمتة القبول الفوري للشركات</p>
+            </div>
+            <hr style="border: 0; border-top: 1px solid rgba(0, 255, 240, 0.2); margin: 20px 0;">
+            <h2 style="color: #ffffff; font-weight: 700; margin-top: 0;">أهلاً بك يا تاجرنا المتميز الفاضل،</h2>
+            <p style="font-size: 16px; line-height: 1.6; color: #e0e0e0;">
+                يسعدنا إعلامك بأن الإدارة قد قامت بفرز وفحص طلبك السحابي، و**تم تفعيل حسابك وقبول متجرك رسمياً** للانضمام إلى النواة الفنية المشفرة للمنصة.
+            </p>
+            <p style="font-size: 16px; line-height: 1.6; color: #e0e0e0;">
+                يمكنك الآن مباشرة عمليات التجارة، إدارة المستودعات السلعية، واستخدام أدوات المساعد الجانبي والـ AI المتطورة المخصصة لفئة اشتراكك.
+            </p>
+            <div style="text-align: center; margin: 35px 0;">
+                <a href="https://nexus-gate-v4.net{merchant_email}" style="display: inline-block; background: #00fff0; color: #050b14; font-weight: 900; font-size: 16px; padding: 16px 32px; border-radius: 8px; text-decoration: none; box-shadow: 0 0 20px rgba(0, 255, 240, 0.4); transition: all 0.3s ease;">
+                    🚀 اضغط هنا للدخول ومباشرة البيع حياً عبر لوحة تحكمك
+                </a>
+            </div>
+            <hr style="border: 0; border-top: 1px solid rgba(0, 255, 240, 0.1); margin: 20px 0;">
+            <p style="font-size: 12px; color: #708090; text-align: center; margin: 0;">
+                هذه الرسالة مؤتمتة وصادرة عن نظام عزل البوابات وتوثيق الهوية الرقمية للمنصة السحابية بشكل محمي.
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = sender_email
+    msg["To"] = merchant_email
+    msg.attach(MIMEText(html_content, "html"))
+    return msg
+
+def send_otp_via_smtp(target_email, generated_otp):
+    """
+    توليد اتصال حي وآمن مع خوادم البريد لإرسال رمز التحقق السري المكون من 6 أرقام للتاجر حياً.
+    """
+    smtp_server = "://gmail.com"
+    smtp_port = 587
+    server_user = "your_system_email@gmail.com"
+    server_pass = "your_app_password"
+    
+    msg = MIMEMultipart()
+    msg["Subject"] = f"🔒 رمز التحقق السري الخاص بك: {generated_otp}"
+    msg["From"] = server_user
+    msg["To"] = target_email
+    
+    body = f"مرحباً بك في بوابتنا السحابية. رمز التوثيق السري الخاص بإنشاء متجرك هو: {generated_otp}\nيرجى إدخاله في الخانة المنبثقة لإتمام التسجيل."
+    msg.attach(MIMEText(body, "plain"))
+    
+    try:
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
+        server.starttls()
+        server.quit()
+        return True
+    except Exception as e:
+        return False
 def render_premium_neon_packages():
     """
     تقوم هذه الدالة بتنفيذ ميكانيكية الهولوغرام الفاخرة (Holographic Phase-In Effect)،
-    حيث تعكس بدقة التحديث الشامل لمستويات الباقات السلوية ومميزاتها الفنية،
+    حيث تعكس بدقة التحديث الشامل لمستويات الباقات السنوية ومميزاتها الفنية،
     لتنبثق الباقة المختارة وحدها من العدم بناءً على رادار اختيار التاجر الحي.
     """
-    # 1. قراءة الاختيار الحي من عنصر الراديو المعتمد تلقائياً
     current_choice = st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
-
-    # 2. توليد فئات الحالة الهولوغرامية الديناميكية للباقات الثلاث
+    
     phase_cyber = "hologram-visible" if "السيبرانية" in current_choice else "hologram-hidden"
     phase_pro = "hologram-visible" if "الاحترافية" in current_choice else "hologram-hidden"
     phase_basic = "hologram-visible" if "الأساسية" in current_choice else "hologram-hidden"
 
-    # 3. حقن قواعد الهندسة الحركية والـ CSS السينمائي والميزات المحدثة للشركات
     st.markdown(f"""
         <style>
-        .hologram-card {{
-            transform: translateY(20px);
-            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                        opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-                        border 0.5s ease-in-out,
-                        box-shadow 0.5s ease-in-out;
-            overflow: hidden;
-            border-radius: 14px;
-        }}
-        
-        .hologram-hidden {{
-            max-height: 0px !important;
-            opacity: 0 !important;
-            transform: translateY(20px) scale(0.95);
-            padding: 0px !important;
-            margin: 0px !important;
-            border: 1px solid transparent !important;
-            box-shadow: none !important;
-            pointer-events: none;
-        }}
-        
-        .hologram-visible {{
-            max-height: 800px !important; /* ارتفاع متسع لانسكاب الخدمات المحدثة بالكامل */
-            opacity: 1 !important;
-            transform: translateY(0px) scale(1);
-            background: rgba(0, 255, 240, 0.05);
-            border: 1px solid rgba(0, 255, 240, 0.6);
-            padding: 18px;
-            margin-bottom: 15px;
-            box-shadow: 0 0 25px rgba(0, 255, 240, 0.2);
-        }}
-        
-        .holo-title {{
-            color: #00fff0;
-            font-weight: 900;
-            font-size: 17px;
-            margin-bottom: 6px;
-            text-shadow: 0 0 15px rgba(0, 255, 240, 0.5);
-        }}
-        .holo-price {{
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 15px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid rgba(0, 255, 240, 0.2);
-            padding-bottom: 6px;
-        }}
-        .holo-feat {{
-            color: #e0e0e0;
-            font-size: 13px;
-            margin: 5px 0;
-            padding-right: 5px;
-            line-height: 1.5;
-        }}
+        .hologram-card {{ transform: translateY(20px); transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.5s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1); overflow: hidden; border-radius: 14px; }}
+        .hologram-hidden {{ max-height: 0px !important; opacity: 0 !important; padding: 0px !important; margin: 0px !important; border: 1px solid transparent !important; box-shadow: none !important; pointer-events: none; }}
+        .hologram-visible {{ max-height: 800px !important; opacity: 1 !important; transform: translateY(0px) scale(1); background: rgba(0, 255, 240, 0.05); border: 1px solid rgba(0, 255, 240, 0.6); padding: 18px; margin-bottom: 15px; box-shadow: 0 0 25px rgba(0, 255, 240, 0.2); }}
+        .holo-title {{ color: #00fff0; font-weight: 900; font-size: 17px; margin-bottom: 6px; text-shadow: 0 0 15px rgba(0, 255, 240, 0.5); }}
+        .holo-price {{ color: #ffffff; font-weight: 700; font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid rgba(0, 255, 240, 0.2); padding-bottom: 6px; }}
+        .holo-feat {{ color: #e0e0e0; font-size: 13px; margin: 5px 0; padding-right: 5px; line-height: 1.5; }}
         </style>
         
         <!-- باقة 1: الأساسية المبتدئة -->
@@ -371,7 +392,7 @@ def render_premium_neon_packages():
             <div class='holo-title'>💎 الباقة الاحترافية المتوسطة (45k)</div>
             <div class='holo-price'>💰 السعر السنوي: 45,000 DA</div>
             <div class='holo-feat'><b>✓ تشمل كافة ميزات الباقة الأساسية المبتدئة بالكامل.</b></div>
-            <div class='holo-feat'>✓ 🔥 مؤشر المخزون الناري الذكي: تنبيهات بصرية متحركة عند نفاذ السلع (أقل من 5 قطع).</div>
+            <div class='holo-feat'>✓ 🔥 مؤشن المخزون الناري الذكي: تنبيهات بصرية متحركة عند نفاذ السلع (أقل من 5 قطع).</div>
             <div class='holo-feat'>✓ 🧼 مطهر ملفات المبيعات: رفع وتطهير ملفات Excel من التكرارات والأسعار السالبة.</div>
             <div class='holo-feat'>✓ 🗺️ رادار المبيعات الجغرافي: مخطط بياني حي لفرز الولايات الجزائرية الأكثر مبيعاً لشحن آمن.</div>
             <div class='holo-feat'>✓ 🤖 فتح ذكاء المساعد الجانبي المتوسط: تقديم نصائح وحلول لمشاكل الشحن والـ Retour وتثبيت الكليون.</div>
@@ -390,48 +411,35 @@ def render_premium_neon_packages():
         </div>
     """, unsafe_allow_html=True)
     
-    # أزرار الراديو النقية لمزامنة الميكانيكية الحركية وتمرير الاختيار بدقة
     chosen_package = st.radio(
         "اختر فئة الباقة السنوية لمتجرك لتفعيل عرض مميزاتها فوراً:",
         ["الباقة الأساسية المبتدئة (29k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة السيبرانية الخارقة (65k)"],
         key="selected_neon_package"
     )
     return chosen_package
-
 def validate_and_process_registration(email, password):
-    """
-    ممر الأمان الذكي المكون من 3 طبقات فحص صارمة لمنع حقن البيانات العشوائية وحظر الحسابات المتكررة.
-    """
+    """ ممر الأمان الذكي المكون من طبقات فحص صارمة لمنع حقن البيانات العشوائية وحظر الحسابات المتكررة """
     if email == "" or password == "":
         st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
         return None
-        
-    # 1. جدار التحقق من صيغة البريد (Email Format Guard)
-    email_pattern = r'^[a-zA-Z0-9._%+-]+@gmail\.com$'
-    if not re.match(email_pattern, email):
+    if not re.match(r'^[a-zA-Z0-9._%+-]+@gmail\.com$', email):
         st.warning("⚠️ يرجى كتابة بريد إلكتروني منطقي وصحيح ينتهي بـ @gmail.com")
         return None
-        
-    # 2. قوة كلمة المرور (Password Strength Check)
     if len(password) < 6:
         st.warning("⚠️ يجب أن تحتوي كلمة السر على 6 حروف أو أكثر لحماية متجرك")
         return None
-        
-    # 3. منع تكرار الحسابات (Unique Email Guard)
     try:
         conn_check = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor_check = conn_check.cursor()
         cursor_check.execute("SELECT email FROM saas_users_auth WHERE email = ?", (email,))
         existing_user = cursor_check.fetchone()
         conn_check.close()
-        
         if existing_user:
             st.error("❌ هذا البريد الإلكتروني مسجل مسبقاً في رادار المنصة السحابية!")
             return None
     except Exception as e:
         st.error(f"❌ خطأ في فحص جدار الأمان: {str(e)}")
         return None
-        
     return st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
 # ========================================================
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
@@ -454,19 +462,61 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         clean_pass = input_password.strip()
         
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-            # استدعاء منصة العرض الهولوغرامية الفاخرة بالميزات الجديدة المحدثة 100%
             user_package_choice = render_premium_neon_packages()
+            
+            if "otp_sent" not in st.session_state:
+                st.session_state["otp_sent"] = False
+            if "generated_otp" not in st.session_state:
+                st.session_state["generated_otp"] = ""
+            if "otp_verified" not in st.session_state:
+                st.session_state["otp_verified"] = False
+                
+            if st.button("📧 إرسال رمز التحقق السرّي"):
+                if clean_email == "" or not re.match(r'^[a-zA-Z0-9._%+-]+@gmail\.com$', clean_email):
+                    st.warning("⚠️ يرجى كتابة بريد إلكتروني منطقي وصحيح ينتهي بـ @gmail.com أولاً")
+                else:
+                    random_code = str(random.randint(100000, 999999))
+                    st.session_state["generated_otp"] = random_code
+                    st.session_state["otp_sent"] = True
+                    send_otp_via_smtp(clean_email, random_code)
+                    st.info("🎯 تم إرسال الرمز بنجاح! تفقد بريدك الإلكتروني (بما في ذلك Spam).")
+            
+            if st.session_state["otp_sent"] and not st.session_state["otp_verified"]:
+                st.markdown("""
+                    <style>
+                    .otp-fade-box { animation: slideUpExpand 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+                    @keyframes slideUpExpand { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+                    </style>
+                    <div class='otp-fade-box'>
+                """, unsafe_allow_html=True)
+                
+                input_otp = st.text_input("🔒 أدخل رمز التحقق المكون من 6 أرقام:", key="merchant_otp_input")
+                
+                if st.button("✅ تأكيد ومطابقة الرمز السرّي"):
+                    if input_otp.strip() == st.session_state["generated_otp"]:
+                        st.session_state["otp_verified"] = True
+                        st.success("🔓 تم توثيق البريد الإلكتروني بنجاح! ممر الحماية صار مفتوحاً الآن.")
+                        st.rerun()
+                    else:
+                        st.error("❌ رمز التحقق غير مطابق! يرجى مراجعة صندوق بريدك الإلكتروني")
+                st.markdown("</div>", unsafe_allow_html=True)
+                
             st.markdown("</div>", unsafe_allow_html=True)
             
             if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
-                validated_package = validate_and_process_registration(clean_email, clean_pass)
-                if validated_package:
-                    conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
-                    cursor_reg = conn_reg.cursor()
-                    cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, validated_package))
-                    conn_reg.commit(); conn_reg.close()
-                    st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
-                    time.sleep(0.5); st.rerun()
+                if not st.session_state["otp_verified"]:
+                    st.error("❌ حظر أمني: لا يمكنك إرسال الطلب إلا بعد إتمام مطابقة وتوثيق رمز الـ OTP بنجاح!")
+                else:
+                    validated_package = validate_and_process_registration(clean_email, clean_pass)
+                    if validated_package:
+                        conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
+                        cursor_reg = conn_reg.cursor()
+                        cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, validated_package))
+                        conn_reg.commit(); conn_reg.close()
+                        st.session_state["otp_sent"] = False
+                        st.session_state["otp_verified"] = False
+                        st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
+                        time.sleep(0.5); st.rerun()
         else:
             st.markdown("</div>", unsafe_allow_html=True)
             if st.button("🔑 تسجيل الدخول إلى المتجر"):
@@ -487,7 +537,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
-
 
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
