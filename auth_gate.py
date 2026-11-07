@@ -923,6 +923,17 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                                 st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** لم أتمكن من تحديد مرادك بدقة! يرجى كتابة سؤال واضح أو الاستعانة بدليل المواضيع في الأسفل (مثال: شحن، ستوك، كليون)."
                                 st.session_state["detected_intent_style"] = "red"
                 st.rerun()
+            # الرد الميكانيكي التفاعلي الملون والمنبثق بالثلاثية الحركية
+            if st.session_state["merchant_chat_reply"] and st.session_state["detected_intent_style"]:
+                box_class = f"cyber-dynamic-box-{st.session_state['detected_intent_style']}"
+                st.sidebar.markdown(f'<div class="{box_class}"><p style="color:#ffffff; font-size:14px; direction:rtl; text-align:right; margin:0;">{st.session_state["merchant_chat_reply"]}</p></div>', unsafe_allow_html=True)
+            
+            st.sidebar.markdown("""
+            <div style="margin-top: 15px; padding: 10px; background: rgba(255,170,0,0.05); border: 1px dashed #ffaa00; border-radius: 10px; text-align: right; direction: rtl;">
+                <p style="color: #ffaa00; font-size: 12px; margin: 0 0 5px 0; font-weight: bold;">💡 مواضيع يمكنك استشارتي فيها:</p>
+                <span style="color: #ffffff; font-size: 11px;">• مشاكل الشحن والـ Retour (باقة 45k+)<br>• تثبيت الطلبيات والاتصال بالزبائن<br>• إدارة السلع ونفاذ الستوك (Stock)<br>• استراتيجيات التسويق والـ Ads (باقة 65k)</span>
+            </div>
+            """, unsafe_allow_html=True)
             # 🎬 [تفعيل ميكانيكية المولد الديناميكي للمفاتيح عبر ربط العداد لكسر وإبادة التخزين المؤقت للمتصفح]
             # دمج الكلاس المفرّد بالعداد يجبر المتصفح على محو الحاوية القديمة وإعادة إشعال حركة الـ elasticPop في غضون 0.4 ثانية بسلاسة
             dynamic_class_id = f"frozen-frame-v4-{st.session_state['response_trigger_counter']}"
