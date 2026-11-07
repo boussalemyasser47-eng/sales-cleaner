@@ -975,7 +975,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             """, unsafe_allow_html=True)
 
 # 🤖 تشغيل وتأمين استدعاء المساعد الفوري في أقصى يسار السيرفر لإغلاق الكتلة بأمان ومنع الـ IndentationError
-   render_sidebar_helper()
+    render_sidebar_helper()
 
 
     # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
