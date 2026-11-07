@@ -839,7 +839,7 @@ st.sidebar.markdown("""
 """, unsafe_allow_html=True)
 
 # 2. بناء دالة المساعد المزدوج الموحدة كاملاً
-    def render_sidebar_helper():
+def render_sidebar_helper():
         """
         بوت المساعد الذكي المزدوج المتطور كلياً:
         - للمالك: يفتح خبير البرمجة وتحليل الأكواد وجداول السيكويل والأمر 'شرح دكي'.
