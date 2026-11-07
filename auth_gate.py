@@ -747,6 +747,7 @@ def render_neon_license_ring(email, days_left):
 
 
 
+
 # ========================================================
 # القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
 # ========================================================
@@ -815,9 +816,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     
     choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", available_tools, key="merchant_navigation_radio")
     # === إضافات نظام العزل والاتصال والمساعد الذكي ===
-# === إضافات نظام العزل والاتصال والمساعد الذكي ===
-# حقن أنماط علبة الرد وحركة الانبثاق الميكانيكي الصاعد من العدم
-
     def render_sidebar_helper():
         """
         بوت المساعد الذكي المزدوج المتطور كلياً:
@@ -936,6 +934,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         
     # تشغيل الميزة الثالثة وبوت المساعد الفوري الجانبي التابع لملفك المحسن
     render_sidebar_helper()
+
 
 
 
