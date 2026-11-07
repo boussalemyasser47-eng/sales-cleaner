@@ -753,6 +753,67 @@ def render_neon_license_ring(email, days_left):
 # حقن الدوال الأساسية لمنع خطأ NameError في التطبيق كلياً
 # ========================================================
 
+if "active_merchant_user" in st.session_state and not is_boss_link:
+    current_merchant = st.session_state["active_merchant_user"]
+    
+    # 🔒 الفحص السحابي الصارم وجلب حالة الحساب ونوع الباقة (package) لمتجرك الجديد
+    conn_final_auth = sqlite3.connect("saas_security_vault.db", timeout=10)
+    cursor_final_auth = conn_final_auth.cursor()
+    # تأمين جلب الـ status والـ package معاً من جدول صلاحيات المشتركين
+    cursor_final_auth.execute("SELECT status, package FROM saas_users_auth WHERE email = ?", (current_merchant,))
+    chk_row = cursor_final_auth.fetchone()
+    conn_final_auth.close()
+    
+    user_actual_status = str(chk_row[0]) if chk_row and chk_row[0] is not None else ""
+    user_package = str(chk_row[1]).strip() if chk_row and len(chk_row) > 1 and chk_row[1] is not None else "29k"
+    
+    if not chk_row or "مفعّل" not in user_actual_status:
+        st.warning("🔒 انتهت أو سُحبت تراخيص الحساب السحابي.")
+        if st.button("🔄 العودة لبوابة الدخول الرئيسية", key="back_gate_refresh_btn"): 
+            st.session_state.pop("active_merchant_user")
+            st.rerun()
+        st.stop()
+    # 🏪 [جدار العزل الفردي الأسطوري]: قفل البيانات وعزل فواتير ومخزون كل تاجر باسم إيميله المشفر
+    merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
+    
+    if "merchant_db_conn" not in st.session_state:
+        st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
+    else:
+        try:
+            st.session_state["merchant_db_conn"].execute("SELECT 1")
+        except (sqlite3.ProgrammingError, sqlite3.OperationalError):
+            st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
+        
+    conne = st.session_state["merchant_db_conn"]
+    cursor = conne.cursor()
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS v4_customer_invoices (
+            invoice_id INTEGER PRIMARY KEY AUTOINCREMENT, shop_name TEXT, customer_name TEXT, 
+            customer_phone TEXT, product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS store_stock (
+            product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER
+        )
+    ''')
+    conne.commit()
+
+    # 🌐 جدار حجب الأدوات التلقائي بناءً على فئة باقة التاجر الحالية
+    available_tools = ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي"]
+    
+    if "45k" in user_package:
+        available_tools.append("🧼 مطهر ملفات المبيعات وإحصائيات الولايات")
+    elif "65k" in user_package:
+        available_tools.append("🧼 مطهر ملفات المبيعات وإحصائيات الولايات")
+        available_tools.append("🚀 مولّد الحملات والتخطيط التسويقي (AI)")
+
+    st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold; text-align:center;'>👤 التاجر النشط:<br>{current_merchant}<br><span style='color:#ffaa00;'>باقة: {user_package}</span></p>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; font-size: 24px;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
+    
+    choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", available_tools, key="merchant_navigation_radio")
+    # === إضافات نظام العزل والاتصال والمساعد الذكي ===
 # === إضافات نظام العزل والاتصال والمساعد الذكي ===
 # حقن أنماط علبة الرد وحركة الانبثاق الميكانيكي الصاعد من العدم
 st.sidebar.markdown("""
@@ -880,6 +941,19 @@ def render_sidebar_helper():
             <span style="color: #ffffff; font-size: 11px;">• مشاكل الشحن والـ Retour<br>• تثبيت الطلبيات والاتصال بالزبائن<br>• إدارة السلع ونفاذ الستوك (Stock)</span>
         </div>
         """, unsafe_allow_html=True)
+
+    if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", key="merchant_safe_logout_btn"):
+        if "merchant_db_conn" in st.session_state:
+            st.session_state["merchant_db_conn"].close()
+            st.session_state.pop("merchant_db_conn")
+        st.session_state.pop("active_merchant_user")
+        st.toast("تم الخروج الآمن وتأمين المستودع كلياً!")
+        time.sleep(0.5)
+        st.rerun()
+        
+    # تشغيل الميزة الثالثة وبوت المساعد الفوري الجانبي التابع لملفك المحسن
+    render_sidebar_helper()
+
 
     # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
     # ========================================================
