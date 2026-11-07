@@ -874,7 +874,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
             merchant_query = st.sidebar.text_input("💡 اسأل عن أي فكرة، نصيحة، أو مشكلة في متجرك:", key="merchant_ai_query_in", placeholder="مثال: عندي مشكل في الشحن")
             
-            # ترقية الرادار بالمرادفات الجزائرية المقربة وتسامحها برمجياً
+            # ترقية القاموس الجزائري والتسامح مع ("سحن"، "توسيل" ↔️ شحن)، ("سبون" ↔️ زبون)، ("منتح" ↔️ منتج)
             merchant_intents = {
                 "shipping": ["شحن", "توصيل", "ولاية", "ليفريرون", "ليفرور", "رتور", "ولايات", "جنوب", "سحن", "توسيل"],
                 "customers": ["زبون", "زبائن", "كليون", "لكليون", "تعامل", "اتصال", "تثبيت", "كونفيرمي", "سبون"],
@@ -884,14 +884,14 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             
             if st.sidebar.button("🧠 استشارة العقل التجاري", key="submit_merchant_query_btn"):
                 if merchant_query:
-                    # ميكانيكية التصفير الحركي الفوري لإجبار الانبثاق من العدم (Smooth Reset Mode)
+                    # 🔄 ميكانيكية التصفير الحركي الفوري لإجبار الانبثاق من العدم (Smooth Reset Mode)
                     st.session_state["merchant_chat_reply"] = ""
                     
-                    # جدار حظر الخربشة العشوائية المستمر للحروف الميتة (مثل: مي اونيبثب)
+                    # 🛡️ جدار حظر الخربشة العشوائية المستمر للحروف الميتة (مثل: مي اونيبثب)
                     clean_input = normalize_arabic_text(merchant_query)
                     if "مي اونيبثب" in clean_input or len(clean_input.strip()) < 3 or clean_input.isdigit():
                         st.session_state["intent_frame_color"] = "#ff0055"  # الأحمر النبضي للتحذير والخربشة
-                        st.session_state["merchant_chat_reply"] = "🚨 **جدار حظر الخربشة:** تم حظر المعالجة فوراً لحماية الرام! يرجى كتابة استفسار تجاري واضح وليس خربشة حروف ميتة."
+                        st.session_state["merchant_chat_reply"] = "🚨 **جدار حظر الخربشة:** تم حظر المعالجة! الإدخال يحتوي على حروف ميتة عشوائية لا تحمل أي معنى تجاري."
                         st.rerun()
                         
                     input_words = clean_input.split()
@@ -907,24 +907,24 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                                     highest_score = score
                                     detected_intent = intent
                                     
-                    # ميكانيكية التحول اللوني التلقائي للإطار (intent_frame_color)
+                    # 🎨 ميكانيكية التحول اللوني التلقائي للإطار بناءً على النوايا المكتشفة
                     if detected_intent == "shipping":
-                        st.session_state["intent_frame_color"] = "#00fff0"  # الفيروزي للشحن
+                        st.session_state["intent_frame_color"] = "#00fff0"  # الأزرق الفيروزي للشحن
                     elif detected_intent == "customers":
-                        st.session_state["intent_frame_color"] = "#ff4500"  # البرتقالي للتثبيت
+                        st.session_state["intent_frame_color"] = "#ff4500"  # البرتقالي الناري للتثبيت
                     elif detected_intent == "stock":
                         st.session_state["intent_frame_color"] = "#ff00ff"  # البنفسجي للستوك
                     else:
                         st.session_state["intent_frame_color"] = "#ff0055"  # الأحمر النبضي للتحذيرات والمجهول
                         
-                    # تصفية الحجب والتدرج الذكي للباقات
+                    # تطبيق قيود تدرج الباقات الصارمة للمستأجرين
                     if user_package == "29k" and detected_intent in ["shipping", "marketing"]:
                         st.session_state["merchant_chat_reply"] = "🔒 **المساعد:** ميزات الذكاء الاصطناعي المتقدمة مقفلة في باقتك الحالية (الأساسية)! قم بالترقية الآن لتفعيل العقل التسويقي وحلول الشحن الذكية."
                     elif user_package == "45k" and detected_intent == "marketing":
                         st.session_state["merchant_chat_reply"] = "🔒 **المساعد:** نصائح التسويق الذكي وإعلانات الفيسبوك المتقدمة تتطلب الباقة السيبرانية الأعلى. يرجى الترقية لتفعيلها."
                     else:
                         if detected_intent == "shipping":
-                            st.session_state["merchant_chat_reply"] = "📌 **نصيحة الشحن للمتجر:** ركز حملاتك على ولايات الوسط والشرق لضمان سرعة التوصيل وزيادة نسبة استلام الطرود (Livraison) وتفادي المرتجعات."
+                            st.session_state["merchant_chat_reply"] = "📌 **نصيحة الشحن للمتجر:** ركز حملاتك على ولايات الوسط والشرق لضمان سرعة التوصيل وزيادة نسبة استلاف الطرود (Livraison) وتفادي المرتجعات."
                         elif detected_intent == "customers":
                             st.session_state["merchant_chat_reply"] = "📞 **إستراتيجية التثبيت للمتجر:** اتصل بالزبون فوراً لتأكيد الشراء (Confirmation)، واستخدم لهجة محترمة شاملة سعر الشحن لتفادي الرفض."
                         elif detected_intent == "stock":
@@ -935,7 +935,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                             st.sidebar.toast("🔍 جاري البحث في قاعدة المعرفة المتاحة...")
                             st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** لم أتمكن من تحديد مرادك بدقة! يرجى كتابة سؤال واضح أو الاستعانة بدليل المواضيع في الأسفل."
                     st.rerun()
-            # حقن تأثير الـ CSS للانبثاق الميكانيكي الصاعد من العدم (elasticPop) دون قفز
+            # حقن تأثير الـ CSS للانبثاق الميكانيكي الصاعد (elasticPop) لتبثق الإجابة من العدم
             st.sidebar.markdown(f"""
                 <style>
                 @keyframes elasticPop {{
@@ -976,8 +976,9 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         time.sleep(0.5)
         st.rerun()
 
-# 🚨 [هندسة المحاذاة الصارمة] سطر الاستدعاء المنفرد والمفرّد في أقصى اليسار مباشرة أسفل شرط التحقق الكبير دون أي حجب
+# 🚨 [هندسة المحاذاة والمسافات الصارمة]: سطر الاستدعاء مفرّد في أقصى اليسار ليتصل مباشرة بالشروط الكبرى للموقع دون اختفاء
     render_sidebar_helper()
+
 
   
     # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
