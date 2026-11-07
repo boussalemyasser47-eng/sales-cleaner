@@ -760,14 +760,6 @@ import time
 # ========================================================
 # القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
 # ========================================================
-import streamlit as st
-import sqlite3
-import urllib.parse
-import time
-
-# ========================================================
-# القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
-# ========================================================
 if "active_merchant_user" in st.session_state and not is_boss_link:
     current_merchant = st.session_state["active_merchant_user"]
     
@@ -778,8 +770,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     chk_row = cursor_final_auth.fetchone()
     conn_final_auth.close()
     
-    user_actual_status = str(chk_row[0]) if chk_row and chk_row[0] is not None else ""
-    user_package = str(chk_row[1]).strip() if chk_row and len(chk_row) > 1 and chk_row[1] is not None else "29k"
+    user_actual_status = str(chk_row) if chk_row and chk_row is not None else ""
+    user_package = str(chk_row).strip() if chk_row and len(chk_row) > 1 and chk_row is not None else "29k"
     
     if not chk_row or "مفعّل" not in user_actual_status:
         st.warning("🔒 انتهت أو سُحبت تراخيص الحساب السحابي.")
@@ -799,7 +791,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         except (sqlite3.ProgrammingError, sqlite3.OperationalError):
             st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
             
-    # 🚨 [تأمين معمارية الاتصال]: فتح وجلب متغير الاتصال بقاعدة البيانات لإنهاء خطأ NameError كلياً
+    # 🚨 تأمين معمارية الاتصال لإنهاء أخطاء السيرفر وNameError كلياً
     conne = st.session_state.get("merchant_db_conn")
     cursor = conne.cursor()
     
@@ -845,9 +837,9 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             if w1 == w2: return 1.0
             if abs(len(w1) - len(w2)) > 3: return 0.0
             len1, len2 = len(w1), len(w2)
-            matrix = [[0] * (len2 + 1) for _ in range(len1 + 1)]
-            for i in range(len1 + 1): matrix[i][0] = i
-            for j in range(len2 + 1): matrix[0][j] = j
+            matrix = [ * (len2 + 1) for _ in range(len1 + 1)]
+            for i in range(len1 + 1): matrix[i] = i
+            for j in range(len2 + 1): matrix[j] = j
             for i in range(1, len1 + 1):
                 for j in range(1, len2 + 1):
                     cost = 0 if w1[i-1] == w2[j-1] else 1
@@ -870,7 +862,9 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         else:
             st.sidebar.markdown("<h3 style='color: #00fff0; text-align: center; margin-bottom: 0;'>🤖 المساعد التجاري الذكي</h3>", unsafe_allow_html=True)
             
-            # منع التضارب وتأمين الهيكل الخارجي المستقر (The Frozen Frame) بلون افتراضي خافت
+            # تهيئة عداد المفاتيح الديناميكي لغرض تدمير وإعادة بناء حاوية العرض الحركية
+            if "response_trigger_counter" not in st.session_state:
+                st.session_state["response_trigger_counter"] = 0
             if "merchant_chat_reply" not in st.session_state:
                 st.session_state["merchant_chat_reply"] = "مرحباً بك! أنا مساعدك التجاري الذكي لمساعدتك في إدارة متجرك."
             if "intent_frame_color" not in st.session_state:
@@ -880,7 +874,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
             merchant_query = st.sidebar.text_input("💡 اسأل عن أي فكرة، نصيحة، أو مشكلة في متجرك:", key="merchant_ai_query_in", placeholder="مثال: عندي مشكل في الشحن")
             
-            # صب وترقية القاموس الجزائري ومسامحة مدخلات التاجر ("سحن"، "توسيل" ↔️ شحن) و ("سبون" ↔️ زبون) و ("منتح" ↔️ منتج)
+            # رادار الفحص التقريبي للكلمات الجزائرية ("سحن"، "توسيل" ↔️ شحن) و ("سبون" ↔️ زبون) و ("منتح" ↔️ منتج)
             merchant_intents = {
                 "shipping": ["شحن", "توصيل", "ولاية", "ليفريرون", "ليفرور", "رتور", "ولايات", "جنوب", "سحن", "توسيل"],
                 "customers": ["زبون", "زبائن", "كليون", "لكليون", "تعامل", "اتصال", "تثبيت", "كونفيرمي", "سبون"],
@@ -890,15 +884,18 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             
             if st.sidebar.button("🧠 استشارة العقل التجاري", key="submit_merchant_query_btn"):
                 if merchant_query:
-                    # 🔄 ميكانيكية التصفير الحركي الفوري (Smooth Reset Mode): مسح الرد القديم لإجبار التولد من العدم كلياً
+                    # 🔄 ميكانيكية التصفير الحركي (Smooth Reset Mode)
                     st.session_state["merchant_chat_reply"] = ""
                     
-                    # 🛡️ جدار حظر الخربشة العشوائية المستمر للحروف الميتة (مثل: مي اونيبثب)
+                    # 🛡️ تفعيل ميكانيكية مولد المفاتيح الديناميكية: زيادة العداد البرمجي لتفجير المعرّفات القديمة في الـ DOM
+                    st.session_state["response_trigger_counter"] += 1
+                    
+                    # 🛡️ جدار حظر الخربشة العشوائية للحروف الميتة (مثل: مي اونيبثب)
                     clean_input = normalize_arabic_text(merchant_query)
                     if "مي اونيبثب" in clean_input or len(clean_input.strip()) < 3 or clean_input.isdigit():
-                        st.session_state["intent_frame_color"] = "#ff0055"  # الأحمر النبضي للخربشة
+                        st.session_state["intent_frame_color"] = "#ff0055"
                         st.session_state["hologram_tag"] = "⚠️ إدخال عشوائي"
-                        st.session_state["merchant_chat_reply"] = "🚨 **جدار حظر الخربشة:** تم حظر المعالجة! المدخل يحتوي على خربشة حروف ميتة عشوائية ليس لها أي معنى تجاري."
+                        st.session_state["merchant_chat_reply"] = "🚨 **جدار حظر الخربشة:** تم حظر المعالجة! المدخلات تحتوي على حروف ميتة عشوائية لا تحمل أي معنى تجاري."
                         st.rerun()
                         
                     input_words = clean_input.split()
@@ -914,15 +911,15 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                                     highest_score = score
                                     detected_intent = intent
                                     
-                    # 🎨 تفجير وتعيين الألوان التلقائية والشارات الهولوجرامية بحسب النية المكتشفة حياً
+                    # تفجير وصباغة الألوان الحية والـ Tags بناءً على النوايا المكتشفة حياً
                     if detected_intent == "shipping":
-                        st.session_state["intent_frame_color"] = "#00fff0"  # الأزرق الفيروزي للشحن
+                        st.session_state["intent_frame_color"] = "#00fff0"  # الأزرق الفيروزي المشع للشحن
                         st.session_state["hologram_tag"] = "🎯 رادار الشحن"
                     elif detected_intent == "customers":
                         st.session_state["intent_frame_color"] = "#ff4500"  # البرتقالي الناري للتثبيت
                         st.session_state["hologram_tag"] = "📞 تثبيت الطلبيات"
                     elif detected_intent == "stock":
-                        st.session_state["intent_frame_color"] = "#ff00ff"  # البنفسجي للستوك والمستودع
+                        st.session_state["intent_frame_color"] = "#ff00ff"  # البنفسجي السيبراني للستوك
                     elif detected_intent == "marketing":
                         st.session_state["intent_frame_color"] = "#ffaa00"  # الذهبي للتسويق والـ Ads
                         st.session_state["hologram_tag"] = "🚀 التخطيط التسويقي"
@@ -930,25 +927,28 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         st.session_state["intent_frame_color"] = "#ff0055"
                         st.session_state["hologram_tag"] = "⚠️ إدخال مجهول"
                         
-                    # تطبيق شروط حجب ميزات الأدوات والتدرج الذكي للباقات
+                    # شروط حجب ميزات الذكاء والتدرج الذكي للباقات
                     if user_package == "29k" and detected_intent in ["shipping", "marketing"]:
                         st.session_state["merchant_chat_reply"] = "🔒 **المساعد:** ميزات الذكاء الاصطناعي المتقدمة مقفلة في باقتك الحالية (الأساسية)! قم بالترقية الآن لتفعيل العقل التسويقي وحلول الشحن الذكية."
                     elif user_package == "45k" and detected_intent == "marketing":
                         st.session_state["merchant_chat_reply"] = "🔒 **المساعد:** نصائح التسويق الذكي وإعلانات الفيسبوك المتقدمة تتطلب الباقة السيبرانية الأعلى. يرجى الترقية لتفعيلها."
                     else:
                         if detected_intent == "shipping":
-                            st.session_state["merchant_chat_reply"] = "📌 **رادار الشحن:** ركز حملاتك على ولايات الوسط والشرق لضمان سرعة التوصيل وزيادة نسبة استلام الطرود (Livraison) وتفادي المرتجعات."
+                            st.session_state["merchant_chat_reply"] = "📌 **رادار ممر الشحن:** ركز حملاتك الإعلانية على ولايات الوسط والشرق لضمان سرعة التوصيل وزيادة نسبة استلام الطرود وتقليص المرتجعات الحاصلة."
                         elif detected_intent == "customers":
-                            st.session_state["merchant_chat_reply"] = "📞 **إستراتيجية التثبيت:** اتصل بالزبون فوراً لتأكيد الشراء (Confirmation)، واستخدم لهجة محترمة شاملة سعر الشحن لتفادي الرفض."
+                            st.session_state["merchant_chat_reply"] = "📞 **ميكانيكية تأكيد الطلب:** اتصل بالزبون فوراً لتأكيد الشراء، واستخدم لهجة محترمة شاملة سعر الشحن لتفادي الرفض الفجائي لطلبياتك."
                         elif detected_intent == "stock":
-                            st.session_state["merchant_chat_reply"] = "📦 **مراقبة المخزون:** إذا انخفضت كمية أي منتج لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية الستوك وضخ السيولة."
+                            st.session_state["merchant_chat_reply"] = "📦 **حماية المخزون السلعي:** إذا انخفضت كمية أي منتج لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية المستودع وضخ السيولة."
                         elif detected_intent == "marketing" and user_package == "65k":
-                            st.session_state["merchant_chat_reply"] = "🚀 **العقل التسويقي الذكي:** للتحجيم الناجح، أطلق إعلانات CBO باستهداف عريض (Broad) في الجزائر، واستخدم فلاتر الهاشتاغات الحالية لتيك توك مع ميزانية فحص 10$ يومياً."
+                            st.session_state["merchant_chat_reply"] = "🚀 **السيبرانية التسويقية:** للتحجيم الناجح، أطلق إعلانات CBO باستهداف عريض في الجزائر، واستخدم الهاشتاغات الحالية لتيك توك مع ميزانية فحص 10$ يومياً للتحويل حياً."
                         else:
                             st.sidebar.toast("🔍 جاري البحث في قاعدة المعرفة المتاحة...")
                             st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** لم أتمكن من تحديد مرادك بدقة! يرجى كتابة سؤال واضح أو الاستعانة بدليل المواضيع في الأسفل."
                     st.rerun()
-            # 🎬 [حقن الترقية السينمائية الثلاثية الموحدة مع استقرار الهيكل الخارجي]
+            # 🎬 [تفعيل ميكانيكية المولد الديناميكي للمفاتيح عبر ربط العداد لكسر وإبادة التخزين المؤقت للمتصفح]
+            # دمج الكلاس المفرّد بالعداد يجبر المتصفح على محو الحاوية القديمة وإعادة إشعال حركة الـ elasticPop في غضون 0.4 ثانية بسلاسة
+            dynamic_class_id = f"frozen-frame-v4-{st.session_state['response_trigger_counter']}"
+            
             st.sidebar.markdown(f"""
                 <style>
                 @keyframes laserLoad {{
@@ -958,26 +958,27 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 }}
                 @keyframes neonGlow {{
                     0% {{ opacity: 0.8; text-shadow: 0 0 3px {st.session_state["intent_frame_color"]}; }}
-                    50% {{ opacity: 1; text-shadow: 0 0 9px {st.session_state["intent_frame_color"]}, 0 0 12px {st.session_state["intent_frame_color"]}; }}
+                    50% {{ opacity: 1; text-shadow: 0 0 8px {st.session_state["intent_frame_color"]}, 0 0 11px {st.session_state["intent_frame_color"]}; }}
                     100% {{ opacity: 0.8; text-shadow: 0 0 3px {st.session_state["intent_frame_color"]}; }}
                 }}
                 @keyframes elasticPop {{
-                    0% {{ transform: translateY(14px) scale(0.94); opacity: 0; }}
-                    65% {{ transform: translateY(-3px) scale(1.01); opacity: 0.96; }}
+                    0% {{ transform: translateY(12px) scale(0.95); opacity: 0; }}
+                    60% {{ transform: translateY(-2px) scale(1.01); opacity: 0.95; }}
                     100% {{ transform: translateY(0) scale(1); opacity: 1; }}
                 }}
-                /* 1. قاعدة استقرار الصندوق الخارجي (The Frozen Frame) بلون فيروزي خافت هادئ لمنع القفز والاهتزاز */
-                .frozen-frame-box {{
+                /* 1. هيكل الصندوق الخارجي المستقر والثابت هندسياً لمنع التفجر والقفز البصري للواجهة الجانبية */
+                .{dynamic_class_id} {{
                     position: relative;
-                    border: 1px solid rgba(0, 255, 240, 0.14);
+                    border: 1px solid rgba(0, 255, 240, 0.15);
                     border-radius: 12px;
                     padding: 16px;
                     background: rgba(5, 15, 20, 0.90);
                     margin-top: 15px;
                     overflow: hidden;
+                    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
                 }}
-                /* 2. الميزة 1: الخط الليزري العلوي النحيف جداً المتولد من اليسار لليمين */
-                .laser-top-line {{
+                /* 2. الخط الليزري العلوي النحيف جداً المتولد من اليسار لليمين */
+                .{dynamic_class_id} .laser-top-line {{
                     position: absolute;
                     top: 0;
                     left: 0;
@@ -986,8 +987,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     box-shadow: 0 0 10px {st.session_state["intent_frame_color"]}, 0 0 3px {st.session_state["intent_frame_color"]};
                     animation: laserLoad 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
                 }}
-                /* 3. الميزة 2: شارات الهولوجرام العائمة المضيئة فوق نص الإجابة مباشرة */
-                .hologram-floating-tag {{
+                /* 3. شارات الهولوجرام العائمة العالية التوهج */
+                .{dynamic_class_id} .hologram-floating-tag {{
                     display: inline-block;
                     font-size: 11px;
                     font-weight: bold;
@@ -997,11 +998,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     border-radius: 4px;
                     padding: 2px 8px;
                     margin-bottom: 12px;
-                    animation: neonGlow 2s ease-in-out infinite, elasticPop 0.42s ease-out forwards;
+                    animation: neonGlow 2s ease-in-out infinite, elasticPop 0.4s ease-out forwards;
                     box-shadow: 0 0 6px {st.session_state["intent_frame_color"]}40;
                 }}
-                /* 4. الميزة 3: انسياب الحبر الضوئي للعناوين الداخلية لتبثق الكلمات صعوداً وتلوين العناوين الرئيسية */
-                .optical-ink-body {{
+                /* 4. الحبر الضوئي للعناوين الداخلية لتبثق الكلمات صعوداً وتلوين الكلمات المفتاحية صريحاً */
+                .{dynamic_class_id} .optical-ink-body {{
                     color: #e2e8f0;
                     font-size: 13.5px;
                     direction: rtl;
@@ -1010,13 +1011,13 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     line-height: 1.6;
                     animation: elasticPop 0.55s cubic-bezier(0.25, 1, 0.5, 1) forwards;
                 }}
-                .optical-ink-body strong {{
+                .{dynamic_class_id} .optical-ink-body strong {{
                     color: {st.session_state["intent_frame_color"]};
                     text-shadow: 0 0 4px {st.session_state["intent_frame_color"]}60;
                     font-weight: bold;
                 }}
                 </style>
-                <div class="frozen-frame-box">
+                <div class="{dynamic_class_id}">
                     <div class="laser-top-line"></div>
                     <div class="hologram-floating-tag">{st.session_state["hologram_tag"]}</div>
                     <p class="optical-ink-body">{st.session_state["merchant_chat_reply"]}</p>
@@ -1038,6 +1039,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         st.toast("تم الخروج الآمن وتأمين المستودع كلياً!")
         time.sleep(0.5)
         st.rerun()
+
 
 # 🚨 [الخط الأحمر الهندسي المقفل]: سطر استدعاء الدالة مفرّد وحرّ في أقصى جهة اليسار (0 مسافات بادئة) ليتصل بالشروط الكبرى دون اختفاء
     render_sidebar_helper()
