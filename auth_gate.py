@@ -746,6 +746,7 @@ def render_neon_license_ring(email, days_left):
 
 
 
+
 # ========================================================
 # القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
 # ========================================================
@@ -814,32 +815,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     
     choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", available_tools, key="merchant_navigation_radio")
     # === إضافات نظام العزل والاتصال والمساعد الذكي ===
-# ======================================================================
-# === إضافات نظام العزل والاتصال والمساعد الذكي ===
-# ======================================================================
-
-# 1. حقن أنماط علبة الرد وحركة الانبثاق الميكانيكي الصاعد من العدم
-st.sidebar.markdown("""
-<style>
-@keyframes elasticPop {
-    0% { transform: translateY(25px) scale(0.92); opacity: 0; }
-    60% { transform: translateY(-4px) scale(1.02); opacity: 0.9; }
-    85% { transform: translateY(1px) scale(0.99); opacity: 0.98; }
-    100% { transform: translateY(0) scale(1); opacity: 1; }
-}
-.cyber-dynamic-box {
-    animation: elasticPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
-    border-radius: 12px; 
-    padding: 15px; 
-    background: rgba(5, 15, 20, 0.9); 
-    margin-top: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-}
-</style>
-""", unsafe_allow_html=True)
-
-# 2. بناء دالة المساعد المزدوج الموحدة كاملاً
-def render_sidebar_helper():
+    def render_sidebar_helper():
         """
         بوت المساعد الذكي المزدوج المتطور كلياً:
         - للمالك: يفتح خبير البرمجة وتحليل الأكواد وجداول السيكويل والأمر 'شرح دكي'.
@@ -946,7 +922,7 @@ def render_sidebar_helper():
                 <span style="color: #ffffff; font-size: 11px;">• مشاكل الشحن والـ Retour (باقة 45k+)<br>• تثبيت الطلبيات والاتصال بالزبائن<br>• إدارة السلع ونفاذ الستوك (Stock)<br>• استراتيجيات التسويق والـ Ads (باقة 65k)</span>
             </div>
             """, unsafe_allow_html=True)
-if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", key="merchant_safe_logout_btn"):
+    if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", key="merchant_safe_logout_btn"):
         if "merchant_db_conn" in st.session_state:
             st.session_state["merchant_db_conn"].close()
             st.session_state.pop("merchant_db_conn")
@@ -954,9 +930,8 @@ if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", k
         st.toast("تم الخروج الآمن وتأمين المستودع كلياً!")
         time.sleep(0.5)
         st.rerun()
-
-
-# 3. استدعاء الدالة الموحدة لتعمل تلقائياً
+        
+    # تشغيل الميزة الثالثة وبوت المساعد الفوري الجانبي التابع لملفك المحسن
     render_sidebar_helper()
 
 
