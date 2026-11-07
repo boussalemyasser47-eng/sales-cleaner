@@ -837,7 +837,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             if w1 == w2: return 1.0
             if abs(len(w1) - len(w2)) > 3: return 0.0
             len1, len2 = len(w1), len(w2)
-            matrix = [ * (len2 + 1) for _ in range(len1 + 1)]
+            matrix = [[0] * (len2 + 1) for _ in range(len1 + 1)]
+
             for i in range(len1 + 1): matrix[i] = i
             for j in range(len2 + 1): matrix[j] = j
             for i in range(1, len1 + 1):
