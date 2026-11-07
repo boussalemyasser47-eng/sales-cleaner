@@ -1347,4 +1347,4 @@ elif choice == "🚀 مولّد الحملات والتخطيط التسويقي
         render_marketing_hub_cyber_edition()
         
     # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
-    conne.close()
+conne.close()
