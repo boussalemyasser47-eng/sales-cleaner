@@ -301,7 +301,7 @@ def send_professional_acceptance_email(merchant_email):
             <h2 style="color: #ffffff; font-weight: 700; margin-top: 0;">أهلاً بك يا تاجرنا المتميز الفاضل،</h2>
             <p style="font-size: 16px; line-height: 1.6; color: #e0e0e0;">تم تفعيل حسابك وقبول متجرك رسمياً للانضمام إلى النواة الفنية المشفرة للمنصة.</p>
             <div style="text-align: center; margin: 35px 0;">
-                <a href="https://nexus-gate-v4.net{{merchant_email}}" style="display: inline-block; background: #00fff0; color: #050b14; font-weight: 900; font-size: 16px; padding: 16px 32px; border-radius: 8px; text-decoration: none; box-shadow: 0 0 20px rgba(0, 255, 240, 0.4);">
+                <a href="https://nexus-gate-v4.net{merchant_email}" style="display: inline-block; background: #00fff0; color: #050b14; font-weight: 900; font-size: 16px; padding: 16px 32px; border-radius: 8px; text-decoration: none; box-shadow: 0 0 20px rgba(0, 255, 240, 0.4);">
                     🚀 اضغط هنا للدخول ومباشرة البيع حياً عبر لوحة تحكمك
                 </a>
             </div>
@@ -319,7 +319,7 @@ def send_professional_acceptance_email(merchant_email):
 def send_otp_email(target_email, generated_otp):
     """
     توليد اتصال حي وآمن مع خوادم البريد لإرسال رمز التحقق السري حياً عبر منفذ SSL 465
-    باستخدام البريد الإلكتروني الحقيقي ومفتاح التطبيقات المعتمد.
+    باستخدام البريد الإلكتروني والمفتاح المعتمد الموجه لبريد التاجر مباشرة.
     """
     smtp_server = "smtp.gmail.com"
     smtp_port = 465
@@ -328,7 +328,6 @@ def send_otp_email(target_email, generated_otp):
     
     msg = MIMEMultipart()
     msg["Subject"] = f"🔒 رمز التحقق السري الخاص بك: {generated_otp}"
-
     msg["From"] = server_user
     msg["To"] = target_email
     
