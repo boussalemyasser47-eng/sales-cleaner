@@ -851,29 +851,23 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             st.sidebar.markdown("<h3 style='color: #00fff0; text-align: center; margin-bottom: 0;'>👑 مساعد المالك الأعلى</h3>", unsafe_allow_html=True)
             if "boss_chat_reply" not in st.session_state:
                 st.session_state["boss_chat_reply"] = "مرحباً بك يا قائد! نظام تحليل الكود المتقدم جاهز تحت سيادتك."
-            boss_query = st.sidebar.text_input("💻 أدخل أمر التحليل أو استفسر عن الكود والجداول:", key="boss_ai_query_in")
+            boss_query = st.sidebar.text_input("💻 أدخل أمر التحليل أو استفسر عن الكود بالجداول:", key="boss_ai_query_in")
             if st.sidebar.button("🧠 استدعاء خبير المنصة", key="submit_boss_query_btn") or boss_query == "شرح دكي":
                 if boss_query:
                     st.session_state["boss_chat_reply"] = "📊 **[شرح دكي للمالك]:** كود المبيعات مبني على الـ SQLite3 وعزل الـ SaaS البنيوي لتفادي التداخل وقفل الـ RAM."
+                    st.session_state["detected_intent_style"] = "cyan"
                     st.rerun()
-            st.sidebar.markdown(f'<div style="border:2px solid #00fff0; border-radius:12px; padding:15px; background:rgba(5,15,20,0.85); margin-top:10px;"><p style="color:#ffffff; font-size:14px; direction:rtl; text-align:right; margin:0;">{st.session_state["boss_chat_reply"]}</p></div>', unsafe_allow_html=True)
+            if st.session_state["boss_chat_reply"]:
+                st.sidebar.markdown(f'<div class="cyber-dynamic-box-cyan"><p style="color:#ffffff; font-size:14px; direction:rtl; text-align:right; margin:0;">{st.session_state["boss_chat_reply"]}</p></div>', unsafe_allow_html=True)
+        
         # 🏪 بيئة المساعد التجاري للمستأجرين (Merchant Space)
         else:
             st.sidebar.markdown("<h3 style='color: #00fff0; text-align: center; margin-bottom: 0;'>🤖 المساعد التجاري الذكي</h3>", unsafe_allow_html=True)
-            
-            # تهيئة عداد المفاتيح الديناميكي لغرض تدمير وإعادة بناء حاوية العرض الحركية
-            if "response_trigger_counter" not in st.session_state:
-                st.session_state["response_trigger_counter"] = 0
             if "merchant_chat_reply" not in st.session_state:
-                st.session_state["merchant_chat_reply"] = "مرحباً بك! أنا مساعدك التجاري الذكي لمساعدتك في إدارة متجرك."
-            if "intent_frame_color" not in st.session_state:
-                st.session_state["intent_frame_color"] = "rgba(0, 255, 240, 0.15)"
-            if "hologram_tag" not in st.session_state:
-                st.session_state["hologram_tag"] = "🤖 مساعدك الذكي"
+                st.session_state["merchant_chat_reply"] = ""
                 
             merchant_query = st.sidebar.text_input("💡 اسأل عن أي فكرة، نصيحة، أو مشكلة في متجرك:", key="merchant_ai_query_in", placeholder="مثال: عندي مشكل في الشحن")
             
-            # رادار الفحص التقريبي للكلمات الجزائرية ("سحن"، "توسيل" ↔️ شحن) و ("سبون" ↔️ زبون) و ("منتح" ↔️ منتج)
             merchant_intents = {
                 "shipping": ["شحن", "توصيل", "ولاية", "ليفريرون", "ليفرور", "رتور", "ولايات", "جنوب", "سحن", "توسيل"],
                 "customers": ["زبون", "زبائن", "كليون", "لكليون", "تعامل", "اتصال", "تثبيت", "كونفيرمي", "سبون"],
@@ -882,68 +876,53 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             }
             
             if st.sidebar.button("🧠 استشارة العقل التجاري", key="submit_merchant_query_btn"):
+                st.session_state["merchant_chat_reply"] = ""
+                st.session_state["detected_intent_style"] = None
+                
                 if merchant_query:
-                    # 🔄 ميكانيكية التصفير الحركي (Smooth Reset Mode)
-                    st.session_state["merchant_chat_reply"] = ""
-                    
-                    # 🛡️ تفعيل ميكانيكية مولد المفاتيح الديناميكية: زيادة العداد البرمجي لتفجير المعرّفات القديمة في الـ DOM
-                    st.session_state["response_trigger_counter"] += 1
-                    
-                    # 🛡️ جدار حظر الخربشة العشوائية للحروف الميتة (مثل: مي اونيبثب)
                     clean_input = normalize_arabic_text(merchant_query)
-                    if "مي اونيبثب" in clean_input or len(clean_input.strip()) < 3 or clean_input.isdigit():
-                        st.session_state["intent_frame_color"] = "#ff0055"
-                        st.session_state["hologram_tag"] = "⚠️ إدخال عشوائي"
-                        st.session_state["merchant_chat_reply"] = "🚨 **جدار حظر الخربشة:** تم حظر المعالجة! المدخلات تحتوي على حروف ميتة عشوائية لا تحمل أي معنى تجاري."
-                        st.rerun()
-                        
-                    input_words = clean_input.split()
-                    detected_intent = None
-                    highest_score = 0.0
+                    forbidden_gibberish = ["مي اونيبثب", "مشيسويسي", "asdasd", "qwerty"]
                     
-                    for intent, keywords in merchant_intents.items():
-                        for kw in keywords:
-                            normalized_kw = normalize_arabic_text(kw)
-                            for word in input_words:
-                                score = get_close_match_score(word, normalized_kw)
-                                if score > highest_score and score >= 0.82:
-                                    highest_score = score
-                                    detected_intent = intent
-                                    
-                    # تفجير وصباغة الألوان الحية والـ Tags بناءً على النوايا المكتشفة حياً
-                    if detected_intent == "shipping":
-                        st.session_state["intent_frame_color"] = "#00fff0"  # الأزرق الفيروزي المشع للشحن
-                        st.session_state["hologram_tag"] = "🎯 رادار الشحن"
-                    elif detected_intent == "customers":
-                        st.session_state["intent_frame_color"] = "#ff4500"  # البرتقالي الناري للتثبيت
-                        st.session_state["hologram_tag"] = "📞 تثبيت الطلبيات"
-                    elif detected_intent == "stock":
-                        st.session_state["intent_frame_color"] = "#ff00ff"  # البنفسجي السيبراني للستوك
-                    elif detected_intent == "marketing":
-                        st.session_state["intent_frame_color"] = "#ffaa00"  # الذهبي للتسويق والـ Ads
-                        st.session_state["hologram_tag"] = "🚀 التخطيط التسويقي"
+                    if len(clean_input) < 3 or clean_input.isdigit() or any(gib in clean_input for gib in forbidden_gibberish):
+                        st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** يبدو أنك كتبت حروفاً عشوائية أو خربشة ليس لها معنى! يرجى إعادة كتابة سؤال حقيقي واضح."
+                        st.session_state["detected_intent_style"] = "red"
                     else:
-                        st.session_state["intent_frame_color"] = "#ff0055"
-                        st.session_state["hologram_tag"] = "⚠️ إدخال مجهول"
+                        input_words = clean_input.split()
+                        detected_intent = None
+                        highest_score = 0.0
                         
-                    # شروط حجب ميزات الذكاء والتدرج الذكي للباقات
-                    if user_package == "29k" and detected_intent in ["shipping", "marketing"]:
-                        st.session_state["merchant_chat_reply"] = "🔒 **المساعد:** ميزات الذكاء الاصطناعي المتقدمة مقفلة في باقتك الحالية (الأساسية)! قم بالترقية الآن لتفعيل العقل التسويقي وحلول الشحن الذكية."
-                    elif user_package == "45k" and detected_intent == "marketing":
-                        st.session_state["merchant_chat_reply"] = "🔒 **المساعد:** نصائح التسويق الذكي وإعلانات الفيسبوك المتقدمة تتطلب الباقة السيبرانية الأعلى. يرجى الترقية لتفعيلها."
-                    else:
-                        if detected_intent == "shipping":
-                            st.session_state["merchant_chat_reply"] = "📌 **رادار ممر الشحن:** ركز حملاتك الإعلانية على ولايات الوسط والشرق لضمان سرعة التوصيل وزيادة نسبة استلام الطرود وتقليص المرتجعات الحاصلة."
-                        elif detected_intent == "customers":
-                            st.session_state["merchant_chat_reply"] = "📞 **ميكانيكية تأكيد الطلب:** اتصل بالزبون فوراً لتأكيد الشراء، واستخدم لهجة محترمة شاملة سعر الشحن لتفادي الرفض الفجائي لطلبياتك."
-                        elif detected_intent == "stock":
-                            st.session_state["merchant_chat_reply"] = "📦 **حماية المخزون السلعي:** إذا انخفضت كمية أي منتج لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية المستودع وضخ السيولة."
-                        elif detected_intent == "marketing" and user_package == "65k":
-                            st.session_state["merchant_chat_reply"] = "🚀 **السيبرانية التسويقية:** للتحجيم الناجح، أطلق إعلانات CBO باستهداف عريض في الجزائر، واستخدم الهاشتاغات الحالية لتيك توك مع ميزانية فحص 10$ يومياً للتحويل حياً."
+                        for intent, keywords in merchant_intents.items():
+                            for kw in keywords:
+                                normalized_kw = normalize_arabic_text(kw)
+                                for word in input_words:
+                                    score = get_close_match_score(word, normalized_kw)
+                                    if score > highest_score and score >= 0.82:
+                                        highest_score = score
+                                        detected_intent = intent
+                        
+                        if user_package == "29k" and detected_intent in ["shipping", "marketing"]:
+                            st.session_state["merchant_chat_reply"] = "🔒 **المساعد:** ميزات الذكاء الاصطناعي المتقدمة وحلول الشحن مقفلة في باقتك الحالية (الأساسية)! قم بالترقية الآن لتفعيل العقل التسويقي."
+                            st.session_state["detected_intent_style"] = "red"
+                        elif user_package == "45k" and detected_intent == "marketing":
+                            st.session_state["merchant_chat_reply"] = "🔒 **المساعد:** نصائح التسويق الذكي وإعلانات الفيسبوك المتقدمة تتطلب الباقة السيبرانية الأعلى. يرجى الترقية لتفعيلها فوراً."
+                            st.session_state["detected_intent_style"] = "red"
                         else:
-                            st.sidebar.toast("🔍 جاري البحث في قاعدة المعرفة المتاحة...")
-                            st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** لم أتمكن من تحديد مرادك بدقة! يرجى كتابة سؤال واضح أو الاستعانة بدليل المواضيع في الأسفل."
-                    st.rerun()
+                            if detected_intent == "shipping":
+                                st.session_state["merchant_chat_reply"] = "📌 **نصيحة الشحن للمتجر:** ركز حملاتك على ولايات الوسط والشرق لضمان سرعة التوصيل وزيادة نسبة استلام الطرود (Livraison) وتفادي المرتجعات."
+                                st.session_state["detected_intent_style"] = "cyan"
+                            elif detected_intent == "customers":
+                                st.session_state["merchant_chat_reply"] = "📞 **إستراتيجية التثبيت للمتجر:** اتصل بالزبون فوراً لتأكيد الشراء (Confirmation)، واستخدم لهجة محترمة شاملة سعر الشحن لتفادي الرفض عند الباب."
+                                st.session_state["detected_intent_style"] = "orange"
+                            elif detected_intent == "stock":
+                                st.session_state["merchant_chat_reply"] = "📦 **نصيحة مراقبة المخزون:** إذا انخفضت كمية أي منتج لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية الستوك وضخ السيولة."
+                                st.session_state["detected_intent_style"] = "purple"
+                            elif detected_intent == "marketing" and user_package == "65k":
+                                st.session_state["merchant_chat_reply"] = "🚀 **العقل السيبراني التسويقي (باقة 65k):** للتحجيم الناجح، أطلق إعلانات CBO باستهداف عريض (Broad) في الجزائر، واستخدم فلاتر الهاشتاغات الحالية لتيك توك حياً."
+                                st.session_state["detected_intent_style"] = "gold"
+                            else:
+                                st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** لم أتمكن من تحديد مرادك بدقة! يرجى كتابة سؤال واضح أو الاستعانة بدليل المواضيع في الأسفل (مثال: شحن، ستوك، كليون)."
+                                st.session_state["detected_intent_style"] = "red"
+                st.rerun()
             # 🎬 [تفعيل ميكانيكية المولد الديناميكي للمفاتيح عبر ربط العداد لكسر وإبادة التخزين المؤقت للمتصفح]
             # دمج الكلاس المفرّد بالعداد يجبر المتصفح على محو الحاوية القديمة وإعادة إشعال حركة الـ elasticPop في غضون 0.4 ثانية بسلاسة
             dynamic_class_id = f"frozen-frame-v4-{st.session_state['response_trigger_counter']}"
