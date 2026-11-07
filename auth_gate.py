@@ -827,12 +827,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     def render_sidebar_helper():
         """
         بوت المساعد الذكي المزدوج المتطور كلياً:
-        - للمالك: يفتح خبير البرمجة والـ SQL.
-        - للتجار: يفتح خبير الاستشارات بحركية الـ elasticPop والتلوين التلقائي.
+        يدعم الانتقال الحركي السلس، وترقية الكلمات القريبة، وحظر الحروف العشوائية.
         """
         st.sidebar.markdown("---")
         
-        # حقن أنماط علبة الرد وحركة الانبثاق الميكانيكي الصاعد من العدم
+        # حقن أنماط علبة الرد وحركة الانبثاق الميكانيكي الصاعد من العدم (elasticPop)
         st.sidebar.markdown("""
         <style>
         @keyframes elasticPop {
@@ -870,15 +869,16 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             if abs(len(w1) - len(w2)) > 3: return 0.0
             
             len1, len2 = len(w1), len(w2)
-            matrix = [[0] * (len2 + 1) for _ in range(len1 + 1)]
-            for i in range(len1 + 1): matrix[i][0] = i
-            for j in range(len2 + 1): matrix[0][j] = j
+            matrix = [ * (len2 + 1) for _ in range(len1 + 1)]
+            for i in range(len1 + 1): matrix[i] = i
+            for j in range(len2 + 1): matrix[j] = j
             
             for i in range(1, len1 + 1):
                 for j in range(1, len2 + 1):
                     cost = 0 if w1[i-1] == w2[j-1] else 1
                     matrix[i][j] = min(matrix[i-1][j] + 1, matrix[i][j-1] + 1, matrix[i-1][j-1] + cost)
-            return 1.0 - (matrix[len1][len2] / max(len1, len2))
+            distance = matrix[len1][len2]
+            return 1.0 - (distance / max(len1, len2))
         # 👑 بيئة المالك الأعلى (Owner Workspace)
         if is_boss_link:
             st.sidebar.markdown("<h3 style='color: #00fff0; text-align: center; margin-bottom: 0;'>👑 مساعد المالك الأعلى</h3>", unsafe_allow_html=True)
@@ -901,21 +901,30 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
             merchant_query = st.sidebar.text_input("💡 اسأل عن أي فكرة، نصيحة، أو مشكلة في متجرك:", key="merchant_ai_query_in", placeholder="مثال: عندي مشكل في الشحن")
             
+            # 📈 [ترقية قاموس الكلمات لتفادي أخطاء الإدخال الجزائرية (Intents Upgrade)]
             merchant_intents = {
-                "shipping": ["شحن", "توصيل", "ولاية", "ليفريرون", "ليفرور", "رتور", "ولايات", "جنوب"],
-                "customers": ["زبون", "زبائن", "كليون", "لكليون", "تعامل", "اتصال", "تثبيت", "كونفيرمي"],
-                "stock": ["منتج", "سلعة", "مخزون", "ستوك", "حبة", "قطع", "نفاذ"],
+                "shipping": ["شحن", "توصيل", "ولاية", "ليفريرون", "ليفرور", "رتور", "ولايات", "جنوب", "سحن", "توسيل", "ليفرور"],
+                "customers": ["زبون", "زبائن", "كليون", "لكليون", "تعامل", "اتصال", "تثبيت", "كونفيرمي", "الهاتف", "سبون"],
+                "stock": ["منتج", "سلعة", "مخزون", "ستوك", "حبة", "قطع", "نفاذ", "منتح"],
                 "marketing": ["تسويق", "فيسبوك", "اعلانات", "تيكتوك", "حملة", "ادس", "تيك توك", "هاشتاغ"]
             }
             if st.sidebar.button("🧠 استشارة العقل التجاري", key="submit_merchant_query_btn"):
                 if merchant_query:
+                    # 🔄 [منع الظهور المفاجئ والتفجر البصري (Smooth Transition Reset)]
+                    st.session_state["merchant_chat_reply"] = "" 
                     clean_input = normalize_arabic_text(merchant_query)
                     
-                    if len(clean_input) < 3 or clean_input.isdigit():
-                        st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** يبدو أنك كتبت حروفاً عشوائية أو ناقصة بالخطأ!"
-                        st.session_state["intent_frame_color"] = "#ff0055"
+                    # 🚨 [جدار حظر الخربشة العشوائية والحروف المتكررة (Anti-Gibberish Dynamic Guard)]
+                    input_words = clean_input.split()
+                    is_gibberish = False
+                    for word in input_words:
+                        if len(word) >= 5 and len(set(word)) <= 2: # كلمات مشوهة بحروف مكررة مثل (سسسسس)
+                            is_gibberish = True
+                    
+                    if len(clean_input) < 3 or clean_input.isdigit() or is_gibberish:
+                        st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** يبدو أنك كتبت حروفاً عشوائية! يرجى كتابة سؤال واضح (مثال: شحن، ستوك، كليون) لمساعدتك بدقة."
+                        st.session_state["intent_frame_color"] = "#ff0055" # أحمر نبضي تحذيري
                     else:
-                        input_words = clean_input.split()
                         detected_intent = None
                         highest_score = 0.0
                         
@@ -938,25 +947,26 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         else:
                             # ميكانيكية التحويل اللوني التلقائي حياً بناءً على الـ Intent المصرح به
                             if detected_intent == "shipping":
-                                st.session_state["merchant_chat_reply"] = "📌 **نصيحة الشحن للمتجر:** ركز حملاتك على ولايات الوسط والشرق لضمان سرعة التوصيل وزيادة نسبة استلام الطرود وتفادي المرتجعات."
+                                st.session_state["merchant_chat_reply"] = "📌 **نصيحة الشحن للمتجر:** ركز حملاتك الإعلانية على ولايات الوسط والشرق (العاصمة، سطيف، قسنطينة) لضمان سرعة التوصيل وزيادة نسبة استلام الطرود وتفادي المرتجعات."
                                 st.session_state["intent_frame_color"] = "#00fff0" # أزرق فيروزي مشع
                             elif detected_intent == "customers":
-                                st.session_state["merchant_chat_reply"] = "📞 **إستراتيجية التثبيت للمتجر:** اتصل بالزبون فوراً لتأكيد الشراء، واستخدم لهجة محترمة شاملة سعر الشحن لتفادي الرفض."
+                                st.session_state["merchant_chat_reply"] = "📞 **إستراتيجية التثبيت للمتجر:** اتصل بالزبون فوراً لتأكيد الشراء، واستخدم لهجة محترمة شاملة سعر الشحن لتفادي الرفض عند الباب."
                                 st.session_state["intent_frame_color"] = "#ff4500" # برتقالي ناري دافئ
                             elif detected_intent == "stock":
                                 st.session_state["merchant_chat_reply"] = "📦 **نصيحة مراقبة المخزون:** إذا انخفضت الكمية لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية الستوك وضخ السيولة."
                                 st.session_state["intent_frame_color"] = "#ff00ff" # بنفسجي سيبراني
                             elif detected_intent == "marketing" and user_package == "65k":
-                                st.session_state["merchant_chat_reply"] = "🚀 **العقل السيبراني التسويقي (باقة 65k):** للتحجيم الناجح، أطلق إعلانات CBO باستهداف عريض في الجزائر، واستخدم فلاتر الهاشتاغات الحالية لتيك توك مع ميزانية فحص 10$ يومياً."
+                                st.session_state["merchant_chat_reply"] = "🚀 **العقل السيبراني التسويقي (باقة 65k):** للتحجيم الناجح، أطلق إعلانات CBO باستهداف عريض في الجزائر، واستخدم فلاتر الهاشتاغات الحالية لتيك توك مع ميزانية فحص 10$ يومياً للـ Conversion حياً."
                                 st.session_state["intent_frame_color"] = "#ffaa00" # ذهب متوهج
                             else:
                                 st.sidebar.toast("🔍 جاري البحث في قاعدة المعرفة المتاحة...")
-                                st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** لم أتمكن من تحديد مرادك بدقة! يرجى كتابة سؤال واضح أو الاستعانة بدليل المواضيع في الأسفل."
+                                st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** لم أتمكن من تحديد مرادك بدقة! يرجى كتابة سؤال واضح أو الاستعانة بدليل المواضيع في الأسفل (مثال: شحن، ستوك، كليون)."
                                 st.session_state["intent_frame_color"] = "#ff0055" # أحمر نبضي تحذيري
                     st.rerun()
             
-            # 🚀 إخراج علبة الرد السيبرانية المحدثة ميكانيكياً ولونياً وحركياً
-            st.sidebar.markdown(f'<div class="cyber-dynamic-box" style="border: 2px solid {st.session_state["intent_frame_color"]};"><p style="color:#ffffff; font-size:14px; direction:rtl; text-align:right; margin:0;">{st.session_state["merchant_chat_reply"]}</p></div>', unsafe_allow_html=True)
+            # 🚀 إخراج علبة الرد السيبرانية المحدثة ميكانيكياً ولونياً وحركياً بنقاء كامل ومنع الوميض المفاجئ
+            if st.session_state["merchant_chat_reply"]:
+                st.sidebar.markdown(f'<div class="cyber-dynamic-box" style="border: 2px solid {st.session_state["intent_frame_color"]};"><p style="color:#ffffff; font-size:14px; direction:rtl; text-align:right; margin:0;">{st.session_state["merchant_chat_reply"]}</p></div>', unsafe_allow_html=True)
             
             st.sidebar.markdown("""
             <div style="margin-top: 15px; padding: 10px; background: rgba(255,170,0,0.05); border: 1px dashed #ffaa00; border-radius: 10px; text-align: right; direction: rtl;">
@@ -966,7 +976,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             """, unsafe_allow_html=True)
 
 # 🤖 تشغيل وتأمين استدعاء المساعد الفوري في أقصى يسار السيرفر لإغلاق الكتلة بأمان ومنع الـ IndentationError
-    render_sidebar_helper()
+render_sidebar_helper()
 
 
     # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
