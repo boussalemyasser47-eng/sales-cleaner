@@ -885,14 +885,15 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             
             if st.sidebar.button("🧠 استشارة العقل التجاري", key="submit_merchant_query_btn"):
                 if merchant_query:
-                    # ميكانيكية التصفير الحركي الفوري لإجبار بزوغ العنصر الجديد
+                    # 🔄 ميكانيكية التصفير الحركي الفوري لإلغاء أي بقايا بصرية
                     st.session_state["merchant_chat_reply"] = ""
                     
-                    # 🚨 رفع مقياس العداد رقمياً لإرغام المتصفح على نقض عناصر الـ DOM القديمة
+                    # 🚨 [الأمر العام الثابت]: رفع العداد فوراً هنا لجميع الحالات (مفهومة أو خربشة) لإجبار المتصفح على تدمير الـ DOM القديم
                     st.session_state["chat_counter"] += 1
                     
-                    # 🛡️ جدار حظر الخربشة العشوائية للحروف الميتة (مثل: مي اونيبثب)
+                    # جدار حظر الخربشة العشوائية المستمر للحروف الميتة (مثل: مي اونيبثب)
                     clean_input = normalize_arabic_text(merchant_query)
+
                     if "مي اونيبثب" in clean_input or len(clean_input.strip()) < 3 or clean_input.isdigit():
                         st.session_state["intent_frame_color"] = "#ff0055"
                         st.session_state["hologram_tag"] = "⚠️ إدخال عشوائي"
@@ -913,11 +914,12 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                                     detected_intent = intent
                                     
                     # شحن الهوية اللونية والشارات بناءً على النوايا المكتشفة حياً
+                    # تعيين الهوية اللونية والشارات بناءً على النوايا المكتشفة حياً لجميع الحالات
                     if detected_intent == "shipping":
-                        st.session_state["intent_frame_color"] = "#00fff0"  # الأزرق الفيروزي للشحن
+                        st.session_state["intent_frame_color"] = "#00fff0"  # السيان للشحن
                         st.session_state["hologram_tag"] = "🎯 رادار الشحن"
                     elif detected_intent == "customers":
-                        st.session_state["intent_frame_color"] = "#ff4500"  # البرتقالي الناري للتثبيت
+                        st.session_state["intent_frame_color"] = "#ff4500"  # البرتقالي للتثبيت
                         st.session_state["hologram_tag"] = "📞 تثبيت الطلبيات"
                     elif detected_intent == "stock":
                         st.session_state["intent_frame_color"] = "#ff00ff"  # البنفسجي للستوك
@@ -925,8 +927,9 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         st.session_state["intent_frame_color"] = "#ffaa00"  # الذهبي للتسويق
                         st.session_state["hologram_tag"] = "🚀 التخطيط التسويقي"
                     else:
-                        st.session_state["intent_frame_color"] = "#ff0055"
-                        st.session_state["hologram_tag"] = "⚠️ إدخال مجهول"
+                        st.session_state["intent_frame_color"] = "#ff0055"  # الأحمر للتحذيرات والمجهول
+                        st.session_state["hologram_tag"] = "⚠️ إدخال غير مفهوم"
+
                         
                     # تصفية قيود الباقات والتدرج الذكي للمستأجرين
                     if user_package == "29k" and detected_intent in ["shipping", "marketing"]:
@@ -947,6 +950,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                             st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** لم أتمكن من تحديد مرادك بدقة! يرجى كتابة سؤال واضح أو الاستعانة بدليل المواضيع في الأسفل."
                     st.rerun()
             # 🚨 [ربط العداد بكلاس الـ HTML]: دمج العداد المتغير داخل المعرّف (cyber-dynamic-box) لتوليد الثلاثية الحركية معاً بمرونة كاملة كالتحذيرات
+            # 🎬 [تفعيل ميكانيكية التعميم الشامل لمولد المفاتيح الديناميكي لجميع النوايا وحالات الرد]
+            # دمج الكلاس الفريد بالعداد والنية يجبر المتصفح على تدمير الصندوق القديم وإعادة إطلاق الثلاثية الحركية في نفس اللحظة
             box_id = f"cyber-dynamic-box-{st.session_state['chat_counter']}"
             
             st.sidebar.markdown(f"""
@@ -1017,6 +1022,14 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     font-weight: bold;
                 }}
                 </style>
+
+                <div class="{box_id}">
+                    <div class="laser-top-line"></div>
+                    <div class="hologram-floating-tag">{st.session_state["hologram_tag"]}</div>
+                    <p class="optical-ink-body">{st.session_state["merchant_chat_reply"]}</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
                 <div class="{box_id}">
                     <div class="laser-top-line"></div>
                     <div class="hologram-floating-tag">{st.session_state["hologram_tag"]}</div>
