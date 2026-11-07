@@ -1262,7 +1262,7 @@ elif choice == "🧼 مطهر ملفات المبيعات وإحصائيات ا�
             csv_buffer = df.to_csv(index=False).encode('utf-8')
             st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
 
-    elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
+elif choice == "🚀 مولّد الحملات والتخطيط التسويقي (AI)":
         # === إضافات المستودع ومطهر البيانات ومولد حملات الـ AI ===
         def render_marketing_hub_cyber_edition():
             st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>🚀 منصة التسويق السيبرانية وفحص الحملات الذكية AI</h1>", unsafe_allow_html=True)
