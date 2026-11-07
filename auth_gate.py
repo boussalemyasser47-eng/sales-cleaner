@@ -288,7 +288,7 @@ from email.mime.multipart import MIMEMultipart
 
 def send_professional_acceptance_email(merchant_email):
     """ بناء وتوليد قالب رسالة القبول الفخمة المصممة بالـ HTML والـ CSS النيوني الفاخر للشركات """
-    sender_email = "security@nexus-central.com"
+    sender_email = "boussalemyasser47@gmail.com"
     subject = "🎯 تم قبول متجرك رسميًا في منصة NEXUS CENTRAL GATE v4"
     html_content = f"""
     <html>
@@ -317,19 +317,22 @@ def send_professional_acceptance_email(merchant_email):
     return msg
 
 def send_otp_via_smtp(target_email, generated_otp):
-    """ توليد اتصال حي وآمن مع خوادم البريد لإرسال رمز التحقق السري حياً """
+    """ توليد اتصال حي وآمن مع خوادم البريد لإرسال رمز التحقق السري حياً عبر منفذ SSL 465 """
     smtp_server = "://gmail.com"
-    smtp_port = 587
-    server_user = "your_system_email@gmail.com"
+    smtp_port = 465
+    server_user = "boussalemyasser47@gmail.com"
+    server_pass = "cfcq hctz ehjw eazg"
+    
     msg = MIMEMultipart()
     msg["Subject"] = f"🔒 رمز التحقق السري الخاص بك: {generated_otp}"
     msg["From"] = server_user
     msg["To"] = target_email
-    body = f"رمز التوثيق السري الخاص بإنشاء متجرك هو: {generated_otp}"
+    body = f"رمز التوثيق السري الخاص بإنشاء متجرك هو: {generated_otp}\nيرجى إدخاله في الخانة المنبثقة لإتمام التسجيل."
     msg.attach(MIMEText(body, "plain"))
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
-        server.starttls()
+        server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=10)
+        server.login(server_user, server_pass)
+        server.sendmail(server_user, target_email, msg.as_string())
         server.quit()
         return True
     except Exception:
@@ -433,19 +436,16 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
             user_package_choice = render_premium_neon_packages()
             
-            # تهيئة متغيرات الجلسة والعداد التنازلي لإعادة الإرسال
             if "otp_sent" not in st.session_state: st.session_state["otp_sent"] = False
             if "generated_otp" not in st.session_state: st.session_state["generated_otp"] = ""
             if "otp_verified" not in st.session_state: st.session_state["otp_verified"] = False
             if "last_send_time" not in st.session_state: st.session_state["last_send_time"] = 0.0
 
-            # 1. حساب قيمة العداد التنازلي الميكانيكي حياً
             current_time = time.time()
             time_passed = current_time - st.session_state["last_send_time"]
             cooldown = 60
             remaining_time = int(cooldown - time_passed) if time_passed < cooldown else 0
 
-            # قفل أو فتح زر الإرسال بناءً على العداد
             if remaining_time > 0:
                 st.button(f"⏳ إعادة الإرسال متاحة خلال {remaining_time} ثانية", disabled=True)
             else:
@@ -461,7 +461,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         st.info("🎯 تم إرسال الرمز بنجاح! تفقد بريدك الإلكتروني (بما في ذلك Spam).")
                         st.rerun()
             
-            # كتلة الإدخال والتحقق المنبثقة من العدم
             if st.session_state["otp_sent"] and not st.session_state["otp_verified"]:
                 st.markdown("""
                     <style>
@@ -474,7 +473,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 
                 input_otp = st.text_input("🔒 أدخل رمز التحقق المكون من 6 أرقام:", key="merchant_otp_input")
                 
-                # 2. حقن لافتة التوجيه البلورية للمجلد غير المرغوب فيه
                 st.markdown("""
                     <div class='spam-banner'>
                         💡 <b>تنبيه إنقاذي:</b> يرجى مراجعة مجلد <b>الرسائل غير المرغوب فيها (Spam / Courrier indésirable)</b>، والتأكد بدقة من صحة كتابة حروف بريدك الإلكتروني المدخل بالأعلى.
@@ -489,10 +487,9 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     else:
                         st.error("❌ رمز التحقق غير مطابق! يرجى مراجعة صندوق بريدك الإلكتروني")
                 
-                # 3. ممر الطوارئ الفوري للربط عبر الواتساب في حال انتهاء الوقت
                 if remaining_time == 0:
                     encoded_msg = f"مرحباً إدارة نيكسس، أواجه تأخراً في استلام رمز OTP لبريدي الإلكتروني: {clean_email}. أرجو تفعيل متجري يدوياً."
-                    whatsapp_url = f"https://wa.me{encoded_msg}" # يتم استبدال الرقم برقم المالك الفعلي للمنصة
+                    whatsapp_url = f"https://wa.me{encoded_msg}"
                     st.markdown(f"""
                         <div style='text-align: center; margin-top: 10px;'>
                             <a href='{whatsapp_url}' target='_blank' style='display: inline-block; background: #25D366; color: white; font-weight: bold; padding: 10px 18px; border-radius: 6px; text-decoration: none; box-shadow: 0 0 10px rgba(37, 211, 102, 0.3); font-size: 13px;'>
