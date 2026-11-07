@@ -814,15 +814,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     
     choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", available_tools, key="merchant_navigation_radio")
     # === إضافات نظام العزل والاتصال والمساعد الذكي ===
-
-    if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", key="merchant_safe_logout_btn"):
-        if "merchant_db_conn" in st.session_state:
-            st.session_state["merchant_db_conn"].close()
-            st.session_state.pop("merchant_db_conn")
-        st.session_state.pop("active_merchant_user")
-        st.toast("تم الخروج الآمن وتأمين المستودع كلياً!")
-        time.sleep(0.5)
-        st.rerun()
 # ======================================================================
 # === إضافات نظام العزل والاتصال والمساعد الذكي ===
 # ======================================================================
@@ -957,6 +948,16 @@ def render_sidebar_helper():
             <span style="color: #ffffff; font-size: 11px;">• مشاكل الشحن والـ Retour<br>• تثبيت الطلبيات والاتصال بالزبائن<br>• إدارة السلع ونفاذ الستوك (Stock)</span>
         </div>
         """, unsafe_allow_html=True)
+
+    if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", key="merchant_safe_logout_btn"):
+        if "merchant_db_conn" in st.session_state:
+            st.session_state["merchant_db_conn"].close()
+            st.session_state.pop("merchant_db_conn")
+        st.session_state.pop("active_merchant_user")
+        st.toast("تم الخروج الآمن وتأمين المستودع كلياً!")
+        time.sleep(0.5)
+        st.rerun()
+
 
 # 3. استدعاء الدالة الموحدة لتعمل تلقائياً
     render_sidebar_helper()
