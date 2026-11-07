@@ -6,7 +6,8 @@
 # ========================================================
 # ========================================================
 # [القسم الأول]: إعدادات البيئة، خزانة النسخ الاحتياطي، وجدار حماية الشبح المتقدم
-# ========================================================
+#========================================================
+from email_service import send_otp_email
 def create_backup_vault():
     import os
     import zipfile
@@ -23,7 +24,7 @@ def create_backup_vault():
                 except Exception:
                     pass
     zip_buffer.seek(0)
-    return zip_buffer
+    return zip_buffermail
 
 import streamlit as st
 import pandas as pd
@@ -32,7 +33,6 @@ import time
 from datetime import datetime
 import io
 import urllib.parse
-from email_service import send_otp_email
 
 # 🔒 ضبط إعدادات الشاشة الأساسية للمنصة الموحدة
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
@@ -316,15 +316,6 @@ def send_professional_acceptance_email(merchant_email):
     msg["To"] = merchant_email
     msg.attach(MIMEText(html_content, "html"))
     return msg
-def send_otp_email(target_email, generated_otp):
-    """
-    توليد اتصال حي وآمن مع خوادم البريد لإرسال رمز التحقق السري حياً عبر منفذ SSL 465
-    باستخدام البريد الإلكتروني والمفتاح المعتمد الموجه لبريد التاجر مباشرة.
-    """
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 465
-    server_user = "boussalemyasser47@gmail.com"
-    server_pass = "cfcq hctz ehjw eazg"
 
 
 def render_premium_neon_packages():
