@@ -977,7 +977,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         st.rerun()
 
 # 🚨 [هندسة المحاذاة الصارمة] سطر الاستدعاء المنفرد والمفرّد في أقصى اليسار مباشرة أسفل شرط التحقق الكبير دون أي حجب
-render_sidebar_helper()
+    render_sidebar_helper()
 
   
     # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
