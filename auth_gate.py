@@ -980,12 +980,12 @@ def render_sidebar_helper():
         """, unsafe_allow_html=True)
 
 # 🚨 [تثبيت سطر الاستدعاء النهائي في أقصى يسار الملف لإنهاء وفصل كتل الـ def بالكامل]
-    render_sidebar_helper()
+render_sidebar_helper()
 
     # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
     # ========================================================
 
-    if choice == "✨ صانع الفواتير الاحترافي (PDF)":
+if choice == "✨ صانع الفواتير الاحترافي (PDF)":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📄 صانع الفواتير والملصقات الحرارية الذكي</h1>", unsafe_allow_html=True)
         st.markdown("### 📊 إحصائيات متجرك الشاملة:")
         stat_col1, stat_col2, stat_col3 = st.columns(3)
