@@ -946,7 +946,7 @@ def render_sidebar_helper():
                 <span style="color: #ffffff; font-size: 11px;">• مشاكل الشحن والـ Retour (باقة 45k+)<br>• تثبيت الطلبيات والاتصال بالزبائن<br>• إدارة السلع ونفاذ الستوك (Stock)<br>• استراتيجيات التسويق والـ Ads (باقة 65k)</span>
             </div>
             """, unsafe_allow_html=True)
-    if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", key="merchant_safe_logout_btn"):
+if st.sidebar.button("🚪 تسجيل الخروج وتأمين الحساب", key="merchant_safe_logout_btn"):
         if "merchant_db_conn" in st.session_state:
             st.session_state["merchant_db_conn"].close()
             st.session_state.pop("merchant_db_conn")
