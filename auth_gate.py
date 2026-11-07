@@ -959,7 +959,7 @@ def render_sidebar_helper():
         """, unsafe_allow_html=True)
 
 # 3. استدعاء الدالة الموحدة لتعمل تلقائياً
-render_sidebar_helper()
+    render_sidebar_helper()
 
 
 
