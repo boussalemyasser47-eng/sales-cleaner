@@ -817,24 +817,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     # === إضافات نظام العزل والاتصال والمساعد الذكي ===
 # === إضافات نظام العزل والاتصال والمساعد الذكي ===
 # حقن أنماط علبة الرد وحركة الانبثاق الميكانيكي الصاعد من العدم
-st.sidebar.markdown("""
-<style>
-@keyframes elasticPop {
-    0% { transform: translateY(25px) scale(0.92); opacity: 0; }
-    60% { transform: translateY(-4px) scale(1.02); opacity: 0.9; }
-    85% { transform: translateY(1px) scale(0.99); opacity: 0.98; }
-    100% { transform: translateY(0) scale(1); opacity: 1; }
-}
-.cyber-dynamic-box {
-    animation: elasticPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
-    border-radius: 12px; 
-    padding: 15px; 
-    background: rgba(5, 15, 20, 0.9); 
-    margin-top: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-}
-</style>
-""", unsafe_allow_html=True)
 
     def render_sidebar_helper():
         """
