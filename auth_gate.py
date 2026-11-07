@@ -1030,12 +1030,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 </div>
             """, unsafe_allow_html=True)
             
-                <div class="{box_id}">
-                    <div class="laser-top-line"></div>
-                    <div class="hologram-floating-tag">{st.session_state["hologram_tag"]}</div>
-                    <p class="optical-ink-body">{st.session_state["merchant_chat_reply"]}</p>
-                </div>
-            """, unsafe_allow_html=True)
+  
             
             st.sidebar.markdown("""
             <div style="margin-top: 15px; padding: 10px; background: rgba(255,170,0,0.05); border: 1px dashed #ffaa00; border-radius: 10px; text-align: right; direction: rtl;">
