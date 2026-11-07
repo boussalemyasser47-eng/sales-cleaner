@@ -321,7 +321,7 @@ def send_otp_email(target_email, generated_otp):
     توليد اتصال حي وآمن مع خوادم البريد لإرسال رمز التحقق السري حياً عبر منفذ SSL 465
     باستخدام البريد الإلكتروني الحقيقي ومفتاح التطبيقات المعتمد.
     """
-smtp_server = "smtp.gmail.com"
+    smtp_server = "smtp.gmail.com"
     smtp_port = 465
     server_user = "boussalemyasser47@gmail.com"
     server_pass = "cfcq hctz ehjw eazg"
