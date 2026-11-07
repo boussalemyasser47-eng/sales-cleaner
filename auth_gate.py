@@ -270,9 +270,6 @@ def delete_email_completely(email_to_delete):
 # جاهز ومؤمن بالكامل هنا لاستقبال أي ميزات إضافية في المحادثات القادمة...
 
 
-# ====================================================================
-# === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
-# ====================================================================
 import streamlit as st
 import sqlite3
 import time
@@ -287,9 +284,12 @@ from email.mime.multipart import MIMEMultipart
 # ====================================================================
 
 def send_professional_acceptance_email(merchant_email):
-    """ بناء وتوليد قالب رسالة القبول الفخمة المصممة بالـ HTML والـ CSS النيوني الفاخر للشركات """
+    """
+    بناء وتوليد قالب رسالة القبول الفخمة المصممة بالـ HTML والـ CSS النيوني الفاخر للشركات.
+    """
     sender_email = "boussalemyasser47@gmail.com"
     subject = "🎯 تم قبول متجرك رسميًا في منصة NEXUS CENTRAL GATE v4"
+    
     html_content = f"""
     <html>
     <body style="background-color: #050b14; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: right; direction: rtl; padding: 40px; color: #ffffff;">
@@ -301,7 +301,7 @@ def send_professional_acceptance_email(merchant_email):
             <h2 style="color: #ffffff; font-weight: 700; margin-top: 0;">أهلاً بك يا تاجرنا المتميز الفاضل،</h2>
             <p style="font-size: 16px; line-height: 1.6; color: #e0e0e0;">تم تفعيل حسابك وقبول متجرك رسمياً للانضمام إلى النواة الفنية المشفرة للمنصة.</p>
             <div style="text-align: center; margin: 35px 0;">
-                <a href="https://nexus-gate-v4.net{merchant_email}" style="display: inline-block; background: #00fff0; color: #050b14; font-weight: 900; font-size: 16px; padding: 16px 32px; border-radius: 8px; text-decoration: none; box-shadow: 0 0 20px rgba(0, 255, 240, 0.4);">
+                <a href="https://nexus-gate-v4.net{{merchant_email}}" style="display: inline-block; background: #00fff0; color: #050b14; font-weight: 900; font-size: 16px; padding: 16px 32px; border-radius: 8px; text-decoration: none; box-shadow: 0 0 20px rgba(0, 255, 240, 0.4);">
                     🚀 اضغط هنا للدخول ومباشرة البيع حياً عبر لوحة تحكمك
                 </a>
             </div>
@@ -316,8 +316,11 @@ def send_professional_acceptance_email(merchant_email):
     msg.attach(MIMEText(html_content, "html"))
     return msg
 
-def send_otp_via_smtp(target_email, generated_otp):
-    """ توليد اتصال حي وآمن مع خوادم البريد لإرسال رمز التحقق السري حياً عبر منفذ SSL 465 """
+def send_otp_email(target_email, generated_otp):
+    """
+    توليد اتصال حي وآمن مع خوادم البريد لإرسال رمز التحقق السري حياً عبر منفذ SSL 465
+    باستخدام البريد الإلكتروني الحقيقي ومفتاح التطبيقات المعتمد.
+    """
     smtp_server = "://gmail.com"
     smtp_port = 465
     server_user = "boussalemyasser47@gmail.com"
@@ -327,8 +330,10 @@ def send_otp_via_smtp(target_email, generated_otp):
     msg["Subject"] = f"🔒 رمز التحقق السري الخاص بك: {generated_otp}"
     msg["From"] = server_user
     msg["To"] = target_email
+    
     body = f"رمز التوثيق السري الخاص بإنشاء متجرك هو: {generated_otp}\nيرجى إدخاله في الخانة المنبثقة لإتمام التسجيل."
     msg.attach(MIMEText(body, "plain"))
+    
     try:
         server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=10)
         server.login(server_user, server_pass)
@@ -457,7 +462,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         st.session_state["generated_otp"] = random_code
                         st.session_state["otp_sent"] = True
                         st.session_state["last_send_time"] = current_time
-                        send_otp_via_smtp(clean_email, random_code)
+                        send_otp_email(clean_email, random_code)
                         st.info("🎯 تم إرسال الرمز بنجاح! تفقد بريدك الإلكتروني (بما في ذلك Spam).")
                         st.rerun()
             
