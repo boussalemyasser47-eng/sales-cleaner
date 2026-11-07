@@ -328,6 +328,7 @@ def send_otp_email(target_email, generated_otp):
     
     msg = MIMEMultipart()
     msg["Subject"] = f"🔒 رمز التحقق السري الخاص بك: {generated_otp}"
+
     msg["From"] = server_user
     msg["To"] = target_email
     
