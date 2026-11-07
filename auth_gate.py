@@ -32,6 +32,7 @@ import time
 from datetime import datetime
 import io
 import urllib.parse
+from email_service import send_otp_email
 
 # 🔒 ضبط إعدادات الشاشة الأساسية للمنصة الموحدة
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
@@ -316,32 +317,7 @@ def send_professional_acceptance_email(merchant_email):
     msg.attach(MIMEText(html_content, "html"))
     return msg
 
-def send_otp_email(target_email, generated_otp):
-    """
-    توليد اتصال حي وآمن مع خوادم البريد لإرسال رمز التحقق السري حياً عبر منفذ SSL 465
-    باستخدام البريد الإلكتروني والمفتاح المعتمد الموجه لبريد التاجر مباشرة.
-    """
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 465
-    server_user = "boussalemyasser47@gmail.com"
-    server_pass = "cfcq hctz ehjw eazg"
-    
-    msg = MIMEMultipart()
-    msg["Subject"] = f"🔒 رمز التحقق السري الخاص بك: {generated_otp}"
-    msg["From"] = server_user
-    msg["To"] = target_email
-    
-    body = f"رمز التوثيق السري الخاص بإنشاء متجرك هو: {generated_otp}\nيرجى إدخاله في الخانة المنبثقة لإتمام التسجيل."
-    msg.attach(MIMEText(body, "plain"))
-    
-    try:
-        server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=10)
-        server.login(server_user, server_pass)
-        server.sendmail(server_user, target_email, msg.as_string())
-        server.quit()
-        return True
-    except Exception:
-        return False
+
 
 def render_premium_neon_packages():
     """ دالة ميكانيكية الهولوغرام الفاخرة لعرض تفاصيل الباقات المحدثة للشركات وانبثاقها من العدم """
