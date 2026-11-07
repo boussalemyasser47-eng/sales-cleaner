@@ -283,47 +283,32 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 # ====================================================================
-# === الإضافات والتعديلات الجديدة لبوابة التوثيق والتحقق بالبريد الآلي ===
+# === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
 # ====================================================================
 
 def send_professional_acceptance_email(merchant_email):
-    """
-    بناء وتوليد قالب رسالة القبول الفخمة المصممة بالـ HTML والـ CSS النيوني الفاخر للشركات.
-    يتم استدعاء هذه الدالة لاحقاً من لوحة المالك لإعلام التاجر بقبول متجره رسمياً.
-    """
+    """ بناء وتوليد قالب رسالة القبول الفخمة المصممة بالـ HTML والـ CSS النيوني الفاخر للشركات """
     sender_email = "security@nexus-central.com"
     subject = "🎯 تم قبول متجرك رسميًا في منصة NEXUS CENTRAL GATE v4"
-    
     html_content = f"""
     <html>
     <body style="background-color: #050b14; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: right; direction: rtl; padding: 40px; color: #ffffff;">
         <div style="max-width: 600px; margin: 0 auto; background: rgba(255, 255, 255, 0.02); border: 1px solid #00fff0; border-radius: 16px; padding: 30px; box-shadow: 0 0 30px rgba(0, 255, 240, 0.15);">
             <div style="text-align: center; margin-bottom: 20px;">
                 <h1 style="color: #00fff0; font-size: 28px; font-weight: 900; text-shadow: 0 0 15px #00fff0; margin: 0;">NEXUS CENTRAL GATE</h1>
-                <p style="color: #b0b0b0; font-size: 14px; margin-top: 5px;">إشعار أتمتة القبول الفوري للشركات</p>
             </div>
             <hr style="border: 0; border-top: 1px solid rgba(0, 255, 240, 0.2); margin: 20px 0;">
             <h2 style="color: #ffffff; font-weight: 700; margin-top: 0;">أهلاً بك يا تاجرنا المتميز الفاضل،</h2>
-            <p style="font-size: 16px; line-height: 1.6; color: #e0e0e0;">
-                يسعدنا إعلامك بأن الإدارة قد قامت بفرز وفحص طلبك السحابي، و**تم تفعيل حسابك وقبول متجرك رسمياً** للانضمام إلى النواة الفنية المشفرة للمنصة.
-            </p>
-            <p style="font-size: 16px; line-height: 1.6; color: #e0e0e0;">
-                يمكنك الآن مباشرة عمليات التجارة، إدارة المستودعات السلعية، واستخدام أدوات المساعد الجانبي والـ AI المتطورة المخصصة لفئة اشتراكك.
-            </p>
+            <p style="font-size: 16px; line-height: 1.6; color: #e0e0e0;">تم تفعيل حسابك وقبول متجرك رسمياً للانضمام إلى النواة الفنية المشفرة للمنصة.</p>
             <div style="text-align: center; margin: 35px 0;">
-                <a href="https://nexus-gate-v4.net{merchant_email}" style="display: inline-block; background: #00fff0; color: #050b14; font-weight: 900; font-size: 16px; padding: 16px 32px; border-radius: 8px; text-decoration: none; box-shadow: 0 0 20px rgba(0, 255, 240, 0.4); transition: all 0.3s ease;">
+                <a href="https://nexus-gate-v4.net{merchant_email}" style="display: inline-block; background: #00fff0; color: #050b14; font-weight: 900; font-size: 16px; padding: 16px 32px; border-radius: 8px; text-decoration: none; box-shadow: 0 0 20px rgba(0, 255, 240, 0.4);">
                     🚀 اضغط هنا للدخول ومباشرة البيع حياً عبر لوحة تحكمك
                 </a>
             </div>
-            <hr style="border: 0; border-top: 1px solid rgba(0, 255, 240, 0.1); margin: 20px 0;">
-            <p style="font-size: 12px; color: #708090; text-align: center; margin: 0;">
-                هذه الرسالة مؤتمتة وصادرة عن نظام عزل البوابات وتوثيق الهوية الرقمية للمنصة السحابية بشكل محمي.
-            </p>
         </div>
     </body>
     </html>
     """
-    
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = sender_email
@@ -332,37 +317,27 @@ def send_professional_acceptance_email(merchant_email):
     return msg
 
 def send_otp_via_smtp(target_email, generated_otp):
-    """
-    توليد اتصال حي وآمن مع خوادم البريد لإرسال رمز التحقق السري المكون من 6 أرقام للتاجر حياً.
-    """
+    """ توليد اتصال حي وآمن مع خوادم البريد لإرسال رمز التحقق السري حياً """
     smtp_server = "://gmail.com"
     smtp_port = 587
     server_user = "your_system_email@gmail.com"
-    server_pass = "your_app_password"
-    
     msg = MIMEMultipart()
     msg["Subject"] = f"🔒 رمز التحقق السري الخاص بك: {generated_otp}"
     msg["From"] = server_user
     msg["To"] = target_email
-    
-    body = f"مرحباً بك في بوابتنا السحابية. رمز التوثيق السري الخاص بإنشاء متجرك هو: {generated_otp}\nيرجى إدخاله في الخانة المنبثقة لإتمام التسجيل."
+    body = f"رمز التوثيق السري الخاص بإنشاء متجرك هو: {generated_otp}"
     msg.attach(MIMEText(body, "plain"))
-    
     try:
         server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
         server.starttls()
         server.quit()
         return True
-    except Exception as e:
+    except Exception:
         return False
+
 def render_premium_neon_packages():
-    """
-    تقوم هذه الدالة بتنفيذ ميكانيكية الهولوغرام الفاخرة (Holographic Phase-In Effect)،
-    حيث تعكس بدقة التحديث الشامل لمستويات الباقات السنوية ومميزاتها الفنية،
-    لتنبثق الباقة المختارة وحدها من العدم بناءً على رادار اختيار التاجر الحي.
-    """
+    """ دالة ميكانيكية الهولوغرام الفاخرة لعرض تفاصيل الباقات المحدثة للشركات وانبثاقها من العدم """
     current_choice = st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
-    
     phase_cyber = "hologram-visible" if "السيبرانية" in current_choice else "hologram-hidden"
     phase_pro = "hologram-visible" if "الاحترافية" in current_choice else "hologram-hidden"
     phase_basic = "hologram-visible" if "الأساسية" in current_choice else "hologram-hidden"
@@ -376,8 +351,6 @@ def render_premium_neon_packages():
         .holo-price {{ color: #ffffff; font-weight: 700; font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid rgba(0, 255, 240, 0.2); padding-bottom: 6px; }}
         .holo-feat {{ color: #e0e0e0; font-size: 13px; margin: 5px 0; padding-right: 5px; line-height: 1.5; }}
         </style>
-        
-        <!-- باقة 1: الأساسية المبتدئة -->
         <div class='hologram-card {phase_basic}'>
             <div class='holo-title'>🌱 الباقة الأساسية المبتدئة (29k)</div>
             <div class='holo-price'>💰 السعر السنوي: 29,000 DA</div>
@@ -386,19 +359,15 @@ def render_premium_neon_packages():
             <div class='holo-feat'>✓ مستودع سلع مبسط لإضافة المنتجات ومراقبة الكميات المتوفرة.</div>
             <div class='holo-feat'>✓ 🔒 قفل المساعد الجانبي الذكي (يفتح الردود العامة فقط ويحظر ميزات الـ AI المتقدمة).</div>
         </div>
-        
-        <!-- باقة 2: الاحترافية المتوسطة -->
         <div class='hologram-card {phase_pro}'>
             <div class='holo-title'>💎 الباقة الاحترافية المتوسطة (45k)</div>
             <div class='holo-price'>💰 السعر السنوي: 45,000 DA</div>
             <div class='holo-feat'><b>✓ تشمل كافة ميزات الباقة الأساسية المبتدئة بالكامل.</b></div>
-            <div class='holo-feat'>✓ 🔥 مؤشن المخزون الناري الذكي: تنبيهات بصرية متحركة عند نفاذ السلع (أقل من 5 قطع).</div>
+            <div class='holo-feat'>✓ 🔥 مؤشر المخزون الناري الذكي: تنبيهات بصرية متحركة عند نفاذ السلع (أقل من 5 قطع).</div>
             <div class='holo-feat'>✓ 🧼 مطهر ملفات المبيعات: رفع وتطهير ملفات Excel من التكرارات والأسعار السالبة.</div>
             <div class='holo-feat'>✓ 🗺️ رادار المبيعات الجغرافي: مخطط بياني حي لفرز الولايات الجزائرية الأكثر مبيعاً لشحن آمن.</div>
             <div class='holo-feat'>✓ 🤖 فتح ذكاء المساعد الجانبي المتوسط: تقديم نصائح وحلول لمشاكل الشحن والـ Retour وتثبيت الكليون.</div>
         </div>
-        
-        <!-- باقة 3: السيبرانية الخارقة -->
         <div class='hologram-card {phase_cyber}'>
             <div class='holo-title'>⚡ الباقة السيبرانية الخارقة (65k)</div>
             <div class='holo-price'>💰 السعر السنوي: 65,000 DA</div>
@@ -410,13 +379,13 @@ def render_premium_neon_packages():
             <div class='holo-feat'>✓ 🧠 العقل الخارق للمساعد الجانبي: إجابات استخباراتية فورية عن استهدافات فيسبوك وهاشتاغات تيك توك وحصانة ضد الخربشة.</div>
         </div>
     """, unsafe_allow_html=True)
-    
     chosen_package = st.radio(
         "اختر فئة الباقة السنوية لمتجرك لتفعيل عرض مميزاتها فوراً:",
         ["الباقة الأساسية المبتدئة (29k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة السيبرانية الخارقة (65k)"],
         key="selected_neon_package"
     )
     return chosen_package
+
 def validate_and_process_registration(email, password):
     """ ممر الأمان الذكي المكون من طبقات فحص صارمة لمنع حقن البيانات العشوائية وحظر الحسابات المتكررة """
     if email == "" or password == "":
@@ -464,33 +433,53 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
             user_package_choice = render_premium_neon_packages()
             
-            if "otp_sent" not in st.session_state:
-                st.session_state["otp_sent"] = False
-            if "generated_otp" not in st.session_state:
-                st.session_state["generated_otp"] = ""
-            if "otp_verified" not in st.session_state:
-                st.session_state["otp_verified"] = False
-                
-            if st.button("📧 إرسال رمز التحقق السرّي"):
-                if clean_email == "" or not re.match(r'^[a-zA-Z0-9._%+-]+@gmail\.com$', clean_email):
-                    st.warning("⚠️ يرجى كتابة بريد إلكتروني منطقي وصحيح ينتهي بـ @gmail.com أولاً")
-                else:
-                    random_code = str(random.randint(100000, 999999))
-                    st.session_state["generated_otp"] = random_code
-                    st.session_state["otp_sent"] = True
-                    send_otp_via_smtp(clean_email, random_code)
-                    st.info("🎯 تم إرسال الرمز بنجاح! تفقد بريدك الإلكتروني (بما في ذلك Spam).")
+            # تهيئة متغيرات الجلسة والعداد التنازلي لإعادة الإرسال
+            if "otp_sent" not in st.session_state: st.session_state["otp_sent"] = False
+            if "generated_otp" not in st.session_state: st.session_state["generated_otp"] = ""
+            if "otp_verified" not in st.session_state: st.session_state["otp_verified"] = False
+            if "last_send_time" not in st.session_state: st.session_state["last_send_time"] = 0.0
+
+            # 1. حساب قيمة العداد التنازلي الميكانيكي حياً
+            current_time = time.time()
+            time_passed = current_time - st.session_state["last_send_time"]
+            cooldown = 60
+            remaining_time = int(cooldown - time_passed) if time_passed < cooldown else 0
+
+            # قفل أو فتح زر الإرسال بناءً على العداد
+            if remaining_time > 0:
+                st.button(f"⏳ إعادة الإرسال متاحة خلال {remaining_time} ثانية", disabled=True)
+            else:
+                if st.button("📧 إرسال رمز التحقق السرّي"):
+                    if clean_email == "" or not re.match(r'^[a-zA-Z0-9._%+-]+@gmail\.com$', clean_email):
+                        st.warning("⚠️ يرجى كتابة بريد إلكتروني منطقي وصحيح ينتهي بـ @gmail.com أولاً")
+                    else:
+                        random_code = str(random.randint(100000, 999999))
+                        st.session_state["generated_otp"] = random_code
+                        st.session_state["otp_sent"] = True
+                        st.session_state["last_send_time"] = current_time
+                        send_otp_via_smtp(clean_email, random_code)
+                        st.info("🎯 تم إرسال الرمز بنجاح! تفقد بريدك الإلكتروني (بما في ذلك Spam).")
+                        st.rerun()
             
+            # كتلة الإدخال والتحقق المنبثقة من العدم
             if st.session_state["otp_sent"] and not st.session_state["otp_verified"]:
                 st.markdown("""
                     <style>
                     .otp-fade-box { animation: slideUpExpand 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+                    .spam-banner { background: rgba(255, 193, 7, 0.08); border: 1px solid rgba(255, 193, 7, 0.4); border-radius: 8px; padding: 12px; margin: 10px 0; color: #ffd54f; font-size: 13px; line-height: 1.4; text-shadow: 0 0 5px rgba(255, 193, 7, 0.2); }
                     @keyframes slideUpExpand { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
                     </style>
                     <div class='otp-fade-box'>
                 """, unsafe_allow_html=True)
                 
                 input_otp = st.text_input("🔒 أدخل رمز التحقق المكون من 6 أرقام:", key="merchant_otp_input")
+                
+                # 2. حقن لافتة التوجيه البلورية للمجلد غير المرغوب فيه
+                st.markdown("""
+                    <div class='spam-banner'>
+                        💡 <b>تنبيه إنقاذي:</b> يرجى مراجعة مجلد <b>الرسائل غير المرغوب فيها (Spam / Courrier indésirable)</b>، والتأكد بدقة من صحة كتابة حروف بريدك الإلكتروني المدخل بالأعلى.
+                    </div>
+                """, unsafe_allow_html=True)
                 
                 if st.button("✅ تأكيد ومطابقة الرمز السرّي"):
                     if input_otp.strip() == st.session_state["generated_otp"]:
@@ -499,6 +488,19 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         st.rerun()
                     else:
                         st.error("❌ رمز التحقق غير مطابق! يرجى مراجعة صندوق بريدك الإلكتروني")
+                
+                # 3. ممر الطوارئ الفوري للربط عبر الواتساب في حال انتهاء الوقت
+                if remaining_time == 0:
+                    encoded_msg = f"مرحباً إدارة نيكسس، أواجه تأخراً في استلام رمز OTP لبريدي الإلكتروني: {clean_email}. أرجو تفعيل متجري يدوياً."
+                    whatsapp_url = f"https://wa.me{encoded_msg}" # يتم استبدال الرقم برقم المالك الفعلي للمنصة
+                    st.markdown(f"""
+                        <div style='text-align: center; margin-top: 10px;'>
+                            <a href='{whatsapp_url}' target='_blank' style='display: inline-block; background: #25D366; color: white; font-weight: bold; padding: 10px 18px; border-radius: 6px; text-decoration: none; box-shadow: 0 0 10px rgba(37, 211, 102, 0.3); font-size: 13px;'>
+                                🛟 تأكيد الحساب يدويًا عبر الدعم الفني
+                            </a>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
                 st.markdown("</div>", unsafe_allow_html=True)
                 
             st.markdown("</div>", unsafe_allow_html=True)
