@@ -316,7 +316,15 @@ def send_professional_acceptance_email(merchant_email):
     msg["To"] = merchant_email
     msg.attach(MIMEText(html_content, "html"))
     return msg
-
+def send_otp_email(target_email, generated_otp):
+    """
+    توليد اتصال حي وآمن مع خوادم البريد لإرسال رمز التحقق السري حياً عبر منفذ SSL 465
+    باستخدام البريد الإلكتروني والمفتاح المعتمد الموجه لبريد التاجر مباشرة.
+    """
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 465
+    server_user = "boussalemyasser47@gmail.com"
+    server_pass = "cfcq hctz ehjw eazg"
 
 
 def render_premium_neon_packages():
