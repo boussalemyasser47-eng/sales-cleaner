@@ -78,13 +78,12 @@ st.markdown("""
         box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.2) !important;
     }
     
-    /* إجبار الأزرار الخماسية التفاعلية على التوهج الكامل بالألوان السيبرانية */
+    /* إجبار الأزرار الخماسية التفاعلية على التوهج الكامل بالألوان السيبرانية الموضحة بالصورة */
     div.stButton button, .stButton > button {
         width: 100% !important; min-height: 48px !important;
         font-family: 'Cairo', sans-serif !important; font-size: 14px !important; font-weight: 900 !important; border-radius: 12px !important;
         background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%) !important; color: #00fff0 !important;
         border: 2px solid #00fff0 !important; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.3) !important;
-        transition: all 0.3s ease-in-out !important;
     }
     div.stButton button:hover { 
         background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important;
@@ -107,13 +106,14 @@ st.markdown("""
         font-family: 'Cairo', sans-serif !important; color: #ffffff !important;
         text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.15) !important;
     }
-    
     /* 🟢 🔴 🟡 تلوين الأزرار الخماسية المتتالية بالترتيب العددي للأعمدة لمنع التشفير العشوائي */
+    
     /* 1. الزر الأول (العمود الأول): أخضر نيوني */
     div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button {
         color: #00ff66 !important; border: 2px solid #00ff66 !important; box-shadow: 0px 0px 15px rgba(0, 255, 102, 0.2) !important;
     }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button:hover {
+    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button:active {
         background: linear-gradient(135deg, #00ff66 0%, #00ea11 100%) !important; color: #000000 !important;
         box-shadow: 0px 0px 30px #00ff66 !important; border-color: #00ff66 !important;
     }
@@ -121,7 +121,8 @@ st.markdown("""
     div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button {
         color: #ffaa00 !important; border: 2px solid #ffaa00 !important; box-shadow: 0px 0px 15px rgba(255, 170, 0, 0.2) !important;
     }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button:hover {
+    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button:active {
         background: linear-gradient(135deg, #ffaa00 0%, #ff8800 100%) !important; color: #000000 !important;
         box-shadow: 0px 0px 30px #ffaa00 !important; border-color: #ffaa00 !important;
     }
@@ -129,7 +130,8 @@ st.markdown("""
     div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button {
         color: #ff0055 !important; border: 2px solid #ff0055 !important; box-shadow: 0px 0px 15px rgba(255, 0, 85, 0.2) !important;
     }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button:hover {
+    div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button:active {
         background: linear-gradient(135deg, #ff0055 0%, #ff0000 100%) !important; color: #ffffff !important;
         box-shadow: 0px 0px 30px #ff0055 !important; border-color: #ff0055 !important;
     }
@@ -137,7 +139,8 @@ st.markdown("""
     div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button {
         color: #ff00ff !important; border: 2px solid #ff00ff !important; box-shadow: 0px 0px 15px rgba(255, 0, 255, 0.2) !important;
     }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button:hover {
+    div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button:active {
         background: linear-gradient(135deg, #ff00ff 0%, #cc00cc 100%) !important; color: #ffffff !important;
         box-shadow: 0px 0px 30px #ff00ff !important; border-color: #ff00ff !important;
     }
@@ -145,11 +148,11 @@ st.markdown("""
     div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button {
         color: #ff4500 !important; border: 2px solid #ff4500 !important; box-shadow: 0px 0px 15px rgba(255, 69, 0, 0.2) !important;
     }
-    div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button:hover {
+    div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button:active {
         background: linear-gradient(135deg, #ff4500 0%, #ff2200 100%) !important; color: #ffffff !important;
         box-shadow: 0px 0px 30px #ff4500 !important; border-color: #ff4500 !important;
     }
-    
     /* # === تأثيرات التوهج والأنيميشن لعدادات المالك === */
     @keyframes hudPulse {
         0% { box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); border-color: #00fff0; }
@@ -170,13 +173,17 @@ st.markdown("""
     /* ========================================================
        [القسم الثالث]: # === جدار الأنيميشن الموحد والانبثاق الميكانيكي لكافة عناصر المنصة ===
        ======================================================== */
-    /* ========================================================
-       [القسم الثالث]: # === جدار الأنيميشن الموحد والانبثاق الميكانيكي لكافة عناصر المنصة ===
-       ======================================================== */
+    
+    /* 1. جدار الانسياب الشامل لكافة العناصر الحية بالموقع */
+    button, input, select, textarea, div.stDataFrame, table, .stSelectbox, [data-testid="stSidebar"] {
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    }
+
+    /* 2. بناء التمدد والانجذاب السينمائي المرن عند الولادة */
     @keyframes elasticPop {
         0% {
             opacity: 0;
-            transform: translateY(15px) scale(0.98);
+            transform: translateY(12px) scale(0.95);
         }
         100% {
             opacity: 1;
@@ -184,49 +191,48 @@ st.markdown("""
         }
     }
     @keyframes alertPulseRed {
-        0% { box-shadow: 0px 0px 12px rgba(255, 0, 85, 0.2); border-color: #ff0055; }
-        50% { box-shadow: 0px 0px 25px rgba(255, 0, 85, 0.55); border-color: #ff3377; }
-        100% { box-shadow: 0px 0px 12px rgba(255, 0, 85, 0.2); border-color: #ff0055; }
+        0% { box-shadow: 0px 0px 12px rgba(255, 0, 85, 0.25); border-color: #ff0055; }
+        50% { box-shadow: 0px 0px 25px rgba(255, 0, 85, 0.6); border-color: #ff3377; }
+        100% { box-shadow: 0px 0px 12px rgba(255, 0, 85, 0.25); border-color: #ff0055; }
     }
     @keyframes alertPulseGold {
-        0% { box-shadow: 0px 0px 12px rgba(255, 170, 0, 0.2); border-color: #ffaa00; }
-        50% { box-shadow: 0px 0px 25px rgba(255, 170, 0, 0.55); border-color: #ffcc33; }
-        100% { box-shadow: 0px 0px 12px rgba(255, 170, 0, 0.2); border-color: #ffaa00; }
+        0% { box-shadow: 0px 0px 12px rgba(255, 170, 0, 0.25); border-color: #ffaa00; }
+        50% { box-shadow: 0px 0px 25px rgba(255, 170, 0, 0.6); border-color: #ffcc33; }
+        100% { box-shadow: 0px 0px 12px rgba(255, 170, 0, 0.25); border-color: #ffaa00; }
     }
     @keyframes alertPulseGreen {
-        0% { box-shadow: 0px 0px 12px rgba(0, 255, 102, 0.2); border-color: #00ff66; }
-        50% { box-shadow: 0px 0px 25px rgba(0, 255, 102, 0.55); border-color: #33ff99; }
-        100% { box-shadow: 0px 0px 12px rgba(0, 255, 102, 0.2); border-color: #00ff66; }
+        0% { box-shadow: 0px 0px 12px rgba(0, 255, 102, 0.25); border-color: #00ff66; }
+        50% { box-shadow: 0px 0px 25px rgba(0, 255, 102, 0.6); border-color: #33ff99; }
+        100% { box-shadow: 0px 0px 12px rgba(0, 255, 102, 0.25); border-color: #00ff66; }
     }
 
-    /* تطبيق الانبثاق الميكانيكي على جميع صناديق التنبيهات والأخطاء وحاويات المخرجات في الـ DOM */
-    div[data-testid="stNotification"], div[data-testid="stAlert"], div.element-container:has(div[data-testid="stNotification"]), div.stAlert {
+    /* استهداف جدار الـ DOM بالكامل لفرض انبثاق مرن للأزرار وحقول الإدخال ورسائل التنبيه والتحذيرات */
+    div[data-testid="stNotification"], div[data-testid="stAlert"], div.element-container:has(div[data-testid="stNotification"]), div.stAlert, div.stButton, div[data-testid="stTextInput"] {
         animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
     }
 
-    /* صناديق الأخطاء والتوثيق الفاشل st.error بالتوهج النبضي الأحمر النيوني الفاخر */
+    /* صناديق الأخطاء والتوثيق الفاشل st.error بالتوهج النبضي الأحمر النيوني */
     div[data-testid="stAlert"]:has(div[data-baseinstance="error"]), div.stAlert:has([aria-label="Error"]) {
         border: 2px solid #ff0055 !important;
-        background: linear-gradient(135deg, rgba(20, 2, 10, 0.9) 0%, rgba(5, 1, 3, 0.98) 100%) !important;
+        background: linear-gradient(135deg, rgba(20, 2, 10, 0.92) 0%, rgba(5, 1, 3, 0.99) 100%) !important;
         animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, alertPulseRed 3s ease-in-out infinite alternate !important;
     }
 
     /* صناديق التحذيرات st.warning بالتوهج النبضي الذهبي الدافئ للسرية التامة */
     div[data-testid="stAlert"]:has(div[data-baseinstance="warning"]), div.stAlert:has([aria-label="Warning"]) {
         border: 2px solid #ffaa00 !important;
-        background: linear-gradient(135deg, rgba(20, 12, 2, 0.9) 0%, rgba(5, 3, 1, 0.98) 100%) !important;
+        background: linear-gradient(135deg, rgba(20, 12, 2, 0.92) 0%, rgba(5, 3, 1, 0.99) 100%) !important;
         animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, alertPulseGold 3s ease-in-out infinite alternate !important;
     }
 
     /* صناديق التوثيق الناجح st.success بالتوهج النبضي الأخضر السيبراني الرائع */
     div[data-testid="stAlert"]:has(div[data-baseinstance="success"]), div.stAlert:has([aria-label="Success"]) {
         border: 2px solid #00ff66 !important;
-        background: linear-gradient(135deg, rgba(2, 20, 10, 0.9) 0%, rgba(1, 5, 2, 0.98) 100%) !important;
+        background: linear-gradient(135deg, rgba(2, 20, 10, 0.92) 0%, rgba(1, 5, 2, 0.99) 100%) !important;
         animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, alertPulseGreen 3s ease-in-out infinite alternate !important;
     }
     </style>
 """, unsafe_allow_html=True)
-
 # ========================================================
 # [القسم الرابع]: إدارة ومزامنة جدول قاعدة بيانات الـ Auth وجدار الحماية الاستباقي للثغرات
 # ========================================================
@@ -261,7 +267,7 @@ def delete_email_completely(email_to_delete):
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
 
 # === الإضافات والتعديلات الجديدة ===
-# جاهز لاستقبال أي دالات أو إضافات مستقبلية مكملة هنا دون المساس بالأعلى...
+# جاهز ومؤمن بالكامل هنا لاستقبال أي ميزات إضافية في المحادثات القادمة...
 
 
 # ====================================================================
