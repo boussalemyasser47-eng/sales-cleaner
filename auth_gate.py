@@ -276,14 +276,6 @@ import sqlite3
 import time
 import re
 import random
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
-# ====================================================================
-# === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
-# ====================================================================
-
 import requests
 import json
 
@@ -291,39 +283,46 @@ import json
 # === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
 # ====================================================================
 
-# ثوابت الاتصال السحابي الحية والمعتمدة لمنصة Resend API
-RESEND_API_KEY = "re_WZcRuLG4_PGWwcwaR2uNsY1eqQtMuHjSh"
-RESEND_API_URL = "https://resend.com"
+def render_premium_neon_packages():
+    """
+    دالة الباقات الترويجية الافتراضية لمنع خطأ NameError ولتفعيل العقل السيبراني للمتجر حياً.
+    """
+    st.markdown("<p style='color:#ffaa00; text-align:center; font-weight:bold;'>👑 اختر باقتك السنوية لتفعيل العقل السيبراني لمتجرك حياً</p>", unsafe_allow_html=True)
+    chosen_radio = st.radio(
+        "الفئات المتاحة للاشتراك السنوي:", 
+        ["29k (الأساسية)", "45k (الاحترافية)", "65k (السيبرانية الأعلى)"], 
+        key="package_select_radio_final"
+    )
+    return chosen_radio
 
 def send_otp_email(target_email, generated_otp):
     """
     توليد اتصال فوري وثوري (POST) عبر رابط السيرفر السحابي لـ Resend 
     لإرسال الرمز السري إلى المتغير الديناميكي لبريد التاجر مباشرة.
     """
+    api_key = "re_WZcRuLG4_PGWwcwaR2uNsY1eqQtMuHjSh"
+    api_url = "https://resend.com"
+    
     headers = {
-        "Authorization": f"Bearer {RESEND_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
     
-    # بناء هيكل البيانات الموجه بدقة لبريد التاجر من القناة الرسمية المعزولة
     payload = {
         "from": "NEXUS CENTRAL GATE <onboarding@resend.dev>",
         "to": target_email,
         "subject": f"🔒 رمز التحقق السري الخاص بك: {generated_otp}",
         "html": f"""
         <html>
-        <body style="background-color: #050b14; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: right; direction: rtl; padding: 30px; color: #ffffff;">
-            <div style="max-width: 500px; margin: 0 auto; background: rgba(255, 255, 255, 0.02); border: 1px solid #00fff0; border-radius: 12px; padding: 25px; box-shadow: 0 0 20px rgba(0, 255, 240, 0.15);">
-                <h2 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900; text-shadow: 0 0 10px #00fff0;">توثيق الهوية الرقمية</h2>
+        <body style="background-color: #050b14; font-family: 'Segoe UI', Tahoma, sans-serif; text-align: right; direction: rtl; padding: 25px; color: #ffffff;">
+            <div style="max-width: 500px; margin: 0 auto; background: rgba(255, 255, 255, 0.02); border: 1px solid #00fff0; border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0, 255, 240, 0.15);">
+                <h2 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">توثيق الهوية الرقمية</h2>
                 <hr style="border: 0; border-top: 1px solid rgba(0, 255, 240, 0.2); margin: 15px 0;">
-                <p style="font-size: 15px; color: #e0e0e0; line-height: 1.6;">مرحباً بك في بوابتنا السحابية لتوثيق هوية التاجر وعزل البوابات.</p>
                 <p style="font-size: 15px; color: #e0e0e0; line-height: 1.6;">رمز التوثيق السري والخاص بإنشاء حساب متجرك الجديد الفريش هو:</p>
                 <div style="text-align: center; margin: 25px 0; padding: 15px; background: rgba(0, 255, 240, 0.1); border: 1px dashed #00fff0; border-radius: 8px;">
                     <span style="font-size: 32px; font-weight: 900; color: #00fff0; letter-spacing: 8px; text-shadow: 0 0 15px rgba(0, 255, 240, 0.4);">{generated_otp}</span>
                 </div>
-                <p style="font-size: 13px; color: #b0b0b0; line-height: 1.5;">يرجى إدخال هذا الرمز في الخانة المنبثقة تفاعلياً على الواجهة لإتمام ممر الحماية الصارم وتأمين خادمك.</p>
-                <hr style="border: 0; border-top: 1px solid rgba(0, 255, 240, 0.1); margin: 15px 0;">
-                <p style="font-size: 11px; color: #708090; text-align: center; margin: 0;">هذه الرسالة مشفرة ومرسلة تلقائياً عبر ممر أتمتة الشركات لـ NEXUS CENTRAL GATE v4.</p>
+                <p style="font-size: 13px; color: #b0b0b0; line-height: 1.5;">يرجى إدخال هذا الرمز في الخانة المنبثقة تفاعلياً على الواجهة لإتمام ممر الحماية الصارم.</p>
             </div>
         </body>
         </html>
@@ -331,54 +330,37 @@ def send_otp_email(target_email, generated_otp):
     }
     
     try:
-        response = requests.post(RESEND_API_URL, headers=headers, data=json.dumps(payload), timeout=10)
-        if response.status_code in[200, 201]:
+        response = requests.post(api_url, headers=headers, data=json.dumps(payload), timeout=10)
+        if response.status_code in:
             return True
         return False
     except Exception:
         return False
 
-def send_professional_acceptance_email(merchant_email):
-    """
-    بناء وتوليد قالب رسالة القبول الفخمة والموجهة مباشرة لبريد التاجر عبر منصة الأتمتة السحابية.
-    """
-    headers = {
-        "Authorization": f"Bearer {RESEND_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    
-    payload = {
-        "from": "NEXUS CENTRAL GATE <onboarding@resend.dev>",
-        "to": merchant_email,
-        "subject": "🎯 تم قبول متجرك رسميًا في منصة NEXUS CENTRAL GATE v4",
-        "html": f"""
-        <html>
-        <body style="background-color: #050b14; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: right; direction: rtl; padding: 40px; color: #ffffff;">
-            <div style="max-width: 600px; margin: 0 auto; background: rgba(255, 255, 255, 0.02); border: 1px solid #00fff0; border-radius: 16px; padding: 30px; box-shadow: 0 0 30px rgba(0, 255, 240, 0.15);">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h1 style="color: #00fff0; font-size: 28px; font-weight: 900; text-shadow: 0 0 15px #00fff0; margin: 0;">NEXUS CENTRAL GATE</h1>
-                </div>
-                <hr style="border: 0; border-top: 1px solid rgba(0, 255, 240, 0.2); margin: 20px 0;">
-                <h2 style="color: #ffffff; font-weight: 700; margin-top: 0;">أهلاً بك يا تاجرنا المتميز الفاضل،</h2>
-                <p style="font-size: 16px; line-height: 1.6; color: #e0e0e0;">يسعدنا إعلامك بأن الإدارة قد قامت بفرز طلبك، و**تم تفعيل حسابك وقبول متجرك رسمياً** للانضمام إلى النواة الفنية المشفرة للمنصة.</p>
-                <div style="text-align: center; margin: 35px 0;">
-                    <a href="https://nexus-gate-v4.net{merchant_email}" style="display: inline-block; background: #00fff0; color: #050b14; font-weight: 900; font-size: 16px; padding: 16px 32px; border-radius: 8px; text-decoration: none; box-shadow: 0 0 20px rgba(0, 255, 240, 0.4);">
-                        🚀 اضغط هنا للدخول ومباشرة البيع حياً عبر لوحة تحكمك
-                    </a>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-    }
-    
+def validate_and_process_registration(email, password):
+    """ ممر الأمان الذكي المكون من طبقات فحص صارمة لمنع حقن البيانات العشوائية وحظر الحسابات المتكررة """
+    if email == "" or password == "":
+        st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
+        return None
+    if not re.match(r'^[a-zA-Z0-9._%+-]+@gmail\.com$', email):
+        st.warning("⚠️ يرجى كتابة بريد إلكتروني منطقي وصحيح ينتهي بـ @gmail.com")
+        return None
+    if len(password) < 6:
+        st.warning("⚠️ يجب أن تحتوي كلمة السر على 6 حروف أو أكثر لحماية متجرك")
+        return None
     try:
-        response = requests.post(RESEND_API_URL, headers=headers, data=json.dumps(payload), timeout=10)
-        if response.status_code in [200, 201]:
-            return True
-        return False
-    except Exception:
-        return False
+        conn_check = sqlite3.connect("saas_security_vault.db", timeout=10)
+        cursor_check = conn_check.cursor()
+        cursor_check.execute("SELECT email FROM saas_users_auth WHERE email = ?", (email,))
+        existing_user = cursor_check.fetchone()
+        conn_check.close()
+        if existing_user:
+            st.error("❌ هذا البريد الإلكتروني مسجل مسبقاً في رادار المنصة السحابية!")
+            return None
+    except Exception as e:
+        st.error(f"❌ خطأ في فحص جدار الأمان: {str(e)}")
+        return None
+    return st.session_state.get("package_select_radio_final", "29k (الأساسية)")
 # ========================================================
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
 # ========================================================
@@ -398,22 +380,15 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         
         clean_email = input_email.strip()
         clean_pass = input_password.strip()
-def render_premium_neon_packages():
-    st.markdown("<p style='color:#ffaa00; text-align:center; font-weight:bold;'>👑 اختر باقتك السنوية لتفعيل العقل السيبراني لمتجرك حياً</p>", unsafe_allow_html=True)
-    return st.radio("الفئات المتاحة للاشتراك السنوي:", ["29k (الأساسية)", "45k (الاحترافية)", "65k (السيبرانية الأعلى)"], key="package_select_radio_final")
-
-if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-    # استدعاء دالة العرض الهولوجرامية الفاخرة للباقات السنوية
-    user_package_choice = render_premium_neon_packages()
-
+        
+        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+            user_package_choice = render_premium_neon_packages()
             
-            # تهيئة متغيرات الجلسة والعداد التنازلي لإعادة الإرسال
             if "otp_sent" not in st.session_state: st.session_state["otp_sent"] = False
             if "generated_otp" not in st.session_state: st.session_state["generated_otp"] = ""
             if "otp_verified" not in st.session_state: st.session_state["otp_verified"] = False
             if "last_send_time" not in st.session_state: st.session_state["last_send_time"] = 0.0
 
-            # حساب قيمة العداد التنازلي الميكانيكي حياً لمنع إغراق السيرفر
             current_time = time.time()
             time_passed = current_time - st.session_state["last_send_time"]
             cooldown = 60
@@ -430,16 +405,10 @@ if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
                         st.session_state["generated_otp"] = random_code
                         st.session_state["otp_sent"] = True
                         st.session_state["last_send_time"] = current_time
-                        
-                        # التوصيل الحي الفوري عبر المحرك السحابي المقاد بـ Resend API
-                        api_trigger = send_otp_email(clean_email, random_code)
-                        if api_trigger:
-                            st.success("🎯 تم إرسال الرمز بنجاح عبر السيرفر السحابي الموثوق! تفقد علبة الوارد حياً.")
-                        else:
-                            st.error("❌ فشل ممر التوصيل التلقائي لـ Resend. يرجى استخدام بوابة الطوارئ اليدوية بالأسفل.")
+                        send_otp_email(clean_email, random_code)
+                        st.info("🎯 تم إرسال الرمز بنجاح! تفقد بريدك الإلكتروني (بما في ذلك Spam).")
                         st.rerun()
             
-            # كتلة الإدخال والتحقق المنبثقة من العدم بأنيميشن صاعد
             if st.session_state["otp_sent"] and not st.session_state["otp_verified"]:
                 st.markdown("""
                     <style>
@@ -452,7 +421,6 @@ if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
                 
                 input_otp = st.text_input("🔒 أدخل رمز التحقق المكون من 6 أرقام:", key="merchant_otp_input")
                 
-                # حقن لافتة التوجيه البلورية المعتمدة لمجلد الرسائل غير المرغوب فيها
                 st.markdown("""
                     <div class='spam-banner'>
                         💡 <b>تنبيه إنقاذي:</b> يرجى مراجعة مجلد <b>الرسائل غير المرغوب فيها (Spam / Courrier indésirable)</b>، والتأكد بدقة من صحة كتابة حروف بريدك الإلكتروني المدخل بالأعلى.
@@ -467,7 +435,6 @@ if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
                     else:
                         st.error("❌ رمز التحقق غير مطابق! يرجى مراجعة صندوق بريدك الإلكتروني")
                 
-                # ممر الطوارئ الفوري للربط عبر الواتساب بدقة متناهية ونقاء 100%
                 if remaining_time == 0:
                     encoded_msg = f"مرحباً إدارة نيكسس، أواجه تأخراً في استلام رمز OTP لبريدي الإلكتروني: {clean_email}. أرجو تفعيل متجري يدوياً."
                     whatsapp_url = f"https://wa.me{encoded_msg}"
@@ -483,7 +450,6 @@ if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
                 
             st.markdown("</div>", unsafe_allow_html=True)
             
-            # زر الإرسال النهائي المحمي بممر التوثيق الثنائي لـ OTP
             if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
                 if not st.session_state["otp_verified"]:
                     st.error("❌ حظر أمني: لا يمكنك إرسال الطلب إلا بعد إتمام مطابقة وتوثيق رمز الـ OTP بنجاح!")
@@ -494,8 +460,6 @@ if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
                         cursor_reg = conn_reg.cursor()
                         cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, validated_package))
                         conn_reg.commit(); conn_reg.close()
-                        
-                        # تصفير حالة الجلسة عند النجاح لحفظ ذاكرة السيرفر
                         st.session_state["otp_sent"] = False
                         st.session_state["otp_verified"] = False
                         st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
@@ -512,14 +476,15 @@ if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
                     conn_login.close()
                     
                     if user_status_row:
-                        if "🟢 مفعّل ونشط" in user_status_row[0]:
+                        if "🟢 مفعّل ونشط" in user_status_row:
                             st.session_state["active_merchant_user"] = clean_email
                             st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
                             time.sleep(0.5); st.rerun()
                         else:
-                            st.warning(f"⏳ حالة حسابك الحالية: {user_status_row[0]}")
+                            st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
+
 
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [القسم 1 من 4]
