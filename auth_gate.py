@@ -402,9 +402,10 @@ def render_premium_neon_packages():
     st.markdown("<p style='color:#ffaa00; text-align:center; font-weight:bold;'>👑 اختر باقتك السنوية لتفعيل العقل السيبراني لمتجرك حياً</p>", unsafe_allow_html=True)
     return st.radio("الفئات المتاحة للاشتراك السنوي:", ["29k (الأساسية)", "45k (الاحترافية)", "65k (السيبرانية الأعلى)"], key="package_select_radio_final")
 
-        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-            # استدعاء دالة العرض الهولوغرامية الفاخرة للباقات السنوية
-            user_package_choice = render_premium_neon_packages()
+if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+    # استدعاء دالة العرض الهولوجرامية الفاخرة للباقات السنوية
+    user_package_choice = render_premium_neon_packages()
+
             
             # تهيئة متغيرات الجلسة والعداد التنازلي لإعادة الإرسال
             if "otp_sent" not in st.session_state: st.session_state["otp_sent"] = False
