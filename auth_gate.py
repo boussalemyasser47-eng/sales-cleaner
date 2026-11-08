@@ -374,7 +374,7 @@ def send_professional_acceptance_email(merchant_email):
     
     try:
         response = requests.post(RESEND_API_URL, headers=headers, data=json.dumps(payload), timeout=10)
-        if response.status_code in:
+        if response.status_code in [200, 201]:
             return True
         return False
     except Exception:
