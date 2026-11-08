@@ -398,7 +398,10 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         
         clean_email = input_email.strip()
         clean_pass = input_password.strip()
-        
+        def render_premium_neon_packages():
+    st.markdown("<p style='color:#ffaa00; text-align:center; font-weight:bold;'>👑 اختر باقتك السنوية لتفعيل العقل السيبراني لمتجرك حياً</p>", unsafe_allow_html=True)
+    return st.radio("الفئات المتاحة للاشتراك السنوي:", ["29k (الأساسية)", "45k (الاحترافية)", "65k (السيبرانية الأعلى)"], key="package_select_radio_final")
+
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
             # استدعاء دالة العرض الهولوغرامية الفاخرة للباقات السنوية
             user_package_choice = render_premium_neon_packages()
