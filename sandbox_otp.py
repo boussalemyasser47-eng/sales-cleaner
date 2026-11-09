@@ -1,6 +1,6 @@
 import random
 import streamlit as st
-import resend
+import requests
 
 st.set_page_config(page_title="OTP Sandbox Cloud", page_icon="📧", layout="centered")
 
@@ -25,7 +25,7 @@ st.markdown(
 )
 
 st.title("📧 فحص واختبار رموز التحقق (عبر السحاب)")
-st.write("ملف تجريبي معزول لإرسال الرموز بسلاسة عبر الإنترنت باستخدام Resend API.")
+st.write("ملف تجريبي معزول لإرسال الرموز بسلاسة عبر الإنترنت باستخدام Resend API المباشر.")
 
 if "otp_code" not in st.session_state:
     st.session_state.otp_code = None
@@ -42,21 +42,31 @@ if st.button("📧 إرسال رمز التحقق العشوائي"):
         code = f"{random.randint(100000, 999999)}"
         st.session_state.otp_code = code
 
-        # السحب الآمن للمفتاح من إعدادات الـ Secrets
-        resend.api_key = st.secrets["RESEND_API_KEY"]
+        # جلب المفتاح بأمان من إعدادات الـ Secrets
+        api_key = st.secrets["RESEND_API_KEY"]
+
+        # إعداد الاتصال المباشر عبر HTTP لمنع مشاكل الترميز (latin-1) نهائياً
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "from": "onboarding@resend.dev",
+            "to": [target_email],
+            "subject": "Your OTP Verification Code",
+            "text": f"مرحباً،\n\nرمز التحقق العشوائي الخاص بك هو: {code}\n\nيرجى إدخاله في الموقع لإتمام الاختبار."
+        }
 
         try:
-            # استخدام حقل subject باللغة الإنجليزية أو بصيغة آمنة للترميز لتجنب مشاكل latin-1
-            params = {
-                "from": "onboarding@resend.dev",
-                "to": [target_email],
-                "subject": "Your OTP Verification Code",
-                "text": f"مرحباً،\n\nرمز التحقق العشوائي الخاص بك هو: {code}\n\nيرجى إدخاله في الموقع لإتمام الاختبار.",
-            }
+            response = requests.post("https://api.resend.com/emails", json=payload, headers=headers)
             
-            email = resend.Emails.send(params)
-            st.session_state.email_sent = True
-            st.success("تم إرسال رمز التحقق بنجاح إلى البريد الإلكتروني عبر السحاب! تحقق من صندوق الوارد.")
+            if response.status_code == 200:
+                st.session_state.email_sent = True
+                st.success("تم إرسال رمز التحقق بنجاح إلى البريد الإلكتروني عبر السحاب! تحقق من صندوق الوارد.")
+            else:
+                st.error(f"خطأ من خادم Resend: {response.status_code} - {response.text}")
+                
         except Exception as e:
             st.error(f"حدث خطأ أثناء الإرسال السحابي: {e}")
 
