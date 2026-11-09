@@ -18,11 +18,11 @@ def send_otp_email(target_email, generated_otp):
         "to": target_email,
         "subject": f"🔒 رمز التحقق السري الخاص بك: {generated_otp}",
         "html": f"""
-        <div style="direction: rtl; text-align: right; font-family: sans-serif; padding: 20px;">
-            <h2>مرحباً بك في منصة NEXUS CENTRAL GATE v4</h2>
-            <p>رمز التوثيق السري الخاص بإنشاء متجرك الإلكتروني هو:</p>
-            <h1 style="color: #00fff0; letter-spacing: 2px;">{generated_otp}</h1>
-            <p>يرجى إدخاله في الخانة المنبثقة حياً بالموقع لإتمام التسجيل الآمن.</p>
+        <div style="direction: rtl; text-align: right; font-family: sans-serif; padding: 20px; background-color: #050f14; border: 2px solid #00fff0; border-radius: 12px;">
+            <h2 style="color: #00fff0;">مرحباً بك في منصة NEXUS CENTRAL GATE v4</h2>
+            <p style="color: #ffffff;">رمز التوثيق السري الخاص بإنشاء متجرك الإلكتروني هو:</p>
+            <h1 style="color: #ffaa00; letter-spacing: 2px; font-size: 36px;">{generated_otp}</h1>
+            <p style="color: #ffffff;">يرجى إدخاله في الخانة المنبثقة حياً بالموقع لإتمام التسجيل الآمن.</p>
         </div>
         """
     }
