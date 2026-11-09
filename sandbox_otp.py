@@ -1,14 +1,16 @@
 import random
 import streamlit as st
-import requests
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
-st.set_page_config(page_title="OTP Verification App", page_icon="📧", layout="centered")
+st.set_page_config(page_title="Gmail OTP Authenticator", page_icon="📧", layout="centered")
 
 st.markdown(
     """
     <style>
     .stButton>button {
-        background-color: #00bcd4;
+        background-color: #4CAF50;
         color: white;
         font-weight: bold;
         border-radius: 8px;
@@ -16,7 +18,7 @@ st.markdown(
         width: 100%;
     }
     .stButton>button:hover {
-        background-color: #0097a7;
+        background-color: #45a049;
         color: white;
     }
     </style>
@@ -24,8 +26,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("📧 نظام التحقق عبر رموز الـ OTP")
-st.write("أدخل البريد الإلكتروني لأي مستخدم ليصلك رمز التحقق الخاص به فوراً.")
+st.title("📧 نظام التحقق عبر بريد Gmail (إيميلات عشوائية)")
+st.write("أدخل أي بريد إلكتروني في العالم، وسيقوم النظام بإرسال رمز التحقق إليه فوراً مجاناً.")
 
 if "otp_code" not in st.session_state:
     st.session_state.otp_code = None
@@ -33,10 +35,10 @@ if "otp_code" not in st.session_state:
 if "email_sent" not in st.session_state:
     st.session_state.email_sent = False
 
-# حقل إدخال البريد الإلكتروني لأي مستخدم
-target_email = st.text_input("أدخل البريد الإلكتروني المستهدف:")
+# حقل إدخال أي بريد إلكتروني عشوائي
+target_email = st.text_input("أدخل البريد الإلكتروني المستهدف لأي شخص:")
 
-if st.button("📧 إرسال رمز التحقق العشوائي"):
+if st.button("📧 إرسال رمز التحقق"):
     if not target_email or "@" not in target_email:
         st.error("الرجاء إدخال بريد إلكتروني صحيح.")
     else:
@@ -44,36 +46,36 @@ if st.button("📧 إرسال رمز التحقق العشوائي"):
         code = f"{random.randint(100000, 999999)}"
         st.session_state.otp_code = code
 
-        # جلب المفتاح بأمان من أسرار المنصة
-        api_key = st.secrets["RESEND_API_KEY"]
+        # جلب بيانات Gmail الآمنة من الـ Secrets
+        sender_email = st.secrets["GMAIL_USER"]
+        sender_password = st.secrets["GMAIL_APP_PASSWORD"]
 
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "from": "onboarding@resend.dev",
-            "to": [target_email],
-            "subject": "Your OTP Verification Code",
-            "text": f"مرحباً،\n\nرمز التحقق العشوائي الخاص بك هو: {code}\n\nيرجى إدخاله في الموقع لإتمام عملية التحقق."
-        }
+        # إعداد محتوى الرسالة يدعم اللغة العربية تماماً
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "رمز التحقق الخاص بك (OTP)"
+        message["From"] = sender_email
+        message["To"] = target_email
+
+        text_content = f"مرحباً،\n\nرمز التحقق العشوائي الخاص بك هو: {code}\n\nيرجى إدخاله في التطبيق لإتمام العملية."
+        message.attach(MIMEText(text_content, "plain", "utf-8"))
 
         try:
-            response = requests.post("https://api.resend.com/emails", json=payload, headers=headers)
+            # الاتصال بخادم Gmail SMTP الآمن عبر البورت 587
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()  # تأمين الاتصال
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, target_email, message.as_string())
+            server.quit()
+
+            st.session_state.email_sent = True
+            st.success(f"تم إرسال الرمز بنجاح إلى البريد: {target_email} 📬")
             
-            if response.status_code == 200:
-                st.session_state.email_sent = True
-                st.success(f"تم إرسال الرمز بنجاح إلى البريد: {target_email} 📬")
-            else:
-                st.error(f"خطأ من خادم البريد: {response.status_code} - {response.text}")
-                
         except Exception as e:
-            st.error(f"حدث خطأ أثناء الإرسال: {e}")
+            st.error(f"حدث خطأ أثناء الإرسال عبر Gmail: {e}")
 
 if st.session_state.email_sent:
     st.markdown("---")
-    user_input_code = st.text_input("أدخل الرمز الذي استقبلته للتحقق:")
+    user_input_code = st.text_input("أدخل الرمز الذي استقبله المستخدم للتحقق:")
     if st.button("التحقق من صحة الرمز"):
         if user_input_code.strip() == st.session_state.otp_code:
             st.success("🎉 الرمز صحيح 100% وتم التحقق بنجاح!")
