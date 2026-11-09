@@ -42,8 +42,8 @@ if st.button("📧 إرسال رمز التحقق العشوائي"):
         code = f"{random.randint(100000, 999999)}"
         st.session_state.otp_code = code
 
-        # ربط مفتاح الـ API الخاص بك الذي استخرجته للتو
-        resend.api_key = "re_867ocWMe_5ZoorUd4y7P2trxRmxoKGXQm"
+        # السحب الآمن للمفتاح من إعدادات الـ Secrets (لا يوجد مفتاح مكشوف هنا أبداً)
+        resend.api_key = st.secrets["RESEND_API_KEY"]
 
         try:
             params = {
