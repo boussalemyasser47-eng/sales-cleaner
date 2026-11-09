@@ -1,9 +1,8 @@
 import random
-import smtplib
-from email.mime.text import MIMEText
 import streamlit as st
+import resend
 
-st.set_page_config(page_title="OTP Sandbox", page_icon="📧", layout="centered")
+st.set_page_config(page_title="OTP Sandbox Cloud", page_icon="📧", layout="centered")
 
 st.markdown(
     """
@@ -25,66 +24,46 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("📧 فحص واختبار رموز التحقق العشوائية")
-st.write("ملف تجريبي معزول لفحص إرسال الرموز عبر بريد Gmail.")
+st.title("📧 فحص واختبار رموز التحقق (عبر السحاب)")
+st.write("ملف تجريبي معزول لإرسال الرموز بسلاسة عبر الإنترنت باستخدام Resend API.")
 
 if "otp_code" not in st.session_state:
-  st.session_state.otp_code = None
+    st.session_state.otp_code = None
 
 if "email_sent" not in st.session_state:
-  st.session_state.email_sent = False
+    st.session_state.email_sent = False
 
 target_email = st.text_input("البريد الإلكتروني للهدف (target_email):")
 
 if st.button("📧 إرسال رمز التحقق العشوائي"):
-  if not target_email or "@" not in target_email:
-    st.error("الرجاء إدخال بريد إلكتروني صحيح.")
-  else:
-    code = f"{random.randint(100000, 999999)}"
-    st.session_state.otp_code = code
+    if not target_email or "@" not in target_email:
+        st.error("الرجاء إدخال بريد إلكتروني صحيح.")
+    else:
+        code = f"{random.randint(100000, 999999)}"
+        st.session_state.otp_code = code
 
-    sender_email = "boussalemyasser47@gmail.com"
-    sender_password = "cfcq hctz ehjw eazg"
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587  # التبديل إلى المنفذ 587 مع STARTTLS
+        # ربط مفتاح الـ API الخاص بك الذي استخرجته للتو
+        resend.api_key = "re_SgRojsvt_JnJvrGb24JJbGJwdNWRsUk5j"
 
-    subject = "رمز التحقق التجريبي الخاص بك"
-    body = (
-        f"مرحباً،\n\nرمز التحقق العشوائي الخاص بك هو:"
-        f" {code}\n\nيرجى إدخاله في الموقع لإتمام الاختبار."
-    )
-
-    msg = MIMEText(body, "plain", "utf-8")
-    msg["Subject"] = subject
-    msg["From"] = sender_email
-    msg["To"] = target_email
-
-    try:
-      with smtplib.SMTP(smtp_server, smtp_port, timeout=15) as server:
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, target_email, msg.as_string())
-
-      st.session_state.email_sent = True
-      st.success(
-          "تم إرسال رمز التحقق بنجاح إلى البريد الإلكتروني! تحقق من صندوق الوارد"
-          " أو البريد المزعج (Spam)."
-      )
-    except Exception as e:
-      st.error(
-          f"فشل الاتصال: {e}\n\n💡 **ملاحظة حاسمة:** إذا استمر هذا الخطأ على"
-          " المنصة السحابية، فهذا يعني أن الاستضافة تحظر منافذ الـ SMTP بالكامل."
-          " الحل النهائي هو تشغيل التطبيق محلياً على حاسوبك عبر (streamlit run"
-          " sandbox_otp.py) وسيعمل البريد فوراً وبدون أي أخطاء."
-      )
+        try:
+            params = {
+                "from": "onboarding@resend.dev",
+                "to": [target_email],
+                "subject": "رمز التحقق التجريبي الخاص بك",
+                "text": f"مرحباً،\n\nرمز التحقق العشوائي الخاص بك هو: {code}\n\nيرجى إدخاله في الموقع لإتمام الاختبار.",
+            }
+            
+            email = resend.Emails.send(params)
+            st.session_state.email_sent = True
+            st.success("تم إرسال رمز التحقق بنجاح إلى البريد الإلكتروني عبر السحاب! تحقق من صندوق الوارد.")
+        except Exception as e:
+            st.error(f"حدث خطأ أثناء الإرسال السحابي: {e}")
 
 if st.session_state.email_sent:
-  st.markdown("---")
-  user_input_code = st.text_input("أدخل الرمز الذي استقبلته للتحقق:")
-  if st.button("تحقق من صحة الرمز"):
-    if user_input_code.strip() == st.session_state.otp_code:
-      st.success("الرمز صحيح 100% وتم تأكيد الاختبار بنجاح!")
-    else:
-      st.error("الرمز غير صحيح، حاول مرة أخرى.")
+    st.markdown("---")
+    user_input_code = st.text_input("أدخل الرمز الذي استقبلته للتحقق:")
+    if st.button("تحقق من صحة الرمز"):
+        if user_input_code.strip() == st.session_state.otp_code:
+            st.success("الرمز صحيح 100% وتم تأكيد الاختبار بنجاح!")
+        else:
+            st.error("الرمز غير صحيح، حاول مرة أخرى.")
