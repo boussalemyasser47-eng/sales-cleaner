@@ -42,14 +42,15 @@ if st.button("📧 إرسال رمز التحقق العشوائي"):
         code = f"{random.randint(100000, 999999)}"
         st.session_state.otp_code = code
 
-        # السحب الآمن للمفتاح من إعدادات الـ Secrets (لا يوجد مفتاح مكشوف هنا أبداً)
+        # السحب الآمن للمفتاح من إعدادات الـ Secrets
         resend.api_key = st.secrets["RESEND_API_KEY"]
 
         try:
+            # استخدام حقل subject باللغة الإنجليزية أو بصيغة آمنة للترميز لتجنب مشاكل latin-1
             params = {
                 "from": "onboarding@resend.dev",
                 "to": [target_email],
-                "subject": "رمز التحقق التجريبي الخاص بك",
+                "subject": "Your OTP Verification Code",
                 "text": f"مرحباً،\n\nرمز التحقق العشوائي الخاص بك هو: {code}\n\nيرجى إدخاله في الموقع لإتمام الاختبار.",
             }
             
