@@ -46,7 +46,7 @@ if st.button("📧 إرسال رمز التحقق العشوائي"):
     sender_email = "boussalemyasser47@gmail.com"
     sender_password = "cfcq hctz ehjw eazg"
     smtp_server = "smtp.gmail.com"
-    smtp_port = 465
+    smtp_port = 587  # التبديل إلى المنفذ 587 مع STARTTLS
 
     subject = "رمز التحقق التجريبي الخاص بك"
     body = (
@@ -60,10 +60,10 @@ if st.button("📧 إرسال رمز التحقق العشوائي"):
     msg["To"] = target_email
 
     try:
-      # إضافة مهلة زمنية (timeout=15) لمنع تعليق الاتصال أو إغلاقه المفاجئ
-      with smtplib.SMTP_SSL(
-          smtp_server, smtp_port, timeout=15
-      ) as server:
+      with smtplib.SMTP(smtp_server, smtp_port, timeout=15) as server:
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, target_email, msg.as_string())
 
@@ -74,8 +74,10 @@ if st.button("📧 إرسال رمز التحقق العشوائي"):
       )
     except Exception as e:
       st.error(
-          f"فشل الاتصال بخادم البريد: {e}\n\nملاحظة: إذا كنت تستضيف التطبيق على"
-          " منصة سحابية، فقد يكون المنفذ 465 محظوراً من طرف الاستضافة."
+          f"فشل الاتصال: {e}\n\n💡 **ملاحظة حاسمة:** إذا استمر هذا الخطأ على"
+          " المنصة السحابية، فهذا يعني أن الاستضافة تحظر منافذ الـ SMTP بالكامل."
+          " الحل النهائي هو تشغيل التطبيق محلياً على حاسوبك عبر (streamlit run"
+          " sandbox_otp.py) وسيعمل البريد فوراً وبدون أي أخطاء."
       )
 
 if st.session_state.email_sent:
