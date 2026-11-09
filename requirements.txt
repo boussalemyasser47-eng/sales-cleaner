@@ -3,5 +3,4 @@ streamlit
 reportlab
 arabic-reshaper
 python-bidi
-streamlit
 resend
