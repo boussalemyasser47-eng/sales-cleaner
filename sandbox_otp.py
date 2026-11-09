@@ -29,10 +29,10 @@ st.title("📧 فحص واختبار رموز التحقق العشوائية")
 st.write("ملف تجريبي معزول لفحص إرسال الرموز عبر بريد Gmail.")
 
 if "otp_code" not in st.session_state:
-    st.session_state.otp_code = None
+  st.session_state.otp_code = None
 
 if "email_sent" not in st.session_state:
-    st.session_state.email_sent = False
+  st.session_state.email_sent = False
 
 target_email = st.text_input("البريد الإلكتروني للهدف (target_email):")
 
@@ -49,7 +49,10 @@ if st.button("📧 إرسال رمز التحقق العشوائي"):
     smtp_port = 465
 
     subject = "رمز التحقق التجريبي الخاص بك"
-    body = f"مرحباً،\n\nرمز التحقق العشوائي الخاص بك هو: {code}\n\nيرجى إدخاله في الموقع لإتمام الاختبار."
+    body = (
+        f"مرحباً،\n\nرمز التحقق العشوائي الخاص بك هو:"
+        f" {code}\n\nيرجى إدخاله في الموقع لإتمام الاختبار."
+    )
 
     msg = MIMEText(body, "plain", "utf-8")
     msg["Subject"] = subject
@@ -57,16 +60,23 @@ if st.button("📧 إرسال رمز التحقق العشوائي"):
     msg["To"] = target_email
 
     try:
-      with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
+      # إضافة مهلة زمنية (timeout=15) لمنع تعليق الاتصال أو إغلاقه المفاجئ
+      with smtplib.SMTP_SSL(
+          smtp_server, smtp_port, timeout=15
+      ) as server:
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, target_email, msg.as_string())
+
       st.session_state.email_sent = True
       st.success(
           "تم إرسال رمز التحقق بنجاح إلى البريد الإلكتروني! تحقق من صندوق الوارد"
           " أو البريد المزعج (Spam)."
       )
     except Exception as e:
-      st.error(f"حدث خطأ أثناء إرسال البريد: {e}")
+      st.error(
+          f"فشل الاتصال بخادم البريد: {e}\n\nملاحظة: إذا كنت تستضيف التطبيق على"
+          " منصة سحابية، فقد يكون المنفذ 465 محظوراً من طرف الاستضافة."
+      )
 
 if st.session_state.email_sent:
   st.markdown("---")
