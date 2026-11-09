@@ -6,8 +6,7 @@
 # ========================================================
 # ========================================================
 # [القسم الأول]: إعدادات البيئة، خزانة النسخ الاحتياطي، وجدار حماية الشبح المتقدم
-#========================================================
-from email_service import send_otp_email
+# ========================================================
 def create_backup_vault():
     import os
     import zipfile
@@ -24,7 +23,7 @@ def create_backup_vault():
                 except Exception:
                     pass
     zip_buffer.seek(0)
-    return zip_buffermail
+    return zip_buffer
 
 import streamlit as st
 import pandas as pd
@@ -271,13 +270,13 @@ def delete_email_completely(email_to_delete):
 # جاهز ومؤمن بالكامل هنا لاستقبال أي ميزات إضافية في المحادثات القادمة...
 
 
+# ====================================================================
+# === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
+# ====================================================================
 import streamlit as st
 import sqlite3
 import time
 import re
-import random
-import requests
-import json
 
 # ====================================================================
 # === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
@@ -285,82 +284,155 @@ import json
 
 def render_premium_neon_packages():
     """
-    دالة الباقات الترويجية الافتراضية لمنع خطأ NameError ولتفعيل العقل السيبراني للمتجر حياً.
+    تقوم هذه الدالة بتنفيذ ميكانيكية الهولوغرام الفاخرة (Holographic Phase-In Effect)،
+    حيث تعكس بدقة التحديث الشامل لمستويات الباقات السلوية ومميزاتها الفنية،
+    لتنبثق الباقة المختارة وحدها من العدم بناءً على رادار اختيار التاجر الحي.
     """
-    st.markdown("<p style='color:#ffaa00; text-align:center; font-weight:bold;'>👑 اختر باقتك السنوية لتفعيل العقل السيبراني لمتجرك حياً</p>", unsafe_allow_html=True)
-    chosen_radio = st.radio(
-        "الفئات المتاحة للاشتراك السنوي:", 
-        ["29k (الأساسية)", "45k (الاحترافية)", "65k (السيبرانية الأعلى)"], 
-        key="package_select_radio_final"
-    )
-    return chosen_radio
+    # 1. قراءة الاختيار الحي من عنصر الراديو المعتمد تلقائياً
+    current_choice = st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
 
-def send_otp_email(target_email, generated_otp):
-    """
-    توليد اتصال فوري وثوري (POST) عبر رابط السيرفر السحابي لـ Resend 
-    لإرسال الرمز السري إلى المتغير الديناميكي لبريد التاجر مباشرة.
-    """
-    api_key = "re_WZcRuLG4_PGWwcwaR2uNsY1eqQtMuHjSh"
-    api_url = "https://resend.com"
+    # 2. توليد فئات الحالة الهولوغرامية الديناميكية للباقات الثلاث
+    phase_cyber = "hologram-visible" if "السيبرانية" in current_choice else "hologram-hidden"
+    phase_pro = "hologram-visible" if "الاحترافية" in current_choice else "hologram-hidden"
+    phase_basic = "hologram-visible" if "الأساسية" in current_choice else "hologram-hidden"
+
+    # 3. حقن قواعد الهندسة الحركية والـ CSS السينمائي والميزات المحدثة للشركات
+    st.markdown(f"""
+        <style>
+        .hologram-card {{
+            transform: translateY(20px);
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                        border 0.5s ease-in-out,
+                        box-shadow 0.5s ease-in-out;
+            overflow: hidden;
+            border-radius: 14px;
+        }}
+        
+        .hologram-hidden {{
+            max-height: 0px !important;
+            opacity: 0 !important;
+            transform: translateY(20px) scale(0.95);
+            padding: 0px !important;
+            margin: 0px !important;
+            border: 1px solid transparent !important;
+            box-shadow: none !important;
+            pointer-events: none;
+        }}
+        
+        .hologram-visible {{
+            max-height: 800px !important; /* ارتفاع متسع لانسكاب الخدمات المحدثة بالكامل */
+            opacity: 1 !important;
+            transform: translateY(0px) scale(1);
+            background: rgba(0, 255, 240, 0.05);
+            border: 1px solid rgba(0, 255, 240, 0.6);
+            padding: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 25px rgba(0, 255, 240, 0.2);
+        }}
+        
+        .holo-title {{
+            color: #00fff0;
+            font-weight: 900;
+            font-size: 17px;
+            margin-bottom: 6px;
+            text-shadow: 0 0 15px rgba(0, 255, 240, 0.5);
+        }}
+        .holo-price {{
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 255, 240, 0.2);
+            padding-bottom: 6px;
+        }}
+        .holo-feat {{
+            color: #e0e0e0;
+            font-size: 13px;
+            margin: 5px 0;
+            padding-right: 5px;
+            line-height: 1.5;
+        }}
+        </style>
+        
+        <!-- باقة 1: الأساسية المبتدئة -->
+        <div class='hologram-card {phase_basic}'>
+            <div class='holo-title'>🌱 الباقة الأساسية المبتدئة (29k)</div>
+            <div class='holo-price'>💰 السعر السنوي: 29,000 DA</div>
+            <div class='holo-feat'>✓ إصدار فواتير الزبائن الكبيرة (A4) والملصقات الحرارية اللحظية.</div>
+            <div class='holo-feat'>✓ إرسال سريع للفاتورة وتفاصيل الطلب عبر WhatsApp للزبائن يدويًا.</div>
+            <div class='holo-feat'>✓ مستودع سلع مبسط لإضافة المنتجات ومراقبة الكميات المتوفرة.</div>
+            <div class='holo-feat'>✓ 🔒 قفل المساعد الجانبي الذكي (يفتح الردود العامة فقط ويحظر ميزات الـ AI المتقدمة).</div>
+        </div>
+        
+        <!-- باقة 2: الاحترافية المتوسطة -->
+        <div class='hologram-card {phase_pro}'>
+            <div class='holo-title'>💎 الباقة الاحترافية المتوسطة (45k)</div>
+            <div class='holo-price'>💰 السعر السنوي: 45,000 DA</div>
+            <div class='holo-feat'><b>✓ تشمل كافة ميزات الباقة الأساسية المبتدئة بالكامل.</b></div>
+            <div class='holo-feat'>✓ 🔥 مؤشر المخزون الناري الذكي: تنبيهات بصرية متحركة عند نفاذ السلع (أقل من 5 قطع).</div>
+            <div class='holo-feat'>✓ 🧼 مطهر ملفات المبيعات: رفع وتطهير ملفات Excel من التكرارات والأسعار السالبة.</div>
+            <div class='holo-feat'>✓ 🗺️ رادار المبيعات الجغرافي: مخطط بياني حي لفرز الولايات الجزائرية الأكثر مبيعاً لشحن آمن.</div>
+            <div class='holo-feat'>✓ 🤖 فتح ذكاء المساعد الجانبي المتوسط: تقديم نصائح وحلول لمشاكل الشحن والـ Retour وتثبيت الكليون.</div>
+        </div>
+        
+        <!-- باقة 3: السيبرانية الخارقة -->
+        <div class='hologram-card {phase_cyber}'>
+            <div class='holo-title'>⚡ الباقة السيبرانية الخارقة (65k)</div>
+            <div class='holo-price'>💰 السعر السنوي: 65,000 DA</div>
+            <div class='holo-feat'><b>✓ تشمل كافة ميزات الباقتين السابقتين بالكامل (العقل الشامل للمنصة).</b></div>
+            <div class='holo-feat'>✓ 🚀 منصة الأتمتة الإعلانية الكاملة (AI Hub): صياغة الإعلانات التلقائية بـ 3 لهجات مختلفة فوراً.</div>
+            <div class='holo-feat'>✓ 🎬 صانع سيناريوهات الفيديو بالثواني: خطة إنتاج كاملة لتصوير فيديوهات TikTok و Reels للسلع.</div>
+            <div class='holo-feat'>✓ 📊 عداد تقييم قوة الإعلان الفوري (AI Ad Score Meter) لتحليل جاذبية المنشور قبل إطلاقه.</div>
+            <div class='holo-feat'>✓ 💰 حاسبة الـ ROI وميزانية الفحص الموازية بالدولار وما يقابلها بالدينار الجزائري (Square).</div>
+            <div class='holo-feat'>✓ 🧠 العقل الخارق للمساعد الجانبي: إجابات استخباراتية فورية عن استهدافات فيسبوك وهاشتاغات تيك توك وحصانة ضد الخربشة.</div>
+        </div>
+    """, unsafe_allow_html=True)
     
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    
-    payload = {
-        "from": "NEXUS CENTRAL GATE <onboarding@resend.dev>",
-        "to": target_email,
-        "subject": f"🔒 رمز التحقق السري الخاص بك: {generated_otp}",
-        "html": f"""
-        <html>
-        <body style="background-color: #050b14; font-family: 'Segoe UI', Tahoma, sans-serif; text-align: right; direction: rtl; padding: 25px; color: #ffffff;">
-            <div style="max-width: 500px; margin: 0 auto; background: rgba(255, 255, 255, 0.02); border: 1px solid #00fff0; border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0, 255, 240, 0.15);">
-                <h2 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">توثيق الهوية الرقمية</h2>
-                <hr style="border: 0; border-top: 1px solid rgba(0, 255, 240, 0.2); margin: 15px 0;">
-                <p style="font-size: 15px; color: #e0e0e0; line-height: 1.6;">رمز التوثيق السري والخاص بإنشاء حساب متجرك الجديد الفريش هو:</p>
-                <div style="text-align: center; margin: 25px 0; padding: 15px; background: rgba(0, 255, 240, 0.1); border: 1px dashed #00fff0; border-radius: 8px;">
-                    <span style="font-size: 32px; font-weight: 900; color: #00fff0; letter-spacing: 8px; text-shadow: 0 0 15px rgba(0, 255, 240, 0.4);">{generated_otp}</span>
-                </div>
-                <p style="font-size: 13px; color: #b0b0b0; line-height: 1.5;">يرجى إدخال هذا الرمز في الخانة المنبثقة تفاعلياً على الواجهة لإتمام ممر الحماية الصارم.</p>
-            </div>
-        </body>
-        </html>
-        """
-    }
-    
-    try:
-        response = requests.post(api_url, headers=headers, data=json.dumps(payload), timeout=10)
-        if response.status_code in [200, 201] :
-            return True
-        return False
-    except Exception:
-        return False
+    # أزرار الراديو النقية لمزامنة الميكانيكية الحركية وتمرير الاختيار بدقة
+    chosen_package = st.radio(
+        "اختر فئة الباقة السنوية لمتجرك لتفعيل عرض مميزاتها فوراً:",
+        ["الباقة الأساسية المبتدئة (29k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة السيبرانية الخارقة (65k)"],
+        key="selected_neon_package"
+    )
+    return chosen_package
 
 def validate_and_process_registration(email, password):
-    """ ممر الأمان الذكي المكون من طبقات فحص صارمة لمنع حقن البيانات العشوائية وحظر الحسابات المتكررة """
+    """
+    ممر الأمان الذكي المكون من 3 طبقات فحص صارمة لمنع حقن البيانات العشوائية وحظر الحسابات المتكررة.
+    """
     if email == "" or password == "":
         st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
         return None
-    if not re.match(r'^[a-zA-Z0-9._%+-]+@gmail\.com$', email):
+        
+    # 1. جدار التحقق من صيغة البريد (Email Format Guard)
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@gmail\.com$'
+    if not re.match(email_pattern, email):
         st.warning("⚠️ يرجى كتابة بريد إلكتروني منطقي وصحيح ينتهي بـ @gmail.com")
         return None
+        
+    # 2. قوة كلمة المرور (Password Strength Check)
     if len(password) < 6:
         st.warning("⚠️ يجب أن تحتوي كلمة السر على 6 حروف أو أكثر لحماية متجرك")
         return None
+        
+    # 3. منع تكرار الحسابات (Unique Email Guard)
     try:
         conn_check = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor_check = conn_check.cursor()
         cursor_check.execute("SELECT email FROM saas_users_auth WHERE email = ?", (email,))
         existing_user = cursor_check.fetchone()
         conn_check.close()
+        
         if existing_user:
             st.error("❌ هذا البريد الإلكتروني مسجل مسبقاً في رادار المنصة السحابية!")
             return None
     except Exception as e:
         st.error(f"❌ خطأ في فحص جدار الأمان: {str(e)}")
         return None
-    return st.session_state.get("package_select_radio_final", "29k (الأساسية)")
+        
+    return st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
 # ========================================================
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
 # ========================================================
@@ -382,88 +454,19 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         clean_pass = input_password.strip()
         
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+            # استدعاء منصة العرض الهولوغرامية الفاخرة بالميزات الجديدة المحدثة 100%
             user_package_choice = render_premium_neon_packages()
-            
-            if "otp_sent" not in st.session_state: st.session_state["otp_sent"] = False
-            if "generated_otp" not in st.session_state: st.session_state["generated_otp"] = ""
-            if "otp_verified" not in st.session_state: st.session_state["otp_verified"] = False
-            if "last_send_time" not in st.session_state: st.session_state["last_send_time"] = 0.0
-
-            current_time = time.time()
-            time_passed = current_time - st.session_state["last_send_time"]
-            cooldown = 60
-            remaining_time = int(cooldown - time_passed) if time_passed < cooldown else 0
-
-            if remaining_time > 0:
-                st.button(f"⏳ إعادة الإرسال متاحة خلال {remaining_time} ثانية", disabled=True)
-            else:
-                if st.button("📧 إرسال رمز التحقق السرّي"):
-                    if clean_email == "" or not re.match(r'^[a-zA-Z0-9._%+-]+@gmail\.com$', clean_email):
-                        st.warning("⚠️ يرجى كتابة بريد إلكتروني منطقي وصحيح ينتهي بـ @gmail.com أولاً")
-                    else:
-                        random_code = str(random.randint(100000, 999999))
-                        st.session_state["generated_otp"] = random_code
-                        st.session_state["otp_sent"] = True
-                        st.session_state["last_send_time"] = current_time
-                        send_otp_email(clean_email, random_code)
-                        st.info("🎯 تم إرسال الرمز بنجاح! تفقد بريدك الإلكتروني (بما في ذلك Spam).")
-                        st.rerun()
-            
-            if st.session_state["otp_sent"] and not st.session_state["otp_verified"]:
-                st.markdown("""
-                    <style>
-                    .otp-fade-box { animation: slideUpExpand 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-                    .spam-banner { background: rgba(255, 193, 7, 0.08); border: 1px solid rgba(255, 193, 7, 0.4); border-radius: 8px; padding: 12px; margin: 10px 0; color: #ffd54f; font-size: 13px; line-height: 1.4; text-shadow: 0 0 5px rgba(255, 193, 7, 0.2); }
-                    @keyframes slideUpExpand { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-                    </style>
-                    <div class='otp-fade-box'>
-                """, unsafe_allow_html=True)
-                
-                input_otp = st.text_input("🔒 أدخل رمز التحقق المكون من 6 أرقام:", key="merchant_otp_input")
-                
-                st.markdown("""
-                    <div class='spam-banner'>
-                        💡 <b>تنبيه إنقاذي:</b> يرجى مراجعة مجلد <b>الرسائل غير المرغوب فيها (Spam / Courrier indésirable)</b>، والتأكد بدقة من صحة كتابة حروف بريدك الإلكتروني المدخل بالأعلى.
-                    </div>
-                """, unsafe_allow_html=True)
-                
-                if st.button("✅ تأكيد ومطابقة الرمز السرّي"):
-                    if input_otp.strip() == st.session_state["generated_otp"]:
-                        st.session_state["otp_verified"] = True
-                        st.success("🔓 تم توثيق البريد الإلكتروني بنجاح! ممر الحماية صار مفتوحاً الآن.")
-                        st.rerun()
-                    else:
-                        st.error("❌ رمز التحقق غير مطابق! يرجى مراجعة صندوق بريدك الإلكتروني")
-                
-                if remaining_time == 0:
-                    encoded_msg = f"مرحباً إدارة نيكسس، أواجه تأخراً في استلام رمز OTP لبريدي الإلكتروني: {clean_email}. أرجو تفعيل متجري يدوياً."
-                    whatsapp_url = f"https://wa.me{encoded_msg}"
-                    st.markdown(f"""
-                        <div style='text-align: center; margin-top: 10px;'>
-                            <a href='{whatsapp_url}' target='_blank' style='display: inline-block; background: #25D366; color: white; font-weight: bold; padding: 10px 18px; border-radius: 6px; text-decoration: none; box-shadow: 0 0 10px rgba(37, 211, 102, 0.3); font-size: 13px;'>
-                                🛟 تأكيد الحساب يدويًا عبر الدعم الفني
-                            </a>
-                        </div>
-                    """, unsafe_allow_html=True)
-                    
-                st.markdown("</div>", unsafe_allow_html=True)
-                
             st.markdown("</div>", unsafe_allow_html=True)
             
             if st.button("📝 إرسال طلب إنشاء الحساب للإدارة"):
-                if not st.session_state["otp_verified"]:
-                    st.error("❌ حظر أمني: لا يمكنك إرسال الطلب إلا بعد إتمام مطابقة وتوثيق رمز الـ OTP بنجاح!")
-                else:
-                    validated_package = validate_and_process_registration(clean_email, clean_pass)
-                    if validated_package:
-                        conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        cursor_reg = conn_reg.cursor()
-                        cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, validated_package))
-                        conn_reg.commit(); conn_reg.close()
-                        st.session_state["otp_sent"] = False
-                        st.session_state["otp_verified"] = False
-                        st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
-                        time.sleep(0.5); st.rerun()
+                validated_package = validate_and_process_registration(clean_email, clean_pass)
+                if validated_package:
+                    conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_reg = conn_reg.cursor()
+                    cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (clean_email, clean_pass, validated_package))
+                    conn_reg.commit(); conn_reg.close()
+                    st.success("🎯 تم إرسال طلبك بنجاح! سيظهر الآن في رادار الإدارة فوراً.")
+                    time.sleep(0.5); st.rerun()
         else:
             st.markdown("</div>", unsafe_allow_html=True)
             if st.button("🔑 تسجيل الدخول إلى المتجر"):
@@ -487,14 +490,14 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
 
 # ========================================================
-# الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [القسم 1 من 4]
+# الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
 # ========================================================
 if is_boss_link:
     # تأمين وحقن الهوية علوياً لمنع خطأ NameError
     ADMIN_USERNAME = "admin_master_v4"
     ADMIN_PASSWORD = "SaasPassword2026"
 
-    # 🔒 [المستوى الأول]: لوحة الحماية من الاختراق وحجب العدادات قبل تسجيل الدخول
+    # 🔒 [المستوى الأول]: إذا لم يسجل المالك دخوله، تظهر لوحة الحماية فقط وتُحجب العدادات كلياً
     if not st.session_state["admin_master_logged"]:
         st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown("<div class='centered-box-container' style='max-width: 500px; margin: 60px auto 20px auto; padding: 40px; background: rgba(5, 5, 15, 0.95); border: 2px solid #00fff0; border-radius: 20px; box-shadow: 0px 0px 40px rgba(0, 255, 240, 0.35); direction: rtl; text-align: right; backdrop-filter: blur(15px);'>", unsafe_allow_html=True)
@@ -516,15 +519,16 @@ if is_boss_link:
                 st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من مفاتيح الأمان السحابية.")
         st.markdown("</div>", unsafe_allow_html=True)
         
-    # 👑 [المستوى الثاني مقفل ومحمي]: تنبثق العدادات والرادار هنا حصرياً بعد نجاح تسجيل الدخول
+    # 👑 [المستوى الثاني مقفل ومحمي]: تنبثق العدادات والرادار هنا حصرياً وفقط بعد نجاح تسجيل الدخول
     else:
         st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900; text-shadow: 0 0 25px #00fff0;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
 
         # ========================================================
-        # 📊 [الميزة 2]: لوحة العدادات المالية الموحدة للمالك (نسخة الحماية القصوى)
+        # 📊 [الميزة 2]: لوحة العدادات المالية الموحدة للمالك ورادار تنبيه الـ 7 أيام (نسخة الحماية القصوى)
         # ========================================================
         st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📊 لوحة العدادات المالية الموحدة (The Boss Revenue HUD)</h2>", unsafe_allow_html=True)
         
+        # فتح اتصال سريع وآمن مع قاعدة البيانات لجلب كافة البيانات المتوفرة بأمان
         conn_hud = sqlite3.connect("saas_security_vault.db", timeout=10)
         try:
             total_merchants_query = pd.read_sql("SELECT * FROM saas_users_auth", conn_hud)
@@ -532,12 +536,14 @@ if is_boss_link:
             total_merchants_query = pd.DataFrame(columns=['email', 'status'])
         conn_hud.close()
         
+        # التحقق من وجود الأعمدة وحساب العدادات بأمان سيبراني كامل منعاً للـ OperationalError
         active_count = 0
         pending_count = 0
         if not total_merchants_query.empty and 'status' in total_merchants_query.columns:
             active_count = len(total_merchants_query[total_merchants_query['status'].str.contains('مفعّل', na=False)])
             pending_count = len(total_merchants_query[total_merchants_query['status'].str.contains('معلّق', na=False)])
 
+        # عرض العدادات الحية المتغيرة تلقائياً بناءً على التجار المسجلين في سيرفرك
         hud_col1, hud_col2, hud_col3 = st.columns(3)
         with hud_col1:
             st.markdown(f"<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(5,15,20,0.85); box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); direction:rtl;'><h4 style='color:#00fff0; margin:0;'>👤 المتاجر النشطة حياً</h4><h2>{active_count} متجر</h2></div>", unsafe_allow_html=True)
@@ -546,10 +552,8 @@ if is_boss_link:
         with hud_col3:
             estimated_revenue = active_count * 45000
             st.markdown(f"<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(15,10,5,0.85); box-shadow: 0px 0px 20px rgba(255, 170, 0, 0.25); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 صافي التدفقات السنوية الحية</h4><h2>{estimated_revenue:,} DA</h2></div>", unsafe_allow_html=True)
-# ========================================================
-# الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [القسم 2 من 4]
-# ========================================================
-        # 🚨 رادار فحص التراخيص المقتربة من الانتهاء (تنبيه الـ 7 أيام النيوني المطور)
+
+        # 🚨 رادار فحص التراخيص المقتربة من الانتهاء (تنبيه الـ 7 أيام بموثوقية عالية)
         st.markdown("<br>", unsafe_allow_html=True)
         expired_alerts = []
         
@@ -570,14 +574,21 @@ if is_boss_link:
                 except:
                     pass
         
+        # عرض صندوق التنبيهات النيوني المطور باستخدام الحقن المظهري للمؤشرات الدائرية المشعة
         if expired_alerts:
             st.markdown("<div style='border:2px dashed #ff0055; border-radius:12px; padding:20px; background:rgba(20,5,10,0.95); margin-bottom:15px; direction:rtl; text-align:right; box-shadow: 0px 0px 30px rgba(255, 0, 85, 0.15);'>", unsafe_allow_html=True)
             st.markdown("<h4 style='color:#ff0055; margin:0 0 15px 0; font-weight:900;'>🚨 رادار التراخيص المنتهية الصلاحية (خلال 7 أيام):</h4>", unsafe_allow_html=True)
+            
             for alert in expired_alerts:
-                st.markdown(render_neon_license_ring(alert[0], alert[1]), unsafe_allow_html=True)
+                merchant_email = alert[0]
+                days_remain = alert[1]
+                
+                html_ring = render_neon_license_ring(merchant_email, days_remain)
+                st.markdown(html_ring, unsafe_allow_html=True)
+                
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة الفورية]
+        # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة]:
         st.markdown("<br><h3 style='color: #ff00ff; text-align: right; font-weight:900; direction:rtl;'>🔒 خزانة النسخ الاحتياطي التلقائي المشفرة</h3>", unsafe_allow_html=True)
         col_backup, col_empty = st.columns([1, 2])
         with col_backup:
@@ -595,7 +606,7 @@ if is_boss_link:
 
         st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
 # ========================================================
-# الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [القسم 3 من 4]
+# الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 2]
 # ========================================================
         st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
         
@@ -608,7 +619,7 @@ if is_boss_link:
                 current_email = row['email']; current_pass = row['password']; current_status = row['status']; current_package = row['package']
                 status_color = "#00ff66" if "مفعّل" in current_status else "#ffaa00" if "انتظار" in current_status else "#ff0055"
                 
-                # قراءة حالة اللون المخصصة للإطار المحيط ببيانات التاجر من الجلسة
+                # 🧠 [قراءة حالة اللون الديناميكي المخصصة للتاجر من الجلسة أو وضع اللون الافتراضي النيوني]
                 current_border_color = st.session_state.get(f"border_color_{current_email}", "#00fff0")
                 
                 st.markdown(f"""
@@ -618,25 +629,15 @@ if is_boss_link:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # المصفوفة التنفيذية السداسية المتكاملة للأزرار
+                # إنشاء 6 أعمدة تفاعلية مخصصة لاحتواء الزر السادس الجديد للفئات السنوية
                 col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
                 with col_1:
-                    # ⚡ [زر التفعيل والأتمتة البريدية المشتركة الفورية]: تفعيل وقبول حياً
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
-                        
-                        # 📡 [حقن الإرسال السحابي الآلي الفوري للتاجر]:
-                        try:
-                            send_professional_acceptance_email(current_email, current_package)
-                            st.toast("🚀 تم قبول التاجر بنجاح وإرسال بريد الترحيب الفاخر أوتوماتيكياً!", icon="✉️")
-                        except Exception as mail_err:
-                            st.toast(f"⚠️ تم الحفظ بالسيرفر، لكن فشل خادم البريد: {mail_err}", icon="❌")
-                            
-                        time.sleep(0.5); st.rerun()
-                        
+                        st.toast("🎯 تم التفعيل!"); time.sleep(0.5); st.rerun()
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
@@ -648,9 +649,6 @@ if is_boss_link:
                     if st.button("🗑️ تدمير نهائي فوري", key=f"btn_del_{current_email}"):
                         st.session_state[f"border_color_{current_email}"] = "#ff0055"
                         st.session_state[f"ask_confirm_{current_email}"] = True
-# ========================================================
-# الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [القسم 4 من 4]
-# ========================================================
                 with col_4:
                     if st.button("💸 ترقية فئة الباقة", key=f"btn_upg_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
@@ -666,14 +664,15 @@ if is_boss_link:
                         st.session_state[f"border_color_{current_email}"] = "#ff4500"
                         st.toast("🔒 تم مصادرة الصلاحيات عن بعد!"); time.sleep(0.5); st.rerun()
                 with col_6:
+                    # 💎 [الزر السادس المتوهج بالفيروزي]: تعيين فئة الاشتراك السنوي
                     if st.button("🏷️ تعيين فئة الاشتراك", key=f"btn_pkg_select_{current_email}"):
                         st.session_state[f"show_pkg_slide_{current_email}"] = not st.session_state.get(f"show_pkg_slide_{current_email}", False)
                         st.rerun()
                 
-                # 🔄 [ميكانيكية الـ Slide-down البرمجية مع حقن نظام الأتمتة البريدية المشتركة وتغيير التوهج]
+                # 🔄 [ميكانيكية الـ Slide-down البرمجية المخصصة للزر السادس للتحكم بالباقات والتوهج]
                 if st.session_state.get(f"show_pkg_slide_{current_email}", False):
                     st.markdown(f"<div style='border: 1px solid #00fff0; border-radius: 10px; padding: 15px; background: rgba(5,20,30,0.9); margin-top: 10px; direction: rtl; text-align: right;'>", unsafe_allow_html=True)
-                    st.markdown("<p style='color: #00fff0; margin: 0 0 10px 0; font-weight: bold;'>🎯 اختر فئة الاشتراك السنوي للترقية الفورية ولإطلاق إيميل القبول الفخم:</p>", unsafe_allow_html=True)
+                    st.markdown("<p style='color: #00fff0; margin: 0 0 10px 0; font-weight: bold;'>🎯 اختر فئة الاشتراك السنوي المحددة لهذا التاجر للترقية الفورية ولتلوين الإطار:</p>", unsafe_allow_html=True)
                     
                     selected_opt = st.radio(
                         "الباقات المتوفرة:",
@@ -687,7 +686,6 @@ if is_boss_link:
                         conn.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE email = ?", (selected_opt, current_email))
                         conn.commit(); conn.close()
                         
-                        # تلوين الإطار وتحديث متغير الجلسة ديناميكياً
                         if "29k" in selected_opt:
                             st.session_state[f"border_color_{current_email}"] = "#00ff66"
                         elif "45k" in selected_opt:
@@ -695,15 +693,10 @@ if is_boss_link:
                         else:
                             st.session_state[f"border_color_{current_email}"] = "#ff00ff"
                             
-                        # 📡 [إطلاق بريد القبول الفاخر أوتوماتيكياً عند تعيين الفئة للتأكيد الأوتوماتيكي]:
-                        try:
-                            send_professional_acceptance_email(current_email, selected_opt)
-                            st.toast("🚀 تم قبول التاجر بنجاح وإرسال بريد الترحيب الفاخر أوتوماتيكياً!", icon="✉️")
-                        except Exception as mail_err:
-                            st.toast(f"⚠️ تم الحفظ، وفشل خادم البريد: {mail_err}", icon="❌")
-                            
                         st.session_state[f"show_pkg_slide_{current_email}"] = False
+                        st.toast(f"✅ تم تحديث باقة المتجر إلى {selected_opt} وتلوين الكود حياً!")
                         time.sleep(0.5); st.rerun()
+                        
                     st.markdown("</div>", unsafe_allow_html=True)
                 
                 if st.session_state.get(f"ask_confirm_{current_email}", False):
@@ -717,34 +710,55 @@ if is_boss_link:
         else: 
             st.warning("📭 الرادار صافي تماماً، لا توجد طلبات معلقة حالياً.")
 
-# === إضافات وتعديلات جديدة لغرفة المالك ورادار التراخيص ===
+# === الإضافات والتعديلات الجديدة لغرفة المالك ===
 # === إضافة مؤشر التراخيص الدائري المشع للرادار ===
 def render_neon_license_ring(email, days_left):
-    """ توليد مؤشر SVG الدائري المتوهج ديناميكياً لحساب التراخيص """
+    """
+    تقوم بتوليد واجهة HTML/SVG مخصصة تحتوي على حلقة نيوني متغيرة الحجم واللون ديناميكياً
+    تبدأ من الأصفر وتتحول للأحمر الناري كلما اقتربت الأيام من الصفر.
+    """
     clamped_days = max(0, min(7, days_left))
     percentage = clamped_days / 7.0
     total_circumference = 113
     stroke_offset = total_circumference * (1 - percentage)
-    glow_color = "#ffaa00" if clamped_days > 4 else "#ff5500" if clamped_days > 2 else "#ff0055"
     
-    return f"""
+    if clamped_days > 4:
+        glow_color = "#ffaa00"
+    elif clamped_days > 2:
+        glow_color = "#ff5500"
+    else:
+        glow_color = "#ff0055"
+        
+    html_template = f"""
     <div style='display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(5,5,15,0.6); border-radius: 8px; margin-bottom: 8px; border-left: 4px solid {glow_color}; direction: rtl; text-align: right;'>
         <div style='display: flex; align-items: center; gap: 15px;'>
             <svg width="45" height="45" viewBox="0 0 45 45" style="transform: rotate(-90deg); filter: drop-shadow(0px 0px 6px {glow_color});">
                 <circle cx="22.5" cy="22.5" r="18" stroke="rgba(255,255,255,0.1)" stroke-width="3" fill="transparent" />
-                <circle cx="22.5" cy="22.5" r="18" stroke="{glow_color}" stroke-width="3.5" fill="transparent" stroke-dasharray="{total_circumference}" stroke-dashoffset="{stroke_offset}" stroke-linecap="round" />
+                <circle cx="22.5" cy="22.5" r="18" stroke="{glow_color}" stroke-width="3.5" fill="transparent" 
+                        stroke-dasharray="{total_circumference}" stroke-dashoffset="{stroke_offset}" stroke-linecap="round" />
             </svg>
             <span style='color:#ffffff; font-size: 15px;'>⚠️ التاجر: <span style='color: #00fff0;'>{email}</span></span>
         </div>
         <span style='color:{glow_color}; font-weight:bold; font-size: 14px;'>متبقي: {days_left} أيام فقط!</span>
     </div>
     """
+    return html_template
+
+
 
 # ========================================================
 # القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
 # ========================================================
 # ========================================================
 # حقن الدوال الأساسية لمنع خطأ NameError في التطبيق كلياً
+# ========================================================
+import streamlit as st
+import sqlite3
+import urllib.parse
+import time
+
+# ========================================================
+# القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
 # ========================================================
 import streamlit as st
 import sqlite3
@@ -764,8 +778,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     chk_row = cursor_final_auth.fetchone()
     conn_final_auth.close()
     
-    user_actual_status = str(chk_row) if chk_row and chk_row is not None else ""
-    user_package = str(chk_row).strip() if chk_row and len(chk_row) > 1 and chk_row is not None else "29k"
+    user_actual_status = str(chk_row[0]) if chk_row and chk_row[0] is not None else ""
+    user_package = str(chk_row[1]).strip() if chk_row and len(chk_row) > 1 and chk_row[1] is not None else "29k"
     
     if not chk_row or "مفعّل" not in user_actual_status:
         st.warning("🔒 انتهت أو سُحبت تراخيص الحساب السحابي.")
@@ -785,7 +799,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         except (sqlite3.ProgrammingError, sqlite3.OperationalError):
             st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
             
-    # 🚨 جلب متغير الاتصال وتأمينه برمجياً لمنع انهيار السيرفر نهائياً
+    # 🚨 [تأمين معمارية الاتصال]: فتح وجلب متغير الاتصال بقاعدة البيانات لإنهاء خطأ NameError كلياً
     conne = st.session_state.get("merchant_db_conn")
     cursor = conne.cursor()
     
@@ -825,7 +839,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 text = text.replace(haraka, "")
             return text
             
-        # 🚨 [تصحيح المسافات والمحاذاة]: سحب الدالة والمصفوفات لليسار لتصبح محاذية عمودياً مع بقية شروط المساعد وتتحرر من الحشر
         def get_close_match_score(word1, word2):
             w1, w2 = normalize_arabic_text(word1), normalize_arabic_text(word2)
             if not w1 or not w2: return 0.0
@@ -857,9 +870,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         else:
             st.sidebar.markdown("<h3 style='color: #00fff0; text-align: center; margin-bottom: 0;'>🤖 المساعد التجاري الذكي</h3>", unsafe_allow_html=True)
             
-            # 🚨 [تفعيل معالج العداد الديناميكي]: تهيئة العداد بداخل ذاكرة الجلسة
-            if "chat_counter" not in st.session_state:
-                st.session_state["chat_counter"] = 0
+            # منع التضارب وتأمين الهيكل الخارجي المستقر (The Frozen Frame) بلون افتراضي خافت
             if "merchant_chat_reply" not in st.session_state:
                 st.session_state["merchant_chat_reply"] = "مرحباً بك! أنا مساعدك التجاري الذكي لمساعدتك في إدارة متجرك."
             if "intent_frame_color" not in st.session_state:
@@ -869,7 +880,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 
             merchant_query = st.sidebar.text_input("💡 اسأل عن أي فكرة، نصيحة، أو مشكلة في متجرك:", key="merchant_ai_query_in", placeholder="مثال: عندي مشكل في الشحن")
             
-            # صب وترقية كلمات التاجر العامية المقربة ("سحن"، "توسيل" ↔️ شحن) و ("سبون" ↔️ زبون) و ("منتح" ↔️ منتج)
+            # صب وترقية القاموس الجزائري ومسامحة مدخلات التاجر ("سحن"، "توسيل" ↔️ شحن) و ("سبون" ↔️ زبون) و ("منتح" ↔️ منتج)
             merchant_intents = {
                 "shipping": ["شحن", "توصيل", "ولاية", "ليفريرون", "ليفرور", "رتور", "ولايات", "جنوب", "سحن", "توسيل"],
                 "customers": ["زبون", "زبائن", "كليون", "لكليون", "تعامل", "اتصال", "تثبيت", "كونفيرمي", "سبون"],
@@ -879,19 +890,15 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             
             if st.sidebar.button("🧠 استشارة العقل التجاري", key="submit_merchant_query_btn"):
                 if merchant_query:
-                    # 🔄 ميكانيكية التصفير الحركي الفوري لإلغاء أي بقايا بصرية
+                    # 🔄 ميكانيكية التصفير الحركي الفوري (Smooth Reset Mode): مسح الرد القديم لإجبار التولد من العدم كلياً
                     st.session_state["merchant_chat_reply"] = ""
                     
-                    # 🚨 [الأمر العام الثابت]: رفع العداد فوراً هنا لجميع الحالات (مفهومة أو خربشة) لإجبار المتصفح على تدمير الـ DOM القديم
-                    st.session_state["chat_counter"] += 1
-                    
-                    # جدار حظر الخربشة العشوائية المستمر للحروف الميتة (مثل: مي اونيبثب)
+                    # 🛡️ جدار حظر الخربشة العشوائية المستمر للحروف الميتة (مثل: مي اونيبثب)
                     clean_input = normalize_arabic_text(merchant_query)
-
                     if "مي اونيبثب" in clean_input or len(clean_input.strip()) < 3 or clean_input.isdigit():
-                        st.session_state["intent_frame_color"] = "#ff0055"
+                        st.session_state["intent_frame_color"] = "#ff0055"  # الأحمر النبضي للخربشة
                         st.session_state["hologram_tag"] = "⚠️ إدخال عشوائي"
-                        st.session_state["merchant_chat_reply"] = "🚨 **جدار حظر الخربشة:** تم حظر المعالجة! المدخلات تحتوي على حروف ميتة عشوائية لا تحمل أي معنى تجاري."
+                        st.session_state["merchant_chat_reply"] = "🚨 **جدار حظر الخربشة:** تم حظر المعالجة! المدخل يحتوي على خربشة حروف ميتة عشوائية ليس لها أي معنى تجاري."
                         st.rerun()
                         
                     input_words = clean_input.split()
@@ -907,47 +914,41 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                                     highest_score = score
                                     detected_intent = intent
                                     
-                    # شحن الهوية اللونية والشارات بناءً على النوايا المكتشفة حياً
-                    # تعيين الهوية اللونية والشارات بناءً على النوايا المكتشفة حياً لجميع الحالات
+                    # 🎨 تفجير وتعيين الألوان التلقائية والشارات الهولوجرامية بحسب النية المكتشفة حياً
                     if detected_intent == "shipping":
-                        st.session_state["intent_frame_color"] = "#00fff0"  # السيان للشحن
+                        st.session_state["intent_frame_color"] = "#00fff0"  # الأزرق الفيروزي للشحن
                         st.session_state["hologram_tag"] = "🎯 رادار الشحن"
                     elif detected_intent == "customers":
-                        st.session_state["intent_frame_color"] = "#ff4500"  # البرتقالي للتثبيت
+                        st.session_state["intent_frame_color"] = "#ff4500"  # البرتقالي الناري للتثبيت
                         st.session_state["hologram_tag"] = "📞 تثبيت الطلبيات"
                     elif detected_intent == "stock":
-                        st.session_state["intent_frame_color"] = "#ff00ff"  # البنفسجي للستوك
+                        st.session_state["intent_frame_color"] = "#ff00ff"  # البنفسجي للستوك والمستودع
                     elif detected_intent == "marketing":
-                        st.session_state["intent_frame_color"] = "#ffaa00"  # الذهبي للتسويق
+                        st.session_state["intent_frame_color"] = "#ffaa00"  # الذهبي للتسويق والـ Ads
                         st.session_state["hologram_tag"] = "🚀 التخطيط التسويقي"
                     else:
-                        st.session_state["intent_frame_color"] = "#ff0055"  # الأحمر للتحذيرات والمجهول
-                        st.session_state["hologram_tag"] = "⚠️ إدخال غير مفهوم"
-
+                        st.session_state["intent_frame_color"] = "#ff0055"
+                        st.session_state["hologram_tag"] = "⚠️ إدخال مجهول"
                         
-                    # تصفية قيود الباقات والتدرج الذكي للمستأجرين
+                    # تطبيق شروط حجب ميزات الأدوات والتدرج الذكي للباقات
                     if user_package == "29k" and detected_intent in ["shipping", "marketing"]:
                         st.session_state["merchant_chat_reply"] = "🔒 **المساعد:** ميزات الذكاء الاصطناعي المتقدمة مقفلة في باقتك الحالية (الأساسية)! قم بالترقية الآن لتفعيل العقل التسويقي وحلول الشحن الذكية."
                     elif user_package == "45k" and detected_intent == "marketing":
                         st.session_state["merchant_chat_reply"] = "🔒 **المساعد:** نصائح التسويق الذكي وإعلانات الفيسبوك المتقدمة تتطلب الباقة السيبرانية الأعلى. يرجى الترقية لتفعيلها."
                     else:
                         if detected_intent == "shipping":
-                            st.session_state["merchant_chat_reply"] = "📌 **رادار ممر الشحن:** ركز حملاتك الإعلانية على ولايات الوسط والشرق لضمان سرعة التوصيل وزيادة نسبة استلام الطرود وتقليص المرتجعات الحاصلة."
+                            st.session_state["merchant_chat_reply"] = "📌 **رادار الشحن:** ركز حملاتك على ولايات الوسط والشرق لضمان سرعة التوصيل وزيادة نسبة استلام الطرود (Livraison) وتفادي المرتجعات."
                         elif detected_intent == "customers":
-                            st.session_state["merchant_chat_reply"] = "📞 **ميكانيكية تأكيد الطلب:** اتصل بالزبون فوراً لتأكيد الشراء، واستخدم لهجة محترمة شاملة سعر الشحن لتفادي الرفض الفجائي لطلبياتك."
+                            st.session_state["merchant_chat_reply"] = "📞 **إستراتيجية التثبيت:** اتصل بالزبون فوراً لتأكيد الشراء (Confirmation)، واستخدم لهجة محترمة شاملة سعر الشحن لتفادي الرفض."
                         elif detected_intent == "stock":
-                            st.session_state["merchant_chat_reply"] = "📦 **حماية المخزون السلعي:** إذا انخفضت كمية أي منتج لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية المستودع وضخ السيولة."
+                            st.session_state["merchant_chat_reply"] = "📦 **مراقبة المخزون:** إذا انخفضت كمية أي منتج لأقل من 5 قطع، أطلق فوراً 'عرض القطعة الأخيرة' بتخفيض 10% لتصفية الستوك وضخ السيولة."
                         elif detected_intent == "marketing" and user_package == "65k":
-                            st.session_state["merchant_chat_reply"] = "🚀 **السيبرانية التسويقية:** للتحجيم الناجح، أطلق إعلانات CBO باستهداف عريض في الجزائر، واستخدم الهاشتاغات الحالية لتيك توك مع ميزانية فحص 10$ يومياً للتحويل حياً."
+                            st.session_state["merchant_chat_reply"] = "🚀 **العقل التسويقي الذكي:** للتحجيم الناجح، أطلق إعلانات CBO باستهداف عريض (Broad) في الجزائر، واستخدم فلاتر الهاشتاغات الحالية لتيك توك مع ميزانية فحص 10$ يومياً."
                         else:
                             st.sidebar.toast("🔍 جاري البحث في قاعدة المعرفة المتاحة...")
                             st.session_state["merchant_chat_reply"] = "⚠️ **إدخال غير مفهوم:** لم أتمكن من تحديد مرادك بدقة! يرجى كتابة سؤال واضح أو الاستعانة بدليل المواضيع في الأسفل."
                     st.rerun()
-            # 🚨 [ربط العداد بكلاس الـ HTML]: دمج العداد المتغير داخل المعرّف (cyber-dynamic-box) لتوليد الثلاثية الحركية معاً بمرونة كاملة كالتحذيرات
-            # 🎬 [تفعيل ميكانيكية التعميم الشامل لمولد المفاتيح الديناميكي لجميع النوايا وحالات الرد]
-            # دمج الكلاس الفريد بالعداد والنية يجبر المتصفح على تدمير الصندوق القديم وإعادة إطلاق الثلاثية الحركية في نفس اللحظة
-            box_id = f"cyber-dynamic-box-{st.session_state['chat_counter']}"
-            
+            # 🎬 [حقن الترقية السينمائية الثلاثية الموحدة مع استقرار الهيكل الخارجي]
             st.sidebar.markdown(f"""
                 <style>
                 @keyframes laserLoad {{
@@ -957,27 +958,26 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 }}
                 @keyframes neonGlow {{
                     0% {{ opacity: 0.8; text-shadow: 0 0 3px {st.session_state["intent_frame_color"]}; }}
-                    50% {{ opacity: 1; text-shadow: 0 0 8px {st.session_state["intent_frame_color"]}, 0 0 11px {st.session_state["intent_frame_color"]}; }}
+                    50% {{ opacity: 1; text-shadow: 0 0 9px {st.session_state["intent_frame_color"]}, 0 0 12px {st.session_state["intent_frame_color"]}; }}
                     100% {{ opacity: 0.8; text-shadow: 0 0 3px {st.session_state["intent_frame_color"]}; }}
                 }}
                 @keyframes elasticPop {{
-                    0% {{ transform: translateY(12px) scale(0.95); opacity: 0; }}
-                    60% {{ transform: translateY(-2px) scale(1.01); opacity: 0.95; }}
+                    0% {{ transform: translateY(14px) scale(0.94); opacity: 0; }}
+                    65% {{ transform: translateY(-3px) scale(1.01); opacity: 0.96; }}
                     100% {{ transform: translateY(0) scale(1); opacity: 1; }}
                 }}
-                /* هيكل الصندوق الخارجي المستقر والثابت هندسياً لمنع التفجر والقفز البصري للواجهة الجانبية */
-                .{box_id} {{
+                /* 1. قاعدة استقرار الصندوق الخارجي (The Frozen Frame) بلون فيروزي خافت هادئ لمنع القفز والاهتزاز */
+                .frozen-frame-box {{
                     position: relative;
-                    border: 1px solid rgba(0, 255, 240, 0.15);
+                    border: 1px solid rgba(0, 255, 240, 0.14);
                     border-radius: 12px;
                     padding: 16px;
                     background: rgba(5, 15, 20, 0.90);
                     margin-top: 15px;
                     overflow: hidden;
-                    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
                 }}
-                /* الميزة 1: الخط الليزري العلوي النحيف جداً المتولد من اليسار لليمين */
-                .{box_id} .laser-top-line {{
+                /* 2. الميزة 1: الخط الليزري العلوي النحيف جداً المتولد من اليسار لليمين */
+                .laser-top-line {{
                     position: absolute;
                     top: 0;
                     left: 0;
@@ -986,8 +986,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     box-shadow: 0 0 10px {st.session_state["intent_frame_color"]}, 0 0 3px {st.session_state["intent_frame_color"]};
                     animation: laserLoad 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
                 }}
-                /* الميزة 2: شارات الهولوجرام العائمة العالية التوهج */
-                .{box_id} .hologram-floating-tag {{
+                /* 3. الميزة 2: شارات الهولوجرام العائمة المضيئة فوق نص الإجابة مباشرة */
+                .hologram-floating-tag {{
                     display: inline-block;
                     font-size: 11px;
                     font-weight: bold;
@@ -997,11 +997,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     border-radius: 4px;
                     padding: 2px 8px;
                     margin-bottom: 12px;
-                    animation: neonGlow 2s ease-in-out infinite, elasticPop 0.4s ease-out forwards;
+                    animation: neonGlow 2s ease-in-out infinite, elasticPop 0.42s ease-out forwards;
                     box-shadow: 0 0 6px {st.session_state["intent_frame_color"]}40;
                 }}
-                /* الميزة 3: الحبر الضوئي للعناوين الداخلية لتبثق الكلمات صعوداً وتلوين الكلمات المفتاحية صريحاً */
-                .{box_id} .optical-ink-body {{
+                /* 4. الميزة 3: انسياب الحبر الضوئي للعناوين الداخلية لتبثق الكلمات صعوداً وتلوين العناوين الرئيسية */
+                .optical-ink-body {{
                     color: #e2e8f0;
                     font-size: 13.5px;
                     direction: rtl;
@@ -1010,21 +1010,18 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     line-height: 1.6;
                     animation: elasticPop 0.55s cubic-bezier(0.25, 1, 0.5, 1) forwards;
                 }}
-                .{box_id} .optical-ink-body strong {{
+                .optical-ink-body strong {{
                     color: {st.session_state["intent_frame_color"]};
                     text-shadow: 0 0 4px {st.session_state["intent_frame_color"]}60;
                     font-weight: bold;
                 }}
                 </style>
-
-                <div class="{box_id}">
+                <div class="frozen-frame-box">
                     <div class="laser-top-line"></div>
                     <div class="hologram-floating-tag">{st.session_state["hologram_tag"]}</div>
                     <p class="optical-ink-body">{st.session_state["merchant_chat_reply"]}</p>
                 </div>
             """, unsafe_allow_html=True)
-            
-  
             
             st.sidebar.markdown("""
             <div style="margin-top: 15px; padding: 10px; background: rgba(255,170,0,0.05); border: 1px dashed #ffaa00; border-radius: 10px; text-align: right; direction: rtl;">
@@ -1041,8 +1038,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         st.toast("تم الخروج الآمن وتأمين المستودع كلياً!")
         time.sleep(0.5)
         st.rerun()
-
-
 
 # 🚨 [الخط الأحمر الهندسي المقفل]: سطر استدعاء الدالة مفرّد وحرّ في أقصى جهة اليسار (0 مسافات بادئة) ليتصل بالشروط الكبرى دون اختفاء
     render_sidebar_helper()
