@@ -6,7 +6,7 @@ def send_otp_email(target_email, generated_otp):
     باستخدام بروتوكول HTTP Basic Auth لتخطي جدران حظر الدومين كلياً
     وجعل الأكواد تطير لأي تاجر عشوائي في الجزائر فوراً.
     """
-    url = "https://mailjet.com"
+    url = "https://api.mailjet.com/v3.1/send"
     
     # مفاتيح الربط الحرة لـ Mailjet المأخوذة حياً من شاشتك
     api_key = "cab2a932ad6ae9beffc913732beed7bf"
