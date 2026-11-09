@@ -1,26 +1,37 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
+import json
 
 def send_otp_email(target_email, generated_otp):
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 465
-    server_user = "boussalemyasser47@gmail.com"
-    server_pass = "cfcq hctz ehjw eazg"
+    """
+    إرسال رمز التحقق السري حياً عبر سيرفر Resend العالمي 
+    باستخدام مفتاح الـ API الجديد وتخطي جدران حظر جوجل بالكامل.
+    """
+    url = "https://resend.com"
     
-    msg = MIMEMultipart()
-    msg["Subject"] = f"🔒 رمز التحقق السري الخاص بك: {generated_otp}"
-    msg["From"] = server_user
-    msg["To"] = target_email
+    headers = {
+        "Authorization": "Bearer re_SYfDR44y_9LFmhnXNHTH7aksjCAgN8XAU",
+        "Content-Type": "application/json"
+    }
     
-    body = f"رمز التوثيق السري الخاص بإنشاء متجرك هو: {generated_otp}\nيرجى إدخاله لإتمام التسجيل."
-    msg.attach(MIMEText(body, "plain"))
+    payload = {
+        "from": "NEXUS CENTRAL GATE <onboarding@resend.dev>",
+        "to": target_email,
+        "subject": f"🔒 رمز التحقق السري الخاص بك: {generated_otp}",
+        "html": f"""
+        <div style="direction: rtl; text-align: right; font-family: sans-serif; padding: 20px;">
+            <h2>مرحباً بك في منصة NEXUS CENTRAL GATE v4</h2>
+            <p>رمز التوثيق السري الخاص بإنشاء متجرك الإلكتروني هو:</p>
+            <h1 style="color: #00fff0; letter-spacing: 2px;">{generated_otp}</h1>
+            <p>يرجى إدخاله في الخانة المنبثقة حياً بالموقع لإتمام التسجيل الآمن.</p>
+        </div>
+        """
+    }
     
     try:
-        server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=10)
-        server.login(server_user, server_pass)
-        server.sendmail(server_user, target_email, msg.as_string())
-        server.quit()
-        return True
+        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=10)
+        if response.status_code in:
+            return True
+        return False
     except Exception:
         return False
+
