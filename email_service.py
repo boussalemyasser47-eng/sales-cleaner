@@ -29,7 +29,8 @@ def send_otp_email(target_email, generated_otp):
     
     try:
         response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=10)
-        if response.status_code in:
+        # سطر فحص النجاح المباشر والنقي لحل خطأ الـ SyntaxError نهائياً
+        if response.status_code == 200 or response.status_code == 201:
             return True
         return False
     except Exception:
