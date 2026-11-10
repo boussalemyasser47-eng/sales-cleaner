@@ -623,13 +623,166 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
 # ========================================================
+import streamlit as st
+import sqlite3
+import pandas as pd
+import math
+import time
+from datetime import datetime
+
+# ========================================================
+# 🛠️ الدوال المستقلة لتحديثات لوحة التحكم (KPIs, البحث, الصفحات)
+# ========================================================
+
+def calculate_actual_revenue(df_users):
+    """
+    حساب الإيرادات السنوية الفعلية بناءً على فئة باقة كل تاجر نشط:
+    - الباقة الأساسية: 29,000 DA
+    - الباقة الاحترافية: 45,000 DA
+    - الباقة السيبرانية: 65,000 DA
+    """
+    if df_users.empty or 'package' not in df_users.columns:
+        return 0
+    
+    total_rev = 0
+    for _, row in df_users.iterrows():
+        # نتحقق من التاجر إذا كان حسابه مفعّلاً ونشطاً
+        status_str = str(row.get('status', ''))
+        if 'مفعّل' in status_str:
+            pkg = str(row.get('package', ''))
+            if '29k' in pkg or 'الأساسية' in pkg:
+                total_rev += 29000
+            elif '65k' in pkg or 'السيبرانية' in pkg:
+                total_rev += 65000
+            else:
+                # الباقة الاحترافية أو الافتراضي عند التفعيل
+                total_rev += 45000
+    return total_rev
+
+def render_boss_kpis_and_filters(df_users):
+    """
+    1. عرض 3 بطاقات إحصائية أنيقة في أعلى اللوحة.
+    2. إتاحة شريط البحث وقائمة التصفية وإعادة البيانات المفلترة.
+    """
+    st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📊 لوحة العدادات المالية والمؤشرات الحية (The Boss Revenue HUD)</h2>", unsafe_allow_html=True)
+    
+    # حساب الأرقام الإحصائية
+    total_active = len(df_users[df_users['status'].str.contains('مفعّل', na=False)]) if not df_users.empty and 'status' in df_users.columns else 0
+    total_banned = len(df_users[df_users['status'].str.contains('قفل|مصادرة|محظور', na=False)]) if not df_users.empty and 'status' in df_users.columns else 0
+    total_trial = len(df_users[df_users['status'].str.contains('انتظار|معلّق|مهلة|تجربة', na=False)]) if not df_users.empty and 'status' in df_users.columns else 0
+    
+    actual_revenue = calculate_actual_revenue(df_users)
+    
+    # 💳 عرض البطاقات الإحصائية الثلاث الأنيقة
+    hud_col1, hud_col2, hud_col3 = st.columns(3)
+    with hud_col1:
+        st.markdown(f"<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(5,15,20,0.85); box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); direction:rtl;'><h4 style='color:#00fff0; margin:0;'>👤 التجار (النشطون / المحظورون)</h4><h2>{total_active} نشط | {total_banned} محظور</h2></div>", unsafe_allow_html=True)
+    with hud_col2:
+        st.markdown(f"<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(15,10,5,0.85); box-shadow: 0px 0px 20px rgba(255, 170, 0, 0.25); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 الإيرادات السنوية الفعلية</h4><h2>{actual_revenue:,} DA</h2></div>", unsafe_allow_html=True)
+    with hud_col3:
+        st.markdown(f"<div style='border:2px solid #ff00ff; border-radius:15px; padding:20px; text-align:center; background:rgba(20,5,20,0.85); box-shadow: 0px 0px 20px rgba(255, 0, 255, 0.25); direction:rtl;'><h4 style='color:#ff00ff; margin:0;'>🧪 الحسابات التجريبية والانتظار</h4><h2>{total_trial} حساب</h2></div>", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # 🔍 شريط البحث والتصفية فوق البطاقات
+    filter_col1, filter_col2 = st.columns([2, 1])
+    with filter_col1:
+        search_query = st.text_input("🔍 البحث بالبريد الإلكتروني:", placeholder="اكتب بريد التاجر للبحث السريع...", key="boss_search_input").strip().lower()
+    with filter_col2:
+        status_filter = st.selectbox("📌 تصفية حسب حالة الحساب:", ["الكل", "مفعّل", "في انتظار التفعيل", "محظور"], key="boss_status_filter")
+
+    # تطبيق الفلترة والتصفية
+    filtered_df = df_users.copy()
+    if not filtered_df.empty:
+        if search_query:
+            filtered_df = filtered_df[filtered_df['email'].str.lower().str.contains(search_query, na=False)]
+        
+        if status_filter == "مفعّل":
+            filtered_df = filtered_df[filtered_df['status'].str.contains('مفعّل', na=False)]
+        elif status_filter == "في انتظار التفعيل":
+            filtered_df = filtered_df[filtered_df['status'].str.contains('انتظار|معلّق|مهلة', na=False)]
+        elif status_filter == "محظور":
+            filtered_df = filtered_df[filtered_df['status'].str.contains('قفل|مصادرة|محظور', na=False)]
+
+    return filtered_df
+
+def paginate_dataframe(filtered_df, page_size=10):
+    """
+    تقسيم عرض بطاقات التجار إلى صفحات (10 تجار كحد أقصى في كل صفحة) مع أزرار التنقل.
+    """
+    if filtered_df.empty:
+        return filtered_df, 1, 1
+    
+    total_items = len(filtered_df)
+    total_pages = math.ceil(total_items / page_size)
+    
+    if "boss_current_page" not in st.session_state:
+        st.session_state["boss_current_page"] = 1
+        
+    if st.session_state["boss_current_page"] > total_pages:
+        st.session_state["boss_current_page"] = max(1, total_pages)
+        
+    current_page = st.session_state["boss_current_page"]
+    
+    # 📄 أزرار وشريط التنقل بين الصفحات
+    if total_pages > 1:
+        p_col1, p_col2, p_col3 = st.columns([1, 2, 1])
+        with p_col1:
+            if st.button("⬅️ الصفحة السابقة", key="prev_page_btn") and current_page > 1:
+                st.session_state["boss_current_page"] -= 1
+                st.rerun()
+        with p_col2:
+            st.markdown(f"<p style='text-align: center; color: #00fff0; font-weight: bold; margin-top: 5px;'>الصفحة {current_page} من {total_pages} (إجمالي النتائج: {total_items})</p>", unsafe_allow_html=True)
+        with p_col3:
+            if st.button("الصفحة التالية ➡️", key="next_page_btn") and current_page < total_pages:
+                st.session_state["boss_current_page"] += 1
+                st.rerun()
+                
+    start_idx = (current_page - 1) * page_size
+    end_idx = start_idx + page_size
+    return filtered_df.iloc[start_idx:end_idx], current_page, total_pages
+
+def render_neon_license_ring(email, days_left):
+    """
+    توليد حلقة نيوني متغيرة الحجم واللون رادارياً لتراخيص 7 أيام.
+    """
+    clamped_days = max(0, min(7, days_left))
+    percentage = clamped_days / 7.0
+    total_circumference = 113
+    stroke_offset = total_circumference * (1 - percentage)
+    
+    if clamped_days > 4:
+        glow_color = "#ffaa00"
+    elif clamped_days > 2:
+        glow_color = "#ff5500"
+    else:
+        glow_color = "#ff0055"
+        
+    html_template = f"""
+    <div style='display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(5,5,15,0.6); border-radius: 8px; margin-bottom: 8px; border-left: 4px solid {glow_color}; direction: rtl; text-align: right;'>
+        <div style='display: flex; align-items: center; gap: 15px;'>
+            <svg width="45" height="45" viewBox="0 0 45 45" style="transform: rotate(-90deg); filter: drop-shadow(0px 0px 6px {glow_color});">
+                <circle cx="22.5" cy="22.5" r="18" stroke="rgba(255,255,255,0.1)" stroke-width="3" fill="transparent" />
+                <circle cx="22.5" cy="22.5" r="18" stroke="{glow_color}" stroke-width="3.5" fill="transparent" 
+                        stroke-dasharray="{total_circumference}" stroke-dashoffset="{stroke_offset}" stroke-linecap="round" />
+            </svg>
+            <span style='color:#ffffff; font-size: 15px;'>⚠️ التاجر: <span style='color: #00fff0;'>{email}</span></span>
+        </div>
+        <span style='color:{glow_color}; font-weight:bold; font-size: 14px;'>متبقي: {days_left} أيام فقط!</span>
+    </div>
+    """
+    return html_template
+
+# ========================================================
+# 👑 الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py)
+# ========================================================
 if is_boss_link:
     # تأمين وحقن الهوية علوياً لمنع خطأ NameError
     ADMIN_USERNAME = "admin_master_v4"
     ADMIN_PASSWORD = "SaasPassword2026"
-
+    
     # 🔒 [المستوى الأول]: إذا لم يسجل المالك دخوله، تظهر لوحة الحماية فقط وتُحجب العدادات كلياً
-    if not st.session_state["admin_master_logged"]:
+    if not st.session_state.get("admin_master_logged", False):
         st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown("<div class='centered-box-container' style='max-width: 500px; margin: 60px auto 20px auto; padding: 40px; background: rgba(5, 5, 15, 0.95); border: 2px solid #00fff0; border-radius: 20px; box-shadow: 0px 0px 40px rgba(0, 255, 240, 0.35); direction: rtl; text-align: right; backdrop-filter: blur(15px);'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color: #ff00ff; text-align: center; font-weight: 900; margin-top: 0;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h2>", unsafe_allow_html=True)
@@ -653,37 +806,18 @@ if is_boss_link:
     # 👑 [المستوى الثاني مقفل ومحمي]: تنبثق العدادات والرادار هنا حصرياً وفقط بعد نجاح تسجيل الدخول
     else:
         st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900; text-shadow: 0 0 25px #00fff0;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
-
-        # ========================================================
-        # 📊 [الميزة 2]: لوحة العدادات المالية الموحدة للمالك ورادار تنبيه الـ 7 أيام (نسخة الحماية القصوى)
-        # ========================================================
-        st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📊 لوحة العدادات المالية الموحدة (The Boss Revenue HUD)</h2>", unsafe_allow_html=True)
         
-        # فتح اتصال سريع وآمن مع قاعدة البيانات لجلب كافة البيانات المتوفرة بأمان
+        # 1️⃣ قراءة بيانات قاعدة البيانات بالكامل
         conn_hud = sqlite3.connect("saas_security_vault.db", timeout=10)
         try:
             total_merchants_query = pd.read_sql("SELECT * FROM saas_users_auth", conn_hud)
-        except:
-            total_merchants_query = pd.DataFrame(columns=['email', 'status'])
+        except Exception:
+            total_merchants_query = pd.DataFrame(columns=['email', 'password', 'status', 'package'])
         conn_hud.close()
         
-        # التحقق من وجود الأعمدة وحساب العدادات بأمان سيبراني كامل منعاً للـ OperationalError
-        active_count = 0
-        pending_count = 0
-        if not total_merchants_query.empty and 'status' in total_merchants_query.columns:
-            active_count = len(total_merchants_query[total_merchants_query['status'].str.contains('مفعّل', na=False)])
-            pending_count = len(total_merchants_query[total_merchants_query['status'].str.contains('معلّق', na=False)])
-
-        # عرض العدادات الحية المتغيرة تلقائياً بناءً على التجار المسجلين في سيرفرك
-        hud_col1, hud_col2, hud_col3 = st.columns(3)
-        with hud_col1:
-            st.markdown(f"<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(5,15,20,0.85); box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); direction:rtl;'><h4 style='color:#00fff0; margin:0;'>👤 المتاجر النشطة حياً</h4><h2>{active_count} متجر</h2></div>", unsafe_allow_html=True)
-        with hud_col2:
-            st.markdown(f"<div style='border:2px solid #ff0055; border-radius:15px; padding:20px; text-align:center; background:rgba(20,5,10,0.85); box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.25); direction:rtl;'><h4 style='color:#ff0055; margin:0;'>⏳ طلبات معلقة بالتفريغ</h4><h2>{pending_count} طلب</h2></div>", unsafe_allow_html=True)
-        with hud_col3:
-            estimated_revenue = active_count * 45000
-            st.markdown(f"<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(15,10,5,0.85); box-shadow: 0px 0px 20px rgba(255, 170, 0, 0.25); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 صافي التدفقات السنوية الحية</h4><h2>{estimated_revenue:,} DA</h2></div>", unsafe_allow_html=True)
-
+        # 2️⃣ تشغيل دالة لوحة المؤشرات الحية المحدثة وشريط البحث والتصفية
+        filtered_merchants_df = render_boss_kpis_and_filters(total_merchants_query)
+        
         # 🚨 رادار فحص التراخيص المقتربة من الانتهاء (تنبيه الـ 7 أيام بموثوقية عالية)
         st.markdown("<br>", unsafe_allow_html=True)
         expired_alerts = []
@@ -702,7 +836,7 @@ if is_boss_link:
                     days_left = 365 - days_passed
                     if 0 <= days_left <= 7 and row['status'] == 'مفعّل':
                         expired_alerts.append((row['email'], days_left))
-                except:
+                except Exception:
                     pass
         
         # عرض صندوق التنبيهات النيوني المطور باستخدام الحقن المظهري للمؤشرات الدائرية المشعة
@@ -734,21 +868,18 @@ if is_boss_link:
                 )
             except Exception as e:
                 st.error(f"⚠️ فشل توليد الخزنة الاحتياطية: {e}")
-
         st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
-# ========================================================
-# الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 2]
-# ========================================================
+
+        # 3️⃣ رادار مسح طلبات التسجيل وتقسيم الصفحات
         st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
         
-        conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
-        df_users = pd.read_sql_query("SELECT email, password, status, package FROM saas_users_auth", conn_view)
-        conn_view.close()
+        # تطبيق التقسيم الصفحي (10 تجار لكل صفحة) على البيانات المفلترة
+        paginated_merchants, current_p, total_p = paginate_dataframe(filtered_merchants_df, page_size=10)
         
-        if not df_users.empty:
-            for index, row in df_users.iterrows():
+        if not paginated_merchants.empty:
+            for index, row in paginated_merchants.iterrows():
                 current_email = row['email']; current_pass = row['password']; current_status = row['status']; current_package = row['package']
-                status_color = "#00ff66" if "مفعّل" in current_status else "#ffaa00" if "انتظار" in current_status else "#ff0055"
+                status_color = "#00ff66" if "مفعّل" in str(current_status) else "#ffaa00" if "انتظار" in str(current_status) else "#ff0055"
                 
                 # 🧠 [قراءة حالة اللون الديناميكي المخصصة للتاجر من الجلسة أو وضع اللون الافتراضي النيوني]
                 current_border_color = st.session_state.get(f"border_color_{current_email}", "#00fff0")
@@ -760,7 +891,7 @@ if is_boss_link:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # إنشاء 6 أعمدة تفاعلية مخصصة لاحتواء الزر السادس الجديد للفئات السنوية
+                # إنشاء 6 أعمدة تفاعلية مخصصة للأزرار الستة دون أي تغيير على وظائفها
                 col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
@@ -775,7 +906,6 @@ if is_boss_link:
                         
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
                         st.toast("🎯 تم التفعيل وإرسال البريد!"); time.sleep(0.5); st.rerun()
-
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
@@ -789,13 +919,11 @@ if is_boss_link:
                         
                         st.session_state[f"border_color_{current_email}"] = "#ffaa00"
                         st.toast("⏳ تم تمديد المهلة وإرسال البريد!"); time.sleep(0.5); st.rerun()
-
                 with col_3:
                     if st.button("🗑️ تدمير نهائي فوري", key=f"btn_del_{current_email}"):
                         st.session_state[f"border_color_{current_email}"] = "#ff0055"
                         st.session_state[f"ask_confirm_{current_email}"] = True
                         st.rerun()
-
                 with col_4:
                     if st.button("💸 ترقية فئة الباقة", key=f"btn_upg_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
@@ -809,7 +937,6 @@ if is_boss_link:
                         
                         st.session_state[f"border_color_{current_email}"] = "#ff00ff"
                         st.toast("🚀 تم ترقية الباقة وإرسال البريد!"); time.sleep(0.5); st.rerun()
-
                 with col_5:
                     if st.button("🔒 حظر وقفل الحساب", key=f"btn_lck_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
@@ -823,7 +950,6 @@ if is_boss_link:
                         
                         st.session_state[f"border_color_{current_email}"] = "#ff4500"
                         st.toast("🔒 تم مصادرة الصلاحيات وإرسال البريد!"); time.sleep(0.5); st.rerun()
-
                 with col_6:
                     # 💎 [الزر السادس المتوهج بالفيروزي]: تعيين فئة الاشتراك السنوي
                     if st.button("🏷️ تعيين فئة الاشتراك", key=f"btn_pkg_select_{current_email}"):
@@ -865,8 +991,7 @@ if is_boss_link:
                         
                     st.markdown("</div>", unsafe_allow_html=True)
                 
-                # تأكيد الحذف الفوري المستقل لكل تاجر على حدة (لا يظهر إلا عند النقر حصراً)
-# نافذة التأكيد الخاصة بالحذف (مخفية ولا تظهر إلا عند الضغط حصراً)
+                # نافذة التأكيد الخاصة بالحذف الفوري
                 if st.session_state.get(f"ask_confirm_{current_email}", False):
                     st.warning(f"⚠️ تنبيه: هل أنت متأكد من الحذف النهائي للتاجر ({current_email})؟")
                     col_yes, col_no = st.columns(2)
@@ -886,11 +1011,9 @@ if is_boss_link:
                         if st.button("❌ تراجع", key=f"final_no_{current_email}"):
                             st.session_state[f"ask_confirm_{current_email}"] = False
                             st.rerun()
-            
-            # 🛑 تم حذف زر المغادرة من هنا لئلا يتكرر مع كل تاجر!
 
         else: 
-            st.warning("📭 الرادار صافي تماماً، لا توجد طلبات معلقة حالياً.")
+            st.warning("📭 الرادار صافي تماماً، لا توجد حسابات أو نتائج مطابقة للتصفية حالياً.")
 
     # ✅ وضع زر المغادرة هنا مرة واحدة فقط في أسفل اللوحة بالكامل خارج حلقة التجار
     st.markdown("<br><hr>", unsafe_allow_html=True)
