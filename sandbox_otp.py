@@ -756,7 +756,7 @@ if is_boss_link:
                         st.session_state[f"show_pkg_slide_{current_email}"] = not current_state
                         st.rerun()
 
-            # البرمجية المخصصة للزر السادس للتحكم بالباقات والتوهج ميكانيكية الـ Slide-down
+            # البرمجية المخصصة للزر السادس للتحكم بالباقات وتوهج ميكانيكية الـ Slide-down
             if st.session_state.get(f"show_pkg_slide_{current_email}", False):
                 st.markdown(f"<div style='border: 1px solid #00fff0; border-radius: 10px; padding: 15px; background: rgba(5,20,30,0.9); margin-top: 10px;'>", unsafe_allow_html=True)
                 st.markdown(f"<p style='color: #00fff0; margin: 0 0 10px 0; font-weight: bold;'>🎯 اختر الباقة الجديدة للتاجر:</p>", unsafe_allow_html=True)
@@ -792,17 +792,20 @@ if is_boss_link:
                     st.rerun()
                     
                 st.markdown("</div>", unsafe_allow_html=True)
-                if st.session_state.get(f"ask_confirm_{current_email}", False):
-                    if st.button("✅ فهمت، احذف الحساب الآن", key=f"final_yes_{current_email}"):
-                        st.session_state["destroyed_flag"] = True
-                        st.session_state[f"ask_confirm_{current_email}"] = False
-                        if delete_email_completely(current_email): st.toast("🔥 تم تذكير وتطهير الحساب!"); time.sleep(0.5); st.rerun()
+
+            # نافذة تأكيد التدمير/الحذف الخاص بهذا التاجر حصرياً وبشكل مستقل
+            if st.session_state.get(f"ask_confirm_{current_email}", False):
+                if st.button("✅ فهمت، احذف الحساب الآن", key=f"final_yes_{current_email}"):
+                    st.session_state["destroyed_flag"] = True
+                    st.session_state[f"ask_confirm_{current_email}"] = False
+                    if delete_email_completely(current_email): 
+                        st.toast("🔥 تم تذكير وتطهير الحساب!"); time.sleep(0.5); st.rerun()
             
             st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("🚪 مغادرة غرفة القيادة وقفل الخزائن", key="logout_boss"): st.session_state["admin_master_logged"] = False; st.rerun()
+            if st.button("🚪 مغادرة غرفة القيادة وقفل الخزائن", key="logout_boss"): 
+                st.session_state["admin_master_logged"] = False; st.rerun()
         else: 
             st.warning("📭 الرادار صافي تماماً، لا توجد طلبات معلقة حالياً.")
-
 # === الإضافات والتعديلات الجديدة لغرفة المالك ===
 # === إضافة مؤشر التراخيص الدائري المشع للرادار ===
 def render_neon_license_ring(email, days_left):
