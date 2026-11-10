@@ -748,7 +748,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.rerun()
 
             else:
-                # 🌟 تصميم النافذة المنبثقة المستطيلة في المنتصف (مودال احترافي)
+                # 🌟 تصميم النافذة المنبثقة المستطيلة في المنتصف (مودال احترافي آمن)
                 st.markdown("""
                     <style>
                     .otp-modal-container {
@@ -762,7 +762,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         direction: rtl;
                         text-align: right;
                     }
-                    /* تخصيص حقل الإدخال ليصبح كخانات رموز متسعة تقبل اللصق المباشر */
                     div[data-testid="stTextInput"] input {
                         text-align: center !important;
                         font-size: 28px !important;
@@ -771,17 +770,21 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         color: #00fff0 !important;
                     }
                     </style>
-                    
+                """, unsafe_allow_html=True)
+
+                target_mail = st.session_state.get('temp_reg_email', 'البريد الإلكتروني')
+
+                st.markdown(f"""
                     <div class="otp-modal-container">
                         <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
                         <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 15px;">
                             تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني:<br>
-                            <span style="color: #ff00ff; font-weight: bold;">{email}</span>
+                            <span style="color: #ff00ff; font-weight: bold;">{target_mail}</span>
                         </p>
                     </div>
-                """.format(email=st.session_state.get('temp_reg_email')), unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
 
-                # حقل إدخال ذكي واحد يدعم اللصق الفوري للـ 6 أرقام بـ max_chars=6
+                # حقل إدخال ذكي واحد يدعم اللصق الفوري للـ 6 أرقام
                 entered_otp = st.text_input(
                     "أدخل الرمز المكون من 6 أرقام هنا:", 
                     max_chars=6, 
