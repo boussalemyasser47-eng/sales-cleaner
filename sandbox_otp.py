@@ -1143,14 +1143,17 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-                        
-                        # 📧 إرسال إيميل التفعيل والقبول
-                        welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
-                        welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك والبدء في استغلال كافة الميزات المتاحة في باقتك.\n\nنتمنى لك كل التوفيق والنجاح في تجارتك!"
-                        send_gmail_notification_with_log(current_email, welcome_subject, welcome_body, action_type="ACTIVATE")                        
+        
+                        # 📧 إرسال الإيميل مع إظهار شاشة انتظار لضمان عدم قطع الاتصال
+                        with st.spinner("جاري إرسال البريد الإلكتروني..."):
+                            welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
+                            welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك."
+                            send_gmail_notification_with_log(current_email, welcome_subject, welcome_body, action_type="ACTIVATE")                        
+                            time.sleep(1.5) # إعطاء مهلة كافية لسيرفر جوجل لإنهاء الإرسال
+            
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
-                        st.toast("🎯 تم التفعيل وإرسال البريد!"); time.sleep(2.0); st.rerun()
-
+                        st.toast("🎯 تم التفعيل وإرسال البريد بنجاح!")
+                        st.rerun()
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
