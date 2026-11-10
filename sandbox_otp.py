@@ -746,50 +746,50 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
                             time.sleep(0.5)
                             st.rerun()
+
             else:
-                # 🌟 تصميم النافذة المنبثقة الزجاجية في المنتصف للـ OTP (مفصولة لمنع الـ KeyError)
+                # 🌟 تصميم النافذة المنبثقة المستطيلة في المنتصف (مودال احترافي)
                 st.markdown("""
                     <style>
-                    .otp-modal-box {
+                    .otp-modal-container {
+                        max-width: 500px;
+                        margin: 20px auto;
                         background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%);
                         border: 2px solid #00fff0;
                         border-radius: 20px;
                         padding: 30px;
-                        box-shadow: 0 0 40px rgba(0, 255, 240, 0.35);
+                        box-shadow: 0 0 40px rgba(0, 255, 240, 0.4);
                         direction: rtl;
                         text-align: right;
-                        margin-bottom: 20px;
+                    }
+                    /* تخصيص حقل الإدخال ليصبح كخانات رموز متسعة تقبل اللصق المباشر */
+                    div[data-testid="stTextInput"] input {
+                        text-align: center !important;
+                        font-size: 28px !important;
+                        letter-spacing: 15px !important;
+                        font-weight: 900 !important;
+                        color: #00fff0 !important;
                     }
                     </style>
-                """, unsafe_allow_html=True)
-
-                target_mail = st.session_state.get('temp_reg_email', 'البريد الإلكتروني')
-                
-                st.markdown(f"""
-                    <div class="otp-modal-box">
+                    
+                    <div class="otp-modal-container">
                         <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
                         <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 15px;">
                             تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني:<br>
-                            <span style="color: #ff00ff; font-weight: bold;">{target_mail}</span>
+                            <span style="color: #ff00ff; font-weight: bold;">{email}</span>
                         </p>
                     </div>
-                """, unsafe_allow_html=True)
+                """.format(email=st.session_state.get('temp_reg_email')), unsafe_allow_html=True)
 
-                st.markdown("<p style='color: #00fff0; font-weight: bold; text-align: center;'>أدخل الرمز المكون من 6 أرقام في الخانات أدناه:</p>", unsafe_allow_html=True)
-                
-                # 🔢 6 خانات منفصلة لإدخال الأرقام
-                c1, c2, c3, c4, c5, c6 = st.columns(6)
-                d1 = c1.text_input("", key="otp_1", max_chars=1, label_visibility="collapsed")
-                d2 = c2.text_input("", key="otp_2", max_chars=1, label_visibility="collapsed")
-                d3 = c3.text_input("", key="otp_3", max_chars=1, label_visibility="collapsed")
-                d4 = c4.text_input("", key="otp_4", max_chars=1, label_visibility="collapsed")
-                d5 = c5.text_input("", key="otp_5", max_chars=1, label_visibility="collapsed")
-                d6 = c6.text_input("", key="otp_6", max_chars=1, label_visibility="collapsed")
+                # حقل إدخال ذكي واحد يدعم اللصق الفوري للـ 6 أرقام بـ max_chars=6
+                entered_otp = st.text_input(
+                    "أدخل الرمز المكون من 6 أرقام هنا:", 
+                    max_chars=6, 
+                    placeholder="------", 
+                    key="smart_otp_paste_input"
+                )
 
-                # تجميع الأرقام المدخلة تلقائياً
-                entered_otp = f"{d1}{d2}{d3}{d4}{d5}{d6}"
-
-                st.markdown("<p style='text-align: center; color: #ffaa00; font-size: 13px; margin: 10px 0;'>⏳ يرجى إدخال الرمز المكون من 6 أرقام بدقة.</p>", unsafe_allow_html=True)
+                st.markdown("<p style='text-align: center; color: #ffaa00; font-size: 13px; margin: 10px 0;'>💡 يمكنك نسخ الرمز من بريدك واللصق هنا مباشرة ليتم تعبئته تلقائياً.</p>", unsafe_allow_html=True)
 
                 col_verify_btn, col_cancel_btn = st.columns(2)
                 with col_verify_btn:
