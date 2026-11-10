@@ -79,7 +79,7 @@ def send_gmail_notification_with_log(to_email, subject, body, action_type="DEFAU
         status = "FAILED"
         err_msg = str(e)
         # إظهار الخطأ فوراً على الشاشة لنعرف السبب الحقيقي
-        st.error(⚠️ فشل إرسال البريد للأزرار بسبب: {e})
+        st.error(f"⚠️ فشل إرسال البريد للأزرار بسبب: {e}")
     finally:
         try:
             conn = sqlite3.connect("saas_security_vault.db")
