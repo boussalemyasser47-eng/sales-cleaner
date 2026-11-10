@@ -746,7 +746,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
                             time.sleep(0.5)
                             st.rerun()
-else:
+            else:
                 # 🌟 تصميم النافذة المنبثقة الزجاجية في المنتصف للـ OTP (مفصولة لمنع الـ KeyError)
                 st.markdown("""
                     <style>
