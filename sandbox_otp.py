@@ -960,25 +960,18 @@ if is_boss_link:
                     <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: <span style="color:{current_border_color}; font-weight:bold;">{current_package}</span></p>
                 </div>
                 """, unsafe_allow_html=True)
-                
-                # إنشاء 6 أعمدة تفاعلية مخصصة للأزرار الستة دون أي تغيير على وظائفها
-# إنشاء 6 أعمدة تفاعلية
-                # إنشاء 6 أعمدة تفاعلية مخصصة لاحتواء الزر السادس الجديد للفئات السنوية
-# إنشاء 6 أعمدة تفاعلية مخصصة لاحتواء الزر السادس الجديد للفئات السنوية
-                col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
+
+                     col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
-                        # 📝 تسجيل النشاط في سجل تدقيق المالك
-                        log_admin_action(current_email, "تفعيل الحساب", "تم قبول وتفعيل حساب التاجر بنجاح")
-                        
-                        # 📧 إرسال إيميل التفعيل والقبول وتسجيله في سجل البريد
+                        # 📧 إرسال إيميل التفعيل والقبول
                         welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
                         welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك والبدء في استغلال كافة الميزات المتاحة في باقتك.\n\nنتمنى لك كل التوفيق والنجاح في تجارتك!"
-                        send_gmail_notification_with_log(current_email, welcome_subject, welcome_body)
+                        send_gmail_notification(current_email, welcome_subject, welcome_body)
                         
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
                         st.toast("🎯 تم التفعيل وإرسال البريد!"); time.sleep(0.5); st.rerun()
@@ -989,13 +982,10 @@ if is_boss_link:
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
-                        # 📝 تسجيل النشاط في سجل تدقيق المالك
-                        log_admin_action(current_email, "تمديد المهلة", "تم تمديد فترة التجربة 7 أيام إضافية")
-                        
-                        # 📧 إرسال إيميل تمديد المهلة وتسجيله في سجل البريد
+                        # 📧 إرسال إيميل تمديد المهلة
                         ext_subject = "⏳ تم تمديد الفترة التجريبية لمتجرك"
                         ext_body = f"مرحباً بك يا تاجرنا العزيز,\n\nنود إعلامك بأنه تم تمديد الفترة التجريبية لمتجرك لمدة 7 أيام إضافية بنجاح.\nيمكنك الآن مواصلة تجربة كافة ميزات المنصة.\n\nنتمنى لك مبيعات موفقة!"
-                        send_gmail_notification_with_log(current_email, ext_subject, ext_body)
+                        send_gmail_notification(current_email, ext_subject, ext_body)
                         
                         st.session_state[f"border_color_{current_email}"] = "#ffaa00"
                         st.toast("⏳ تم تمديد المهلة وإرسال البريد!"); time.sleep(0.5); st.rerun()
@@ -1012,13 +1002,10 @@ if is_boss_link:
                         conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
-                        # 📝 تسجيل النشاط في سجل تدقيق المالك
-                        log_admin_action(current_email, "ترقية الباقة", "تمت ترقية باقة التاجر إلى الباقة السيبرانية الخارقة (65k)")
-                        
-                        # 📧 إرسال إيميل ترقية الباقة وتسجيله في سجل البريد
+                        # 📧 إرسال إيميل ترقية الباقة
                         upg_subject = "🚀 مبروك! تم ترقية باقة متجرك إلى الباقة الخارقة"
                         upg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم ترقية باقة حسابك رسمياً إلى (الباقة السيبرانية الخارقة 65k)!\nتم فتح كافة أدوات الأتمتة المتقدمة والذكاء الاصطناعي لمتجرك.\n\nبالتوفيق والنجاح!"
-                        send_gmail_notification_with_log(current_email, upg_subject, upg_body)
+                        send_gmail_notification(current_email, upg_subject, upg_body)
                         
                         st.session_state[f"border_color_{current_email}"] = "#ff00ff"
                         st.toast("🚀 تم ترقية الباقة وإرسال البريد!"); time.sleep(0.5); st.rerun()
@@ -1029,13 +1016,10 @@ if is_boss_link:
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
-                        # 📝 تسجيل النشاط في سجل تدقيق المالك
-                        log_admin_action(current_email, "حظر الحساب", "تم قفل الحساب ومصادرة صلاحيات الوصول")
-                        
-                        # 📧 إرسال إيميل الحظر وقفل الحساب وتسجيله في سجل البريد
+                        # 📧 إرسال إيميل الحظر وقفل الحساب
                         lck_subject = "⚠️ تنبيه: تم تجميد حساب متجرك مؤقتاً"
                         lck_body = f"مرحباً,\n\nنحيطك علماً بأنه تم قفل ومصادرة صلاحيات الوصول إلى حسابك مؤقتاً من قبل الإدارة.\nإذا كنت تعتقد أن هذا حدث عن طريق الخطأ، يرجى التواصل مع فريق الدعم الفني للإدارة.\n\nتحياتنا."
-                        send_gmail_notification_with_log(current_email, lck_subject, lck_body)
+                        send_gmail_notification(current_email, lck_subject, lck_body)
                         
                         st.session_state[f"border_color_{current_email}"] = "#ff4500"
                         st.toast("🔒 تم مصادرة الصلاحيات وإرسال البريد!"); time.sleep(0.5); st.rerun()
@@ -1063,13 +1047,10 @@ if is_boss_link:
                         conn.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE email = ?", (selected_opt, current_email))
                         conn.commit(); conn.close()
                         
-                        # 📝 تسجيل النشاط في سجل تدقيق المالك
-                        log_admin_action(current_email, "تعيين باقة", f"تم تحديث باقة التاجر إلى: {selected_opt}")
-                        
-                        # 📧 إرسال إيميل تحديث فئة الاشتراك المخصصة وتسجيله في سجل البريد
+                        # 📧 إرسال إيميل تحديث فئة الاشتراك المخصصة
                         pkg_subject = "🏷️ تحديث فئة اشتراك متجرك"
                         pkg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nتم تحديث باقة متجرك رسمياً إلى: {selected_opt}.\nيمكنك الآن استغلال كافة الميزات المتاحة في باقتك الجديدة من خلال لوحة التحكم.\n\nنتمنى لك كل التوفيق والنجاح!"
-                        send_gmail_notification_with_log(current_email, pkg_subject, pkg_body)
+                        send_gmail_notification(current_email, pkg_subject, pkg_body)
                         
                         if "29k" in selected_opt:
                             st.session_state[f"border_color_{current_email}"] = "#00ff66"
@@ -1084,7 +1065,8 @@ if is_boss_link:
                         
                     st.markdown("</div>", unsafe_allow_html=True)
                 
-                # نافذة التأكيد الخاصة بالحذف الفوري
+                # تأكيد الحذف الفوري المستقل لكل تاجر على حدة (لا يظهر إلا عند النقر حصراً)
+# نافذة التأكيد الخاصة بالحذف (مخفية ولا تظهر إلا عند الضغط حصراً)
                 if st.session_state.get(f"ask_confirm_{current_email}", False):
                     st.warning(f"⚠️ تنبيه: هل أنت متأكد من الحذف النهائي للتاجر ({current_email})؟")
                     col_yes, col_no = st.columns(2)
@@ -1093,13 +1075,9 @@ if is_boss_link:
                             st.session_state["destroyed_flag"] = True
                             st.session_state[f"ask_confirm_{current_email}"] = False
                             
-                            # 📝 تسجيل النشاط في سجل تدقيق المالك
-                            log_admin_action(current_email, "حذف نهائي", "تم حذف وتطهير حساب التاجر نهائياً من النظام")
-                            
-                            # 📧 إرسال إيميل الحذف النهائي وتسجيله في سجل البريد
                             del_subject = "❌ إشعار بإغلاق وحذف الحساب"
                             del_body = f"مرحباً،\n\nنحيطك علماً بأنه تم حذف وإغلاق حساب متجرك نهائياً من النظام.\nنتمنى لك التوفيق في مشاريعك المستقبلية."
-                            send_gmail_notification_with_log(current_email, del_subject, del_body)
+                            send_gmail_notification(current_email, del_subject, del_body)
                             
                             if delete_email_completely(current_email): 
                                 st.toast("🔥 تم حذف وتطهير الحساب وإرسال البريد!")
@@ -1108,8 +1086,11 @@ if is_boss_link:
                         if st.button("❌ تراجع", key=f"final_no_{current_email}"):
                             st.session_state[f"ask_confirm_{current_email}"] = False
                             st.rerun()
+            
+            # 🛑 تم حذف زر المغادرة من هنا لئلا يتكرر مع كل تاجر!
+
         else: 
-            st.warning("📭 الرادار صافي تماماً، لا توجد حسابات أو نتائج مطابقة للتصفية حالياً.")
+            st.warning("📭 الرادار صافي تماماً، لا توجد طلبات معلقة حالياً.")
 
     # ✅ وضع زر المغادرة هنا مرة واحدة فقط في أسفل اللوحة بالكامل خارج حلقة التجار
     st.markdown("<br><hr>", unsafe_allow_html=True)
