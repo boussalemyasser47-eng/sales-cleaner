@@ -64,83 +64,22 @@ init_advanced_db()
 # ========================================================
 # [القسم الأول - المطور والمصحح نهائياً]: دالة إرسال البريد الموحدة الآمنة
 # ========================================================
-def send_gmail_notification(target_email, subject, body_text, action_type="DEFAULT", action_url=None):
-    """
-    دالة موحدة ومطورة لإرسال إيميلات آمنة تدعم النص البسيط وقالب HTML معاً لضمان عدم حظرها بواسطة Gmail.
-    """
-    try:
-        sender_email = st.secrets["GMAIL_USER"]
-        sender_password = st.secrets["GMAIL_APP_PASSWORD"]
-        
-        # 🎨 تحديد الألوان والأيقونات حسب نوع الإجراء
-        theme_colors = {
-            "OTP": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔐", "btn_text": "تأكيد الرمز الآن"},
-            "ACTIVATE": {"primary": "#00ff66", "bg_accent": "rgba(0, 255, 102, 0.1)", "icon": "🎉", "btn_text": "الدخول لمتجرك الآن"},
-            "EXTEND": {"primary": "#ffaa00", "bg_accent": "rgba(255, 170, 0, 0.1)", "icon": "⏳", "btn_text": "متابعة متجرك"},
-            "UPGRADE": {"primary": "#ff00ff", "bg_accent": "rgba(255, 0, 255, 0.1)", "icon": "🚀", "btn_text": "استكشاف المميزات الخارقة"},
-            "LOCK": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "⚠️", "btn_text": "التواصل مع الدعم الفني"},
-            "DELETE": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "❌", "btn_text": "مراجعة الدعم"},
-            "DEFAULT": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔔", "btn_text": "الانتقال للمنصة"}
-        }
-        
-        theme = theme_colors.get(action_type, theme_colors["DEFAULT"])
-        btn_link = action_url if action_url else "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
-        logo_url = "https://img.icons8.com/isometric-folders/100/00fff0/cyber-security.png"
-        formatted_body = body_text.replace("\n", "<br>")
-
-        # قالب HTML الفاخر
-        html_content = f"""
-        <!DOCTYPE html>
-        <html lang="ar" dir="rtl">
-        <head><meta charset="UTF-8"></head>
-        <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #05050c; color: #ffffff; padding: 20px; direction: rtl; text-align: right;">
-            <div style="max-width: 600px; margin: 0 auto; background: #0d0d21; border: 2px solid {theme['primary']}; border-radius: 16px; padding: 30px; box-shadow: 0 0 20px {theme['primary']}40;">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h1 style="color: {theme['primary']}; font-size: 22px; margin: 0;">{theme['icon']} {subject}</h1>
-                </div>
-                <div style="font-size: 15px; line-height: 1.8; color: #e0e0e0; background: rgba(255, 255, 255, 0.03); padding: 15px; border-radius: 8px; border-right: 4px solid {theme['primary']};">
-                    {formatted_body}
-                </div>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="{btn_link}" style="background: {theme['primary']}; color: #000000; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;" target="_blank">{theme['btn_text']}</a>
-                </div>
-                <div style="text-align: center; font-size: 11px; color: #777; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-                    © 2026 NEXUS SAAS PLATFORM — جميع الحقوق محفوظة.
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-
-        message = MIMEMultipart("alternative")
-        message["Subject"] = subject
-        message["From"] = sender_email
-        message["To"] = target_email
-        
-        # إرفاق النسختين (النص البسيط + HTML) لتجاوز حظر فلاتر الـ Spam في Gmail
-        message.attach(MIMEText(body_text, "plain", "utf-8"))
-        message.attach(MIMEText(html_content, "html", "utf-8"))
-
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, target_email, message.as_string())
-        server.quit()
-        return True
-    except Exception as e:
-        st.error(f"⚠️ خطأ في إرسال البريد الإلكتروني: {e}")
-        return False
-
 def send_gmail_notification_with_log(to_email, subject, body, action_type="DEFAULT"):
-    """دالة الإرسال مع تتبع السجل في قاعدة البيانات"""
+    """دالة الإرسال مع كشف الأخطاء الحية على الشاشة"""
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     status = "SUCCESS"
     err_msg = ""
+    
     try:
+        # سنقوم بطباعة رسالة تأكيد بأن الدالة بدأت بالعمل
+        print(f"جاري إرسال إيميل إلى: {to_email} نوع الحركة: {action_type}")
         send_gmail_notification(to_email, subject, body, action_type=action_type)
+        st.toast(f"✅ تم تنفيذ إرسال إيميل الـ {action_type} بنجاح")
     except Exception as e:
         status = "FAILED"
         err_msg = str(e)
+        # إظهار الخطأ فوراً على الشاشة لنعرف السبب الحقيقي
+        st.error(⚠️ فشل إرسال البريد للأزرار بسبب: {e})
     finally:
         try:
             conn = sqlite3.connect("saas_security_vault.db")
@@ -153,6 +92,7 @@ def send_gmail_notification_with_log(to_email, subject, body, action_type="DEFAU
             conn.close()
         except Exception:
             pass
+    
     return status == "SUCCESS"
 def create_backup_vault():
     import os
