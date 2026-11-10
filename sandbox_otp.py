@@ -7,73 +7,157 @@
 # ========================================================
 # [القسم الأول]: إعدادات البيئة، خزانة النسخ الاحتياطي، وجدار حماية الشبح المتقدم
 # ========================================================
-def render_admin_audit_logs_expander():
-    """
-    عرض جدول سجل نشاطات المالك (admin_audit_logs) في أسفل اللوحة داخل (st.expander) بتصميم داكن وأنيق.
-    """
-    with st.expander("📜 سجل نشاطات وتدقيق المالك (Admin Audit Logs)", expanded=False):
-        st.markdown("<p style='color: #00fff0; direction: rtl; text-align: right;'>سجل كامل وموثق لكل العمليات الإدارية التي قام بها المالك على حسابات التجار.</p>", unsafe_allow_html=True)
-        try:
-            conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-            df_logs = pd.read_sql("SELECT * FROM admin_audit_logs ORDER BY rowid DESC LIMIT 100", conn)
-            conn.close()
-            
-            if not df_logs.empty:
-                st.dataframe(df_logs, use_container_width=True)
-            else:
-                st.info("📭 السجل فارغ حالياً، لم يتم تنفيذ أي عمليات إدارية بعد.")
-        except Exception as e:
-            st.error(f"⚠️ تعذر جلب سجل النشاطات: {e}")
+# ========================================================
+# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
+# ========================================================
+import smtplib
+import random
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import streamlit as st
+import pandas as pd
+import sqlite3
+import time
+from datetime import datetime
+import io
+import urllib.parse
+import re
 
-def render_email_delivery_logs_expander():
+# 🔒 ضبط إعدادات الشاشة الأساسية للمنصة الموحدة
+st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
+
+# 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
+query_params = st.query_params
+is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
+if "admin_master_logged" not in st.session_state:
+    st.session_state["admin_master_logged"] = False
+
+# 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
+def init_advanced_db():
+    conn = sqlite3.connect("saas_security_vault.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS admin_audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action_time TEXT,
+            target_email TEXT,
+            action_type TEXT,
+            details TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS email_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sent_time TEXT,
+            recipient_email TEXT,
+            subject TEXT,
+            status TEXT,
+            error_message TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+init_advanced_db()
+
+# 2. دالة إرسال الإيميلات الهيكلية الفاخرة الموحدة (HTML/Neon Pro)
+def send_gmail_notification(target_email, subject, body_text, action_type="DEFAULT", action_url=None):
     """
-    عرض جدول سجل حالة البريد (email_logs) في أسفل اللوحة داخل (st.expander) مع إمكانية إعادة الإرسال لرسائل FAILED.
+    دالة موحدة ومطورة لإرسال إيميلات HTML احترافية منسقة بصرياً وملونة 
+    مع دعم اللوجو، الأزرار التفاعلية، وتغير الألوان حسب نوع الحركة (OTP, ACTIVATE, LOCK, etc.)
     """
-    with st.expander("📧 سجل حالة إرسال البريد الإلكتروني (Email Delivery Logs)", expanded=False):
-        st.markdown("<p style='color: #00fff0; direction: rtl; text-align: right;'>متابعة حالات تسليم الإيميلات للجار مع إمكانية إعادة المحاولة الفورية للرسائل الفاشلة.</p>", unsafe_allow_html=True)
-        try:
-            conn = sqlite3.connect("saas_security_vault.db", timeout=10)
-            df_emails = pd.read_sql("SELECT rowid, * FROM email_logs ORDER BY rowid DESC LIMIT 100", conn)
-            conn.close()
-            
-            if not df_emails.empty:
-                for _, row in df_emails.iterrows():
-                    r_id = row['rowid']
-                    to_email = row.get('to_email', 'غير محدد')
-                    subject = row.get('subject', 'بدون موضوع')
-                    status = str(row.get('status', 'SUCCESS'))
-                    
-                    status_color = "#00ff66" if "SUCCESS" in status or "نجاح" in status else "#ff0055"
-                    
-                    st.markdown(f"""
-                    <div style="border: 1px solid {status_color}; border-radius: 8px; padding: 10px; margin-bottom: 8px; background: rgba(10,10,20,0.8); direction: rtl; text-align: right;">
-                        <span style="color: #00fff0;">المرسل إليه: <b>{to_email}</b></span> | 
-                        <span style="color: #ff00ff;">الموضوع: {subject}</span> | 
-                        الحالة: <span style="color: {status_color}; font-weight: bold;">{status}</span>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # إذا كانت الحالة FAILED، أظهر زر إعادة محاولة الإرسال فوراً
-                    if "FAILED" in status.upper() or "فشل" in status:
-                        if st.button(f"🔄 إعادة محاولة إرسال البريد إلى ({to_email})", key=f"retry_email_{r_id}"):
-                            # إعادة إرسال البريد باستخدام الدالة المسجلة
-                            success_retry = send_gmail_notification_with_log(to_email, subject, "إعادة إرسال تلقائية من لوحة المالك بعد فشل سابق.")
-                            if success_retry:
-                                st.toast("✅ تم إعادة إرسال البريد بنجاح!", icon="🚀")
-                            else:
-                                st.error("❌ فشلت محاولة إعادة الإرسال مجدداً.")
-                            time.sleep(0.5)
-                            st.rerun()
-            else:
-                st.info("📭 سجل البريد الإلكتروني فارغ حالياً.")
-        except Exception as e:
-            st.error(f"⚠️ تعذر جلب سجل البريد: {e}")
+    try:
+        sender_email = st.secrets["GMAIL_USER"]
+        sender_password = st.secrets["GMAIL_APP_PASSWORD"]
+        
+        theme_colors = {
+            "OTP": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔐", "btn_text": "تأكيد الرمز الآن"},
+            "ACTIVATE": {"primary": "#00ff66", "bg_accent": "rgba(0, 255, 102, 0.1)", "icon": "🎉", "btn_text": "الدخول لمتجرك الآن"},
+            "EXTEND": {"primary": "#ffaa00", "bg_accent": "rgba(255, 170, 0, 0.1)", "icon": "⏳", "btn_text": "متابعة متجرك"},
+            "UPGRADE": {"primary": "#ff00ff", "bg_accent": "rgba(255, 0, 255, 0.1)", "icon": "🚀", "btn_text": "استكشاف المميزات الخارقة"},
+            "LOCK": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "⚠️", "btn_text": "التواصل مع الدعم الفني"},
+            "DELETE": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "❌", "btn_text": "مراجعة الدعم"},
+            "DEFAULT": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔔", "btn_text": "الانتقال للمنصة"}
+        }
+        
+        theme = theme_colors.get(action_type, theme_colors["DEFAULT"])
+        btn_link = action_url if action_url else "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
+        logo_url = "https://img.icons8.com/isometric-folders/100/00fff0/cyber-security.png"
+        formatted_body = body_text.replace("\n", "<br>")
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #05050c; color: #ffffff; margin: 0; padding: 20px; direction: rtl; text-align: right; }}
+                .email-container {{ max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%); border: 2px solid {theme['primary']}; border-radius: 16px; overflow: hidden; box-shadow: 0 0 30px {theme['primary']}40; }}
+                .email-header {{ background: {theme['bg_accent']}; padding: 30px; text-align: center; border-bottom: 1px solid {theme['primary']}30; }}
+                .email-header img {{ width: 70px; height: 70px; margin-bottom: 10px; }}
+                .email-header h1 {{ color: {theme['primary']}; font-size: 22px; margin: 0; text-shadow: 0 0 10px {theme['primary']}80; }}
+                .email-body {{ padding: 30px; font-size: 15px; line-height: 1.8; color: #e0e0e0; }}
+                .info-box {{ background: rgba(255, 255, 255, 0.03); border-right: 4px solid {theme['primary']}; padding: 15px; border-radius: 8px; margin: 20px 0; color: #ffffff; }}
+                .btn-action {{ display: block; width: 220px; margin: 25px auto; padding: 14px 20px; text-align: center; background: linear-gradient(135deg, {theme['primary']} 0%, #00bfff 100%); color: #000000 !important; font-weight: bold; font-size: 15px; text-decoration: none; border-radius: 10px; box-shadow: 0 0 20px {theme['primary']}60; }}
+                .email-footer {{ background: #030307; padding: 15px; text-align: center; font-size: 12px; color: #777788; border-top: 1px solid rgba(255,255,255,0.05); }}
+            </style>
+        </head>
+        <body>
+            <div class="email-container">
+                <div class="email-header">
+                    <img src="{logo_url}" alt="Logo">
+                    <h1>{theme['icon']} {subject}</h1>
+                </div>
+                <div class="email-body">
+                    <div class="info-box">{formatted_body}</div>
+                    <a href="{btn_link}" class="btn-action" target="_blank">{theme['btn_text']}</a>
+                </div>
+                <div class="email-footer">© 2026 NEXUS SAAS PLATFORM — جميع الحقوق محفوظة لمتجرك السحابي.</div>
+            </div>
+        </body>
+        </html>
+        """
+
+        message = MIMEMultipart("alternative")
+        message["Subject"] = subject
+        message["From"] = sender_email
+        message["To"] = target_email
+        message.attach(MIMEText(html_content, "html", "utf-8"))
+
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, target_email, message.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        st.error(f"⚠️ خطأ في إرسال البريد الإلكتروني المنسق: {e}")
+        return False
+
+def send_gmail_notification_with_log(to_email, subject, body, action_type="DEFAULT"):
+    """دالة الإرسال مع تتبع السجل وتحديد نوع الهوية الإعلانية للبريد"""
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    status = "SUCCESS"
+    err_msg = ""
+    try:
+        send_gmail_notification(to_email, subject, body, action_type=action_type)
+    except Exception as e:
+        status = "FAILED"
+        err_msg = str(e)
+    finally:
+        conn = sqlite3.connect("saas_security_vault.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO email_logs (sent_time, recipient_email, subject, status, error_message) VALUES (?, ?, ?, ?, ?)",
+            (now, to_email, subject, status, err_msg)
+        )
+        conn.commit()
+        conn.close()
+    return status == "SUCCESS"
+
 def create_backup_vault():
     import os
     import zipfile
-    import io
-    from datetime import datetime
-    
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         for file in os.listdir("."):
