@@ -690,7 +690,7 @@ if is_boss_link:
                 
                 # إنشاء 6 أعمدة تفاعلية مخصصة لاحتواء الزر السادس الجديد للفئات السنوية
                 col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
-with col_1:
+                with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
