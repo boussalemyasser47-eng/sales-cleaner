@@ -724,7 +724,9 @@ if is_boss_link:
 
                 with col_3:
                     if st.button("🗑️ تدمير نهائي فوري", key=f"btn_del_{current_email}"):
+                        # تفعيل حالة التأكيد لهذا التاجر فقط عند الضغط
                         st.session_state[f"ask_confirm_{current_email}"] = True
+                        st.rerun()
 
                 with col_4:
                     if st.button("💸 ترقية فئة الباقة", key=f"btn_upg_{current_email}"):
@@ -764,6 +766,7 @@ if is_boss_link:
                         st.session_state[f"show_pkg_slide_{current_email}"] = not current_state
                         st.rerun()
 
+            # القائمة المنسدلة للباقات (لا تظهر إلا عند الضغط على زر تعيين الاشتراك)
             if st.session_state.get(f"show_pkg_slide_{current_email}", False):
                 st.markdown(f"<div style='border: 1px solid #00fff0; border-radius: 10px; padding: 15px; background: rgba(5,20,30,0.9); margin-top: 10px;'>", unsafe_allow_html=True)
                 st.markdown(f"<p style='color: #00fff0; margin: 0 0 10px 0; font-weight: bold;'>🎯 اختر الباقة الجديدة للتاجر:</p>", unsafe_allow_html=True)
@@ -799,13 +802,20 @@ if is_boss_link:
                     
                 st.markdown("</div>", unsafe_allow_html=True)
 
+            # نافذة التأكيد الخاصة بالحذف (مخفية تماماً ولا تظهر إلا عند الضغط على زر الحذف لهذا التاجر)
             if st.session_state.get(f"ask_confirm_{current_email}", False):
-                if st.button("✅ فهمت، احذف الحساب الآن", key=f"final_yes_{current_email}"):
-                    st.session_state["destroyed_flag"] = True
-                    st.session_state[f"ask_confirm_{current_email}"] = False
-                    if delete_email_completely(current_email): 
-                        st.toast("🔥 تم تذكير وتطهير الحساب!")
-                        time.sleep(0.5)
+                st.warning(f"⚠️ تنبيه: هل أنت متأكد من رغبتك في الحذف النهائي للتاجر ({current_email})؟")
+                col_yes, col_no = st.columns(2)
+                with col_yes:
+                    if st.button("✅ نعم، احذف نهائياً", key=f"final_yes_{current_email}"):
+                        st.session_state[f"ask_confirm_{current_email}"] = False
+                        if delete_email_completely(current_email): 
+                            st.toast("🔥 تم حذف وتطهير الحساب وإرسال البريد!")
+                            time.sleep(0.5)
+                            st.rerun()
+                with col_no:
+                    if st.button("❌ تراجع", key=f"final_no_{current_email}"):
+                        st.session_state[f"ask_confirm_{current_email}"] = False
                         st.rerun()
             
             st.markdown("<br>", unsafe_allow_html=True)
