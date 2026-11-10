@@ -62,50 +62,22 @@ init_advanced_db()
 
 # 2. دالة إرسال الإيميلات الهيكلية الفاخرة الموحدة (HTML/Neon Pro)
 def send_gmail_notification(target_email, subject, body_text, action_type="DEFAULT", action_url=None):
+    """
+    دالة إرسال نصية بسيطة جداً (Plain Text) لتجربة وتحديد سبب وصول أو عدم وصول رسائل الإجراءات.
+    """
     try:
         sender_email = st.secrets["GMAIL_USER"]
         sender_password = st.secrets["GMAIL_APP_PASSWORD"]
         
-        # 🎨 تحديد الألوان والأيقونات (نفس الكود السابق...)
-        theme_colors = {
-            "OTP": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔐", "btn_text": "تأكيد الرمز الآن"},
-            "ACTIVATE": {"primary": "#00ff66", "bg_accent": "rgba(0, 255, 102, 0.1)", "icon": "🎉", "btn_text": "الدخول لمتجرك الآن"},
-            "EXTEND": {"primary": "#ffaa00", "bg_accent": "rgba(255, 170, 0, 0.1)", "icon": "⏳", "btn_text": "متابعة متجرك"},
-            "UPGRADE": {"primary": "#ff00ff", "bg_accent": "rgba(255, 0, 255, 0.1)", "icon": "🚀", "btn_text": "استكشاف المميزات الخارقة"},
-            "LOCK": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "⚠️", "btn_text": "التواصل مع الدعم الفني"},
-            "DELETE": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "❌", "btn_text": "مراجعة الدعم"},
-            "DEFAULT": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔔", "btn_text": "الانتقال للمنصة"}
-        }
+        # تجهيز رسالة نصية خالصة وعادية جداً
+        plain_message = f"موضوع الرسالة: {subject}\n\n{body_text}\n\nملاحظة: هذه رسالة نصية تجريبية للتأكد من وصول الإشعارات."
         
-        theme = theme_colors.get(action_type, theme_colors["DEFAULT"])
-        btn_link = action_url if action_url else "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
-        logo_url = "https://img.icons8.com/isometric-folders/100/00fff0/cyber-security.png"
-        formatted_body = body_text.replace("\n", "<br>")
-
-        html_content = f"""
-        <!DOCTYPE html>
-        <html lang="ar" dir="rtl">
-        <head><meta charset="UTF-8"></head>
-        <body style="font-family: Arial, sans-serif; background-color: #05050c; color: #ffffff; padding: 20px; direction: rtl; text-align: right;">
-            <div style="max-width: 600px; margin: 0 auto; background: #0d0d21; border: 2px solid {theme['primary']}; border-radius: 16px; padding: 30px;">
-                <h2 style="color: {theme['primary']}; text-align: center;">{theme['icon']} {subject}</h2>
-                <p style="font-size: 15px; line-height: 1.8; color: #e0e0e0;">{formatted_body}</p>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="{btn_link}" style="background: {theme['primary']}; color: #000; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;">{theme['btn_text']}</a>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-
-        message = MIMEMultipart("alternative")
-        message["Subject"] = subject
+        message = MIMEMultipart()
+        message["Subject"] = f"[تجربة نصية] {subject}"
         message["From"] = sender_email
         message["To"] = target_email
         
-        # 🛡️ الحل هنا: إرفاق النص البسيط بجانب الـ HTML لكي لا يحظرها سيرفر البريد
-        message.attach(MIMEText(body_text, "plain", "utf-8"))
-        message.attach(MIMEText(html_content, "html", "utf-8"))
+        message.attach(MIMEText(plain_message, "plain", "utf-8"))
 
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
@@ -114,9 +86,8 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         server.quit()
         return True
     except Exception as e:
-        st.error(f"⚠️ خطأ في إرسال البريد: {e}")
+        st.error(f"⚠️ خطأ في إرسال البريد النصي: {e}")
         return False
-
 def create_backup_vault():
     import os
     import zipfile
