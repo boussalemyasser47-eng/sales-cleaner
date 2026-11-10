@@ -963,18 +963,18 @@ if is_boss_link:
                 
                 # إنشاء 6 أعمدة تفاعلية مخصصة للأزرار الستة دون أي تغيير على وظائفها
 # إنشاء 6 أعمدة تفاعلية
+                # إنشاء 6 أعمدة تفاعلية مخصصة لاحتواء الزر السادس الجديد للفئات السنوية
                 col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
-                
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
-                        # 📝 تسجيل النشاط
-                        log_admin_action(current_email, "تفعيل الحساب", "تم قبول وتفعيل حساب التاجر")
-                        # 📧 إرسال الإيميل بالسجل
-                        send_gmail_notification_with_log(current_email, "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح", "مرحباً بك يا تاجرنا العزيز,\n\nتم تفعيل حسابك بنجاح!")
+                        # 📧 إرسال إيميل التفعيل والقبول
+                        welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
+                        welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك والبدء في استغلال كافة الميزات المتاحة في باقتك.\n\nنتمنى لك كل التوفيق والنجاح في تجارتك!"
+                        send_gmail_notification(current_email, welcome_subject, welcome_body)
                         
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
                         st.toast("🎯 تم التفعيل وإرسال البريد!"); time.sleep(0.5); st.rerun()
@@ -985,8 +985,10 @@ if is_boss_link:
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
-                        log_admin_action(current_email, "تمديد المهلة", "تم تمديد فترة التجربة 7 أيام إضافية")
-                        send_gmail_notification_with_log(current_email, "⏳ تم تمديد الفترة التجريبية لمتجرك", "مرحباً، تم تمديد مهلتك بـ 7 أيام.")
+                        # 📧 إرسال إيميل تمديد المهلة
+                        ext_subject = "⏳ تم تمديد الفترة التجريبية لمتجرك"
+                        ext_body = f"مرحباً بك يا تاجرنا العزيز,\n\nنود إعلامك بأنه تم تمديد الفترة التجريبية لمتجرك لمدة 7 أيام إضافية بنجاح.\nيمكنك الآن مواصلة تجربة كافة ميزات المنصة.\n\nنتمنى لك مبيعات موفقة!"
+                        send_gmail_notification(current_email, ext_subject, ext_body)
                         
                         st.session_state[f"border_color_{current_email}"] = "#ffaa00"
                         st.toast("⏳ تم تمديد المهلة وإرسال البريد!"); time.sleep(0.5); st.rerun()
@@ -1003,8 +1005,10 @@ if is_boss_link:
                         conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
-                        log_admin_action(current_email, "ترقية الباقة", "تمت ترقية الباقة إلى السيبرانية الخارقة (65k)")
-                        send_gmail_notification_with_log(current_email, "🚀 مبروك! تم ترقية باقة متجرك", "تم ترقية باقتك إلى الخارقة.")
+                        # 📧 إرسال إيميل ترقية الباقة
+                        upg_subject = "🚀 مبروك! تم ترقية باقة متجرك إلى الباقة الخارقة"
+                        upg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم ترقية باقة حسابك رسمياً إلى (الباقة السيبرانية الخارقة 65k)!\nتم فتح كافة أدوات الأتمتة المتقدمة والذكاء الاصطناعي لمتجرك.\n\nبالتوفيق والنجاح!"
+                        send_gmail_notification(current_email, upg_subject, upg_body)
                         
                         st.session_state[f"border_color_{current_email}"] = "#ff00ff"
                         st.toast("🚀 تم ترقية الباقة وإرسال البريد!"); time.sleep(0.5); st.rerun()
@@ -1015,13 +1019,16 @@ if is_boss_link:
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
-                        log_admin_action(current_email, "حظر الحساب", "تم قفل ومصادرة صلاحيات الوصول")
-                        send_gmail_notification_with_log(current_email, "⚠️ تنبيه: تم تجميد حساب متجرك مؤقتاً", "تم قفل حسابك من قبل الإدارة.")
+                        # 📧 إرسال إيميل الحظر وقفل الحساب
+                        lck_subject = "⚠️ تنبيه: تم تجميد حساب متجرك مؤقتاً"
+                        lck_body = f"مرحباً,\n\nنحيطك علماً بأنه تم قفل ومصادرة صلاحيات الوصول إلى حسابك مؤقتاً من قبل الإدارة.\nإذا كنت تعتقد أن هذا حدث عن طريق الخطأ، يرجى التواصل مع فريق الدعم الفني للإدارة.\n\nتحياتنا."
+                        send_gmail_notification(current_email, lck_subject, lck_body)
                         
                         st.session_state[f"border_color_{current_email}"] = "#ff4500"
                         st.toast("🔒 تم مصادرة الصلاحيات وإرسال البريد!"); time.sleep(0.5); st.rerun()
 
                 with col_6:
+                    # 💎 [الزر السادس المتوهج بالفيروزي]: تعيين فئة الاشتراك السنوي
                     if st.button("🏷️ تعيين فئة الاشتراك", key=f"btn_pkg_select_{current_email}"):
                         st.session_state[f"show_pkg_slide_{current_email}"] = not st.session_state.get(f"show_pkg_slide_{current_email}", False)
                         st.rerun()
