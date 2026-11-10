@@ -703,7 +703,7 @@ if is_boss_link:
                     
                     st.session_state[f"border_color_{current_email}"] = "#00ff66"
                     st.toast("🎯 تم التفعيل وإرسال إيميل الترحيب بالقبول للتاجر!"); time.sleep(0.5); st.rerun()
-   with col_2:
+                with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
