@@ -7,6 +7,67 @@
 # ========================================================
 # [القسم الأول]: إعدادات البيئة، خزانة النسخ الاحتياطي، وجدار حماية الشبح المتقدم
 # ========================================================
+def render_admin_audit_logs_expander():
+    """
+    عرض جدول سجل نشاطات المالك (admin_audit_logs) في أسفل اللوحة داخل (st.expander) بتصميم داكن وأنيق.
+    """
+    with st.expander("📜 سجل نشاطات وتدقيق المالك (Admin Audit Logs)", expanded=False):
+        st.markdown("<p style='color: #00fff0; direction: rtl; text-align: right;'>سجل كامل وموثق لكل العمليات الإدارية التي قام بها المالك على حسابات التجار.</p>", unsafe_allow_html=True)
+        try:
+            conn = sqlite3.connect("saas_security_vault.db", timeout=10)
+            df_logs = pd.read_sql("SELECT * FROM admin_audit_logs ORDER BY rowid DESC LIMIT 100", conn)
+            conn.close()
+            
+            if not df_logs.empty:
+                st.dataframe(df_logs, use_container_width=True)
+            else:
+                st.info("📭 السجل فارغ حالياً، لم يتم تنفيذ أي عمليات إدارية بعد.")
+        except Exception as e:
+            st.error(f"⚠️ تعذر جلب سجل النشاطات: {e}")
+
+def render_email_delivery_logs_expander():
+    """
+    عرض جدول سجل حالة البريد (email_logs) في أسفل اللوحة داخل (st.expander) مع إمكانية إعادة الإرسال لرسائل FAILED.
+    """
+    with st.expander("📧 سجل حالة إرسال البريد الإلكتروني (Email Delivery Logs)", expanded=False):
+        st.markdown("<p style='color: #00fff0; direction: rtl; text-align: right;'>متابعة حالات تسليم الإيميلات للجار مع إمكانية إعادة المحاولة الفورية للرسائل الفاشلة.</p>", unsafe_allow_html=True)
+        try:
+            conn = sqlite3.connect("saas_security_vault.db", timeout=10)
+            df_emails = pd.read_sql("SELECT rowid, * FROM email_logs ORDER BY rowid DESC LIMIT 100", conn)
+            conn.close()
+            
+            if not df_emails.empty:
+                for _, row in df_emails.iterrows():
+                    r_id = row['rowid']
+                    to_email = row.get('to_email', 'غير محدد')
+                    subject = row.get('subject', 'بدون موضوع')
+                    status = str(row.get('status', 'SUCCESS'))
+                    
+                    status_color = "#00ff66" if "SUCCESS" in status or "نجاح" in status else "#ff0055"
+                    
+                    st.markdown(f"""
+                    <div style="border: 1px solid {status_color}; border-radius: 8px; padding: 10px; margin-bottom: 8px; background: rgba(10,10,20,0.8); direction: rtl; text-align: right;">
+                        <span style="color: #00fff0;">المرسل إليه: <b>{to_email}</b></span> | 
+                        <span style="color: #ff00ff;">الموضوع: {subject}</span> | 
+                        الحالة: <span style="color: {status_color}; font-weight: bold;">{status}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # إذا كانت الحالة FAILED، أظهر زر إعادة محاولة الإرسال فوراً
+                    if "FAILED" in status.upper() or "فشل" in status:
+                        if st.button(f"🔄 إعادة محاولة إرسال البريد إلى ({to_email})", key=f"retry_email_{r_id}"):
+                            # إعادة إرسال البريد باستخدام الدالة المسجلة
+                            success_retry = send_gmail_notification_with_log(to_email, subject, "إعادة إرسال تلقائية من لوحة المالك بعد فشل سابق.")
+                            if success_retry:
+                                st.toast("✅ تم إعادة إرسال البريد بنجاح!", icon="🚀")
+                            else:
+                                st.error("❌ فشلت محاولة إعادة الإرسال مجدداً.")
+                            time.sleep(0.5)
+                            st.rerun()
+            else:
+                st.info("📭 سجل البريد الإلكتروني فارغ حالياً.")
+        except Exception as e:
+            st.error(f"⚠️ تعذر جلب سجل البريد: {e}")
 def create_backup_vault():
     import os
     import zipfile
@@ -892,66 +953,66 @@ if is_boss_link:
                 """, unsafe_allow_html=True)
                 
                 # إنشاء 6 أعمدة تفاعلية مخصصة للأزرار الستة دون أي تغيير على وظائفها
+# إنشاء 6 أعمدة تفاعلية
                 col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
+                
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
-                        # 📧 إرسال إيميل التفعيل والقبول
-                        welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
-                        welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك والبدء في استغلال كافة الميزات المتاحة في باقتك.\n\nنتمنى لك كل التوفيق والنجاح في تجارتك!"
-                        send_gmail_notification(current_email, welcome_subject, welcome_body)
+                        # 📝 تسجيل النشاط
+                        log_admin_action(current_email, "تفعيل الحساب", "تم قبول وتفعيل حساب التاجر")
+                        # 📧 إرسال الإيميل بالسجل
+                        send_gmail_notification_with_log(current_email, "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح", "مرحباً بك يا تاجرنا العزيز,\n\nتم تفعيل حسابك بنجاح!")
                         
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
                         st.toast("🎯 تم التفعيل وإرسال البريد!"); time.sleep(0.5); st.rerun()
+
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
-                        # 📧 إرسال إيميل تمديد المهلة
-                        ext_subject = "⏳ تم تمديد الفترة التجريبية لمتجرك"
-                        ext_body = f"مرحباً بك يا تاجرنا العزيز,\n\nنود إعلامك بأنه تم تمديد الفترة التجريبية لمتجرك لمدة 7 أيام إضافية بنجاح.\nيمكنك الآن مواصلة تجربة كافة ميزات المنصة.\n\nنتمنى لك مبيعات موفقة!"
-                        send_gmail_notification(current_email, ext_subject, ext_body)
+                        log_admin_action(current_email, "تمديد المهلة", "تم تمديد فترة التجربة 7 أيام إضافية")
+                        send_gmail_notification_with_log(current_email, "⏳ تم تمديد الفترة التجريبية لمتجرك", "مرحباً، تم تمديد مهلتك بـ 7 أيام.")
                         
                         st.session_state[f"border_color_{current_email}"] = "#ffaa00"
                         st.toast("⏳ تم تمديد المهلة وإرسال البريد!"); time.sleep(0.5); st.rerun()
+
                 with col_3:
                     if st.button("🗑️ تدمير نهائي فوري", key=f"btn_del_{current_email}"):
                         st.session_state[f"border_color_{current_email}"] = "#ff0055"
                         st.session_state[f"ask_confirm_{current_email}"] = True
                         st.rerun()
+
                 with col_4:
                     if st.button("💸 ترقية فئة الباقة", key=f"btn_upg_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
-                        # 📧 إرسال إيميل ترقية الباقة
-                        upg_subject = "🚀 مبروك! تم ترقية باقة متجرك إلى الباقة الخارقة"
-                        upg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم ترقية باقة حسابك رسمياً إلى (الباقة السيبرانية الخارقة 65k)!\nتم فتح كافة أدوات الأتمتة المتقدمة والذكاء الاصطناعي لمتجرك.\n\nبالتوفيق والنجاح!"
-                        send_gmail_notification(current_email, upg_subject, upg_body)
+                        log_admin_action(current_email, "ترقية الباقة", "تمت ترقية الباقة إلى السيبرانية الخارقة (65k)")
+                        send_gmail_notification_with_log(current_email, "🚀 مبروك! تم ترقية باقة متجرك", "تم ترقية باقتك إلى الخارقة.")
                         
                         st.session_state[f"border_color_{current_email}"] = "#ff00ff"
                         st.toast("🚀 تم ترقية الباقة وإرسال البريد!"); time.sleep(0.5); st.rerun()
+
                 with col_5:
                     if st.button("🔒 حظر وقفل الحساب", key=f"btn_lck_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
-                        # 📧 إرسال إيميل الحظر وقفل الحساب
-                        lck_subject = "⚠️ تنبيه: تم تجميد حساب متجرك مؤقتاً"
-                        lck_body = f"مرحباً,\n\nنحيطك علماً بأنه تم قفل ومصادرة صلاحيات الوصول إلى حسابك مؤقتاً من قبل الإدارة.\nإذا كنت تعتقد أن هذا حدث عن طريق الخطأ، يرجى التواصل مع فريق الدعم الفني للإدارة.\n\nتحياتنا."
-                        send_gmail_notification(current_email, lck_subject, lck_body)
+                        log_admin_action(current_email, "حظر الحساب", "تم قفل ومصادرة صلاحيات الوصول")
+                        send_gmail_notification_with_log(current_email, "⚠️ تنبيه: تم تجميد حساب متجرك مؤقتاً", "تم قفل حسابك من قبل الإدارة.")
                         
                         st.session_state[f"border_color_{current_email}"] = "#ff4500"
                         st.toast("🔒 تم مصادرة الصلاحيات وإرسال البريد!"); time.sleep(0.5); st.rerun()
+
                 with col_6:
-                    # 💎 [الزر السادس المتوهج بالفيروزي]: تعيين فئة الاشتراك السنوي
                     if st.button("🏷️ تعيين فئة الاشتراك", key=f"btn_pkg_select_{current_email}"):
                         st.session_state[f"show_pkg_slide_{current_email}"] = not st.session_state.get(f"show_pkg_slide_{current_email}", False)
                         st.rerun()
