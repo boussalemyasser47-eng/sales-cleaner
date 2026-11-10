@@ -794,6 +794,7 @@ if is_boss_link:
                     st.markdown("</div>", unsafe_allow_html=True)
                 
                 # تأكيد الحذف الفوري المستقل لكل تاجر على حدة (لا يظهر إلا عند النقر حصراً)
+# نافذة التأكيد الخاصة بالحذف (مخفية ولا تظهر إلا عند الضغط حصراً)
                 if st.session_state.get(f"ask_confirm_{current_email}", False):
                     st.warning(f"⚠️ تنبيه: هل أنت متأكد من الحذف النهائي للتاجر ({current_email})؟")
                     col_yes, col_no = st.columns(2)
@@ -802,24 +803,28 @@ if is_boss_link:
                             st.session_state["destroyed_flag"] = True
                             st.session_state[f"ask_confirm_{current_email}"] = False
                             
-                            # 📧 إرسال إيميل الحذف النهائي قبل الحذف
                             del_subject = "❌ إشعار بإغلاق وحذف الحساب"
                             del_body = f"مرحباً،\n\nنحيطك علماً بأنه تم حذف وإغلاق حساب متجرك نهائياً من النظام.\nنتمنى لك التوفيق في مشاريعك المستقبلية."
                             send_gmail_notification(current_email, del_subject, del_body)
                             
                             if delete_email_completely(current_email): 
-                                st.toast("🔥 تم حذف وتطهير الحساب وإرسال البريد!"); time.sleep(0.5); st.rerun()
+                                st.toast("🔥 تم حذف وتطهير الحساب وإرسال البريد!")
+                                time.sleep(0.5); st.rerun()
                     with col_no:
                         if st.button("❌ تراجع", key=f"final_no_{current_email}"):
                             st.session_state[f"ask_confirm_{current_email}"] = False
                             st.rerun()
-                
-                st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("🚪 مغادرة غرفة القيادة وقفل الخزائن", key=f"logout_boss_{current_email}"): 
-                    st.session_state["admin_master_logged"] = False
-                    st.rerun()
+            
+            # 🛑 تم حذف زر المغادرة من هنا لئلا يتكرر مع كل تاجر!
+
         else: 
             st.warning("📭 الرادار صافي تماماً، لا توجد طلبات معلقة حالياً.")
+
+    # ✅ وضع زر المغادرة هنا مرة واحدة فقط في أسفل اللوحة بالكامل خارج حلقة التجار
+    st.markdown("<br><hr>", unsafe_allow_html=True)
+    if st.button("🚪 مغادرة غرفة القيادة وقفل الخزائن", key="logout_boss_global"): 
+        st.session_state["admin_master_logged"] = False
+        st.rerun()
 # === الإضافات والتعديلات الجديدة لغرفة المالك ===
 # === إضافة مؤشر التراخيص الدائري المشع للرادار ===
 def render_neon_license_ring(email, days_left):
