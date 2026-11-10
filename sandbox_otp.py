@@ -154,19 +154,172 @@ def log_admin_action(target_email, action_type, details=""):
     print(f"Error logging admin action: {e}")
 
 # 3. تطوير دالة إرسال البريد لتسجيل الحالة مع تتبع الأخطاء (try-except)
-def send_gmail_notification_with_log(to_email, subject, body):
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+# ========================================================
+# [القسم الأول - المطور]: دالة إرسال الإيميلات الهيكلية الفاخرة (HTML/Neon Pro)
+# ========================================================
+
+def send_gmail_notification(target_email, subject, body_text, action_type="DEFAULT", action_url=None):
+    """
+    دالة موحدة ومطورة لإرسال إيميلات HTML احترافية منسقة بصرياً وملونة 
+    مع دعم اللوجو، الأزرار التفاعلية، وتغير الألوان حسب نوع الحركة (OTP, ACTIVATE, LOCK, etc.)
+    """
+    try:
+        sender_email = st.secrets["GMAIL_USER"]
+        sender_password = st.secrets["GMAIL_APP_PASSWORD"]
+        
+        # 🎨 تحديد الألوان والأيقونات والشعارات حسب نوع الإجراء
+        theme_colors = {
+            "OTP": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔐", "btn_text": "تأكيد الرمز الآن"},
+            "ACTIVATE": {"primary": "#00ff66", "bg_accent": "rgba(0, 255, 102, 0.1)", "icon": "🎉", "btn_text": "الدخول لمتجرك الآن"},
+            "EXTEND": {"primary": "#ffaa00", "bg_accent": "rgba(255, 170, 0, 0.1)", "icon": "⏳", "btn_text": "متابعة متجرك"},
+            "UPGRADE": {"primary": "#ff00ff", "bg_accent": "rgba(255, 0, 255, 0.1)", "icon": "🚀", "btn_text": "استكشاف المميزات الخارقة"},
+            "LOCK": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "⚠️", "btn_text": "التواصل مع الدعم الفني"},
+            "DELETE": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "❌", "btn_text": "مراجعة الدعم"},
+            "DEFAULT": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔔", "btn_text": "الانتقال للمنصة"}
+        }
+        
+        theme = theme_colors.get(action_type, theme_colors["DEFAULT"])
+        btn_link = action_url if action_url else "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
+        
+        # رابط الشعار (شعار المنصة الهولوغرامي أو رابط شعارك)
+        logo_url = "https://img.icons8.com/isometric-folders/100/00fff0/cyber-security.png"
+        
+        # ✉️ تحويل النص العادي إلى فقرات HTML منسقة
+        formatted_body = body_text.replace("\n", "<br>")
+
+        # 📐 بناء هيكل وتصميم البريد الإلكتروني (HTML Email Template)
+        html_content = f"""
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    background-color: #05050c;
+                    color: #ffffff;
+                    margin: 0;
+                    padding: 20px;
+                    direction: rtl;
+                    text-align: right;
+                }}
+                .email-container {{
+                    max-width: 600px;
+                    margin: 0 auto;
+                    background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%);
+                    border: 2px solid {theme['primary']};
+                    border-radius: 16px;
+                    overflow: hidden;
+                    box-shadow: 0 0 30px {theme['primary']}40;
+                }}
+                .email-header {{
+                    background: {theme['bg_accent']};
+                    padding: 30px;
+                    text-align: center;
+                    border-bottom: 1px solid {theme['primary']}30;
+                }}
+                .email-header img {{
+                    width: 70px;
+                    height: 70px;
+                    margin-bottom: 10px;
+                }}
+                .email-header h1 {{
+                    color: {theme['primary']};
+                    font-size: 22px;
+                    margin: 0;
+                    text-shadow: 0 0 10px {theme['primary']}80;
+                }}
+                .email-body {{
+                    padding: 30px;
+                    font-size: 15px;
+                    line-height: 1.8;
+                    color: #e0e0e0;
+                }}
+                .info-box {{
+                    background: rgba(255, 255, 255, 0.03);
+                    border-right: 4px solid {theme['primary']};
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                    color: #ffffff;
+                }}
+                .btn-action {{
+                    display: block;
+                    width: 220px;
+                    margin: 25px auto;
+                    padding: 14px 20px;
+                    text-align: center;
+                    background: linear-gradient(135deg, {theme['primary']} 0%, #00bfff 100%);
+                    color: #000000 !important;
+                    font-weight: bold;
+                    font-size: 15px;
+                    text-decoration: none;
+                    border-radius: 10px;
+                    box-shadow: 0 0 20px {theme['primary']}60;
+                }}
+                .email-footer {{
+                    background: #030307;
+                    padding: 15px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #777788;
+                    border-top: 1px solid rgba(255,255,255,0.05);
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="email-container">
+                <div class="email-header">
+                    <img src="{logo_url}" alt="Logo">
+                    <h1>{theme['icon']} {subject}</h1>
+                </div>
+                <div class="email-body">
+                    <div class="info-box">
+                        {formatted_body}
+                    </div>
+                    <a href="{btn_link}" class="btn-action" target="_blank">{theme['btn_text']}</a>
+                </div>
+                <div class="email-footer">
+                    © 2026 NEXUS SAAS PLATFORM — جميع الحقوق محفوظة لمتجرك السحابي.
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        message = MIMEMultipart("alternative")
+        message["Subject"] = subject
+        message["From"] = sender_email
+        message["To"] = target_email
+
+        # إرفاق نص الـ HTML للمرسل
+        html_part = MIMEText(html_content, "html", "utf-8")
+        message.attach(html_part)
+
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, target_email, message.as_string())
+        server.quit()
+        return True
+
+    except Exception as e:
+        st.error(f"⚠️ خطأ في إرسال البريد الإلكتروني المنسق: {e}")
+        return False
+
+
+def send_gmail_notification_with_log(to_email, subject, body, action_type="DEFAULT"):
+    """دالة الإرسال مع تتبع السجل وتحديد نوع الهوية الإعلانية للبريد"""
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     status = "SUCCESS"
     err_msg = ""
     
     try:
-        # استدعاء دالة الإرسال الأصلية لديك
-        send_gmail_notification(to_email, subject, body)
+        send_gmail_notification(to_email, subject, body, action_type=action_type)
     except Exception as e:
         status = "FAILED"
         err_msg = str(e)
     finally:
-        # حفظ نتيجة الإرسال في سجل البريد
         conn = sqlite3.connect("saas_security_vault.db")
         cursor = conn.cursor()
         cursor.execute(
@@ -971,8 +1124,7 @@ if is_boss_link:
                         # 📧 إرسال إيميل التفعيل والقبول
                         welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
                         welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك والبدء في استغلال كافة الميزات المتاحة في باقتك.\n\nنتمنى لك كل التوفيق والنجاح في تجارتك!"
-                        send_gmail_notification(current_email, welcome_subject, welcome_body)
-                        
+                        send_gmail_notification_with_log(current_email, welcome_subject, welcome_body, action_type="ACTIVATE")                        
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
                         st.toast("🎯 تم التفعيل وإرسال البريد!"); time.sleep(0.5); st.rerun()
 
@@ -985,8 +1137,7 @@ if is_boss_link:
                         # 📧 إرسال إيميل تمديد المهلة
                         ext_subject = "⏳ تم تمديد الفترة التجريبية لمتجرك"
                         ext_body = f"مرحباً بك يا تاجرنا العزيز,\n\nنود إعلامك بأنه تم تمديد الفترة التجريبية لمتجرك لمدة 7 أيام إضافية بنجاح.\nيمكنك الآن مواصلة تجربة كافة ميزات المنصة.\n\nنتمنى لك مبيعات موفقة!"
-                        send_gmail_notification(current_email, ext_subject, ext_body)
-                        
+                        send_gmail_notification_with_log(current_email, ext_subject, ext_body, action_type="EXTEND")                        
                         st.session_state[f"border_color_{current_email}"] = "#ffaa00"
                         st.toast("⏳ تم تمديد المهلة وإرسال البريد!"); time.sleep(0.5); st.rerun()
 
@@ -1005,8 +1156,7 @@ if is_boss_link:
                         # 📧 إرسال إيميل ترقية الباقة
                         upg_subject = "🚀 مبروك! تم ترقية باقة متجرك إلى الباقة الخارقة"
                         upg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم ترقية باقة حسابك رسمياً إلى (الباقة السيبرانية الخارقة 65k)!\nتم فتح كافة أدوات الأتمتة المتقدمة والذكاء الاصطناعي لمتجرك.\n\nبالتوفيق والنجاح!"
-                        send_gmail_notification(current_email, upg_subject, upg_body)
-                        
+                        send_gmail_notification_with_log(current_email, upg_subject, upg_body, action_type="UPGRADE")                        
                         st.session_state[f"border_color_{current_email}"] = "#ff00ff"
                         st.toast("🚀 تم ترقية الباقة وإرسال البريد!"); time.sleep(0.5); st.rerun()
 
@@ -1019,8 +1169,7 @@ if is_boss_link:
                         # 📧 إرسال إيميل الحظر وقفل الحساب
                         lck_subject = "⚠️ تنبيه: تم تجميد حساب متجرك مؤقتاً"
                         lck_body = f"مرحباً,\n\nنحيطك علماً بأنه تم قفل ومصادرة صلاحيات الوصول إلى حسابك مؤقتاً من قبل الإدارة.\nإذا كنت تعتقد أن هذا حدث عن طريق الخطأ، يرجى التواصل مع فريق الدعم الفني للإدارة.\n\nتحياتنا."
-                        send_gmail_notification(current_email, lck_subject, lck_body)
-                        
+                        send_gmail_notification_with_log(current_email, lck_subject, lck_body, action_type="LOCK")                        
                         st.session_state[f"border_color_{current_email}"] = "#ff4500"
                         st.toast("🔒 تم مصادرة الصلاحيات وإرسال البريد!"); time.sleep(0.5); st.rerun()
 
