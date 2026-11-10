@@ -694,134 +694,78 @@ if is_boss_link:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
-                        conn.commit()
-                        conn.close()
-                        
-                        welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
-                        welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك والبدء في استغلال كافة الميزات المتاحة في باقتك.\n\nنتمنى لك كل التوفيق والنجاح في تجارتك!"
-                        send_gmail_notification(current_email, welcome_subject, welcome_body)
-                        
+                        conn.commit(); conn.close()
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
-                        st.toast("🎯 تم التفعيل وإرسال إيميل الترحيب بالقبول للتاجر!")
-                        time.sleep(0.5)
-                        st.rerun()
-
+                        st.toast("🎯 تم التفعيل!"); time.sleep(0.5); st.rerun()
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
-                        conn.commit()
-                        conn.close()
-                        
-                        ext_subject = "⏳ تم تمديد الفترة التجريبية لمتجرك"
-                        ext_body = f"مرحباً بك يا تاجرنا العزيز,\n\nنود إعلامك بأنه تم تمديد الفترة التجريبية لمتجرك لمدة 7 أيام إضافية بنجاح.\nيمكنك الآن مواصلة تجربة كافة ميزات المنصة.\n\nنتمنى لك مبيعات موفقة!"
-                        send_gmail_notification(current_email, ext_subject, ext_body)
-                        
+                        conn.commit(); conn.close()
                         st.session_state[f"border_color_{current_email}"] = "#ffaa00"
-                        st.toast("⏳ تم تمديد المهلة وإرسال البريد!")
-                        time.sleep(0.5)
-                        st.rerun()
-
+                        st.toast("⏳ تم تمديد المهلة!"); time.sleep(0.5); st.rerun()
                 with col_3:
                     if st.button("🗑️ تدمير نهائي فوري", key=f"btn_del_{current_email}"):
-                        # تفعيل حالة التأكيد لهذا التاجر فقط عند الضغط
+                        st.session_state[f"border_color_{current_email}"] = "#ff0055"
                         st.session_state[f"ask_confirm_{current_email}"] = True
-                        st.rerun()
-
                 with col_4:
                     if st.button("💸 ترقية فئة الباقة", key=f"btn_upg_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
-                        conn.commit()
-                        conn.close()
-                        
-                        upg_subject = "🚀 مبروك! تم ترقية باقة متجرك إلى الباقة الخارقة"
-                        upg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم ترقية باقة حسابك رسمياً إلى (الباقة السيبرانية الخارقة 65k)!\nتم فتح كافة أدوات الأتمتة المتقدمة والذكاء الاصطناعي لمتجرك.\n\nبالتوفيق والنجاح!"
-                        send_gmail_notification(current_email, upg_subject, upg_body)
-                        
+                        conn.commit(); conn.close()
                         st.session_state[f"border_color_{current_email}"] = "#ff00ff"
-                        st.toast("🚀 تم ترقية الباقة وإرسال البريد!")
-                        time.sleep(0.5)
-                        st.rerun()
-
+                        st.toast("🚀 تم ترقية الباقة السنوية!"); time.sleep(0.5); st.rerun()
                 with col_5:
                     if st.button("🔒 حظر وقفل الحساب", key=f"btn_lck_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
-                        conn.commit()
-                        conn.close()
-                        
-                        lck_subject = "⚠️ تنبيه: تم تجميد حساب متجرك مؤقتاً"
-                        lck_body = f"مرحباً,\n\nنحيطك علماً بأنه تم قفل ومصادرة صلاحيات الوصول إلى حسابك مؤقتاً من قبل الإدارة.\nإذا كنت تعتقد أن هذا حدث عن طريق الخطأ، يرجى التواصل مع فريق الدعم الفني للإدارة.\n\nتحياتنا."
-                        send_gmail_notification(current_email, lck_subject, lck_body)
-                        
+                        conn.commit(); conn.close()
                         st.session_state[f"border_color_{current_email}"] = "#ff4500"
-                        st.toast("🔒 تم مصادرة الصلاحيات وإرسال البريد!")
-                        time.sleep(0.5)
-                        st.rerun()
-
+                        st.toast("🔒 تم مصادرة الصلاحيات عن بعد!"); time.sleep(0.5); st.rerun()
                 with col_6:
+                    # 💎 [الزر السادس المتوهج بالفيروزي]: تعيين فئة الاشتراك السنوي
                     if st.button("🏷️ تعيين فئة الاشتراك", key=f"btn_pkg_select_{current_email}"):
-                        current_state = st.session_state.get(f"show_pkg_slide_{current_email}", False)
-                        st.session_state[f"show_pkg_slide_{current_email}"] = not current_state
+                        st.session_state[f"show_pkg_slide_{current_email}"] = not st.session_state.get(f"show_pkg_slide_{current_email}", False)
                         st.rerun()
-
-            # القائمة المنسدلة للباقات (لا تظهر إلا عند الضغط على زر تعيين الاشتراك)
-            if st.session_state.get(f"show_pkg_slide_{current_email}", False):
-                st.markdown(f"<div style='border: 1px solid #00fff0; border-radius: 10px; padding: 15px; background: rgba(5,20,30,0.9); margin-top: 10px;'>", unsafe_allow_html=True)
-                st.markdown(f"<p style='color: #00fff0; margin: 0 0 10px 0; font-weight: bold;'>🎯 اختر الباقة الجديدة للتاجر:</p>", unsafe_allow_html=True)
                 
-                selected_opt = st.radio(
-                    "الباقات المتوفرة:",
-                    ["الباقة السيبرانية الخارقة (65k)", "الباقة الاحترافية (45k)", "الباقة الأساسية (29k)"],
-                    key=f"radio_pkg_{current_email}",
-                    label_visibility="collapsed"
-                )
-
-                if st.button("تأمين وحفظ الباقة برمجياً حياً 🎯", key=f"btn_confirm_pkg_{current_email}"):
-                    conn = sqlite3.connect("saas_security_vault.db")
-                    conn.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE email = ?", (selected_opt, current_email))
-                    conn.commit()
-                    conn.close()
+                # 🔄 [ميكانيكية الـ Slide-down البرمجية المخصصة للزر السادس للتحكم بالباقات والتوهج]
+                if st.session_state.get(f"show_pkg_slide_{current_email}", False):
+                    st.markdown(f"<div style='border: 1px solid #00fff0; border-radius: 10px; padding: 15px; background: rgba(5,20,30,0.9); margin-top: 10px; direction: rtl; text-align: right;'>", unsafe_allow_html=True)
+                    st.markdown("<p style='color: #00fff0; margin: 0 0 10px 0; font-weight: bold;'>🎯 اختر فئة الاشتراك السنوي المحددة لهذا التاجر للترقية الفورية ولتلوين الإطار:</p>", unsafe_allow_html=True)
                     
-                    pkg_subject = "🏷️ تحديث فئة اشتراك متجرك"
-                    pkg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nتم تحديث باقة متجرك رسمياً إلى: {selected_opt}.\nيمكنك الآن استغلال كافة الميزات المتاحة في باقتك الجديدة من خلال لوحة التحكم.\n\nنتمنى لك كل التوفيق والنجاح!"
-                    send_gmail_notification(current_email, pkg_subject, pkg_body)
-
-                    if "29k" in selected_opt:
-                        st.session_state[f"border_color_{current_email}"] = "#00ff66"
-                    elif "45k" in selected_opt:
-                        st.session_state[f"border_color_{current_email}"] = "#ffaa00"
-                    else:
-                        st.session_state[f"border_color_{current_email}"] = "#ff00ff"
-
-                    st.session_state[f"show_pkg_slide_{current_email}"] = False
-                    st.toast(f"🏷️ تم تحديث باقة المتجر إلى {selected_opt} وإرسال البريد للتاجر!")
-                    time.sleep(0.5)
-                    st.rerun()
+                    selected_opt = st.radio(
+                        "الباقات المتوفرة:",
+                        ["الباقة الأساسية (29k)", "الباقة الاحترافية (45k)", "الباقة السيبرانية الخارقة (65k)"],
+                        key=f"radio_pkg_{current_email}",
+                        label_visibility="collapsed"
+                    )
                     
-                st.markdown("</div>", unsafe_allow_html=True)
-
-            # نافذة التأكيد الخاصة بالحذف (مخفية تماماً ولا تظهر إلا عند الضغط على زر الحذف لهذا التاجر)
-            if st.session_state.get(f"ask_confirm_{current_email}", False):
-                st.warning(f"⚠️ تنبيه: هل أنت متأكد من رغبتك في الحذف النهائي للتاجر ({current_email})؟")
-                col_yes, col_no = st.columns(2)
-                with col_yes:
-                    if st.button("✅ نعم، احذف نهائياً", key=f"final_yes_{current_email}"):
+                    if st.button("💾 تأمين وحفظ الباقة برمجياً حياً", key=f"btn_confirm_pkg_{current_email}"):
+                        conn = sqlite3.connect("saas_security_vault.db")
+                        conn.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE email = ?", (selected_opt, current_email))
+                        conn.commit(); conn.close()
+                        
+                        if "29k" in selected_opt:
+                            st.session_state[f"border_color_{current_email}"] = "#00ff66"
+                        elif "45k" in selected_opt:
+                            st.session_state[f"border_color_{current_email}"] = "#ffaa00"
+                        else:
+                            st.session_state[f"border_color_{current_email}"] = "#ff00ff"
+                            
+                        st.session_state[f"show_pkg_slide_{current_email}"] = False
+                        st.toast(f"✅ تم تحديث باقة المتجر إلى {selected_opt} وتلوين الكود حياً!")
+                        time.sleep(0.5); st.rerun()
+                        
+                    st.markdown("</div>", unsafe_allow_html=True)
+                
+                if st.session_state.get(f"ask_confirm_{current_email}", False):
+                    if st.button("✅ فهمت، احذف الحساب الآن", key=f"final_yes_{current_email}"):
+                        st.session_state["destroyed_flag"] = True
                         st.session_state[f"ask_confirm_{current_email}"] = False
-                        if delete_email_completely(current_email): 
-                            st.toast("🔥 تم حذف وتطهير الحساب وإرسال البريد!")
-                            time.sleep(0.5)
-                            st.rerun()
-                with col_no:
-                    if st.button("❌ تراجع", key=f"final_no_{current_email}"):
-                        st.session_state[f"ask_confirm_{current_email}"] = False
-                        st.rerun()
+                        if delete_email_completely(current_email): st.toast("🔥 تم تذكير وتطهير الحساب!"); time.sleep(0.5); st.rerun()
             
             st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("🚪 مغادرة غرفة القيادة وقفل الخزائن", key="logout_boss"): 
-                st.session_state["admin_master_logged"] = False
-                st.rerun()
+            if st.button("🚪 مغادرة غرفة القيادة وقفل الخزائن", key="logout_boss"): st.session_state["admin_master_logged"] = False; st.rerun()
         else: 
             st.warning("📭 الرادار صافي تماماً، لا توجد طلبات معلقة حالياً.")
 # === الإضافات والتعديلات الجديدة لغرفة المالك ===
