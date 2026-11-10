@@ -961,7 +961,7 @@ if is_boss_link:
                 </div>
                 """, unsafe_allow_html=True)
 
-                     col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
+                col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
