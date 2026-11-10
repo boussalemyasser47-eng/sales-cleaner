@@ -26,7 +26,6 @@ import re
 # 🔒 ضبط إعدادات الشاشة الأساسية للمنصة الموحدة
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
-# 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
 query_params = st.query_params
 is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
 if "admin_master_logged" not in st.session_state:
@@ -60,26 +59,81 @@ def init_advanced_db():
 
 init_advanced_db()
 
-# 2. دالة إرسال الإيميلات الهيكلية الفاخرة الموحدة (HTML/Neon Pro)
 # ========================================================
-# [القسم الأول - المطور والمصحح نهائياً]: دالة إرسال البريد الموحدة الآمنة
+# 🚀 الدالة الموحدة والوحيدة لإرسال البريد (HTML + Plain Text + تتبع السجل)
 # ========================================================
+def send_gmail_notification(target_email, subject, body_text, action_type="DEFAULT", action_url=None):
+    try:
+        sender_email = st.secrets["GMAIL_USER"]
+        sender_password = st.secrets["GMAIL_APP_PASSWORD"]
+        
+        theme_colors = {
+            "OTP": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔐", "btn_text": "تأكيد الرمز الآن"},
+            "ACTIVATE": {"primary": "#00ff66", "bg_accent": "rgba(0, 255, 102, 0.1)", "icon": "🎉", "btn_text": "الدخول لمتجرك الآن"},
+            "EXTEND": {"primary": "#ffaa00", "bg_accent": "rgba(255, 170, 0, 0.1)", "icon": "⏳", "btn_text": "متابعة متجرك"},
+            "UPGRADE": {"primary": "#ff00ff", "bg_accent": "rgba(255, 0, 255, 0.1)", "icon": "🚀", "btn_text": "استكشاف المميزات الخارقة"},
+            "LOCK": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "⚠️", "btn_text": "التواصل مع الدعم الفني"},
+            "DELETE": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "❌", "btn_text": "مراجعة الدعم"},
+            "DEFAULT": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔔", "btn_text": "الانتقال للمنصة"}
+        }
+        
+        theme = theme_colors.get(action_type, theme_colors["DEFAULT"])
+        btn_link = action_url if action_url else "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
+        logo_url = "https://img.icons8.com/isometric-folders/100/00fff0/cyber-security.png"
+        formatted_body = body_text.replace("\n", "<br>")
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head><meta charset="UTF-8"></head>
+        <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #05050c; color: #ffffff; padding: 20px; direction: rtl; text-align: right;">
+            <div style="max-width: 600px; margin: 0 auto; background: #0d0d21; border: 2px solid {theme['primary']}; border-radius: 16px; padding: 30px; box-shadow: 0 0 20px {theme['primary']}40;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h1 style="color: {theme['primary']}; font-size: 22px; margin: 0;">{theme['icon']} {subject}</h1>
+                </div>
+                <div style="font-size: 15px; line-height: 1.8; color: #e0e0e0; background: rgba(255, 255, 255, 0.03); padding: 15px; border-radius: 8px; border-right: 4px solid {theme['primary']};">
+                    {formatted_body}
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="{btn_link}" style="background: {theme['primary']}; color: #000000; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;" target="_blank">{theme['btn_text']}</a>
+                </div>
+                <div style="text-align: center; font-size: 11px; color: #777; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                    © 2026 NEXUS SAAS PLATFORM — جميع الحقوق محفوظة.
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        message = MIMEMultipart("alternative")
+        message["Subject"] = subject
+        message["From"] = sender_email
+        message["To"] = target_email
+        
+        # إرفاق النسختين معاً (النص البسيط + HTML) لضمان عدم حظرها من قِبل Gmail
+        message.attach(MIMEText(body_text, "plain", "utf-8"))
+        message.attach(MIMEText(html_content, "html", "utf-8"))
+
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, target_email, message.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        st.error(f"⚠️ خطأ في إرسال البريد الإلكتروني: {e}")
+        return False
+
 def send_gmail_notification_with_log(to_email, subject, body, action_type="DEFAULT"):
-    """دالة الإرسال مع كشف الأخطاء الحية على الشاشة"""
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     status = "SUCCESS"
     err_msg = ""
     
     try:
-        # سنقوم بطباعة رسالة تأكيد بأن الدالة بدأت بالعمل
-        print(f"جاري إرسال إيميل إلى: {to_email} نوع الحركة: {action_type}")
         send_gmail_notification(to_email, subject, body, action_type=action_type)
-        st.toast(f"✅ تم تنفيذ إرسال إيميل الـ {action_type} بنجاح")
     except Exception as e:
         status = "FAILED"
         err_msg = str(e)
-        # إظهار الخطأ فوراً على الشاشة لنعرف السبب الحقيقي
-        st.error(f"⚠️ فشل إرسال البريد للأزرار بسبب: {e}")
     finally:
         try:
             conn = sqlite3.connect("saas_security_vault.db")
@@ -94,6 +148,7 @@ def send_gmail_notification_with_log(to_email, subject, body, action_type="DEFAU
             pass
     
     return status == "SUCCESS"
+
 def create_backup_vault():
     import os
     import zipfile
@@ -108,6 +163,10 @@ def create_backup_vault():
                     pass
     zip_buffer.seek(0)
     return zip_buffer
+
+# [باقي كود واجهات التاجر والمالك يعمل بشكل طبيعي الآن...]
+
+# [باقي كود واجهات التاجر والمالك يعمل بشكل طبيعي الآن...]
 import smtplib
 import random
 from email.mime.text import MIMEText
@@ -181,208 +240,6 @@ def log_admin_action(target_email, action_type, details=""):
 # [القسم الأول - المطور]: دالة إرسال الإيميلات الهيكلية الفاخرة (HTML/Neon Pro)
 # ========================================================
 
-def send_gmail_notification(target_email, subject, body_text, action_type="DEFAULT", action_url=None):
-    """
-    دالة موحدة ومطورة لإرسال إيميلات HTML احترافية منسقة بصرياً وملونة 
-    مع دعم اللوجو، الأزرار التفاعلية، وتغير الألوان حسب نوع الحركة (OTP, ACTIVATE, LOCK, etc.)
-    """
-    try:
-        sender_email = st.secrets["GMAIL_USER"]
-        sender_password = st.secrets["GMAIL_APP_PASSWORD"]
-        
-        # 🎨 تحديد الألوان والأيقونات والشعارات حسب نوع الإجراء
-        theme_colors = {
-            "OTP": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔐", "btn_text": "تأكيد الرمز الآن"},
-            "ACTIVATE": {"primary": "#00ff66", "bg_accent": "rgba(0, 255, 102, 0.1)", "icon": "🎉", "btn_text": "الدخول لمتجرك الآن"},
-            "EXTEND": {"primary": "#ffaa00", "bg_accent": "rgba(255, 170, 0, 0.1)", "icon": "⏳", "btn_text": "متابعة متجرك"},
-            "UPGRADE": {"primary": "#ff00ff", "bg_accent": "rgba(255, 0, 255, 0.1)", "icon": "🚀", "btn_text": "استكشاف المميزات الخارقة"},
-            "LOCK": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "⚠️", "btn_text": "التواصل مع الدعم الفني"},
-            "DELETE": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "❌", "btn_text": "مراجعة الدعم"},
-            "DEFAULT": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔔", "btn_text": "الانتقال للمنصة"}
-        }
-        
-        theme = theme_colors.get(action_type, theme_colors["DEFAULT"])
-        btn_link = action_url if action_url else "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
-        
-        # رابط الشعار (شعار المنصة الهولوغرامي أو رابط شعارك)
-        logo_url = "https://img.icons8.com/isometric-folders/100/00fff0/cyber-security.png"
-        
-        # ✉️ تحويل النص العادي إلى فقرات HTML منسقة
-        formatted_body = body_text.replace("\n", "<br>")
-
-        # 📐 بناء هيكل وتصميم البريد الإلكتروني (HTML Email Template)
-        html_content = f"""
-        <!DOCTYPE html>
-        <html lang="ar" dir="rtl">
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body {{
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background-color: #05050c;
-                    color: #ffffff;
-                    margin: 0;
-                    padding: 20px;
-                    direction: rtl;
-                    text-align: right;
-                }}
-                .email-container {{
-                    max-width: 600px;
-                    margin: 0 auto;
-                    background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%);
-                    border: 2px solid {theme['primary']};
-                    border-radius: 16px;
-                    overflow: hidden;
-                    box-shadow: 0 0 30px {theme['primary']}40;
-                }}
-                .email-header {{
-                    background: {theme['bg_accent']};
-                    padding: 30px;
-                    text-align: center;
-                    border-bottom: 1px solid {theme['primary']}30;
-                }}
-                .email-header img {{
-                    width: 70px;
-                    height: 70px;
-                    margin-bottom: 10px;
-                }}
-                .email-header h1 {{
-                    color: {theme['primary']};
-                    font-size: 22px;
-                    margin: 0;
-                    text-shadow: 0 0 10px {theme['primary']}80;
-                }}
-                .email-body {{
-                    padding: 30px;
-                    font-size: 15px;
-                    line-height: 1.8;
-                    color: #e0e0e0;
-                }}
-                .info-box {{
-                    background: rgba(255, 255, 255, 0.03);
-                    border-right: 4px solid {theme['primary']};
-                    padding: 15px;
-                    border-radius: 8px;
-                    margin: 20px 0;
-                    color: #ffffff;
-                }}
-                .btn-action {{
-                    display: block;
-                    width: 220px;
-                    margin: 25px auto;
-                    padding: 14px 20px;
-                    text-align: center;
-                    background: linear-gradient(135deg, {theme['primary']} 0%, #00bfff 100%);
-                    color: #000000 !important;
-                    font-weight: bold;
-                    font-size: 15px;
-                    text-decoration: none;
-                    border-radius: 10px;
-                    box-shadow: 0 0 20px {theme['primary']}60;
-                }}
-                .email-footer {{
-                    background: #030307;
-                    padding: 15px;
-                    text-align: center;
-                    font-size: 12px;
-                    color: #777788;
-                    border-top: 1px solid rgba(255,255,255,0.05);
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="email-container">
-                <div class="email-header">
-                    <img src="{logo_url}" alt="Logo">
-                    <h1>{theme['icon']} {subject}</h1>
-                </div>
-                <div class="email-body">
-                    <div class="info-box">
-                        {formatted_body}
-                    </div>
-                    <a href="{btn_link}" class="btn-action" target="_blank">{theme['btn_text']}</a>
-                </div>
-                <div class="email-footer">
-                    © 2026 NEXUS SAAS PLATFORM — جميع الحقوق محفوظة لمتجرك السحابي.
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-
-        message = MIMEMultipart("alternative")
-        message["Subject"] = subject
-        message["From"] = sender_email
-        message["To"] = target_email
-
-        # إرفاق نص الـ HTML للمرسل
-        html_part = MIMEText(html_content, "html", "utf-8")
-        message.attach(html_part)
-
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, target_email, message.as_string())
-        server.quit()
-        return True
-
-    except Exception as e:
-        st.error(f"⚠️ خطأ في إرسال البريد الإلكتروني المنسق: {e}")
-        return False
-
-
-def send_gmail_notification_with_log(to_email, subject, body, action_type="DEFAULT"):
-    """دالة الإرسال مع تتبع السجل وتحديد نوع الهوية الإعلانية للبريد"""
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    status = "SUCCESS"
-    err_msg = ""
-    
-    try:
-        send_gmail_notification(to_email, subject, body, action_type=action_type)
-    except Exception as e:
-        status = "FAILED"
-        err_msg = str(e)
-    finally:
-        conn = sqlite3.connect("saas_security_vault.db")
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO email_logs (sent_time, recipient_email, subject, status, error_message) VALUES (?, ?, ?, ?, ?)",
-            (now, to_email, subject, status, err_msg)
-        )
-        conn.commit()
-        conn.close()
-    
-    return status == "SUCCESS"
-def send_gmail_notification(target_email, subject, body_text):
-    """دالة موحدة لإرسال البريد عبر Gmail SMTP (تدعم OTP والرسائل الترحيبية)"""
-    try:
-        sender_email = st.secrets["GMAIL_USER"]
-        sender_password = st.secrets["GMAIL_APP_PASSWORD"]
-
-        message = MIMEMultipart("alternative")
-        message["Subject"] = subject
-        message["From"] = sender_email
-        message["To"] = target_email
-
-        message.attach(MIMEText(body_text, "plain", "utf-8"))
-
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, target_email, message.as_string())
-        server.quit()
-        return True
-    except Exception as e:
-        st.error(f"⚠️ خطأ في إرسال البريد الإلكتروني: {e}")
-        return False
-# 🔒 ضبط إعدادات الشاشة الأساسية للمنصة الموحدة
-st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
-
-# 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
-query_params = st.query_params
-is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
-if "admin_master_logged" not in st.session_state:
-    st.session_state["admin_master_logged"] = False
 # ========================================================
 # [القسم الثاني]: الحقن السيبراني وتصميم واجهات النيون الزجاجي للأزرار والعدادات
 # ========================================================
