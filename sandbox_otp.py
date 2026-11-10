@@ -1149,7 +1149,7 @@ if is_boss_link:
                         welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك والبدء في استغلال كافة الميزات المتاحة في باقتك.\n\nنتمنى لك كل التوفيق والنجاح في تجارتك!"
                         send_gmail_notification_with_log(current_email, welcome_subject, welcome_body, action_type="ACTIVATE")                        
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
-                        st.toast("🎯 تم التفعيل وإرسال البريد!"); time.sleep(0.5); st.rerun()
+                        st.toast("🎯 تم التفعيل وإرسال البريد!"); time.sleep(2.0); st.rerun()
 
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
