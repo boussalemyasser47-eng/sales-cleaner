@@ -22,7 +22,73 @@ from datetime import datetime
 import io
 import urllib.parse
 import re
+import time
+import streamlit as st
 
+# 🌟 تصميم نافذة التحقق المنبثقة في المنتصف (Modal Dialog)
+def render_otp_popup(target_email):
+    # إخفاء الخلفية وتثبيت النافذة في المنتصف بتصميم نيون فخم
+    st.markdown("""
+        <style>
+        .otp-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(3, 3, 7, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .otp-modal-box {
+            background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%);
+            border: 2px solid #00fff0;
+            border-radius: 20px;
+            padding: 30px;
+            width: 450px;
+            box-shadow: 0 0 40px rgba(0, 255, 240, 0.4);
+            direction: rtl;
+            text-align: right;
+            animation: elasticPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # محتوى النافذة المنبثقة
+    st.markdown("""
+        <div class="otp-modal-overlay">
+            <div class="otp-modal-box">
+                <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
+                <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 20px;">
+                    سيتم إرسال رمز التحقق إلى بريدك الإلكتروني:<br>
+                    <span style="color: #ff00ff; font-weight: bold;">{email}</span>
+                </p>
+            </div>
+        </div>
+    """.format(email=target_email), unsafe_allow_html=True)
+
+    # 🔢 خانات إدخال الرمز الـ 6 المنفصلة
+    st.markdown("<p style='color: #00fff0; font-weight: bold; text-align: center;'>أدخل الرمز المكون من 6 أرقام:</p>", unsafe_allow_html=True)
+    
+    # تقسيم الحقول إلى 6 أعمدة تشبه الصورة التي أرفقتها تماماً
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
+    d1 = c1.text_input("", key="otp_1", max_chars=1, label_visibility="collapsed")
+    d2 = c2.text_input("", key="otp_2", max_chars=1, label_visibility="collapsed")
+    d3 = c3.text_input("", key="otp_3", max_chars=1, label_visibility="collapsed")
+    d4 = c4.text_input("", key="otp_4", max_chars=1, label_visibility="collapsed")
+    d5 = c5.text_input("", key="otp_5", max_chars=1, label_visibility="collapsed")
+    d6 = c6.text_input("", key="otp_6", max_chars=1, label_visibility="collapsed")
+
+    # تجميع الأرقام المدخلة
+    full_entered_otp = f"{d1}{d2}{d3}{d4}{d5}{d6}"
+
+    # ⏱️ محاكاة العداد التنازلي (Countdown Timer)
+    if "otp_timer" not in st.session_state:
+        st.session_state["otp_timer"] = 59
+
+    st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 13px; margin-top: 10px;'>⏳ إعادة إرسال الرمز خلال: {st.session_state['otp_timer']} ثانية</p>", unsafe_allow_html=True)
+
+    return full_entered_otp
 # 🔒 ضبط إعدادات الشاشة الأساسية للمنصة الموحدة
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
@@ -680,27 +746,70 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
                             time.sleep(0.5)
                             st.rerun()
-            else:
-                st.info(f"تم إرسال الرمز إلى: {st.session_state.get('temp_reg_email')}")
-                entered_otp = st.text_input("أدخل رمز التحقق (6 أرقام):", key="entered_otp_box")
+             else:
+                # 🌟 تصميم النافذة المنبثقة الزجاجية في المنتصف للـ OTP
+                st.markdown("""
+                    <style>
+                    .otp-modal-box {
+                        background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%);
+                        border: 2px solid #00fff0;
+                        border-radius: 20px;
+                        padding: 30px;
+                        box-shadow: 0 0 40px rgba(0, 255, 240, 0.35);
+                        direction: rtl;
+                        text-align: right;
+                        margin-bottom: 20px;
+                    }
+                    </style>
+                    <div class="otp-modal-box">
+                        <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
+                        <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 15px;">
+                            تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني:<br>
+                            <span style="color: #ff00ff; font-weight: bold;">{email}</span>
+                        </p>
+                    </div>
+                """.format(email=st.session_state.get('temp_reg_email')), unsafe_allow_html=True)
+
+                st.markdown("<p style='color: #00fff0; font-weight: bold; text-align: center;'>أدخل الرمز المكون من 6 أرقام في الخانات أدناه:</p>", unsafe_allow_html=True)
                 
-                if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة"):
-                    if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
-                        reg_email = st.session_state["temp_reg_email"]
-                        reg_pass = st.session_state["temp_reg_pass"]
-                        reg_pkg = st.session_state["temp_reg_package"]
-                        
-                        conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        cursor_reg = conn_reg.cursor()
-                        cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (reg_email, reg_pass, reg_pkg))
-                        conn_reg.commit(); conn_reg.close()
-                        
+                # 🔢 6 خانات منفصلة لإدخال الأرقام
+                c1, c2, c3, c4, c5, c6 = st.columns(6)
+                d1 = c1.text_input("", key="otp_1", max_chars=1, label_visibility="collapsed")
+                d2 = c2.text_input("", key="otp_2", max_chars=1, label_visibility="collapsed")
+                d3 = c3.text_input("", key="otp_3", max_chars=1, label_visibility="collapsed")
+                d4 = c4.text_input("", key="otp_4", max_chars=1, label_visibility="collapsed")
+                d5 = c5.text_input("", key="otp_5", max_chars=1, label_visibility="collapsed")
+                d6 = c6.text_input("", key="otp_6", max_chars=1, label_visibility="collapsed")
+
+                # تجميع الأرقام المدخلة تلقائياً
+                entered_otp = f"{d1}{d2}{d3}{d4}{d5}{d6}"
+
+                st.markdown("<p style='text-align: center; color: #ffaa00; font-size: 13px; margin: 10px 0;'>⏳ يرجى إدخال الرمز المكون من 6 أرقام بدقة.</p>", unsafe_allow_html=True)
+
+                col_verify_btn, col_cancel_btn = st.columns(2)
+                with col_verify_btn:
+                    if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة"):
+                        if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
+                            reg_email = st.session_state["temp_reg_email"]
+                            reg_pass = st.session_state["temp_reg_pass"]
+                            reg_pkg = st.session_state["temp_reg_package"]
+                            
+                            conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
+                            cursor_reg = conn_reg.cursor()
+                            cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (reg_email, reg_pass, reg_pkg))
+                            conn_reg.commit(); conn_reg.close()
+                            
+                            st.session_state["otp_pending_verification"] = False
+                            st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
+                            time.sleep(1)
+                            st.rerun()
+                        else:
+                            st.error("❌ الرمز غير صحيح، تأكد من إدخال الأرقام الستة بدقة.")
+                            
+                with col_cancel_btn:
+                    if st.button("❌ إلغاء والعودة"):
                         st.session_state["otp_pending_verification"] = False
-                        st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
-                        time.sleep(1)
                         st.rerun()
-                    else:
-                        st.error("❌ الرمز غير صحيح، حاول مرة أخرى.")
         else:
             st.markdown("</div>", unsafe_allow_html=True)
             if st.button("🔑 تسجيل الدخول إلى المتجر"):
