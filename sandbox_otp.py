@@ -746,8 +746,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
                             time.sleep(0.5)
                             st.rerun()
-            else:
-                # 🌟 تصميم النافذة المنبثقة الزجاجية في المنتصف للـ OTP
+else:
+                # 🌟 تصميم النافذة المنبثقة الزجاجية في المنتصف للـ OTP (مفصولة لمنع الـ KeyError)
                 st.markdown("""
                     <style>
                     .otp-modal-box {
@@ -761,14 +761,19 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         margin-bottom: 20px;
                     }
                     </style>
+                """, unsafe_allow_html=True)
+
+                target_mail = st.session_state.get('temp_reg_email', 'البريد الإلكتروني')
+                
+                st.markdown(f"""
                     <div class="otp-modal-box">
                         <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
                         <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 15px;">
                             تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني:<br>
-                            <span style="color: #ff00ff; font-weight: bold;">{email}</span>
+                            <span style="color: #ff00ff; font-weight: bold;">{target_mail}</span>
                         </p>
                     </div>
-                """.format(email=st.session_state.get('temp_reg_email')), unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
 
                 st.markdown("<p style='color: #00fff0; font-weight: bold; text-align: center;'>أدخل الرمز المكون من 6 أرقام في الخانات أدناه:</p>", unsafe_allow_html=True)
                 
