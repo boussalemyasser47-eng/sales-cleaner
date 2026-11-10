@@ -1283,7 +1283,7 @@ if is_boss_link:
                         # 📧 إرسال إيميل تحديث فئة الاشتراك المخصصة
                         pkg_subject = "🏷️ تحديث فئة اشتراك متجرك"
                         pkg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nتم تحديث باقة متجرك رسمياً إلى: {selected_opt}.\nيمكنك الآن استغلال كافة الميزات المتاحة في باقتك الجديدة من خلال لوحة التحكم.\n\nنتمنى لك كل التوفيق والنجاح!"
-                        send_gmail_notification(current_email, pkg_subject, pkg_body)
+                        send_gmail_notification_with_log(current_email, pkg_subject, pkg_body, action_type="UPGRADE")
                         
                         if "29k" in selected_opt:
                             st.session_state[f"border_color_{current_email}"] = "#00ff66"
@@ -1310,7 +1310,7 @@ if is_boss_link:
                             
                             del_subject = "❌ إشعار بإغلاق وحذف الحساب"
                             del_body = f"مرحباً،\n\nنحيطك علماً بأنه تم حذف وإغلاق حساب متجرك نهائياً من النظام.\nنتمنى لك التوفيق في مشاريعك المستقبلية."
-                            send_gmail_notification(current_email, del_subject, del_body)
+                            send_gmail_notification_with_log(current_email, del_subject, del_body, action_type="DELETE")
                             
                             if delete_email_completely(current_email): 
                                 st.toast("🔥 تم حذف وتطهير الحساب وإرسال البريد!")
