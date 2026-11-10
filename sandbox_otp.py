@@ -815,8 +815,9 @@ if is_boss_link:
                             st.rerun()
                 
                 st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("🚪 مغادرة غرفة القيادة وقفل الخزائن", key="logout_boss"): 
-                    st.session_state["admin_master_logged"] = False; st.rerun()
+                if st.button("🚪 مغادرة غرفة القيادة وقفل الخزائن", key=f"logout_boss_{current_email}"): 
+                    st.session_state["admin_master_logged"] = False
+                    st.rerun()
         else: 
             st.warning("📭 الرادار صافي تماماً، لا توجد طلبات معلقة حالياً.")
 # === الإضافات والتعديلات الجديدة لغرفة المالك ===
