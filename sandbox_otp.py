@@ -134,27 +134,6 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         st.error(f"⚠️ خطأ في إرسال البريد الإلكتروني المنسق: {e}")
         return False
 
-def send_gmail_notification_with_log(to_email, subject, body, action_type="DEFAULT"):
-    """دالة الإرسال مع تتبع السجل وتحديد نوع الهوية الإعلانية للبريد"""
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    status = "SUCCESS"
-    err_msg = ""
-    try:
-        send_gmail_notification(to_email, subject, body, action_type=action_type)
-    except Exception as e:
-        status = "FAILED"
-        err_msg = str(e)
-    finally:
-        conn = sqlite3.connect("saas_security_vault.db")
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO email_logs (sent_time, recipient_email, subject, status, error_message) VALUES (?, ?, ?, ?, ?)",
-            (now, to_email, subject, status, err_msg)
-        )
-        conn.commit()
-        conn.close()
-    return status == "SUCCESS"
-
 def create_backup_vault():
     import os
     import zipfile
