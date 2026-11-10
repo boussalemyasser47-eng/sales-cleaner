@@ -134,15 +134,24 @@ init_advanced_db()
 
 # 2. دالة تسجيل الحركات في قاعدة البيانات
 def log_admin_action(target_email, action_type, details=""):
-    conn = sqlite3.connect("saas_security_vault.db")
+  """دالة تسجيل نشاطات المالك مع تصحيح استدعاء التاريخ والوقت"""
+  try:
+    # التصحيح هنا: استخدام datetime.now() مباشرة بعد استيرادها بشكل صحيح
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    conn = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor = conn.cursor()
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     cursor.execute(
-        "INSERT INTO admin_audit_logs (action_time, target_email, action_type, details) VALUES (?, ?, ?, ?)",
-        (now, target_email, action_type, details)
+        """
+        INSERT INTO admin_audit_logs (timestamp, target_email, action_type, details)
+        VALUES (?, ?, ?, ?)
+    """,
+        (now, target_email, action_type, details),
     )
     conn.commit()
     conn.close()
+  except Exception as e:
+    print(f"Error logging admin action: {e}")
 
 # 3. تطوير دالة إرسال البريد لتسجيل الحالة مع تتبع الأخطاء (try-except)
 def send_gmail_notification_with_log(to_email, subject, body):
