@@ -35,6 +35,78 @@ import time
 from datetime import datetime
 import io
 import urllib.parse
+import datetime
+
+# 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
+def init_advanced_db():
+    conn = sqlite3.connect("saas_security_vault.db")
+    cursor = conn.cursor()
+    
+    # جدول سجل النشاطات والحركات (Audit Log)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS admin_audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action_time TEXT,
+            target_email TEXT,
+            action_type TEXT,
+            details TEXT
+        )
+    """)
+    
+    # جدول سجل حالة البريد الإلكتروني (Email Delivery Log)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS email_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sent_time TEXT,
+            recipient_email TEXT,
+            subject TEXT,
+            status TEXT,
+            error_message TEXT
+        )
+    """)
+    
+    conn.commit()
+    conn.close()
+
+# تشغيل التهيئة فوراً
+init_advanced_db()
+
+# 2. دالة تسجيل الحركات في قاعدة البيانات
+def log_admin_action(target_email, action_type, details=""):
+    conn = sqlite3.connect("saas_security_vault.db")
+    cursor = conn.cursor()
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute(
+        "INSERT INTO admin_audit_logs (action_time, target_email, action_type, details) VALUES (?, ?, ?, ?)",
+        (now, target_email, action_type, details)
+    )
+    conn.commit()
+    conn.close()
+
+# 3. تطوير دالة إرسال البريد لتسجيل الحالة مع تتبع الأخطاء (try-except)
+def send_gmail_notification_with_log(to_email, subject, body):
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    status = "SUCCESS"
+    err_msg = ""
+    
+    try:
+        # استدعاء دالة الإرسال الأصلية لديك
+        send_gmail_notification(to_email, subject, body)
+    except Exception as e:
+        status = "FAILED"
+        err_msg = str(e)
+    finally:
+        # حفظ نتيجة الإرسال في سجل البريد
+        conn = sqlite3.connect("saas_security_vault.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO email_logs (sent_time, recipient_email, subject, status, error_message) VALUES (?, ?, ?, ?, ?)",
+            (now, to_email, subject, status, err_msg)
+        )
+        conn.commit()
+        conn.close()
+    
+    return status == "SUCCESS"
 def send_gmail_notification(target_email, subject, body_text):
     """دالة موحدة لإرسال البريد عبر Gmail SMTP (تدعم OTP والرسائل الترحيبية)"""
     try:
