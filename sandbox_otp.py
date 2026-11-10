@@ -766,7 +766,7 @@ if is_boss_link:
                         label_visibility="collapsed"
                     )
                     
-if st.button("تأمين وحفظ الباقة برمجياً حياً 🎯", key=f"btn_confirm_pkg_{current_email}"):
+                if st.button("تأمين وحفظ الباقة برمجياً حياً 🎯", key=f"btn_confirm_pkg_{current_email}"):
                     conn = sqlite3.connect("saas_security_vault.db")
                     conn.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE email = ?", (selected_opt, current_email))
                     conn.commit(); conn.close()
