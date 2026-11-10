@@ -62,14 +62,11 @@ init_advanced_db()
 
 # 2. دالة إرسال الإيميلات الهيكلية الفاخرة الموحدة (HTML/Neon Pro)
 def send_gmail_notification(target_email, subject, body_text, action_type="DEFAULT", action_url=None):
-    """
-    دالة موحدة ومطورة لإرسال إيميلات HTML احترافية منسقة بصرياً وملونة 
-    مع دعم اللوجو، الأزرار التفاعلية، وتغير الألوان حسب نوع الحركة (OTP, ACTIVATE, LOCK, etc.)
-    """
     try:
         sender_email = st.secrets["GMAIL_USER"]
         sender_password = st.secrets["GMAIL_APP_PASSWORD"]
         
+        # 🎨 تحديد الألوان والأيقونات (نفس الكود السابق...)
         theme_colors = {
             "OTP": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔐", "btn_text": "تأكيد الرمز الآن"},
             "ACTIVATE": {"primary": "#00ff66", "bg_accent": "rgba(0, 255, 102, 0.1)", "icon": "🎉", "btn_text": "الدخول لمتجرك الآن"},
@@ -88,31 +85,14 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         html_content = f"""
         <!DOCTYPE html>
         <html lang="ar" dir="rtl">
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #05050c; color: #ffffff; margin: 0; padding: 20px; direction: rtl; text-align: right; }}
-                .email-container {{ max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%); border: 2px solid {theme['primary']}; border-radius: 16px; overflow: hidden; box-shadow: 0 0 30px {theme['primary']}40; }}
-                .email-header {{ background: {theme['bg_accent']}; padding: 30px; text-align: center; border-bottom: 1px solid {theme['primary']}30; }}
-                .email-header img {{ width: 70px; height: 70px; margin-bottom: 10px; }}
-                .email-header h1 {{ color: {theme['primary']}; font-size: 22px; margin: 0; text-shadow: 0 0 10px {theme['primary']}80; }}
-                .email-body {{ padding: 30px; font-size: 15px; line-height: 1.8; color: #e0e0e0; }}
-                .info-box {{ background: rgba(255, 255, 255, 0.03); border-right: 4px solid {theme['primary']}; padding: 15px; border-radius: 8px; margin: 20px 0; color: #ffffff; }}
-                .btn-action {{ display: block; width: 220px; margin: 25px auto; padding: 14px 20px; text-align: center; background: linear-gradient(135deg, {theme['primary']} 0%, #00bfff 100%); color: #000000 !important; font-weight: bold; font-size: 15px; text-decoration: none; border-radius: 10px; box-shadow: 0 0 20px {theme['primary']}60; }}
-                .email-footer {{ background: #030307; padding: 15px; text-align: center; font-size: 12px; color: #777788; border-top: 1px solid rgba(255,255,255,0.05); }}
-            </style>
-        </head>
-        <body>
-            <div class="email-container">
-                <div class="email-header">
-                    <img src="{logo_url}" alt="Logo">
-                    <h1>{theme['icon']} {subject}</h1>
+        <head><meta charset="UTF-8"></head>
+        <body style="font-family: Arial, sans-serif; background-color: #05050c; color: #ffffff; padding: 20px; direction: rtl; text-align: right;">
+            <div style="max-width: 600px; margin: 0 auto; background: #0d0d21; border: 2px solid {theme['primary']}; border-radius: 16px; padding: 30px;">
+                <h2 style="color: {theme['primary']}; text-align: center;">{theme['icon']} {subject}</h2>
+                <p style="font-size: 15px; line-height: 1.8; color: #e0e0e0;">{formatted_body}</p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="{btn_link}" style="background: {theme['primary']}; color: #000; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;">{theme['btn_text']}</a>
                 </div>
-                <div class="email-body">
-                    <div class="info-box">{formatted_body}</div>
-                    <a href="{btn_link}" class="btn-action" target="_blank">{theme['btn_text']}</a>
-                </div>
-                <div class="email-footer">© 2026 NEXUS SAAS PLATFORM — جميع الحقوق محفوظة لمتجرك السحابي.</div>
             </div>
         </body>
         </html>
@@ -122,6 +102,9 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         message["Subject"] = subject
         message["From"] = sender_email
         message["To"] = target_email
+        
+        # 🛡️ الحل هنا: إرفاق النص البسيط بجانب الـ HTML لكي لا يحظرها سيرفر البريد
+        message.attach(MIMEText(body_text, "plain", "utf-8"))
         message.attach(MIMEText(html_content, "html", "utf-8"))
 
         server = smtplib.SMTP("smtp.gmail.com", 587)
@@ -131,7 +114,7 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         server.quit()
         return True
     except Exception as e:
-        st.error(f"⚠️ خطأ في إرسال البريد الإلكتروني المنسق: {e}")
+        st.error(f"⚠️ خطأ في إرسال البريد: {e}")
         return False
 
 def create_backup_vault():
