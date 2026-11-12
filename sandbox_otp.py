@@ -135,7 +135,16 @@ def init_advanced_db():
     """)
     conn.commit()
     conn.close()
-
+# إضافة الأعمدة الجديدة للجدول القديم تلقائياً إن لم تكن موجودة
+    try:
+        cursor.execute("ALTER TABLE saas_users_auth ADD COLUMN created_at TEXT")
+    except Exception:
+        pass
+        
+    try:
+        cursor.execute("ALTER TABLE saas_users_auth ADD COLUMN phone TEXT")
+    except Exception:
+        pass
 init_advanced_db()
 
 # ========================================================
