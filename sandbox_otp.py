@@ -1182,7 +1182,7 @@ if is_boss_link:
         paginated_merchants, current_p, total_p = paginate_dataframe(filtered_merchants_df, page_size=10)
         
         if not paginated_merchants.empty:
-            for index, row in paginated_merchants.iterrows():
+           for index, row in paginated_merchants.iterrows():
             current_email = row['email']
             current_pass = row['password']
             current_status = row['status']
