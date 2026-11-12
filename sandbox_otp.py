@@ -745,17 +745,17 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             st.markdown("</div>", unsafe_allow_html=True)
 
     else:
-        # 🔑 (2) صفحة التسجيل والدخول الأصلية (داخل الصندوق الأوسط حصراً)
+        # صفحة التسجيل والدخول الأصلية (داخل الصندوق الأوسط حصراً)
         col_side_left, col_center_box, col_side_right = st.columns(3)
         with col_center_box:
-        st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
-        
-        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
-        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
-        
-        input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
-        input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
-        input_phone = st.text_input("📱 أدخل رقم الهاتف الخاص بك:", placeholder="مثال: 0655xxxxxxxx", key="merchant_phone").strip()
+            st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
+            
+            auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
+            st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
+            
+            input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
+            input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
+            input_phone = st.text_input("أدخل رقم الهاتف الخاص بك:", placeholder="0655 مثال: xxxxxxxx", key="merchant_phone").strip()
 # 📱 حقل إدخال رقم الهاتف
 
     # 🛑 التحقق من صحة رقم الهاتف (منع الحروف والتأكد من الطول)
