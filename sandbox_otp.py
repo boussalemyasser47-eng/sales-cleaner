@@ -974,19 +974,7 @@ def render_boss_kpis_and_filters(df_users):
         st.markdown(f"<div style='border:2px solid #ff00ff; border-radius:15px; padding:20px; text-align:center; background:rgba(20,5,20,0.85); box-shadow: 0px 0px 20px rgba(255, 0, 255, 0.25); direction:rtl;'><h4 style='color:#ff00ff; margin:0;'>🧪 الحسابات التجريبية والانتظار</h4><h2>{total_trial} حساب</h2></div>", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    # 🧪 زر مؤقت للاختبار والتأكد من ظهور التجار في الرادار فوراً
-    if st.button("🧪 إضافة تاجر تجريبي وهمي للاختبار"):
-        conn_test = sqlite3.connect("saas_security_vault.db", timeout=10)
-        cursor_test = conn_test.cursor()
-        cursor_test.execute(
-            "INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)",
-            ("test.merchant@gmail.com", "123456", "⏳ في انتظار التفعيل", "الباقة الأساسية المبتدئة (29k)", datetime.now().strftime('%Y-%m-%d %H:%M:%S'), "0600000000")
-        )
-        conn_test.commit()
-        conn_test.close()
-        st.success("✅ تمت إضافة تاجر تجريبي بنجاح! حدّث الصفحة.")
-        time.sleep(0.5)
-        st.rerun()
+
     # 🔍 شريط البحث والتصفية فوق البطاقات
     filter_col1, filter_col2 = st.columns([2, 1])
     with filter_col1:
