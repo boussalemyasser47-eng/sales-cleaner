@@ -99,53 +99,33 @@ if "admin_master_logged" not in st.session_state:
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
 def init_advanced_db():
-    conn = sqlite3.connect("saas_security_vault.db")
+    conn = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor = conn.cursor()
     
-    # 🛡️ جدول المصادقة والتجار مع ضمان وجود عمود التاريخ والتنسيق الثابت
+    # 1. إنشاء الجدول الأساسي إذا لم يكن موجوداً
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS saas_users_auth (
             email TEXT PRIMARY KEY,
             password TEXT,
             status TEXT,
-            package TEXT,
-            created_at TEXT,
-            phone TEXT
+            package TEXT
         )
     """)
     
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS admin_audit_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            action_time TEXT,
-            target_email TEXT,
-            action_type TEXT,
-            details TEXT
-        )
-    """)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS email_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sent_time TEXT,
-            recipient_email TEXT,
-            subject TEXT,
-            status TEXT,
-            error_message TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
-# إضافة الأعمدة الجديدة للجدول القديم تلقائياً إن لم تكن موجودة
+    # 2. إضافة عمود التاريخ تلقائياً إذا لم يكن موجوداً
     try:
         cursor.execute("ALTER TABLE saas_users_auth ADD COLUMN created_at TEXT")
     except Exception:
         pass
         
+    # 3. إضافة عمود الهاتف تلقائياً إذا لم يكن موجوداً
     try:
         cursor.execute("ALTER TABLE saas_users_auth ADD COLUMN phone TEXT")
     except Exception:
         pass
-init_advanced_db()
+        
+    conn.commit()
+    conn.close()
 
 # ========================================================
 # 🚀 الدالة الموحدة والوحيدة لإرسال البريد (HTML + Plain Text + تتبع السجل)
