@@ -101,6 +101,18 @@ if "admin_master_logged" not in st.session_state:
 def init_advanced_db():
     conn = sqlite3.connect("saas_security_vault.db")
     cursor = conn.cursor()
+    
+    # 🛡️ جدول المصادقة والتجار مع ضمان وجود عمود التاريخ والتنسيق الثابت
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS saas_users_auth (
+            email TEXT PRIMARY KEY,
+            password TEXT,
+            status TEXT,
+            package TEXT,
+            created_at TEXT
+        )
+    """)
+    
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS admin_audit_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -823,14 +835,22 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             reg_pass = st.session_state["temp_reg_pass"]
                             reg_pkg = st.session_state["temp_reg_package"]
                             
+                            # ⏰ احفظ وقت التسجيل الحالي هنا لضمان عدم ضياع البيانات
+                            reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            
                             conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                             cursor_reg = conn_reg.cursor()
-                            cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (reg_email, reg_pass, reg_pkg))
+                            
+                            # 👇 ضع هذا السطر الجديد الذي يتضمن عمود التاريخ (created_at)
+                            cursor_reg.execute(
+                                "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at) VALUES (?, ?, ?, ?, ?)", 
+                                (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time)
+                            )
+                            
                             conn_reg.commit()
                             conn_reg.close()
                             
                             st.session_state["otp_pending_verification"] = False
-                            st.session_state.pop("otp_countdown", None)
                             st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
                             time.sleep(1)
                             st.rerun()
