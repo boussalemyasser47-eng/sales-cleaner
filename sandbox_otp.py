@@ -758,24 +758,31 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 st.session_state["otp_pending_verification"] = False
 
             if not st.session_state["otp_pending_verification"]:
+
                 if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
-                    validated_package = validate_and_process_registration(clean_email, clean_pass)
-                    if validated_package:
-                        generated_otp = f"{random.randint(100000, 999999)}"
-                        st.session_state["temp_reg_otp"] = generated_otp
-                        st.session_state["temp_reg_email"] = clean_email
-                        st.session_state["temp_reg_pass"] = clean_pass
-                        st.session_state["temp_reg_package"] = validated_package
-                        
-                        # إرسال البريد عبر Gmail
-                        subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
-                        body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
-                        
-                        if send_gmail_notification(clean_email, subject, body):
-                            st.session_state["otp_pending_verification"] = True
-                            st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
-                            time.sleep(0.5)
-                            st.rerun()
+                    
+                    # 🛑 جدار إلزامي: التأكد من أن التاجر أدخل رقم الهاتف وأنه مخزن في الجلسة بشكل صحيح
+                    reg_phone_check = st.session_state.get("temp_reg_phone", "").strip()
+                    if not reg_phone_check:
+                        st.error("❌ خطأ إلزامي: يجب إدخال رقم هاتف صحيح ومكون من 9 أرقام على الأقل قبل طلب رمز التحقق!")
+                    else:
+                        validated_package = validate_and_process_registration(clean_email, clean_pass)
+                        if validated_package:
+                            generated_otp = f"{random.randint(100000, 999999)}"
+                            st.session_state["temp_reg_otp"] = generated_otp
+                            st.session_state["temp_reg_email"] = clean_email
+                            st.session_state["temp_reg_pass"] = clean_pass
+                            st.session_state["temp_reg_package"] = validated_package
+                            
+                            # إرسال البريد عبر Gmail
+                            subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
+                            body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
+                            
+                            if send_gmail_notification(clean_email, subject, body):
+                                st.session_state["otp_pending_verification"] = True
+                                st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
+                                time.sleep(0.5)
+                                st.rerun()
 
             else:
                 # 🌟 تهيئة العداد التنازلي (60 ثانية)
