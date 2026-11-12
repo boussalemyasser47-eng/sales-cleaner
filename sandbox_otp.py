@@ -991,7 +991,7 @@ def render_boss_kpis_and_filters(df_users):
         if status_filter == "مفعّل":
             filtered_df = filtered_df[filtered_df['status'].str.contains('مفعّل', na=False)]
         elif status_filter == "في انتظار التفعيل":
-            filtered_df = filtered_df[filtered_df['status'].str.contains('انتظار|معلّق|مهلة', na=False)]
+            filtered_df = filtered_df[filtered_df['status'].str.contains('انتظار|التفعيل|معلّق|مهلة', na=False)]
         elif status_filter == "محظور":
             filtered_df = filtered_df[filtered_df['status'].str.contains('قفل|مصادرة|محظور', na=False)]
     return filtered_df
