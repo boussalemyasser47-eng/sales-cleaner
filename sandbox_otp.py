@@ -910,6 +910,25 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.rerun()
         else:
             st.markdown("</div>", unsafe_allow_html=True)
+            if st.button("🔑 تسجيل الدخول إلى المتجر"):
+                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
+                else:
+                    conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_login = conn_login.cursor()
+                    cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
+                    user_status_row = cursor_login.fetchone()
+                    conn_login.close()
+                    
+                    if user_status_row:
+                        if "🟢 مفعّل ونشط" in user_status_row:
+                            st.session_state["active_merchant_user"] = clean_email
+                            st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
+                            time.sleep(0.5); st.rerun()
+                        else:
+                            st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
+                    else:
+                        st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
+ 
 # 🛟 زر مركز الدعم الفني السريع للتاجر (موضع آمن في أسفل الواجهة)
     st.markdown("<br><hr style='border-color: rgba(255, 0, 85, 0.2);'>", unsafe_allow_html=True)
     if st.button("🛟 هل تواجه مشكلة في التسجيل؟ اتصل بالدعم الفني", key="goto_support_safe_btn"):
@@ -947,25 +966,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             if st.button("❌ إغلاق الدعم", key="close_support_safe_btn"):
                 st.session_state["show_merchant_support"] = False
                 st.rerun()
-            if st.button("🔑 تسجيل الدخول إلى المتجر"):
-                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
-                else:
-                    conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
-                    cursor_login = conn_login.cursor()
-                    cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
-                    user_status_row = cursor_login.fetchone()
-                    conn_login.close()
-                    
-                    if user_status_row:
-                        if "🟢 مفعّل ونشط" in user_status_row:
-                            st.session_state["active_merchant_user"] = clean_email
-                            st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
-                            time.sleep(0.5); st.rerun()
-                        else:
-                            st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
-                    else:
-                        st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
- 
 
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
