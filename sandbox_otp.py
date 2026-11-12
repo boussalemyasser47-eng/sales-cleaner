@@ -736,7 +736,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             check_phone = input_phone.replace("+", "").strip()
         
             if not check_phone.isdigit():
-            st.error("❌ خطأ: يرجى إدخال أرقام صحيحة فقط في حقل الهاتف (بدون أحرف أو رموز خاصة).")
+                st.error("❌ خطأ: يرجى إدخال أرقام صحيحة فقط في حقل الهاتف (بدون أحرف أو رموز خاصة).")
             elif len(check_phone) < 9:
                 st.warning("⚠️ تنبيه: رقم الهاتف قصير جداً، تأكد من إدخال الرقم كاملاً.")
            else:
