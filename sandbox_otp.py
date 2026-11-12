@@ -842,7 +842,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 with col_verify_btn:
                     if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة", key="verify_otp_submit_btn"):
                         if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
-
                             reg_email = st.session_state["temp_reg_email"]
                             reg_pass = st.session_state["temp_reg_pass"]
                             reg_pkg = st.session_state["temp_reg_package"]
@@ -871,13 +870,16 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
                             )
                             
+                            # 🔑 الأسطر المفقودة التي كانت تمنع حفظ البيانات رسمياً:
+                            conn_reg.commit()
+                            conn_reg.close()
+                            
                             st.session_state["otp_pending_verification"] = False
                             st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
                             time.sleep(1)
                             st.rerun()
                         else:
                             st.error("❌ الرمز غير صحيح، تأكد من إدخال الأرقام الستة بدقة.")
-                            
                 with col_cancel_btn:
                     if st.button("❌ إلغاء والعودة", key="cancel_otp_btn"):
                         st.session_state["otp_pending_verification"] = False
