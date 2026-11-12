@@ -109,7 +109,8 @@ def init_advanced_db():
             password TEXT,
             status TEXT,
             package TEXT,
-            created_at TEXT
+            created_at TEXT,
+            phone TEXT
         )
     """)
     
@@ -726,10 +727,10 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         
         input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
         input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
-        
+        input_phone = st.text_input("📱 أدخل رقم الهاتف الخاص بك:", placeholder="مثال: 0655xxxxxxxx", key="merchant_phone").strip()
         clean_email = input_email.strip()
         clean_pass = input_password.strip()
-        
+        st.session_state["temp_reg_phone"] = input_phone
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
             # استدعاء منصة العرض الهولوغرامية الفاخرة بالميزات الجديدة المحدثة 100%
             user_package_choice = render_premium_neon_packages()
@@ -831,20 +832,24 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 with col_verify_btn:
                     if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة", key="verify_otp_submit_btn"):
                         if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
+
                             reg_email = st.session_state["temp_reg_email"]
                             reg_pass = st.session_state["temp_reg_pass"]
                             reg_pkg = st.session_state["temp_reg_package"]
                             
-                            # ⏰ احفظ وقت التسجيل الحالي هنا لضمان عدم ضياع البيانات
+                            # التقاط رقم الهاتف المخزن مؤقتاً
+                            reg_phone = st.session_state.get("temp_reg_phone", "")
+                            
+                            # حفظ وقت التسجيل الحالي
                             reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                             
                             conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                             cursor_reg = conn_reg.cursor()
                             
-                            # 👇 ضع هذا السطر الجديد الذي يتضمن عمود التاريخ (created_at)
+                            # حفظ البيانات مع الهاتف والتاريخ
                             cursor_reg.execute(
-                                "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at) VALUES (?, ?, ?, ?, ?)", 
-                                (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time)
+                                "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)", 
+                                (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
                             )
                             
                             conn_reg.commit()
