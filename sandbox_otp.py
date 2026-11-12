@@ -739,7 +739,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 st.error("❌ خطأ: يرجى إدخال أرقام صحيحة فقط في حقل الهاتف (بدون أحرف أو رموز خاصة).")
             elif len(check_phone) < 9:
                 st.warning("⚠️ تنبيه: رقم الهاتف قصير جداً، تأكد من إدخال الرقم كاملاً.")
-           else:
+            else:
             # تخزين الرقم في الجلسة لأنه صحيح ومستوفي الشروط
                 st.session_state["temp_reg_phone"] = input_phone
         clean_email = input_email.strip()
