@@ -748,7 +748,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.rerun()
 
             else:
-                # 🌟 تصميم النافذة المنبثقة المستطيلة في المنتصف (مودال احترافي آمن)
+                # 🌟 تهيئة العداد التنازلي (60 ثانية) إذا لم يكن موجوداً
+                if "otp_countdown" not in st.session_state:
+                    st.session_state["otp_countdown"] = 60
+
+                # 🌟 تصميم النافذة المنبثقة المستطيلة في المنتصف (مودال احترافي)
                 st.markdown("""
                     <style>
                     .otp-modal-container {
@@ -792,7 +796,29 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     key="smart_otp_paste_input"
                 )
 
-                st.markdown("<p style='text-align: center; color: #ffaa00; font-size: 13px; margin: 10px 0;'>💡 يمكنك نسخ الرمز من بريدك واللصق هنا مباشرة ليتم تعبئته تلقائياً.</p>", unsafe_allow_html=True)
+                # ⏱️ عرض العداد التنازلي المتحرك
+                if st.session_state["otp_countdown"] > 0:
+                    st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 14px; font-weight: bold; margin: 10px 0;'>⏳ إعادة إرسال الرمز خلال: {st.session_state['otp_countdown']} ثانية</p>", unsafe_allow_html=True)
+                    
+                    # تقليل العداد بثانية واحدة وعمل تحديث سلس للصفحة
+                    time.sleep(1)
+                    st.session_state["otp_countdown"] -= 1
+                    st.rerun()
+                else:
+                    # عندما ينتهي الوقت، يظهر زر إعادة إرسال الرمز
+                    if st.button("🔄 إعادة إرسال الرمز الجديد"):
+                        generated_otp = f"{random.randint(100000, 999999)}"
+                        st.session_state["temp_reg_otp"] = generated_otp
+                        st.session_state["otp_countdown"] = 60  # إعادة ضبط العداد
+                        
+                        subject = "رمز التحقق (OTP) الجديد لإنشاء حساب متجرك"
+                        body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
+                        if send_gmail_notification(target_mail, subject, body):
+                            st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
+                            time.sleep(0.5)
+                            st.rerun()
+
+                st.markdown("<p style='text-align: center; color: #888899; font-size: 12px;'>💡 يمكنك نسخ الرمز من بريدك واللصق هنا مباشرة ليتم تعبئته تلقائياً.</p>", unsafe_allow_html=True)
 
                 col_verify_btn, col_cancel_btn = st.columns(2)
                 with col_verify_btn:
