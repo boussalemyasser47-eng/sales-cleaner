@@ -855,7 +855,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             reg_phone = st.session_state.get("temp_reg_phone", "")
                             
                             # حفظ وقت التسجيل الحالي
-                            reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                           reg_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                             
                             conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                             cursor_reg = conn_reg.cursor()
