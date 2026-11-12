@@ -745,43 +745,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             else:
                 # الرقم حقيقي، منطقي، وغير متكرر تماماً -> يتم تخزينه بنجاح
                 st.session_state["temp_reg_phone"] = input_phone
-# 🛟 زر الانتقال لمركز الدعم الفني للتاجر
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🛟 هل تواجه مشكلة؟ اتصل بالدعم الفني", key="goto_support_btn"):
-        st.session_state["show_merchant_support"] = True
-        st.rerun()
 
-    # واجهة كتابة المشكلة المنبثقة
-    if st.session_state.get("show_merchant_support", False):
-        st.markdown("""
-            <div style="border: 2px solid #ff0055; border-radius: 15px; padding: 25px; background: rgba(20,5,10,0.95); margin-top: 20px; direction: rtl; text-align: right; box-shadow: 0px 0px 30px rgba(255, 0, 85, 0.2);">
-                <h3 style="color: #ff0055; margin-top: 0; font-weight: 900;">🛟 مركز الدعم الفني السريع للتاجر</h3>
-                <p style="color: #e0e0e0; font-size: 14px;">اكتب تفاصيل المشكلة التي تواجهك (مثل: مشكلة في استقبال الرمز، خطأ في رقم الهاتف، إلخ)، وسيتواصل معك الفريق فوراً:</p>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        support_email = st.text_input("بريدك الإلكتروني للتواصل:", key="support_user_email")
-        support_message = st.text_area("اشرح مشكلتك باختصار:", key="support_user_msg", placeholder="اكتب تفاصيل المشكلة هنا...")
-        
-        col_sup1, col_sup2 = st.columns(2)
-        with col_sup1:
-            if st.button("📤 إرسال المشكلة للإدارة", key="send_support_ticket_btn"):
-                if not support_email or not support_message:
-                    st.error("⚠️ يرجى كتابة البريد الإلكتروني وصف المشكلة أولاً!")
-                else:
-                    admin_notification_subject = f"🚨 بلاغ مشكلة جديد من تاجر: {support_email}"
-                    admin_notification_body = f"مرحباً بالمدير،\n\nوردتك رسالة دعم فني جديدة من البريد:\n{support_email}\n\nنص المشكلة:\n{support_message}\n\nيرجى مراجعة حالة التاجر."
-                    
-                    send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_notification_subject, admin_notification_body, action_type="LOCK")
-                    
-                    st.success("✅ تم إرسال مشكلتك بنجاح إلى فريق الدعم الفني! سنتواصل معك قريباً.")
-                    time.sleep(2)
-                    st.session_state["show_merchant_support"] = False
-                    st.rerun()
-        with col_sup2:
-            if st.button("❌ العودة", key="close_support_btn"):
-                st.session_state["show_merchant_support"] = False
-                st.rerun()
                 
         clean_email = input_email.strip()
         clean_pass = input_password.strip()
@@ -963,7 +927,42 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("🛟 هل تواجه مشكلة؟ اتصل بالدعم الفني", key="goto_support_btn"):
+        st.session_state["show_merchant_support"] = True
+        st.rerun()
 
+    # واجهة كتابة المشكلة المنبثقة
+    if st.session_state.get("show_merchant_support", False):
+        st.markdown("""
+            <div style="border: 2px solid #ff0055; border-radius: 15px; padding: 25px; background: rgba(20,5,10,0.95); margin-top: 20px; direction: rtl; text-align: right; box-shadow: 0px 0px 30px rgba(255, 0, 85, 0.2);">
+                <h3 style="color: #ff0055; margin-top: 0; font-weight: 900;">🛟 مركز الدعم الفني السريع للتاجر</h3>
+                <p style="color: #e0e0e0; font-size: 14px;">اكتب تفاصيل المشكلة التي تواجهك (مثل: مشكلة في استقبال الرمز، خطأ في رقم الهاتف، إلخ)، وسيتواصل معك الفريق فوراً:</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        support_email = st.text_input("بريدك الإلكتروني للتواصل:", key="support_user_email")
+        support_message = st.text_area("اشرح مشكلتك باختصار:", key="support_user_msg", placeholder="اكتب تفاصيل المشكلة هنا...")
+        
+        col_sup1, col_sup2 = st.columns(2)
+        with col_sup1:
+            if st.button("📤 إرسال المشكلة للإدارة", key="send_support_ticket_btn"):
+                if not support_email or not support_message:
+                    st.error("⚠️ يرجى كتابة البريد الإلكتروني وصف المشكلة أولاً!")
+                else:
+                    admin_notification_subject = f"🚨 بلاغ مشكلة جديد من تاجر: {support_email}"
+                    admin_notification_body = f"مرحباً بالمدير،\n\nوردتك رسالة دعم فني جديدة من البريد:\n{support_email}\n\nنص المشكلة:\n{support_message}\n\nيرجى مراجعة حالة التاجر."
+                    
+                    send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_notification_subject, admin_notification_body, action_type="LOCK")
+                    
+                    st.success("✅ تم إرسال مشكلتك بنجاح إلى فريق الدعم الفني! سنتواصل معك قريباً.")
+                    time.sleep(2)
+                    st.session_state["show_merchant_support"] = False
+                    st.rerun()
+        with col_sup2:
+            if st.button("❌ العودة", key="close_support_btn"):
+                st.session_state["show_merchant_support"] = False
+                st.rerun()
 
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
