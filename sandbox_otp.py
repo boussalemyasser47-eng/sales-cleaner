@@ -1191,7 +1191,7 @@ if is_boss_link:
                 # جلب رقم الهاتف بلطف من صف الجدول (مع وضع قيمة افتراضية إذا لم يكن موجوداً)
                 current_phone = row.get('phone', 'غير متوفر') if 'phone' in row else 'غير متوفر'
                 if not current_phone or str(current_phone).lower() == 'nan':
-                current_phone = 'غير متوفر'
+                    current_phone = 'غير متوفر'
                 
                 status_color = "#00ff66" if "مفعّل" in str(current_status) else "#ffaa00" if "انتظار" in str(current_status) else "#ff0055"
             
