@@ -848,15 +848,21 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             
                             conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                             cursor_reg = conn_reg.cursor()
-                            
+                            cursor_reg.execute("""
+                                CREATE TABLE IF NOT EXISTS saas_users_auth (
+                                    email TEXT PRIMARY KEY,
+                                    password TEXT,
+                                    status TEXT,
+                                    package TEXT,
+                                    created_at TEXT,
+                                    phone TEXT
+                                )
+                            """)
                             # حفظ البيانات مع الهاتف والتاريخ
                             cursor_reg.execute(
                                 "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)", 
                                 (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
                             )
-                            
-                            conn_reg.commit()
-                            conn_reg.close()
                             
                             st.session_state["otp_pending_verification"] = False
                             st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
