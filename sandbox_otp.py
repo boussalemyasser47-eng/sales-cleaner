@@ -502,20 +502,29 @@ st.markdown("""
 # ========================================================
 
 # صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
+# صياغة ومزامنة جدول الـ Auth
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
     CREATE TABLE IF NOT EXISTS saas_users_auth (
-        email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT
+        email TEXT PRIMARY KEY, 
+        password TEXT, 
+        status TEXT, 
+        package TEXT,
+        created_at TEXT,
+        phone TEXT
     )
 """)
 db_conn.commit()
 
-# [إصلاح الثغرة الذكية]: منع حقن الحساب الافتراضي تلقائياً إذا قام المالك بحذفه يدوياً
+# [إصلاح الثغرة الذكية]: منع حقن الحساب الافتراضي تلقائياً مع مراعاة الأعمدة الجديدة
 db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
 account_exists = db_cursor.fetchone()
 if account_exists[0] == 0 and "destroyed_flag" not in st.session_state:
-    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
+    db_cursor.execute(
+        "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)",
+        ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة', '', '')
+    )
     db_conn.commit()
 db_conn.close()
 
