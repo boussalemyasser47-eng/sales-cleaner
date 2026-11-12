@@ -748,11 +748,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.rerun()
 
             else:
-                # 🌟 تهيئة العداد التنازلي (60 ثانية) إذا لم يكن موجوداً
+                # 🌟 تهيئة العداد التنازلي (60 ثانية)
                 if "otp_countdown" not in st.session_state:
                     st.session_state["otp_countdown"] = 60
 
-                # 🌟 تصميم النافذة المنبثقة المستطيلة في المنتصف (مودال احترافي)
+                # 🌟 تصميم النافذة المنبثقة المستطيلة في المنتصف
                 st.markdown("""
                     <style>
                     .otp-modal-container {
@@ -788,7 +788,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     </div>
                 """, unsafe_allow_html=True)
 
-                # حقل إدخال ذكي واحد يدعم اللصق الفوري للـ 6 أرقام
+                # 🔢 حقل إدخال ذكي واحد يدعم اللصق الفوري للـ 6 أرقام
                 entered_otp = st.text_input(
                     "أدخل الرمز المكون من 6 أرقام هنا:", 
                     max_chars=6, 
@@ -796,33 +796,28 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     key="smart_otp_paste_input"
                 )
 
-                # ⏱️ عرض العداد التنازلي المتحرك
+                # ⏱️ عرض حالة العداد التنازلي (بدون إيقاف الكود هنا!)
                 if st.session_state["otp_countdown"] > 0:
                     st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 14px; font-weight: bold; margin: 10px 0;'>⏳ إعادة إرسال الرمز خلال: {st.session_state['otp_countdown']} ثانية</p>", unsafe_allow_html=True)
-                    
-                    # تقليل العداد بثانية واحدة وعمل تحديث سلس للصفحة
-                    time.sleep(1)
-                    st.session_state["otp_countdown"] -= 1
-                    st.rerun()
                 else:
-                    # عندما ينتهي الوقت، يظهر زر إعادة إرسال الرمز
-                    if st.button("🔄 إعادة إرسال الرمز الجديد"):
+                    if st.button("🔄 إعادة إرسال الرمز الجديد", key="resend_otp_btn"):
                         generated_otp = f"{random.randint(100000, 999999)}"
                         st.session_state["temp_reg_otp"] = generated_otp
-                        st.session_state["otp_countdown"] = 60  # إعادة ضبط العداد
+                        st.session_state["otp_countdown"] = 60
                         
                         subject = "رمز التحقق (OTP) الجديد لإنشاء حساب متجرك"
                         body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
-                        if send_gmail_notification(target_mail, subject, body):
+                        if send_gmail_notification(target_mail, subject, body, action_type="OTP"):
                             st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
                             time.sleep(0.5)
                             st.rerun()
 
                 st.markdown("<p style='text-align: center; color: #888899; font-size: 12px;'>💡 يمكنك نسخ الرمز من بريدك واللصق هنا مباشرة ليتم تعبئته تلقائياً.</p>", unsafe_allow_html=True)
 
+                # 🔘 رسم الأزرار أولاً قبل أي تحديث للصفحة لضمان ظهورها دائماً!
                 col_verify_btn, col_cancel_btn = st.columns(2)
                 with col_verify_btn:
-                    if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة"):
+                    if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة", key="verify_otp_submit_btn"):
                         if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
                             reg_email = st.session_state["temp_reg_email"]
                             reg_pass = st.session_state["temp_reg_pass"]
@@ -831,9 +826,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                             cursor_reg = conn_reg.cursor()
                             cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (reg_email, reg_pass, reg_pkg))
-                            conn_reg.commit(); conn_reg.close()
+                            conn_reg.commit()
+                            conn_reg.close()
                             
                             st.session_state["otp_pending_verification"] = False
+                            st.session_state.pop("otp_countdown", None)
                             st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
                             time.sleep(1)
                             st.rerun()
@@ -841,9 +838,16 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.error("❌ الرمز غير صحيح، تأكد من إدخال الأرقام الستة بدقة.")
                             
                 with col_cancel_btn:
-                    if st.button("❌ إلغاء والعودة"):
+                    if st.button("❌ إلغاء والعودة", key="cancel_otp_btn"):
                         st.session_state["otp_pending_verification"] = False
+                        st.session_state.pop("otp_countdown", None)
                         st.rerun()
+
+                # 🔄 تشغيل نبضة العداد التنازلي في نهاية الصفحة بعد رسم كل الأزرار
+                if st.session_state.get("otp_countdown", 0) > 0:
+                    time.sleep(1)
+                    st.session_state["otp_countdown"] -= 1
+                    st.rerun()
         else:
             st.markdown("</div>", unsafe_allow_html=True)
             if st.button("🔑 تسجيل الدخول إلى المتجر"):
