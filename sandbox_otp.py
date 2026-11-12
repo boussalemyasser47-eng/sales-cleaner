@@ -748,26 +748,31 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 
             st.markdown("</div>", unsafe_allow_html=True)
 
-    else:
+else:
         # ==========================================
-        # 🔑 صفحة تسجيل الدخول والتسجيل الأصلية (بأعمدة منسقة)
+        # 🔑 صفحة تسجيل الدخول والتسجيل الأصلية
         # ==========================================
         col_side_left, col_center_box, col_side_right = st.columns(3)
         with col_center_box:
             st.markdown("<h1 style='color: #00ff00; text-align: center; font-weight: 900; margin-top: 40px; text-shadow: 0 0 20px #00ff00;'>🛡️ بوابة إدارة التجار والمنصة</h1>", unsafe_allow_html=True)
             
-            # (تأكد أن باقي كود صفحة التسجيل وحقول البريد وكلمة المرور موجودة هنا داخل معالجة col_center_box كما كانت)
-        st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
-        st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
-        
-        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
-        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
-        
-        input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
-        input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
-        input_phone = st.text_input("📱 أدخل رقم الهاتف الخاص بك:", placeholder="مثال: 0655xxxxxxxx", key="merchant_phone").strip()
-# 📱 حقل إدخال رقم الهاتف
-
+            st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
+            st.markdown("<h3 style='color: #ffffff; text-align: center; font-weight: 700; margin-top: 0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
+            
+            auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
+            st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
+            
+            input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
+            input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
+            input_phone = st.text_input("أدخل رقم الهاتف الخاص بك:", placeholder="0655 مثال: xxxxxxxx", key="merchant_phone").strip()
+            
+            # 🛟 زر الانتقال لصفحة الدعم المستقلة داخل الصندوق الأوسط تماماً
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🛟 هل تواجه مشكلة؟ انتقل إلى صفحة الدعم الفني", key="go_to_support_page_btn"):
+                st.session_state["current_view"] = "support_page"
+                st.rerun()
+                
+            st.markdown("</div>", unsafe_allow_html=True)
     # 🛑 التحقق من صحة رقم الهاتف (منع الحروف والتأكد من الطول)
 # 📱 حقل إدخال رقم الهاتف مع جدار منع الأرقام المتكررة والوهمية
         if input_phone:
