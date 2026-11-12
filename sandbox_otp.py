@@ -1183,19 +1183,28 @@ if is_boss_link:
         
         if not paginated_merchants.empty:
             for index, row in paginated_merchants.iterrows():
-                current_email = row['email']; current_pass = row['password']; current_status = row['status']; current_package = row['package']
-                status_color = "#00ff66" if "مفعّل" in str(current_status) else "#ffaa00" if "انتظار" in str(current_status) else "#ff0055"
+            current_email = row['email']
+            current_pass = row['password']
+            current_status = row['status']
+            current_package = row['package']
+            
+            # جلب رقم الهاتف بلطف من صف الجدول (مع وضع قيمة افتراضية إذا لم يكن موجوداً)
+            current_phone = row.get('phone', 'غير متوفر') if 'phone' in row else 'غير متوفر'
+            if not current_phone or str(current_phone).lower() == 'nan':
+                current_phone = 'غير متوفر'
                 
-                # 🧠 [قراءة حالة اللون الديناميكي المخصصة للتاجر من الجلسة أو وضع اللون الافتراضي النيوني]
-                current_border_color = st.session_state.get(f"border_color_{current_email}", "#00fff0")
-                
-                st.markdown(f"""
-                <div style="border: 2px solid {current_border_color}; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right; box-shadow: 0px 0px 15px {current_border_color}40;">
-                    <p style="margin:0 0 8px 0; font-weight:700;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
-                    <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: <span style="color:{current_border_color}; font-weight:bold;">{current_package}</span></p>
-                </div>
-                """, unsafe_allow_html=True)
-
+            status_color = "#00ff66" if "مفعّل" in str(current_status) else "#ffaa00" if "انتظار" in str(current_status) else "#ff0055"
+            
+            # 🧠 [قراءة حالة اللون الديناميكي المخصصة للتاجر من الجلسة أو وضع اللون الافتراضي النيوني]
+            current_border_color = st.session_state.get(f"border_color_{current_email}", "#00fff0")
+            
+            st.markdown(f"""
+            <div style="border: 2px solid {current_border_color}; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right; box-shadow: 0px 0px 15px {current_border_color}40;">
+                <p style="margin:0 0 8px 0; font-weight:700;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | 📱 الهاتف: <span style="color: #ffaa00;">{current_phone}</span></p>
+                <p style="margin:0 0 8px 0; font-weight:700;">كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
+                <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: <span style="color:{current_border_color}; font-weight:bold;">{current_package}</span></p>
+            </div>
+            """, unsafe_allow_html=True)
                 col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
