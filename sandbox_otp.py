@@ -728,6 +728,20 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
         input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
         input_phone = st.text_input("📱 أدخل رقم الهاتف الخاص بك:", placeholder="مثال: 0655xxxxxxxx", key="merchant_phone").strip()
+# 📱 حقل إدخال رقم الهاتف
+
+    # 🛑 التحقق من صحة رقم الهاتف (منع الحروف والتأكد من الطول)
+        if input_phone:
+            # إزالة علامة الزائد (+) المؤقتة للتحقق إذا كانت الأرقام صحيحة
+            check_phone = input_phone.replace("+", "").strip()
+        
+            if not check_phone.isdigit():
+            st.error("❌ خطأ: يرجى إدخال أرقام صحيحة فقط في حقل الهاتف (بدون أحرف أو رموز خاصة).")
+            elif len(check_phone) < 9:
+                st.warning("⚠️ تنبيه: رقم الهاتف قصير جداً، تأكد من إدخال الرقم كاملاً.")
+           else:
+            # تخزين الرقم في الجلسة لأنه صحيح ومستوفي الشروط
+                st.session_state["temp_reg_phone"] = input_phone
         clean_email = input_email.strip()
         clean_pass = input_password.strip()
         st.session_state["temp_reg_phone"] = input_phone
