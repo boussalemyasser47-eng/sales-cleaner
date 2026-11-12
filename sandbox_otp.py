@@ -518,6 +518,7 @@ db_cursor.execute("""
 db_conn.commit()
 
 # [إصلاح الثغرة الذكية]: منع حقن الحساب الافتراضي تلقائياً مع مراعاة الأعمدة الجديدة
+# [إصلاح الثغرة الذكية]: منع حقن الحساب الافتراضي تلقائياً مع مراعاة الأعمدة الجديدة الستة
 db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
 account_exists = db_cursor.fetchone()
 if account_exists[0] == 0 and "destroyed_flag" not in st.session_state:
