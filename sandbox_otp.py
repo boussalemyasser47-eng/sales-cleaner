@@ -1162,7 +1162,19 @@ if is_boss_link:
 
         # 3️⃣ رادار مسح طلبات التسجيل وتقسيم الصفحات
         st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
-        
+        # 🧪 زر مؤقت للاختبار والتأكد من ظهور التجار في الرادار فوراً
+        if st.button("🧪 إضافة تاجر تجريبي وهمي للاختبار"):
+            conn_test = sqlite3.connect("saas_security_vault.db", timeout=10)
+            cursor_test = conn_test.cursor()
+            cursor_test.execute(
+                "INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)",
+                ("test.merchant@gmail.com", "123456", "⏳ في انتظار التفعيل", "الباقة الأساسية المبتدئة (29k)", datetime.now().strftime('%Y-%m-%d %H:%M:%S"), "0600000000")
+            )
+            conn_test.commit()
+            conn_test.close()
+            st.success("✅ تمت إضافة تاجر تجريبي بنجاح! حدّث الصفحة.")
+            time.sleep(0.5)
+            st.rerun()
         # تطبيق التقسيم الصفحي (10 تجار لكل صفحة) على البيانات المفلترة
         paginated_merchants, current_p, total_p = paginate_dataframe(filtered_merchants_df, page_size=10)
         
