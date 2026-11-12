@@ -750,11 +750,13 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
     else:
         # ==========================================
-        # 🔑 صفحة تسجيل الدخول والتسجيل الأصلية
+        # 🔑 صفحة تسجيل الدخول والتسجيل الأصلية (بأعمدة منسقة)
         # ==========================================
         col_side_left, col_center_box, col_side_right = st.columns(3)
         with col_center_box:
             st.markdown("<h1 style='color: #00ff00; text-align: center; font-weight: 900; margin-top: 40px; text-shadow: 0 0 20px #00ff00;'>🛡️ بوابة إدارة التجار والمنصة</h1>", unsafe_allow_html=True)
+            
+            # (تأكد أن باقي كود صفحة التسجيل وحقول البريد وكلمة المرور موجودة هنا داخل معالجة col_center_box كما كانت)
         st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
         
