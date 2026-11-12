@@ -24,9 +24,7 @@ import urllib.parse
 import re
 import time
 import streamlit as st
-# تهيئة حالة عرض الصفحة الافتراضية
-if "current_view" not in st.session_state:
-    st.session_state["current_view"] = "auth"
+
 # 🌟 تصميم نافذة التحقق المنبثقة في المنتصف (Modal Dialog)
 def render_otp_popup(target_email):
     # إخفاء الخلفية وتثبيت النافذة في المنتصف بتصميم نيون فخم
@@ -713,66 +711,21 @@ def validate_and_process_registration(email, password):
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
 # ========================================================
 if not is_boss_link and "active_merchant_user" not in st.session_state:
+    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
     
-    # 🛟 نظام التنقل المنفصل بين صفحة التسجيل وصفحة الدعم الفني
-    if st.session_state.get("current_view") == "support_page":
-        # ==========================================
-        # 📱 صفحة الدعم الفني المستقلة بالكامل
-        # ==========================================
-        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 40px;'>🛟 مركز الدعم الفني والمساعدة للتاجر</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #aaa; font-size: 15px;'>نحن هنا لمساعدتك في حل أي مشكلة تواجهك في إنشاء المتجر، رقم الهاتف، أو الـ OTP.</p>", unsafe_allow_html=True)
+    col_side_left, col_center_box, col_side_right = st.columns(3)
+    with col_center_box:
+        st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
         
-        sup_col1, sup_col2, sup_col3 = st.columns([1, 2, 1])
-        with sup_col2:
-            st.markdown("<div style='border: 2px solid #ff0055; border-radius: 15px; padding: 30px; background: rgba(15,5,10,0.95); direction: rtl; text-align: right;'>", unsafe_allow_html=True)
-            
-            sup_email = st.text_input("بريدك الإلكتروني للتواصل:", key="page_sup_email")
-            sup_msg = st.text_area("اشرح مشكلتك بالتفصيل:", key="page_sup_msg", placeholder="مثال: لم أستقبل الرمز على البريد، أو رقم الهاتف لا يقبل...")
-            
-            if st.button("📤 إرسال التذكرة إلى الإدارة", key="page_send_ticket"):
-                if not sup_email or not sup_msg:
-                    st.error("⚠️ يرجى تعبئة البريد الإلكتروني ووصف المشكلة أولاً.")
-                else:
-                    admin_subject = f"🚨 تذكرة دعم فني جديدة من: {sup_email}"
-                    admin_body = f"مرحباً بالمدير،\n\nوردتك تذكرة دعم فني من صفحة الدعم المستقلة:\nالبريد: {sup_email}\n\nالتفاصيل:\n{sup_msg}"
-                    
-                    send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_subject, admin_body, action_type="LOCK")
-                    
-                    st.success("✅ تم إرسال رسالتك بنجاح إلى الإدارة وسنتواصل معك قريباً جداً!")
-                    time.sleep(2)
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("⬅️ العودة إلى صفحة تسجيل الدخول", key="page_back_to_auth"):
-                st.session_state["current_view"] = "auth"
-                st.rerun()
-                
-            st.markdown("</div>", unsafe_allow_html=True)
+        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
+        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
+        
+        input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
+        input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
+        input_phone = st.text_input("📱 أدخل رقم الهاتف الخاص بك:", placeholder="مثال: 0655xxxxxxxx", key="merchant_phone").strip()
+# 📱 حقل إدخال رقم الهاتف
 
-else:
-        # ==========================================
-        # 🔑 صفحة تسجيل الدخول والتسجيل الأصلية
-        # ==========================================
-        col_side_left, col_center_box, col_side_right = st.columns(3)
-        with col_center_box:
-            st.markdown("<h1 style='color: #00ff00; text-align: center; font-weight: 900; margin-top: 40px; text-shadow: 0 0 20px #00ff00;'>🛡️ بوابة إدارة التجار والمنصة</h1>", unsafe_allow_html=True)
-            
-            st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
-            st.markdown("<h3 style='color: #ffffff; text-align: center; font-weight: 700; margin-top: 0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
-            
-            auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
-            st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
-            
-            input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
-            input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
-            input_phone = st.text_input("أدخل رقم الهاتف الخاص بك:", placeholder="0655 مثال: xxxxxxxx", key="merchant_phone").strip()
-            
-            # 🛟 زر الانتقال لصفحة الدعم المستقلة داخل الصندوق الأوسط تماماً
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("🛟 هل تواجه مشكلة؟ انتقل إلى صفحة الدعم الفني", key="go_to_support_page_btn"):
-                st.session_state["current_view"] = "support_page"
-                st.rerun()
-                
-            st.markdown("</div>", unsafe_allow_html=True)
     # 🛑 التحقق من صحة رقم الهاتف (منع الحروف والتأكد من الطول)
 # 📱 حقل إدخال رقم الهاتف مع جدار منع الأرقام المتكررة والوهمية
         if input_phone:
@@ -976,11 +929,43 @@ else:
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
  
-# زر مستقل ينقل التاجر بالكامل لصفحة الدعم الفني
-st.markdown("<br>", unsafe_allow_html=True)
-if st.button("🛟 الذهاب إلى صفحة الدعم الفني والمساعدة", key="go_to_support_page_btn"):
-    st.session_state["current_view"] = "support_page"
-    st.rerun()
+# 🛟 زر مركز الدعم الفني السريع للتاجر (موضع آمن في أسفل الواجهة)
+    st.markdown("<br><hr style='border-color: rgba(255, 0, 85, 0.2);'>", unsafe_allow_html=True)
+    if st.button("🛟 هل تواجه مشكلة في التسجيل؟ اتصل بالدعم الفني", key="goto_support_safe_btn"):
+        st.session_state["show_merchant_support"] = True
+        st.rerun()
+
+    # واجهة كتابة المشكلة المنبثقة
+    if st.session_state.get("show_merchant_support", False):
+        st.markdown("""
+            <div style="border: 2px solid #ff0055; border-radius: 15px; padding: 25px; background: rgba(20,5,10,0.95); margin-top: 15px; direction: rtl; text-align: right; box-shadow: 0px 0px 30px rgba(255, 0, 85, 0.2);">
+                <h3 style="color: #ff0055; margin-top: 0; font-weight: 900;">🛟 مركز الدعم الفني السريع للتاجر</h3>
+                <p style="color: #e0e0e0; font-size: 14px;">اكتب تفاصيل المشكلة التي تواجهك (مشكلة في الرمز، الهاتف، أو الدخول)، وسيتواصل معك الفريق فوراً:</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        support_email = st.text_input("بريدك الإلكتروني للتواصل:", key="support_user_email_safe")
+        support_message = st.text_area("اشرح مشكلتك باختصار:", key="support_user_msg_safe", placeholder="اكتب تفاصيل المشكلة هنا...")
+        
+        col_sup1, col_sup2 = st.columns(2)
+        with col_sup1:
+            if st.button("📤 إرسال المشكلة للإدارة", key="send_support_ticket_safe_btn"):
+                if not support_email or not support_message:
+                    st.error("⚠️ يرجى كتابة البريد الإلكتروني وصف المشكلة أولاً!")
+                else:
+                    admin_notification_subject = f"🚨 بلاغ مشكلة جديد من تاجر: {support_email}"
+                    admin_notification_body = f"مرحباً بالمدير،\n\nوردتك رسالة دعم فني جديدة من البريد:\n{support_email}\n\nنص المشكلة:\n{support_message}"
+                    
+                    send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_notification_subject, admin_notification_body, action_type="LOCK")
+                    
+                    st.success("✅ تم إرسال مشكلتك بنجاح إلى فريق الدعم الفني! سنتواصل معك قريباً.")
+                    time.sleep(2)
+                    st.session_state["show_merchant_support"] = False
+                    st.rerun()
+        with col_sup2:
+            if st.button("❌ إغلاق الدعم", key="close_support_safe_btn"):
+                st.session_state["show_merchant_support"] = False
+                st.rerun()
 
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
