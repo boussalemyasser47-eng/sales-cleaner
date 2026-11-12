@@ -98,11 +98,12 @@ if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
+# 1. تهيئة وإنشاء الجداول وتحديث الهيكل تلقائياً
 def init_advanced_db():
     conn = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor = conn.cursor()
     
-    # 1. إنشاء الجدول الأساسي إذا لم يكن موجوداً
+    # جدول المستخدمين الأساسي
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS saas_users_auth (
             email TEXT PRIMARY KEY,
@@ -112,21 +113,46 @@ def init_advanced_db():
         )
     """)
     
-    # 2. إضافة عمود التاريخ تلقائياً إذا لم يكن موجوداً
+    # إضافة عمود التاريخ تلقائياً إذا لم يكن موجوداً
     try:
         cursor.execute("ALTER TABLE saas_users_auth ADD COLUMN created_at TEXT")
     except Exception:
         pass
         
-    # 3. إضافة عمود الهاتف تلقائياً إذا لم يكن موجوداً
+    # إضافة عمود الهاتف تلقائياً إذا لم يكن موجوداً
     try:
         cursor.execute("ALTER TABLE saas_users_auth ADD COLUMN phone TEXT")
     except Exception:
         pass
-        
+
+    # جدول سجل النشاطات والحركات (Audit Log)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS admin_audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action_time TEXT,
+            target_email TEXT,
+            action_type TEXT,
+            details TEXT
+        )
+    """)
+    
+    # جدول سجل حالة البريد الإلكتروني (Email Delivery Log)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS email_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sent_time TEXT,
+            recipient_email TEXT,
+            subject TEXT,
+            status TEXT,
+            error_message TEXT
+        )
+    """)
+    
     conn.commit()
     conn.close()
 
+# تشغيل التهيئة فوراً عند إقلاع التطبيق
+init_advanced_db()
 # ========================================================
 # 🚀 الدالة الموحدة والوحيدة لإرسال البريد (HTML + Plain Text + تتبع السجل)
 # ========================================================
@@ -249,38 +275,9 @@ import urllib.parse
 import datetime
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
-def init_advanced_db():
-    conn = sqlite3.connect("saas_security_vault.db")
-    cursor = conn.cursor()
-    
-    # جدول سجل النشاطات والحركات (Audit Log)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS admin_audit_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            action_time TEXT,
-            target_email TEXT,
-            action_type TEXT,
-            details TEXT
-        )
-    """)
-    
-    # جدول سجل حالة البريد الإلكتروني (Email Delivery Log)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS email_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sent_time TEXT,
-            recipient_email TEXT,
-            subject TEXT,
-            status TEXT,
-            error_message TEXT
-        )
-    """)
-    
-    conn.commit()
-    conn.close()
 
 # تشغيل التهيئة فوراً
-init_advanced_db()
+
 
 # 2. دالة تسجيل الحركات في قاعدة البيانات
 def log_admin_action(target_email, action_type, details=""):
