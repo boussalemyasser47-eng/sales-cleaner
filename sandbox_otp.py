@@ -727,16 +727,23 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 # 📱 حقل إدخال رقم الهاتف
 
     # 🛑 التحقق من صحة رقم الهاتف (منع الحروف والتأكد من الطول)
+# 📱 حقل إدخال رقم الهاتف مع جدار منع الأرقام المتكررة والوهمية
         if input_phone:
-            # إزالة علامة الزائد (+) المؤقتة للتحقق إذا كانت الأرقام صحيحة
             check_phone = input_phone.replace("+", "").strip()
         
+            # فحص هل يحتوي على أرقام فقط
             if not check_phone.isdigit():
                 st.error("❌ خطأ: يرجى إدخال أرقام صحيحة فقط في حقل الهاتف (بدون أحرف أو رموز خاصة).")
             elif len(check_phone) < 9:
-                st.warning("⚠️ تنبيه: رقم الهاتف قصير جداً، تأكد من إدخال الرقم كاملاً.")
+                st.warning("⚠️ تنبيه: رقم الهاتف قصير جداً، يجب أن يتكون من 9 أرقام على الأقل.")
+            # 🚨 جدار منع الأرقام المتكررة تماماً (مثل 222222222 أو 333333333)
+            elif len(set(check_phone)) == 1:
+                st.error("❌ خطأ: رقم الهاتف مدخل بطريقة وهمية أو متكررة بشكل غير منطقي (مثل 222222222). يرجى إدخال رقم حقيقي.")
+                # مسح رقم الهاتف المؤقت لئلا يتم حفظه
+                if "temp_reg_phone" in st.session_state:
+                    st.session_state.pop("temp_reg_phone")
             else:
-            # تخزين الرقم في الجلسة لأنه صحيح ومستوفي الشروط
+                # الرقم حقيقي، منطقي، وغير متكرر تماماً -> يتم تخزينه بنجاح
                 st.session_state["temp_reg_phone"] = input_phone
         clean_email = input_email.strip()
         clean_pass = input_password.strip()
