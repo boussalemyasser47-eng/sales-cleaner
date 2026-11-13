@@ -31,10 +31,7 @@ from reportlab.pdfgen import canvas
 
 import os
 import arabic_reshaper
-from bidi.algorithm import get_display
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+
 
 # 1. دالة معالجة النصوص العربية
 def fix_arabic(text):
