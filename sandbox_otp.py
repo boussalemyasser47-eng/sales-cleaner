@@ -848,8 +848,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                                 رمز التحقق العشوائي الخاص بك هو: {generated_otp}
 
-                                يرجى العودة إلى نافذة المتصفح المفتوحة لديك وإدخال هذا الرمز لإتمام إنشاء الحساب بنجاح.
+                                يرجى العودة فوراً إلى نافذة المتصفح المفتوحة لديك وإدخال هذا الرمز المكون من 6 أرقام في الحقل المخصص لإتمام إنشاء الحساب بنجاح.
                                 """
+
+                                # استدعاء دالة الإرسال لديك
+                                send_gmail_notification(clean_email, subject, body)
                                 
                                 if send_gmail_notification(clean_email, subject, body):
                                     st.session_state["otp_pending_verification"] = True
