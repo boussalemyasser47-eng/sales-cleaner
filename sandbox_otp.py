@@ -85,56 +85,81 @@ def fix_arabic(text):
         return str(text)
 
 # 📄 3. دالة توليد الفاتورة الاحترافية (A4)
-def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None):
+# 📄 دالة توليد الفاتورة الاحترافية (A4) مع دعم تبديل اللغة (عربي / فرنسي)
+def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None, lang="ar"):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     
     font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
     
-    # عنوان الفاتورة
-    c.setFont(font_name, 16)
-    c.drawString(200, 750, fix_arabic(f"فاتورة مبيعات - {shop_name}"))
-    
-    # بيانات الزبون (فصل النصوص العربية عن الأرقام لضمان التنسيق السليم)
-    c.setFont(font_name, 12)
-    c.drawString(50, 700, fix_arabic(f"اسم الزبون: {customer_name}"))
-    c.drawString(50, 680, fix_arabic(f"رقم الهاتف: {customer_phone}"))
-    c.drawString(50, 660, fix_arabic(f"العنوان: {customer_address}"))
-    
-    # تفاصيل المنتج والحسابات
-    c.drawString(50, 620, fix_arabic(f"المنتج: {product_name} (الكمية: {quantity})"))
-    c.drawString(50, 600, fix_arabic(f"سعر الوحدة: {price} دج | الإجمالي: {product_total} دج"))
-    c.drawString(50, 580, fix_arabic(f"تكلفة الشحن: {shipping_cost} دج"))
-    
-    # المبلغ الإجمالي النهائي
-    c.setFont(font_name, 14)
-    c.drawString(50, 530, fix_arabic(f"المبلغ الإجمالي النهائي: {final_total} دج"))
+    if lang == "fr":
+        # القالب الفرنسي مع تمرير القيم المدخلة عبر fix_arabic تحسباً لوجود اسم أو عنوان عربي
+        c.setFont(font_name, 16)
+        c.drawString(180, 750, fix_arabic(f"Facture de Vente - {shop_name}"))
+        
+        c.setFont(font_name, 12)
+        c.drawString(50, 700, fix_arabic(f"Nom du Client : {customer_name}"))
+        c.drawString(50, 680, fix_arabic(f"Téléphone : {customer_phone}"))
+        c.drawString(50, 660, fix_arabic(f"Adresse : {customer_address}"))
+        
+        c.drawString(50, 620, fix_arabic(f"Produit : {product_name} (Qté : {quantity})"))
+        c.drawString(50, 600, fix_arabic(f"Prix Unitaire : {price} DA | Total : {product_total} DA"))
+        c.drawString(50, 580, fix_arabic(f"Frais de Livraison : {shipping_cost} DA"))
+        
+        c.setFont(font_name, 14)
+        c.drawString(50, 530, fix_arabic(f"Total Général à Payer : {final_total} DA"))
+    else:
+        # القالب العربي
+        c.setFont(font_name, 16)
+        c.drawString(200, 750, fix_arabic(f"فاتورة مبيعات - {shop_name}"))
+        
+        c.setFont(font_name, 12)
+        c.drawString(50, 700, fix_arabic(f"اسم الزبون: {customer_name}"))
+        c.drawString(50, 680, fix_arabic(f"رقم الهاتف: {customer_phone}"))
+        c.drawString(50, 660, fix_arabic(f"العنوان: {customer_address}"))
+        
+        c.drawString(50, 620, fix_arabic(f"المنتج: {product_name} (الكمية: {quantity})"))
+        c.drawString(50, 600, fix_arabic(f"سعر الوحدة: {price} دج | الإجمالي: {product_total} دج"))
+        c.drawString(50, 580, fix_arabic(f"تكلفة الشحن: {shipping_cost} دج"))
+        
+        c.setFont(font_name, 14)
+        c.drawString(50, 530, fix_arabic(f"المبلغ الإجمالي النهائي: {final_total} دج"))
     
     c.save()
     buffer.seek(0)
     return buffer.getvalue()
 
-# 🏷️ 4. دالة توليد ملصق الشحن الحراري
-def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, quantity, final_total, logo_data=None):
+# 🏷️ دالة توليد ملصق الشحن الحراري مع دعم تبديل اللغة (عربي / فرنسي)
+def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, quantity, final_total, logo_data=None, lang="ar"):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=(288, 288))
     
     font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
     
-    c.setFont(font_name, 10)
-    c.drawString(10, 260, fix_arabic(f"المتجر: {shop_name}"))
-    
-    c.setFont(font_name, 9)
-    c.drawString(10, 235, fix_arabic(f"الزبون: {customer_name}"))
-    c.drawString(10, 215, fix_arabic(f"الهاتف: {customer_phone}"))
-    c.drawString(10, 195, fix_arabic(f"العنوان: {customer_address}"))
-    c.drawString(10, 175, fix_arabic(f"المنتج: {product_name} (x{quantity})"))
-    c.drawString(10, 155, fix_arabic(f"مبلغ التوصيل (COD): {final_total} دج"))
+    if lang == "fr":
+        c.setFont(font_name, 10)
+        c.drawString(10, 260, fix_arabic(f"Boutique : {shop_name}"))
+        
+        c.setFont(font_name, 9)
+        c.drawString(10, 235, fix_arabic(f"Client : {customer_name}"))
+        c.drawString(10, 215, fix_arabic(f"Tél : {customer_phone}"))
+        c.drawString(10, 195, fix_arabic(f"Adresse : {customer_address}"))
+        c.drawString(10, 175, fix_arabic(f"Produit : {product_name} (x{quantity})"))
+        c.drawString(10, 155, fix_arabic(f"Montant COD : {final_total} DA"))
+    else:
+        c.setFont(font_name, 10)
+        c.drawString(10, 260, fix_arabic(f"المتجر: {shop_name}"))
+        
+        c.setFont(font_name, 9)
+        c.drawString(10, 235, fix_arabic(f"الزبون: {customer_name}"))
+        c.drawString(10, 215, fix_arabic(f"الهاتف: {customer_phone}"))
+        c.drawString(10, 195, fix_arabic(f"العنوان: {customer_address}"))
+        c.drawString(10, 175, fix_arabic(f"المنتج: {product_name} (x{quantity})"))
+        c.drawString(10, 155, fix_arabic(f"مبلغ التوصيل (COD): {final_total} دج"))
     
     c.save()
     buffer.seek(0)
     return buffer.getvalue()
-
 def render_data_insights(df):
     """
     دالة لعرض رؤى وإحصائيات سريعة حول البيانات المعالجة
@@ -1904,6 +1929,13 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             customer_phone = st.text_input("رقم هاتف الزبون:", key="invoice_customer_phone_input")
             customer_address = st.text_input("عنوان التوصيل والولاية:", key="invoice_customer_address_input")
             uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
+            invoice_lang_label = st.radio(
+                "🌐 لغة الفاتورة والملصق:",
+                ["🇩🇿 العربية", "🇫🇷 Français"],
+                horizontal=True,
+                key="invoice_lang_selector"
+            )
+            selected_lang = "fr" if "Français" in invoice_lang_label else "ar"
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
@@ -1933,8 +1965,15 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     conne.commit()
                     
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
-                    st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(
+                        shop_name, customer_name, customer_phone, customer_address, 
+                        product_name, price, quantity, product_total, shipping_cost, 
+                        final_total, logo_data, lang=selected_lang
+                    )
+                    st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(
+                        shop_name, customer_name, customer_phone, customer_address, 
+                        product_name, quantity, final_total, logo_data, lang=selected_lang
+                    )
                     st.session_state["last_active_customer"] = customer_name
                     st.session_state["last_active_phone"] = customer_phone
                     st.session_state["last_active_shop"] = shop_name
