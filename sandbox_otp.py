@@ -2059,18 +2059,30 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             st.markdown("---"); render_data_insights(df); st.markdown("---")
             st.subheader("📈 المخططات البيانية الملونة للولايات والمبيعات:")
             chart_col1, chart_col2 = st.columns(2)
+    
             with chart_col1:
-                st.write("💰 حجم المبيعات الإجمالي الحقيقي لكل منتج:")
-                st.bar_chart(data=df, x='product_name', y='total_row_sales', color='#00ffcc')
+                st.write("📦 حجم المبيعات الإجمالي لكل منتج")
+                if 'product_name' in df.columns and 'total_row_sales' in df.columns:
+            # تجميع المبيعات حسب المنتج لتجنب تداخل الرسم البياني
+                    df_product = df.groupby('product_name')['total_row_sales'].sum().reset_index()
+                    st.bar_chart(data=df_product, x='product_name', y='total_row_sales')
+                else:
+                    st.info("عمود اسم المنتج غير متوفر في البيانات.")
+
             with chart_col2:
                 wilaya_col = None
                 for col in df.columns:
                     if 'address' in col.lower() or 'wilaya' in col.lower() or 'ولاية' in col:
-                        wilaya_col = col; break
-                if wilaya_col:
-                    st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
-                    st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
-                else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
+                        wilaya_col = col
+                        break
+        
+                if wilaya_col and 'total_row_sales' in df.columns:
+                    st.write(f"🇩🇿 حجم الشحن والمبيعات حسب الولاية")
+            # تجميع المبيعات حسب الولاية
+                    df_wilaya = df.groupby(wilaya_col)['total_row_sales'].sum().reset_index()
+                    st.bar_chart(data=df_wilaya, x=wilaya_col, y='total_row_sales')
+                else:
+                    st.info("💡 لم يظهر مخطط فرز الولايات، نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya'.")
             csv_buffer = df.to_csv(index=False).encode('utf-8')
             st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
 
