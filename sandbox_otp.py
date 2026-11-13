@@ -914,11 +914,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
 # 🛟 زر الانتقال لصفحة الدعم المستقلة (موضوع في أسفل الصندوق الأوسط)
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("🛟 هل تواجه مشكلة؟ انتقل إلى صفحة الدعم الفني", key="go_to_support_page_btn"):
-                st.session_state["current_view"] = "support_page"
-                st.rerun()
-                
+
         st.markdown("</div>", unsafe_allow_html=True)
 if not is_boss_link and "active_merchant_user" not in st.session_state:
     
