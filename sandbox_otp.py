@@ -91,7 +91,7 @@ from reportlab.lib.utils import ImageReader
 import io
 
 # 🏷️ دالة توليد ملصق الشحن الحراري مع دعم الـ QR Code وتبديل اللغة
-def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, quantity, final_total, logo_data=None, lang="ar"):
+def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, quantity, final_total, logo_data=None, lang="ar"):
     buffer = io.BytesIO()
     # مقاس ملصق حراري 288x288 بكسل
     c = canvas.Canvas(buffer, pagesize=(288, 288))
