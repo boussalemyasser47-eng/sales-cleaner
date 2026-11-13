@@ -2013,22 +2013,22 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             st.subheader("📋 1. جدول البيانات الأصلي المرفوع (قبل التطهير):")
             st.dataframe(df_raw, use_container_width=True)
             st.success("✅ تم تنظيف الداتا بنجاح وتجهيز المقارنة البصرية!")
-    col_clean, col_trash = st.columns(2)
-    with col_clean:
-        st.subheader("💎 2. جدول البيانات التنظيف (بعد التطهير)")
-        st.dataframe(df, use_container_width=True)
+            col_clean, col_trash = st.columns(2)
+            with col_clean:
+                st.subheader("💎 2. جدول البيانات التنظيف (بعد التطهير)")
+                st.dataframe(df, use_container_width=True)
         
         # 💡 حماية وحساب عمود 'total_row_sales' تلقائياً لتجنب أي KeyError
-        if 'total_row_sales' not in df.columns:
-            price_col = next((c for c in df.columns if 'سعر' in c or 'price' in c.lower()), None)
-            qty_col = next((c for c in df.columns if 'كمية' in c or 'qty' in c.lower() or 'quantity' in c.lower()), None)
+                if 'total_row_sales' not in df.columns:
+                    price_col = next((c for c in df.columns if 'سعر' in c or 'price' in c.lower()), None)
+                    qty_col = next((c for c in df.columns if 'كمية' in c or 'qty' in c.lower() or 'quantity' in c.lower()), None)
             
-            if price_col and qty_col:
-                df['total_row_sales'] = pd.to_numeric(df[price_col], errors='coerce').fillna(0) * pd.to_numeric(df[qty_col], errors='coerce').fillna(1)
-            else:
-                df['total_row_sales'] = 0.0
+                    if price_col and qty_col:
+                        df['total_row_sales'] = pd.to_numeric(df[price_col], errors='coerce').fillna(0) * pd.to_numeric(df[qty_col], errors='coerce').fillna(1)
+                   else:
+                       df['total_row_sales'] = 0.0
 
-        st.metric(label="صافي الأرباح الحقيقية المتوقعة", value=f"{df['total_row_sales'].sum():,.2f} DA")
+                st.metric(label="صافي الأرباح الحقيقية المتوقعة", value=f"{df['total_row_sales'].sum():,.2f} DA")
             with col_trash:
                 st.subheader("⚠️ 3. التكرارات والأخطاء المحذوفة:")
                 if not duplicated_rows.empty or not bad_prices.empty:
