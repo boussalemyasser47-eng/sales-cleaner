@@ -720,11 +720,74 @@ def validate_and_process_registration(email, password):
 
 
 
+
 if not is_boss_link and "active_merchant_user" not in st.session_state:
-    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
     
-    col_side_left, col_center_box, col_side_right = st.columns(3)
-    with col_center_box:
+    # 📢 (1) إذا اختار التاجر الانتقال لصفحة تقديم الشكاوى المستقلة
+    if st.session_state.get("current_view") == "complaint_page":
+        
+        # 🎨 حقن تأثير الظهور الميكانيكي الانسيابي لصفحة الشكاوى
+        st.markdown("""
+            <style>
+            @keyframes mechanicalPop {
+                0% { opacity: 0; transform: translateY(25px) scale(0.93); }
+                60% { opacity: 1; transform: translateY(-5px) scale(1.02); }
+                100% { opacity: 1; transform: translateY(0) scale(1); }
+            }
+            .mechanical-complaint-container {
+                animation: mechanicalPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+                border: 2px solid #ff0055;
+                border-radius: 20px;
+                padding: 35px;
+                background: linear-gradient(135deg, rgba(20, 5, 12, 0.96) 0%, rgba(5, 1, 3, 0.99) 100%);
+                box-shadow: 0 0 40px rgba(255, 0, 85, 0.45);
+                direction: rtl;
+                text-align: right;
+                max-width: 600px;
+                margin: 40px auto;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 20px; font-weight: 900; text-shadow: 0 0 15px rgba(255,0,85,0.4);'>📢 منصة تسجيل الشكاوى والبلاغات الرسمية</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #aaa; font-size: 15px;'>قم بملء النموذج أدناه لتسجيل شكواك وسيقوم فريق الإدارة بمراجعتها وحلها في أقرب وقت.</p>", unsafe_allow_html=True)
+        
+        # صندوق الشكاوى المستقل الذي يظهر بالحركة الميكانيكية
+        st.markdown("<div class='mechanical-complaint-container'>", unsafe_allow_html=True)
+        
+        complaint_email = st.text_input("البريد الإلكتروني الخاص بك:", key="page_comp_email")
+        complaint_phone = st.text_input("رقم الهاتف:", key="page_comp_phone", placeholder="0655xxxxxxxx")
+        complaint_msg = st.text_area("تفاصيل الشكوى أو المشكلة:", key="page_comp_msg", placeholder="اكتب شكواك بوضوح هنا...")
+        
+        if st.button("📤 إرسال الشكوى رسمياً للإدارة", key="page_send_complaint_btn"):
+            if not complaint_email or not complaint_msg or not complaint_phone:
+                st.error("⚠️ يرجى تعبئة جميع الحقول (البريد، الهاتف، وتفاصيل الشكوى) أولاً.")
+            else:
+                admin_subject = f"🚨 شكوى جديدة مرفوعة من التاجر: {complaint_email}"
+                admin_body = f"مرحباً بالمدير،\n\nوردتك شكوى رسمية جديدة من صفحة الشكاوى المستقلة:\nالبريد: {complaint_email}\nالهاتف: {complaint_phone}\n\nنص الشكوى:\n{complaint_msg}"
+                
+                # إرسال إشعار للبريد الإداري
+                send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_subject, admin_body, action_type="LOCK")
+                
+                st.success("✅ تم إرسال شكواك بنجاح إلى الإدارة وسنرد عليك قريباً جداً!")
+                time.sleep(2)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("⬅️ العودة إلى صفحة تسجيل الدخول", key="page_back_to_auth_from_comp"):
+            st.session_state["current_view"] = "auth"
+            st.rerun()
+            
+        st.markdown("</div>", unsafe_allow_html=True)
+    else:
+        # ==========================================
+        # 🔑 (2) صفحة تسجيل الدخول والتسجيل الأصلية
+        # ==========================================
+        col_side_left, col_center_box, col_side_right = st.columns(3)
+        with col_center_box:
+            st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
+    
+            col_side_left, col_center_box, col_side_right = st.columns(3)
+            with col_center_box:
         st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
         
@@ -913,73 +976,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
-# 🛟 زر الانتقال لصفحة الدعم المستقلة (موضوع في أسفل الصندوق الأوسط)
-
-        st.markdown("</div>", unsafe_allow_html=True)
-if not is_boss_link and "active_merchant_user" not in st.session_state:
-    
-    # 📢 (1) إذا اختار التاجر الانتقال لصفحة تقديم الشكاوى المستقلة
-    if st.session_state.get("current_view") == "complaint_page":
-        
-        # 🎨 حقن تأثير الظهور الميكانيكي الانسيابي لصفحة الشكاوى
-        st.markdown("""
-            <style>
-            @keyframes mechanicalPop {
-                0% { opacity: 0; transform: translateY(25px) scale(0.93); }
-                60% { opacity: 1; transform: translateY(-5px) scale(1.02); }
-                100% { opacity: 1; transform: translateY(0) scale(1); }
-            }
-            .mechanical-complaint-container {
-                animation: mechanicalPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-                border: 2px solid #ff0055;
-                border-radius: 20px;
-                padding: 35px;
-                background: linear-gradient(135deg, rgba(20, 5, 12, 0.96) 0%, rgba(5, 1, 3, 0.99) 100%);
-                box-shadow: 0 0 40px rgba(255, 0, 85, 0.45);
-                direction: rtl;
-                text-align: right;
-                max-width: 600px;
-                margin: 40px auto;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-
-        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 20px; font-weight: 900; text-shadow: 0 0 15px rgba(255,0,85,0.4);'>📢 منصة تسجيل الشكاوى والبلاغات الرسمية</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #aaa; font-size: 15px;'>قم بملء النموذج أدناه لتسجيل شكواك وسيقوم فريق الإدارة بمراجعتها وحلها في أقرب وقت.</p>", unsafe_allow_html=True)
-        
-        # صندوق الشكاوى المستقل الذي يظهر بالحركة الميكانيكية
-        st.markdown("<div class='mechanical-complaint-container'>", unsafe_allow_html=True)
-        
-        complaint_email = st.text_input("البريد الإلكتروني الخاص بك:", key="page_comp_email")
-        complaint_phone = st.text_input("رقم الهاتف:", key="page_comp_phone", placeholder="0655xxxxxxxx")
-        complaint_msg = st.text_area("تفاصيل الشكوى أو المشكلة:", key="page_comp_msg", placeholder="اكتب شكواك بوضوح هنا...")
-        
-        if st.button("📤 إرسال الشكوى رسمياً للإدارة", key="page_send_complaint_btn"):
-            if not complaint_email or not complaint_msg or not complaint_phone:
-                st.error("⚠️ يرجى تعبئة جميع الحقول (البريد، الهاتف، وتفاصيل الشكوى) أولاً.")
-            else:
-                admin_subject = f"🚨 شكوى جديدة مرفوعة من التاجر: {complaint_email}"
-                admin_body = f"مرحباً بالمدير،\n\nوردتك شكوى رسمية جديدة من صفحة الشكاوى المستقلة:\nالبريد: {complaint_email}\nالهاتف: {complaint_phone}\n\nنص الشكوى:\n{complaint_msg}"
-                
-                # إرسال إشعار للبريد الإداري
-                send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_subject, admin_body, action_type="LOCK")
-                
-                st.success("✅ تم إرسال شكواك بنجاح إلى الإدارة وسنرد عليك قريباً جداً!")
-                time.sleep(2)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("⬅️ العودة إلى صفحة تسجيل الدخول", key="page_back_to_auth_from_comp"):
-            st.session_state["current_view"] = "auth"
-            st.rerun()
-            
-        st.markdown("</div>", unsafe_allow_html=True)
-    else:
-        # ==========================================
-        # 🔑 (2) صفحة تسجيل الدخول والتسجيل الأصلية
-        # ==========================================
-        col_side_left, col_center_box, col_side_right = st.columns(3)
-        with col_center_box:
- 
             # ... [حقول البريد، الكلمة السرية، رقم الهاتف، والباقات الخاصة بك هنا] ...
             
             # 📢 زر الانتقال لصفحة الشكاوى المستقلة (موضع آمن في أسفل الصندوق الأوسط)
