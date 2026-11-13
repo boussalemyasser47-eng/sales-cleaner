@@ -206,6 +206,7 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         return False
 
 def send_gmail_notification_with_log(to_email, subject, body, action_type="DEFAULT"):
+    from datetime import datetime  # استيراد محلي لتجنب أي تعارض في الملف
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     status = "SUCCESS"
     err_msg = ""
