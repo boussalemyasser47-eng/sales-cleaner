@@ -748,6 +748,9 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         # صفحة التسجيل والدخول الأصلية (داخل الصندوق الأوسط حصراً)
         col_side_left, col_center_box, col_side_right = st.columns(3)
         with col_center_box:
+            st.markdown("<h1 style='color: #00ff00; text-align: center; font-weight: 900; margin-top: 40px; text-shadow: 0 0 20px #00ff00;'>🛡️ بوابة إدارة التجار والمنصة</h1>", unsafe_allow_html=True)
+            
+            st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
             st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
             
             auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
@@ -961,7 +964,12 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
  
-
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🛟 هل تواجه مشكلة؟ انتقل إلى صفحة الدعم الفني", key="go_to_support_page_btn"):
+                st.session_state["current_view"] = "support_page"
+                st.rerun()
+                
+            st.markdown("</div>", unsafe_allow_html=True)
 
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
