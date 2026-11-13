@@ -1952,18 +1952,37 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.session_state["last_active_total"] = final_total
                     st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
                     
-        if "generated_pdf_invoice" in st.session_state:
-            col_btn1, col_btn2 = st.columns(2)
-            with col_btn1: 
-                st.download_button(label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", data=st.session_state["generated_pdf_invoice"], file_name=f"invoice_{st.session_state['last_active_customer']}.pdf", mime="application/pdf", key="dl_invoice_pdf_btn")
-            with col_btn2: 
-                st.download_button(label="🖨️ تحميل ملصق الشحن الحراري 4x4 (PDF)", data=st.session_state["generated_pdf_label"], file_name=f"thermal_label_{st.session_state['last_active_customer']}.pdf", mime="application/pdf", key="dl_label_pdf_btn")
-            if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة", key="quick_thermal_print_window_btn"): 
-                st.components.v1.html("<script>window.print();</script>", height=0)
-            st.markdown("---")
-            st.subheader("📲 أزرار الإرسال السريع الفوري لزبونك:")
-            msg_text = f"مرحباً {st.session_state['last_active_customer']}، تم تأكيد طلبيتك بنجاح من متجر {st.session_state['last_active_shop']}. المنتج: {st.session_state['last_active_product']}، الإجمالي للدفع هو: {st.session_state['last_active_total']:,} DA."
-            encoded_msg = urllib.parse.quote(msg_text)
+    if "generated_pdf_invoice" in st.session_state:
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            st.download_button(
+                label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", 
+                data=st.session_state["generated_pdf_invoice"], 
+                file_name=f"invoice_{st.session_state.get('last_active_customer', 'customer')}.pdf", 
+                mime="application/pdf", 
+                key="dl_invoice_pdf_btn"
+            )
+        with col_btn2:
+            st.download_button(
+                label="🏷️ تحميل ملصق الشحن الحراري (PDF)", 
+                data=st.session_state["generated_pdf_label"], 
+                file_name=f"label_{st.session_state.get('last_active_customer', 'customer')}.pdf", 
+                mime="application/pdf", 
+                key="dl_label_pdf_btn"
+            )
+        
+        if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة", key="quick_thermal_print_window_btn"):
+            st.components.v1.html("<script>window.print();</script>", height=0)
+            
+        st.markdown("---")
+        st.subheader("📲 أزرار الإرسال السريع لزبونك:")
+        
+        safe_customer = st.session_state.get('last_active_customer', 'customer')
+        safe_shop = st.session_state.get('last_active_shop', 'shop')
+        safe_phone = st.session_state.get('last_active_phone', '')
+        
+        msg_text = f"مرحباً {safe_customer}، تم تأكيد طلبك بنجاح من متجر {safe_shop}."
+        encoded_msg = urllib.parse.quote(msg_text)
             
             send_col1, send_col2 = st.columns(2)
             with send_col1: 
