@@ -973,6 +973,25 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 st.rerun()
                 
             st.markdown("</div>", unsafe_allow_html=True)
+    else:
+        # ==========================================
+        # 🔑 (2) صفحة التسجيل والدخول الأصلية (داخل الصندوق الأوسط)
+        # ==========================================
+        col_side_left, col_center_box, col_side_right = st.columns(3)
+        with col_center_box:
+            st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
+            st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
+            st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
+            
+            # ... (حقول البريد، الكلمة السرية، الهاتف، والباقات الخاصة بك هنا) ...
+            
+            # 🛟 زر الانتقال لصفحة الدعم (يظهر بداخل الصندوق الأوسط بأسفل الصفحة)
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🛟 هل تواجه مشكلة؟ انتقل إلى صفحة الدعم الفني", key="go_to_support_page_btn"):
+                st.session_state["current_view"] = "support_page"
+                st.rerun()
+                
+            st.markdown("</div>", unsafe_allow_html=True)
 
   
 # ========================================================
