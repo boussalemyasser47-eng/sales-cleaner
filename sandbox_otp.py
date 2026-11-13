@@ -139,37 +139,6 @@ def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, custome
     c.save()
     buffer.seek(0)
     return buffer.getvalue()
-# 🏷️ دالة توليد ملصق الشحن الحراري مع دعم تبديل اللغة (عربي / فرنسي)
-def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, quantity, final_total, logo_data=None, lang="ar"):
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=(288, 288))
-    
-    font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
-    
-    if lang == "fr":
-        c.setFont(font_name, 10)
-        c.drawString(10, 260, fix_arabic(f"Boutique : {shop_name}"))
-        
-        c.setFont(font_name, 9)
-        c.drawString(10, 235, fix_arabic(f"Client : {customer_name}"))
-        c.drawString(10, 215, fix_arabic(f"Tél : {customer_phone}"))
-        c.drawString(10, 195, fix_arabic(f"Adresse : {customer_address}"))
-        c.drawString(10, 175, fix_arabic(f"Produit : {product_name} (x{quantity})"))
-        c.drawString(10, 155, fix_arabic(f"Montant COD : {final_total} DA"))
-    else:
-        c.setFont(font_name, 10)
-        c.drawString(10, 260, fix_arabic(f"المتجر: {shop_name}"))
-        
-        c.setFont(font_name, 9)
-        c.drawString(10, 235, fix_arabic(f"الزبون: {customer_name}"))
-        c.drawString(10, 215, fix_arabic(f"الهاتف: {customer_phone}"))
-        c.drawString(10, 195, fix_arabic(f"العنوان: {customer_address}"))
-        c.drawString(10, 175, fix_arabic(f"المنتج: {product_name} (x{quantity})"))
-        c.drawString(10, 155, fix_arabic(f"مبلغ التوصيل (COD): {final_total} دج"))
-    
-    c.save()
-    buffer.seek(0)
-    return buffer.getvalue()
 def render_data_insights(df):
     """
     دالة لعرض رؤى وإحصائيات سريعة حول البيانات المعالجة
