@@ -42,14 +42,16 @@ def fix_arabic(text):
     return get_display(reshaped_text)
 
 # 2. 📍 ضع هذا الكود هنا (تحديد مسار وتسجيل خط Cairo)
-ARABIC_FONT_PATH = "Cairo-Regular.ttf"
+# ضع الاسم الدقيق للملف المرفوع في المستودع هنا
+ARABIC_FONT_PATH = "Cairo-VariableFont_slnt,wght.ttf" 
 ARABIC_FONT_AVAILABLE = False
 
 try:
     if os.path.exists(ARABIC_FONT_PATH):
-        # تسجيل خط Cairo المرفق في مجلد المشروع
         pdfmetrics.registerFont(TTFont('ArabicFont', ARABIC_FONT_PATH))
         ARABIC_FONT_AVAILABLE = True
+except Exception as e:
+    ARABIC_FONT_AVAILABLE = False
     elif os.path.exists('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'):
         # كخيار احتياطي ثانٍ إذا لم توجد النسخة المحلية على السيرفر
         pdfmetrics.registerFont(TTFont('ArabicFont', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
@@ -66,20 +68,19 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     
-    # تحديد الخط المدعوم بالعربية الذي سجلناه مسبقاً
     font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
     
-    # === عنوان الفاتورة (مع استخدام fix_arabic للغة العربية) ===
+    # عنوان الفاتورة
     c.setFont(font_name, 16)
     c.drawString(200, 750, fix_arabic(f"فاتورة مبيعات - {shop_name}"))
     
-    # === بيانات الزبون (مفعلة بـ fix_arabic لضمان ظهور العربية بطلاقة) ===
+    # بيانات الزبون (مغلفة بـ fix_arabic لضمان ظهور الحروف العربية بطلاقة وبدون مربعات)
     c.setFont(font_name, 12)
     c.drawString(50, 700, fix_arabic(f"اسم الزبون: {customer_name}"))
     c.drawString(50, 680, fix_arabic(f"رقم الهاتف: {customer_phone}"))
     c.drawString(50, 660, fix_arabic(f"العنوان: {customer_address}"))
     
-    # === تفاصيل المنتجات والحسابات ===
+    # تفاصيل المنتج والحسابات
     c.drawString(50, 620, fix_arabic(f"المنتج: {product_name} (الكمية: {quantity})"))
     c.drawString(50, 600, fix_arabic(f"سعر الوحدة: {price} دج | الإجمالي: {product_total} دج"))
     c.drawString(50, 580, fix_arabic(f"تكلفة الشحن: {shipping_cost} دج"))
@@ -91,27 +92,7 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     c.save()
     buffer.seek(0)
     return buffer.getvalue()
-def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, quantity, final_total, logo_data=None):
-    """دالة لتوليد ملصق الشحن الحراري 4x4 مع دعم كامل للغة العربية"""
-    buffer = io.BytesIO()
-    # مقاس الملصق الحراري (288x288 نقطة)
-    c = canvas.Canvas(buffer, pagesize=(288, 288))
-    
-    font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
-    
-    c.setFont(font_name, 10)
-    c.drawString(10, 260, f"المتجر: {shop_name}")
-    
-    c.setFont(font_name, 9)
-    c.drawString(10, 235, f"الزبون: {customer_name}")
-    c.drawString(10, 215, f"الهاتف: {customer_phone}")
-    c.drawString(10, 195, f"العنوان: {customer_address}")
-    c.drawString(10, 175, f"المنتج: {product_name} (x{quantity})")
-    c.drawString(10, 155, f"مبلغ التوصيل (COD): {final_total} دج")
-    
-    c.save()
-    buffer.seek(0)
-    return buffer.getvalue()
+
 def render_data_insights(df):
     """
     دالة لعرض رؤى وإحصائيات سريعة حول البيانات المعالجة
