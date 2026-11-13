@@ -1985,10 +1985,13 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         encoded_msg = urllib.parse.quote(msg_text)
             
         send_col1, send_col2 = st.columns(2)
-            with send_col1: 
-                st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{st.session_state['last_active_phone']}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
-            with send_col2: 
-                st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
+        with send_col1:
+            st.link_button(
+                "💬 إرسال تفاصيل الفاتورة عبر WhatsApp", 
+                f"https://wa.me/{safe_phone}?text={encoded_msg}"
+            )
+        with send_col2: 
+            st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
         # === إضافة صندوق المعاينة الحية للفاتورة النيونية ===
         st.markdown("---")
         st.subheader("👁️ معاينة حية فورية قبل الحفظ:")
