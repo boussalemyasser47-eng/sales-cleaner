@@ -29,17 +29,12 @@ import random
 import time
 
 # 🧠 ضع هذا الكود في أول الملف تماماً ليلتقط البريد إذا جاء من الإيميل
+# 🧠 التقاط البريد من الرابط وتفعيل شاشة إدخال الرمز فوراً
 query_params = st.query_params
 if "verify_email" in query_params:
     incoming_email = query_params["verify_email"]
     st.session_state["otp_pending_verification"] = True
     st.session_state["temp_reg_email"] = incoming_email
-    # نثبت البيانات الوهمية مؤقتًا لكي لا يطلب منه إعادة كتابتها
-    if "temp_reg_phone" not in st.session_state:
-        st.session_state["temp_reg_phone"] = "0655xxxxxxxx" # يتم تحديثه من قاعدة البيانات لاحقاً
-# تهيئة حالة عرض الصفحة الافتراضية
-if "current_view" not in st.session_state:
-    st.session_state["current_view"] = "auth"
 # 🌟 تصميم نافذة التحقق المنبثقة في المنتصف (Modal Dialog)
 def render_otp_popup(target_email):
     # إخفاء الخلفية وتثبيت النافذة في المنتصف بتصميم نيون فخم
