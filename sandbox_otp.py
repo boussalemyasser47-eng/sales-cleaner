@@ -921,17 +921,36 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         st.markdown("</div>", unsafe_allow_html=True)
 if not is_boss_link and "active_merchant_user" not in st.session_state:
     
-    # 🛟 فحص حالة العرض الحالية (هل نحن في صفحة الدعم أم التسجيل؟)
+    # 🛟 (1) إذا اختار التاجر الانتقال لصفحة الدعم الفني
     if st.session_state.get("current_view") == "support_page":
-        # ==========================================
-        # 📱 صفحة الدعم الفني المستقلة بالكامل
-        # ==========================================
-        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 40px;'>🛟 مركز الدعم الفني والمساعدة للتاجر</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #aaa; font-size: 15px;'>نحن هنا لمساعدتك في حل أي مشكلة تواجهك في التسجيل أو استقبال الرموز.</p>", unsafe_allow_html=True)
+        
+        # 🎨 حقن تأثير الظهور الميكانيكي الانسيابي (Elastic Pop Animation)
+        st.markdown("""
+            <style>
+            @keyframes mechanicalPop {
+                0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+                60% { opacity: 1; transform: translateY(-5px) scale(1.02); }
+                100% { opacity: 1; transform: translateY(0) scale(1); }
+            }
+            .mechanical-support-box {
+                animation: mechanicalPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+                border: 2px solid #ff0055;
+                border-radius: 20px;
+                padding: 35px;
+                background: linear-gradient(135deg, rgba(20, 5, 12, 0.95) 0%, rgba(5, 1, 3, 0.99) 100%);
+                box-shadow: 0 0 35px rgba(255, 0, 85, 0.4);
+                direction: rtl;
+                text-align: right;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 30px; font-weight: 900;'>🛟 مركز الدعم الفني والمساعدة للتاجر</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #aaa; font-size: 15px;'>نحن هنا لمساعدتك فوراً في حال واجهتك أي مشكلة في التسجيل أو التوثيق.</p>", unsafe_allow_html=True)
         
         sup_col1, sup_col2, sup_col3 = st.columns([1, 2, 1])
         with sup_col2:
-            st.markdown("<div style='border: 2px solid #ff0055; border-radius: 15px; padding: 30px; background: rgba(15,5,10,0.95); direction: rtl; text-align: right;'>", unsafe_allow_html=True)
+            st.markdown("<div class='mechanical-support-box'>", unsafe_allow_html=True)
             
             sup_email = st.text_input("بريدك الإلكتروني للتواصل:", key="page_sup_email")
             sup_msg = st.text_area("اشرح مشكلتك بالتفصيل:", key="page_sup_msg", placeholder="اكتب تفاصيل المشكلة هنا...")
@@ -941,7 +960,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.error("⚠️ يرجى تعبئة البريد الإلكتروني ووصف المشكلة أولاً.")
                 else:
                     admin_subject = f"🚨 تذكرة دعم فني جديدة من: {sup_email}"
-                    admin_body = f"مرحباً بالمدير،\n\nوردتك تذكرة دعم فني من صفحة الدعم المستقلة:\nالبريد: {sup_email}\n\nالتفاصيل:\n{sup_msg}"
+                    admin_body = f"مرحباً بالمدير،\n\nوردت تذكرة دعم فني جديدة:\nالبريد: {sup_email}\n\nالتفاصيل:\n{sup_msg}"
                     
                     send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_subject, admin_body, action_type="LOCK")
                     
@@ -951,6 +970,26 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("⬅️ العودة إلى صفحة تسجيل الدخول", key="page_back_to_auth"):
                 st.session_state["current_view"] = "auth"
+                st.rerun()
+                
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    else:
+        # ==========================================
+        # 🔑 (2) صفحة التسجيل والدخول الأصلية (داخل الصندوق الأوسط)
+        # ==========================================
+        col_side_left, col_center_box, col_side_right = st.columns(3)
+        with col_center_box:
+            st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
+            st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
+            st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
+            
+            # ... (حقول البريد، الكلمة السرية، الهاتف، والباقات الخاصة بك هنا) ...
+            
+            # 🛟 زر الانتقال لصفحة الدعم (يظهر بداخل الصندوق الأوسط بأسفل الصفحة)
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🛟 هل تواجه مشكلة؟ انتقل إلى صفحة الدعم الفني", key="go_to_support_page_btn"):
+                st.session_state["current_view"] = "support_page"
                 st.rerun()
                 
             st.markdown("</div>", unsafe_allow_html=True)
