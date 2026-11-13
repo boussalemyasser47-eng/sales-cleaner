@@ -34,7 +34,16 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import os
+import arabic_reshaper
+from bidi.algorithm import get_display
 
+def fix_arabic(text):
+    """دالة لتشكيل الحروف العربية وعكسها لتبدو صحيحة في الـ PDF"""
+    if not text:
+        return ""
+    # تحويل النص العادي إلى نص موصول وصحيح اتجاهياً
+    reshaped_text = arabic_reshaper.reshape(str(text))
+    return get_display(reshaped_text)
 # تسجيل خط يدعم اللغة العربية ومتوفر في نظام التشغيل (Linux / Streamlit Cloud)
 try:
     pdfmetrics.registerFont(TTFont('ArabicFont', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
@@ -43,33 +52,27 @@ except Exception as e:
     ARABIC_FONT_AVAILABLE = False
 
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None):
-    """دالة لتوليد ملف PDF للفاتورة الكبيرة A4 مع دعم كامل للغة العربية"""
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     
-    # اختيار الخط المناسب (عربي أو إنجليزي قياسي احتياطياً)
     font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
+    c.setFont(font_name, 12)
     
-    # عنوان الفاتورة والمتجر
-    c.setFont(font_name, 16)
-    c.drawString(200, 750, f"فاتورة مبيعات - {shop_name}")
+    # === هنا تضع دالة fix_arabic لتجنب المربعات السوداء والحروف المقطعة ===
+    c.drawString(200, 750, fix_arabic(f"فاتورة مبيعات - {shop_name}"))
     
-    c.setFont(font_name, 11)
-    c.drawString(50, 700, f"اسم الزبون: {customer_name}")
-    c.drawString(50, 680, f"رقم الهاتف: {customer_phone}")
-    c.drawString(50, 660, f"العنوان: {customer_address}")
+    c.drawString(50, 700, fix_arabic(f"اسم الزبون: {customer_name}"))
+    c.drawString(50, 680, fix_arabic(f"رقم الهاتف: {customer_phone}"))
+    c.drawString(50, 660, fix_arabic(f"العنوان: {customer_address}"))
     
-    c.drawString(50, 620, f"المنتج: {product_name} (الكمية: {quantity})")
-    c.drawString(50, 600, f"سعر الوحدة: {price} دج | الإجمالي الفرعي: {product_total} دج")
-    c.drawString(50, 580, f"تكلفة الشحن: {shipping_cost} دج")
-    
-    c.setFont(font_name, 13)
-    c.drawString(50, 540, f"المبلغ الإجمالي النهائي (الدفع عند الاستلام): {final_total} دج")
+    c.drawString(50, 620, fix_arabic(f"المنتج: {product_name} (الكمية: {quantity})"))
+    c.drawString(50, 600, fix_arabic(f"سعر الوحدة: {price} دج | الإجمالي: {product_total} دج"))
+    c.drawString(50, 580, fix_arabic(f"تكلفة الشحن: {shipping_cost} دج"))
+    c.drawString(50, 540, fix_arabic(f"المبلغ الإجمالي النهائي: {final_total} دج"))
     
     c.save()
     buffer.seek(0)
     return buffer.getvalue()
-
 def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, quantity, final_total, logo_data=None):
     """دالة لتوليد ملصق الشحن الحراري 4x4 مع دعم كامل للغة العربية"""
     buffer = io.BytesIO()
