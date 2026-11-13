@@ -61,24 +61,35 @@ except Exception as e:
     ARABIC_FONT_AVAILABLE = False
 
 
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import io
+
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     
+    # تحديد الخط المدعوم بالعربية الذي سجلناه مسبقاً
     font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
-    c.setFont(font_name, 12)
     
-    # === هنا تضع دالة fix_arabic لتجنب المربعات السوداء والحروف المقطعة ===
+    # === عنوان الفاتورة (مع استخدام fix_arabic للغة العربية) ===
+    c.setFont(font_name, 16)
     c.drawString(200, 750, fix_arabic(f"فاتورة مبيعات - {shop_name}"))
     
+    # === بيانات الزبون (مفعلة بـ fix_arabic لضمان ظهور العربية بطلاقة) ===
+    c.setFont(font_name, 12)
     c.drawString(50, 700, fix_arabic(f"اسم الزبون: {customer_name}"))
     c.drawString(50, 680, fix_arabic(f"رقم الهاتف: {customer_phone}"))
     c.drawString(50, 660, fix_arabic(f"العنوان: {customer_address}"))
     
+    # === تفاصيل المنتجات والحسابات ===
     c.drawString(50, 620, fix_arabic(f"المنتج: {product_name} (الكمية: {quantity})"))
     c.drawString(50, 600, fix_arabic(f"سعر الوحدة: {price} دج | الإجمالي: {product_total} دج"))
     c.drawString(50, 580, fix_arabic(f"تكلفة الشحن: {shipping_cost} دج"))
-    c.drawString(50, 540, fix_arabic(f"المبلغ الإجمالي النهائي: {final_total} دج"))
+    
+    # المبلغ الإجمالي النهائي
+    c.setFont(font_name, 14)
+    c.drawString(50, 530, fix_arabic(f"المبلغ الإجمالي النهائي: {final_total} دج"))
     
     c.save()
     buffer.seek(0)
