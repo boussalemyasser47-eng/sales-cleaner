@@ -1951,8 +1951,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.session_state["last_active_product"] = product_name
                     st.session_state["last_active_total"] = final_total
                     st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
-                    
-    if "generated_pdf_invoice" in st.session_state:
+    if "generated_pdf_invoice" in st.session_state and "generated_pdf_label" in st.session_state:
         col_btn1, col_btn2 = st.columns(2)
         with col_btn1:
             st.download_button(
@@ -1983,7 +1982,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         
         msg_text = f"مرحباً {safe_customer}، تم تأكيد طلبك بنجاح من متجر {safe_shop}."
         encoded_msg = urllib.parse.quote(msg_text)
-            
+
         send_col1, send_col2 = st.columns(2)
         with send_col1:
             st.link_button(
