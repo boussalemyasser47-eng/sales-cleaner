@@ -23,15 +23,12 @@ import io
 import urllib.parse
 import re
 import time
-import streamlit as st
 import pandas as pd
 import io
-from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
 import urllib.request
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
@@ -49,23 +46,24 @@ def fix_arabic(text):
 # ضع الاسم الدقيق للملف المرفوع في المستودع هنا
 
 
-ARABIC_FONT_PATH = "Cairo-Regular.ttf"
+import os
+import urllib.request
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+# مسار وطريقة تحميل الخط الثابت والمضمون للعربية
+ARABIC_FONT_PATH = "Amiri-Regular.ttf"
 ARABIC_FONT_AVAILABLE = False
 
 try:
-    # التحقق من أن ملف الخط غير موجود أو تالف (حجمه صغير جداً)
-    if not os.path.exists(ARABIC_FONT_PATH) or os.path.getsize(ARABIC_FONT_PATH) < 5000:
-        font_url = "https://github.com/google/fonts/raw/main/ofl/cairo/Cairo-Regular.ttf"
+    if not os.path.exists(ARABIC_FONT_PATH) or os.path.getsize(ARABIC_FONT_PATH) < 10000:
+        font_url = "https://raw.githubusercontent.com/google/fonts/main/ofl/amiri/Amiri-Regular.ttf"
         urllib.request.urlretrieve(font_url, ARABIC_FONT_PATH)
-    
-    # تسجيل الخط في ReportLab
+        
     pdfmetrics.registerFont(TTFont('ArabicFont', ARABIC_FONT_PATH))
     ARABIC_FONT_AVAILABLE = True
 except Exception as e:
     ARABIC_FONT_AVAILABLE = False
-    # عرض سبب الخطأ مباشرة على الشاشة لكي نراه بوضوح
-    st.error(f"⚠️ تفاصيل خطأ تحميل الخط العربي: {e}")
-
 
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None):
     buffer = io.BytesIO()
@@ -376,10 +374,6 @@ def create_backup_vault():
 # [باقي كود واجهات التاجر والمالك يعمل بشكل طبيعي الآن...]
 
 # [باقي كود واجهات التاجر والمالك يعمل بشكل طبيعي الآن...]
-import smtplib
-import random
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import streamlit as st
 import pandas as pd
 import sqlite3
