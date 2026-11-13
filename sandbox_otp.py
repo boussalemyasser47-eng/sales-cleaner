@@ -818,6 +818,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             clean_pass = input_password.strip()
             st.session_state["temp_reg_phone"] = input_phone
     # 🎯 التحقق المباشر: إذا كان هناك طلب تحقق معلق (جاء من الإيميل)، اعرض صندوق الرمز فوراً وتجاوز الباقي
+            # 🎯 التحقق المباشر: إذا كان هناك طلب تحقق معلق (جاء من الإيميل)، اعرض صندوق الرمز فوراً وتجاوز الباقي
     if st.session_state.get("otp_pending_verification", False):
         st.markdown("""
             <div style="max-width: 500px; margin: 20px auto; background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%); border: 2px solid #00fff0; border-radius: 20px; padding: 30px; box-shadow: 0 0 40px rgba(0, 255, 240, 0.4); direction: rtl; text-align: right;">
@@ -866,7 +867,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             st.rerun()
 
     else:
-        # هنا يبدأ الكود القديم الخاص بك (إنشاء حساب أو تسجيل الدخول)
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
             user_package_choice = render_premium_neon_packages()
             st.markdown("</div>", unsafe_allow_html=True)
