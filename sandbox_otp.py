@@ -907,7 +907,12 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
-
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🛟 هل تواجه مشكلة؟ انتقل إلى صفحة الدعم الفني", key="go_to_support_page_btn"):
+            st.session_state["current_view"] = "support_page"
+            st.rerun()
+                
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
