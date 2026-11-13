@@ -2025,7 +2025,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             
                     if price_col and qty_col:
                         df['total_row_sales'] = pd.to_numeric(df[price_col], errors='coerce').fillna(0) * pd.to_numeric(df[qty_col], errors='coerce').fillna(1)
-                   else:
+                    else:
                        df['total_row_sales'] = 0.0
 
                 st.metric(label="صافي الأرباح الحقيقية المتوقعة", value=f"{df['total_row_sales'].sum():,.2f} DA")
