@@ -840,21 +840,25 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 st.session_state["temp_reg_email"]  = clean_email
                                 st.session_state["temp_reg_pass"]   = clean_pass
                                 st.session_state["temp_reg_package"] = validated_package
-                                
+                                # رابط منصتك الأساسي
+                                base_app_url = "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
+                                # دمج البريد مع الرابط ليتعرف عليه الموقع تلقائياً عند الضغط
+                                verify_link = f"{base_app_url}?verify_email={clean_email}"
                                 subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
-                                
 
                                 body = f"""مرحباً بك،
-
                                 رمز التحقق العشوائي الخاص بك هو: {generated_otp}
 
-                                يرجى العودة فوراً إلى نافذة المتصفح المفتوحة لديك وإدخال هذا الرمز المكون من 6 أرقام في الحقل المخصص لإتمام إنشاء الحساب بنجاح.
+
+                                يرجى الضغط على الزر أدناه للانتقال للمنصة وإدخال الكود لإتمام إنشاء الحساب:
                                 """
 
+                                # استدعاء دالة الإرسال مع تمرير رابط الزر المخصص
+                                send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=verify_link)
                                 # استدعاء دالة الإرسال لديك
                                 send_gmail_notification(clean_email, subject, body)
                                 
-                                if send_gmail_notification(clean_email, subject, body):
+                                if   send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=verify_link):
                                     st.session_state["otp_pending_verification"] = True
                                     st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
                                     time.sleep(0.5)
