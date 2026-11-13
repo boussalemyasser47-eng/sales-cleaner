@@ -852,8 +852,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                                 رمز التحقق العشوائي الخاص بك هو:{generated_otp}
 
-                                يرجى الضغط على الزر أدناه للانتقال للمنصة وإدخال الكود:
-                                {verify_link}
+                           
                                 """
                                 body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
                                 
