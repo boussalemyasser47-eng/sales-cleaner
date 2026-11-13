@@ -29,13 +29,14 @@ import random
 import time
 
 # 🧠 ضع هذا الكود في أول الملف تماماً ليلتقط البريد إذا جاء من الإيميل
-# 🧠 التقاط البريد من الرابط وتفعيل شاشة إدخال الرمز فوراً
+# 🧠 التقاط البريد من الرابط وتوجيه التاجر مباشرة لخانة إدخال الرمز
 query_params = st.query_params
 if "verify_email" in query_params:
     incoming_email = query_params["verify_email"]
     st.session_state["otp_pending_verification"] = True
     st.session_state["temp_reg_email"] = incoming_email
-# 🌟 تصميم نافذة التحقق المنبثقة في المنتصف (Modal Dialog)
+    # إجبار زر اختيار العملية على الانتقال لإنشاء الحساب لكي يظهر صندوق الرمز مباشرة
+    st.session_state["merchant_auth_mode_choice"] = "📝 إنشاء حساب تاجر جديد فريش"
 def render_otp_popup(target_email):
     # إخفاء الخلفية وتثبيت النافذة في المنتصف بتصميم نيون فخم
     st.markdown("""
@@ -791,7 +792,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
             st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
             
-            auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
+            auth_mode = st.radio(
+                "اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", 
+                ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"], 
+                key="merchant_auth_mode_choice"
+            )      
             st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
             
             input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
