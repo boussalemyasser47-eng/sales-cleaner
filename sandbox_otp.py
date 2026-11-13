@@ -34,6 +34,9 @@ if "verify_email" in query_params:
     incoming_email = query_params["verify_email"]
     st.session_state["otp_pending_verification"] = True
     st.session_state["temp_reg_email"] = incoming_email
+    # نثبت البيانات الوهمية مؤقتًا لكي لا يطلب منه إعادة كتابتها
+    if "temp_reg_phone" not in st.session_state:
+        st.session_state["temp_reg_phone"] = "0655xxxxxxxx" # يتم تحديثه من قاعدة البيانات لاحقاً
 # تهيئة حالة عرض الصفحة الافتراضية
 if "current_view" not in st.session_state:
     st.session_state["current_view"] = "auth"
@@ -841,24 +844,24 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 st.session_state["temp_reg_pass"]   = clean_pass
                                 st.session_state["temp_reg_package"] = validated_package
                                 # رابط منصتك الأساسي
-                                base_app_url = "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
-                                # دمج البريد مع الرابط ليتعرف عليه الموقع تلقائياً عند الضغط
+                                base_app_url = "https://sales-cleaner-qqzrjsdzlsrsgyagohnq.streamlit.app/"
                                 verify_link = f"{base_app_url}?verify_email={clean_email}"
-                                subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
 
+                                subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
                                 body = f"""مرحباً بك،
+
                                 رمز التحقق العشوائي الخاص بك هو: {generated_otp}
 
-
-                                يرجى الضغط على الزر أدناه للانتقال للمنصة وإدخال الكود لإتمام إنشاء الحساب:
+                                يرجى الضغط على الزر أدناه للانتقال للمنصة وإدخال الرمز:
                                 """
 
-                                # استدعاء دالة الإرسال مع تمرير رابط الزر المخصص
+                                # إرسال الإيميل مع الرابط الصحيح
                                 send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=verify_link)
                                 # استدعاء دالة الإرسال لديك
                                 send_gmail_notification(clean_email, subject, body)
                                 
-                                if   send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=verify_link):
+                                if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=verify_link):
+
                                     st.session_state["otp_pending_verification"] = True
                                     st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
                                     time.sleep(0.5)
