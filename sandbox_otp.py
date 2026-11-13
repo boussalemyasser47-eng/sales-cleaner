@@ -855,9 +855,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 يرجى الضغط على الزر أدناه للانتقال للمنصة وإدخال الرمز:
                                 """
 
-                                 # 1. تجهيز الرابط الصحيح أولاً
-                                base_app_url = "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
-                                verify_link = f"{base_app_url}?verify_email={clean_email}"
+
 
                                 # 2. استدعاء الدالة مرة واحدة فقط مع تمرير رابط الزر الصحيح
                                 if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=verify_link):
