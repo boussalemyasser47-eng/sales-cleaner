@@ -717,6 +717,61 @@ def validate_and_process_registration(email, password):
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
 # ========================================================
 if not is_boss_link and "active_merchant_user" not in st.session_state:
+    
+    # 🛟 فحص حالة العرض الحالية (هل نحن في صفحة الدعم أم التسجيل؟)
+    if st.session_state.get("current_view") == "support_page":
+        # ==========================================
+        # 📱 صفحة الدعم الفني المستقلة بالكامل
+        # ==========================================
+        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 40px;'>🛟 مركز الدعم الفني والمساعدة للتاجر</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #aaa; font-size: 15px;'>نحن هنا لمساعدتك في حل أي مشكلة تواجهك في التسجيل أو استقبال الرموز.</p>", unsafe_allow_html=True)
+        
+        sup_col1, sup_col2, sup_col3 = st.columns([1, 2, 1])
+        with sup_col2:
+            st.markdown("<div style='border: 2px solid #ff0055; border-radius: 15px; padding: 30px; background: rgba(15,5,10,0.95); direction: rtl; text-align: right;'>", unsafe_allow_html=True)
+            
+            sup_email = st.text_input("بريدك الإلكتروني للتواصل:", key="page_sup_email")
+            sup_msg = st.text_area("اشرح مشكلتك بالتفصيل:", key="page_sup_msg", placeholder="اكتب تفاصيل المشكلة هنا...")
+            
+            if st.button("📤 إرسال التذكرة للإدارة", key="page_send_ticket"):
+                if not sup_email or not sup_msg:
+                    st.error("⚠️ يرجى تعبئة البريد الإلكتروني ووصف المشكلة أولاً.")
+                else:
+                    admin_subject = f"🚨 تذكرة دعم فني جديدة من: {sup_email}"
+                    admin_body = f"مرحباً بالمدير،\n\nوردتك تذكرة دعم فني من صفحة الدعم المستقلة:\nالبريد: {sup_email}\n\nالتفاصيل:\n{sup_msg}"
+                    
+                    send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_subject, admin_body, action_type="LOCK")
+                    
+                    st.success("✅ تم إرسال رسالتك بنجاح إلى الإدارة وسنتواصل معك قريباً جداً!")
+                    time.sleep(2)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("⬅️ العودة إلى صفحة تسجيل الدخول", key="page_back_to_auth"):
+                st.session_state["current_view"] = "auth"
+                st.rerun()
+                
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    else:
+        # ==========================================
+        # 🔑 صفحة تسجيل الدخول والتسجيل الأصلية
+        # ==========================================
+        col_side_left, col_center_box, col_side_right = st.columns(3)
+        with col_center_box:
+            st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
+            st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
+            st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
+            
+            # ... [جميع حقول التسجيل والـ radio وأزرار الـ OTP الحالية الخاصة بك تبق هنا] ...
+            
+            # 🛟 زر الانتقال لصفحة الدعم المستقلة (يتم وضعه في أسفل الصندوق الأوسط)
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🛟 هل تواجه مشكلة؟ انتقل إلى صفحة الدعم الفني", key="go_to_support_page_btn"):
+                st.session_state["current_view"] = "support_page"
+                st.rerun()
+                
+            st.markdown("</div>", unsafe_allow_html=True)
+if not is_boss_link and "active_merchant_user" not in st.session_state:
     st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
     
     col_side_left, col_center_box, col_side_right = st.columns(3)
