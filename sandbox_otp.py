@@ -51,20 +51,17 @@ import urllib.request
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-# مسار وطريقة تحميل الخط الثابت والمضمون للعربية
+# تحميل وتسجيل الخط الثابت (Amiri) المضمون 100% للعربية
 ARABIC_FONT_PATH = "Amiri-Regular.ttf"
 ARABIC_FONT_AVAILABLE = False
 
 try:
     if not os.path.exists(ARABIC_FONT_PATH) or os.path.getsize(ARABIC_FONT_PATH) < 10000:
-        font_url = "https://raw.githubusercontent.com/google/fonts/main/ofl/amiri/Amiri-Regular.ttf"
-        urllib.request.urlretrieve(font_url, ARABIC_FONT_PATH)
-        
+        urllib.request.urlretrieve("https://raw.githubusercontent.com/google/fonts/main/ofl/amiri/Amiri-Regular.ttf", ARABIC_FONT_PATH)
     pdfmetrics.registerFont(TTFont('ArabicFont', ARABIC_FONT_PATH))
     ARABIC_FONT_AVAILABLE = True
 except Exception as e:
     ARABIC_FONT_AVAILABLE = False
-
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
