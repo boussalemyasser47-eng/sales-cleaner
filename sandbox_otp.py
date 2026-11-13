@@ -913,67 +913,69 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("🛟 هل تواجه مشكلة؟ انتقل إلى صفحة الدعم الفني", key="go_to_support_page_btn"):
-            st.session_state["current_view"] = "support_page"
-            st.rerun()
+# 🛟 زر الانتقال لصفحة الدعم المستقلة (موضوع في أسفل الصندوق الأوسط)
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🛟 هل تواجه مشكلة؟ انتقل إلى صفحة الدعم الفني", key="go_to_support_page_btn"):
+                st.session_state["current_view"] = "support_page"
+                st.rerun()
                 
+            st.markdown("</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 if not is_boss_link and "active_merchant_user" not in st.session_state:
     
-    # 🛟 (1) إذا اختار التاجر الانتقال لصفحة الدعم الفني
+    # 🛟 (1) إذا اختار التاجر الانتقال لصفحة الدعم الفني المستقلة
     if st.session_state.get("current_view") == "support_page":
         
-        # 🎨 حقن تأثير الظهور الميكانيكي الانسيابي (Elastic Pop Animation)
+        # 🎨 حقن تصميم الانيميشن الميكانيكي الانسيابي لظهور صفحة الدعم
         st.markdown("""
             <style>
             @keyframes mechanicalPop {
-                0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+                0% { opacity: 0; transform: translateY(25px) scale(0.93); }
                 60% { opacity: 1; transform: translateY(-5px) scale(1.02); }
                 100% { opacity: 1; transform: translateY(0) scale(1); }
             }
-            .mechanical-support-box {
-                animation: mechanicalPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            .mechanical-support-container {
+                animation: mechanicalPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
                 border: 2px solid #ff0055;
                 border-radius: 20px;
                 padding: 35px;
-                background: linear-gradient(135deg, rgba(20, 5, 12, 0.95) 0%, rgba(5, 1, 3, 0.99) 100%);
-                box-shadow: 0 0 35px rgba(255, 0, 85, 0.4);
+                background: linear-gradient(135deg, rgba(20, 5, 12, 0.96) 0%, rgba(5, 1, 3, 0.99) 100%);
+                box-shadow: 0 0 40px rgba(255, 0, 85, 0.45);
                 direction: rtl;
                 text-align: right;
+                max-width: 600px;
+                margin: 40px auto;
             }
             </style>
         """, unsafe_allow_html=True)
 
-        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 30px; font-weight: 900;'>🛟 مركز الدعم الفني والمساعدة للتاجر</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 20px; font-weight: 900; text-shadow: 0 0 15px rgba(255,0,85,0.4);'>🛟 مركز الدعم الفني والمساعدة للتاجر</h1>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #aaa; font-size: 15px;'>نحن هنا لمساعدتك فوراً في حال واجهتك أي مشكلة في التسجيل أو التوثيق.</p>", unsafe_allow_html=True)
         
-        sup_col1, sup_col2, sup_col3 = st.columns([1, 2, 1])
-        with sup_col2:
-            st.markdown("<div class='mechanical-support-box'>", unsafe_allow_html=True)
-            
-            sup_email = st.text_input("بريدك الإلكتروني للتواصل:", key="page_sup_email")
-            sup_msg = st.text_area("اشرح مشكلتك بالتفصيل:", key="page_sup_msg", placeholder="اكتب تفاصيل المشكلة هنا...")
-            
-            if st.button("📤 إرسال التذكرة للإدارة", key="page_send_ticket"):
-                if not sup_email or not sup_msg:
-                    st.error("⚠️ يرجى تعبئة البريد الإلكتروني ووصف المشكلة أولاً.")
-                else:
-                    admin_subject = f"🚨 تذكرة دعم فني جديدة من: {sup_email}"
-                    admin_body = f"مرحباً بالمدير،\n\nوردت تذكرة دعم فني جديدة:\nالبريد: {sup_email}\n\nالتفاصيل:\n{sup_msg}"
-                    
-                    send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_subject, admin_body, action_type="LOCK")
-                    
-                    st.success("✅ تم إرسال رسالتك بنجاح إلى الإدارة وسنتواصل معك قريباً جداً!")
-                    time.sleep(2)
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("⬅️ العودة إلى صفحة تسجيل الدخول", key="page_back_to_auth"):
-                st.session_state["current_view"] = "auth"
-                st.rerun()
+        # صندوق الدعم المستقل الذي يظهر بالحركة الميكانيكية
+        st.markdown("<div class='mechanical-support-container'>", unsafe_allow_html=True)
+        
+        sup_email = st.text_input("بريدك الإلكتروني للتواصل:", key="page_sup_email")
+        sup_msg = st.text_area("اشرح مشكلتك بالتفصيل:", key="page_sup_msg", placeholder="اكتب تفاصيل المشكلة هنا...")
+        
+        if st.button("📤 إرسال التذكرة للإدارة", key="page_send_ticket"):
+            if not sup_email or not sup_msg:
+                st.error("⚠️ يرجى تعبئة البريد الإلكتروني ووصف المشكلة أولاً.")
+            else:
+                admin_subject = f"🚨 تذكرة دعم فني جديدة من: {sup_email}"
+                admin_body = f"مرحباً بالمدير،\n\nوردت تذكرة دعم فني جديدة من صفحة الدعم المستقلة:\nالبريد: {sup_email}\n\nالتفاصيل:\n{sup_msg}"
                 
-            st.markdown("</div>", unsafe_allow_html=True)
-
+                send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_subject, admin_body, action_type="LOCK")
+                
+                st.success("✅ تم إرسال رسالتك بنجاح إلى الإدارة وسنتواصل معك قريباً جداً!")
+                time.sleep(2)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("⬅️ العودة إلى صفحة تسجيل الدخول", key="page_back_to_auth"):
+            st.session_state["current_view"] = "auth"
+            st.rerun()
+            
+        st.markdown("</div>", unsafe_allow_html=True)
   
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
