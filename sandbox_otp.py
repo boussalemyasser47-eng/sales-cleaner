@@ -24,19 +24,10 @@ import urllib.parse
 import re
 import time
 import streamlit as st
-import streamlit as st
-import random
-import time
-
-# 🧠 ضع هذا الكود في أول الملف تماماً ليلتقط البريد إذا جاء من الإيميل
-# 🧠 التقاط البريد من الرابط وتوجيه التاجر مباشرة لخانة إدخال الرمز
-query_params = st.query_params
-if "verify_email" in query_params:
-    incoming_email = query_params["verify_email"]
-    st.session_state["otp_pending_verification"] = True
-    st.session_state["temp_reg_email"] = incoming_email
-    # إجبار زر اختيار العملية على الانتقال لإنشاء الحساب لكي يظهر صندوق الرمز مباشرة
-    st.session_state["merchant_auth_mode_choice"] = "📝 إنشاء حساب تاجر جديد فريش"
+# تهيئة حالة عرض الصفحة الافتراضية
+if "current_view" not in st.session_state:
+    st.session_state["current_view"] = "auth"
+# 🌟 تصميم نافذة التحقق المنبثقة في المنتصف (Modal Dialog)
 def render_otp_popup(target_email):
     # إخفاء الخلفية وتثبيت النافذة في المنتصف بتصميم نيون فخم
     st.markdown("""
@@ -158,13 +149,13 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         sender_password = st.secrets["GMAIL_APP_PASSWORD"]
         
         theme_colors = {
-           
+            "OTP": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔐", "btn_text": "تأكيد الرمز الآن"},
             "ACTIVATE": {"primary": "#00ff66", "bg_accent": "rgba(0, 255, 102, 0.1)", "icon": "🎉", "btn_text": "الدخول لمتجرك الآن"},
             "EXTEND": {"primary": "#ffaa00", "bg_accent": "rgba(255, 170, 0, 0.1)", "icon": "⏳", "btn_text": "متابعة متجرك"},
             "UPGRADE": {"primary": "#ff00ff", "bg_accent": "rgba(255, 0, 255, 0.1)", "icon": "🚀", "btn_text": "استكشاف المميزات الخارقة"},
             "LOCK": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "⚠️", "btn_text": "التواصل مع الدعم الفني"},
             "DELETE": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "❌", "btn_text": "مراجعة الدعم"},
-            "DEFAULT": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔔","btn_text": "الانتقال للمنصة"}
+            "DEFAULT": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔔", "btn_text": "الانتقال للمنصة"}
         }
         
         theme = theme_colors.get(action_type, theme_colors["DEFAULT"])
@@ -792,11 +783,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
             st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
             
-            auth_mode = st.radio(
-                "اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", 
-                ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"], 
-                key="merchant_auth_mode_choice"
-            )      
+            auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
             st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
             
             input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
@@ -817,60 +804,15 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             clean_email = input_email.strip()
             clean_pass = input_password.strip()
             st.session_state["temp_reg_phone"] = input_phone
-    # 🎯 التحقق المباشر: إذا كان هناك طلب تحقق معلق (جاء من الإيميل)، اعرض صندوق الرمز فوراً وتجاوز الباقي
-            # 🎯 التحقق المباشر: إذا كان هناك طلب تحقق معلق (جاء من الإيميل)، اعرض صندوق الرمز فوراً وتجاوز الباقي
-# 🎯 التحقق المباشر: إذا جاء التاجر من الإيميل، اعرض صندوق الرمز فوراً
-            if st.session_state.get("otp_pending_verification", False):
-                st.markdown("""
-                    <div style="max-width: 500px; margin: 20px auto; background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%); border: 2px solid #00fff0; border-radius: 20px; padding: 30px; box-shadow: 0 0 40px rgba(0, 255, 240, 0.4); direction: rtl; text-align: right;">
-                        <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
-                        <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 15px;">
-                            أدخل رمز التحقق (OTP) المرسل إلى بريدك:<br>
-                            <span style="color: #ff00ff; font-weight: bold;">{email}</span>
-                        </p>
-                    </div>
-                """.format(email=st.session_state.get('temp_reg_email', 'البريد الإلكتروني')), unsafe_allow_html=True)
-
-                # خانة إدخال الرمز (تتحقق تلقائياً عند اكتمال الـ 6 أرقام)
-                entered_otp = st.text_input(
-                    "أدخل الرمز المكون من 6 أرقام هنا:", 
-                    max_chars=6, 
-                    placeholder="------", 
-                    key="smart_otp_paste_input"
-                )
+            
+            if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+                user_package_choice = render_premium_neon_packages()
+                st.markdown("</div>", unsafe_allow_html=True)
                 
-                if len(entered_otp.strip()) == 6:
-                    if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
-                        reg_email = st.session_state["temp_reg_email"]
-                        reg_pass = st.session_state.get("temp_reg_pass", "123456")
-                        reg_pkg = st.session_state.get("temp_reg_package", "الباقة الأساسية المبتدئة (29k)")
-                        reg_phone = st.session_state.get("temp_reg_phone", "غير مسجل")
-                        reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                        
-                        conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        cursor_reg = conn_reg.cursor()
-                        cursor_reg.execute(
-                            "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)", 
-                            (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
-                        )
-                        conn_reg.commit()
-                        conn_reg.close()
-                        
-                        st.session_state["otp_pending_verification"] = False
-                        st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
-                        time.sleep(1)
-                        st.rerun()
-                    else:
-                        st.error("❌ الرمز غير صحيح، تأكد من إدخال الأرقام الستة بدقة.")
-                        
-                if st.button("❌ إلغاء والعودة", key="cancel_otp_btn"):
+                if "otp_pending_verification" not in st.session_state:
                     st.session_state["otp_pending_verification"] = False
-                    st.rerun()
 
-            else:
-                if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-                    user_package_choice = render_premium_neon_packages()
-                    st.markdown("</div>", unsafe_allow_html=True)
+                if not st.session_state["otp_pending_verification"]:
                     if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
                         
                         # 🛑 شرط إضافي صارم: التأكد من وجود رقم هاتف وعدم وجود خطأ في طوله
@@ -888,22 +830,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 st.session_state["temp_reg_email"]  = clean_email
                                 st.session_state["temp_reg_pass"]   = clean_pass
                                 st.session_state["temp_reg_package"] = validated_package
-                                # رابط منصتك الأساسي
-                                base_app_url = "https://sales-cleaner-qqzrjsdzlsrsgyagohnq.streamlit.app/"
-                                verify_link = f"{base_app_url}?verify_email={clean_email}"
-
+                                
                                 subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
-                                body = f"""مرحباً بك،
-
-                                رمز التحقق العشوائي الخاص بك هو: {generated_otp}
-
-                                يرجى الضغط على الزر أدناه للانتقال للمنصة وإدخال الرمز:
-                                """
-
-
-
-                                # 2. استدعاء الدالة مرة واحدة فقط مع تمرير رابط الزر الصحيح
-                                if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=verify_link):
+                                body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
+                                
+                                if send_gmail_notification(clean_email, subject, body):
                                     st.session_state["otp_pending_verification"] = True
                                     st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
                                     time.sleep(0.5)
@@ -1003,22 +934,16 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.session_state["otp_pending_verification"] = False
                             st.session_state.pop("otp_countdown", None)
                             st.rerun()
+
                     if st.session_state.get("otp_countdown", 0) > 0:
                         time.sleep(1)
                         st.session_state["otp_countdown"] -= 1
                         st.rerun()
-
             else:
                 st.markdown("</div>", unsafe_allow_html=True)
                 if st.button("🔑 تسجيل الدخول إلى المتجر"):
                     if clean_email == "" or clean_pass == "": 
                         st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
-                    else:
-                        conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        cursor_login = conn_login.cursor()
-                        cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
-                        user_status_row = cursor_login.fetchone()
-                        conn_login.close()
                     else:
                         conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
                         cursor_login = conn_login.cursor()
