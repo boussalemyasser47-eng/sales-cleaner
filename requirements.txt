@@ -7,3 +7,4 @@ resend
 streamlit
 pandas
 openpyxl
+qrcode[pil]
