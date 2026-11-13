@@ -814,16 +814,21 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                 if not st.session_state["otp_pending_verification"]:
                     if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
-                        # التحقق من أن رقم الهاتف غير فارغ أولاً
+                        
+                        # 🛑 شرط إضافي صارم: التأكد من وجود رقم هاتف وعدم وجود خطأ في طوله
+                        raw_phone = st.session_state.get("temp_reg_phone", "").replace("+", "").strip()
+                        
                         if not input_phone:
-                            st.error("⚠️ رقم الهاتف مطلوب ولا يمكن ترك الحقل فارغاً!")
+                            st.error("⚠️ يرجى إدخال رقم الهاتف أولاً!")
+                        elif not raw_phone.isdigit() or len(raw_phone) < 9:
+                            st.error("❌ لا يمكن إرسال الرمز: رقم الهاتف المدخل قصير أو غير صحيح. يرجى تصحيحه أولاً.")
                         else:
                             validated_package = validate_and_process_registration(clean_email, clean_pass)
                             if validated_package:
                                 generated_otp = f"{random.randint(100000, 999999)}"
                                 st.session_state["temp_reg_otp"] = generated_otp
-                                st.session_state["temp_reg_email"] = clean_email
-                                st.session_state["temp_reg_pass"] = clean_pass
+                                st.session_state["temp_reg_email"]  = clean_email
+                                st.session_state["temp_reg_pass"]   = clean_pass
                                 st.session_state["temp_reg_package"] = validated_package
                                 
                                 subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
