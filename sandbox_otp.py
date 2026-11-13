@@ -75,14 +75,6 @@ except Exception as e:
     ARABIC_FONT_AVAILABLE = False
 
 # 🔄 2. دالة معالجة وتشكيل النصوص العربية
-def fix_arabic(text):
-    if not text:
-        return ""
-    try:
-        reshaped_text = arabic_reshaper.reshape(str(text))
-        return get_display(reshaped_text)
-    except:
-        return str(text)
 
 # 📄 3. دالة توليد الفاتورة الاحترافية (A4)
 # 📄 دالة توليد الفاتورة الاحترافية (A4) مع دعم تبديل اللغة (عربي / فرنسي)
@@ -91,36 +83,49 @@ from reportlab.lib.utils import ImageReader
 import io
 
 # 🏷️ دالة توليد ملصق الشحن الحراري مع دعم الـ QR Code وتبديل اللغة
-def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None, lang="ar"):
+# 🏷️ دالة توليد ملصق الشحن الحراري مع دعم الـ QR Code وتبديل اللغة (عربي / فرنسي)
+def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, quantity, final_total, logo_data=None, lang="ar"):
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
+    c = canvas.Canvas(buffer, pagesize=(288, 288))
     
     font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
     
+    # 1. توليد QR Code
+    qr_data = f"Tel: {customer_phone} | Client: {customer_name} | Total: {final_total} DA"
+    qr = qrcode.QRCode(version=1, box_size=2, border=1)
+    qr.add_data(qr_data)
+    qr.make(fit=True)
+    qr_img = qr.make_image(fill_color="black", back_color="white")
+    
+    qr_buffer = io.BytesIO()
+    qr_img.save(qr_buffer, format="PNG")
+    qr_buffer.seek(0)
+    qr_image_reader = ImageReader(qr_buffer)
+    
+    # 2. نصوص الملصق حسب اللغة
     if lang == "fr":
-        c.setFont(font_name, 16)
-        c.drawString(180, 750, fix_arabic(f"Facture de Vente - {shop_name}"))
-        c.setFont(font_name, 12)
-        c.drawString(50, 700, fix_arabic(f"Nom du Client : {customer_name}"))
-        c.drawString(50, 680, fix_arabic(f"Téléphone : {customer_phone}"))
-        c.drawString(50, 660, fix_arabic(f"Adresse : {customer_address}"))
-        c.drawString(50, 620, fix_arabic(f"Produit : {product_name} (Qté : {quantity})"))
-        c.drawString(50, 600, fix_arabic(f"Prix Unitaire : {price} DA | Total : {product_total} DA"))
-        c.drawString(50, 580, fix_arabic(f"Frais de Livraison : {shipping_cost} DA"))
-        c.setFont(font_name, 14)
-        c.drawString(50, 530, fix_arabic(f"Total Général à Payer : {final_total} DA"))
+        c.setFont(font_name, 10)
+        c.drawString(10, 260, fix_arabic(f"Boutique : {shop_name}"))
+        
+        c.setFont(font_name, 9)
+        c.drawString(10, 235, fix_arabic(f"Client : {customer_name}"))
+        c.drawString(10, 215, fix_arabic(f"Tél : {customer_phone}"))
+        c.drawString(10, 195, fix_arabic(f"Adresse : {customer_address}"))
+        c.drawString(10, 175, fix_arabic(f"Produit : {product_name} (x{quantity})"))
+        c.drawString(10, 155, fix_arabic(f"Montant COD : {final_total} DA"))
     else:
-        c.setFont(font_name, 16)
-        c.drawString(200, 750, fix_arabic(f"فاتورة مبيعات - {shop_name}"))
-        c.setFont(font_name, 12)
-        c.drawString(50, 700, fix_arabic(f"اسم الزبون: {customer_name}"))
-        c.drawString(50, 680, fix_arabic(f"رقم الهاتف: {customer_phone}"))
-        c.drawString(50, 660, fix_arabic(f"العنوان: {customer_address}"))
-        c.drawString(50, 620, fix_arabic(f"المنتج: {product_name} (الكمية: {quantity})"))
-        c.drawString(50, 600, fix_arabic(f"سعر الوحدة: {price} دج | الإجمالي: {product_total} دج"))
-        c.drawString(50, 580, fix_arabic(f"تكلفة الشحن: {shipping_cost} دج"))
-        c.setFont(font_name, 14)
-        c.drawString(50, 530, fix_arabic(f"المبلغ الإجمالي النهائي: {final_total} دج"))
+        c.setFont(font_name, 10)
+        c.drawString(10, 260, fix_arabic(f"المتجر: {shop_name}"))
+        
+        c.setFont(font_name, 9)
+        c.drawString(10, 235, fix_arabic(f"الزبون: {customer_name}"))
+        c.drawString(10, 215, fix_arabic(f"الهاتف: {customer_phone}"))
+        c.drawString(10, 195, fix_arabic(f"العنوان: {customer_address}"))
+        c.drawString(10, 175, fix_arabic(f"المنتج: {product_name} (x{quantity})"))
+        c.drawString(10, 155, fix_arabic(f"مبلغ التوصيل (COD): {final_total} دج"))
+        
+    # 3. رسم الـ QR Code
+    c.drawImage(qr_image_reader, 200, 20, width=70, height=70)
     
     c.save()
     buffer.seek(0)
