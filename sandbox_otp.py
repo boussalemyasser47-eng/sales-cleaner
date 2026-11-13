@@ -1003,16 +1003,22 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.session_state["otp_pending_verification"] = False
                             st.session_state.pop("otp_countdown", None)
                             st.rerun()
-
                     if st.session_state.get("otp_countdown", 0) > 0:
                         time.sleep(1)
                         st.session_state["otp_countdown"] -= 1
                         st.rerun()
+
             else:
                 st.markdown("</div>", unsafe_allow_html=True)
                 if st.button("🔑 تسجيل الدخول إلى المتجر"):
                     if clean_email == "" or clean_pass == "": 
                         st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
+                    else:
+                        conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
+                        cursor_login = conn_login.cursor()
+                        cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
+                        user_status_row = cursor_login.fetchone()
+                        conn_login.close()
                     else:
                         conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
                         cursor_login = conn_login.cursor()
