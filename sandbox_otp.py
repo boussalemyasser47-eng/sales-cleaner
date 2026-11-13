@@ -1226,13 +1226,20 @@ if is_boss_link:
                 
                 # 🧠 [قراءة حالة اللون الديناميكي المخصصة للتاجر من الجلسة أو وضع اللون الافتراضي النيوني]
                 current_border_color = st.session_state.get(f"border_color_{current_email}", "#00fff0")
-                
+                current_phone = row.get('phone', 'غير متوفر')
+                if not current_phone or current_phone == 'nan':
+                    current_phone = 'غير مسجل' 
+# 🧠 قراءة حالة اللون الديناميكي للتاجر
+                current_border_color = st.session_state.get(f"border_color_{current_email}", "#00fff0")
+# 🎨 تحديث البطاقة لتشمل رقم الهاتف بوضوح
                 st.markdown(f"""
                 <div style="border: 2px solid {current_border_color}; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right; box-shadow: 0px 0px 15px {current_border_color}40;">
-                    <p style="margin:0 0 8px 0; font-weight:700;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
-                    <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: <span style="color:{current_border_color}; font-weight:bold;">{current_package}</span></p>
+                    <p style="margin:0 0 8px 0; font-weight:700;">💻 البريد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر: <span style="color: #ff00ff;">{current_pass}</span> | 📱 الهاتف: <span style="color: #ffaa00;">{current_phone}</span></p>
+                    <p style="margin:0;">📊 الحالة: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة: <span style="color:{current_border_color}; font-weight:bold;">{current_package}</span></p>
                 </div>
                 """, unsafe_allow_html=True)
+                
+
 
                 col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
                 with col_1:
