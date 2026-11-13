@@ -855,14 +855,13 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 يرجى الضغط على الزر أدناه للانتقال للمنصة وإدخال الرمز:
                                 """
 
-                                # إرسال الإيميل مع الرابط الصحيح
-                                send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=verify_link)
-                                # استدعاء دالة الإرسال لديك
-                                send_gmail_notification(clean_email, subject, body)
-                                
-                                if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=verify_link):
+                                 # 1. تجهيز الرابط الصحيح أولاً
+                                base_app_url = "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
+                                verify_link = f"{base_app_url}?verify_email={clean_email}"
 
-                                    st.session_state["otp_pending_verification"] = True
+                                # 2. استدعاء الدالة مرة واحدة فقط مع تمرير رابط الزر الصحيح
+                                if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=verify_link):
+                                st.session_state["otp_pending_verification"] = True
                                     st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
                                     time.sleep(0.5)
                                     st.rerun()
