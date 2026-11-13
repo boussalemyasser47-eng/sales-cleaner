@@ -28,9 +28,13 @@ import pandas as pd
 import io
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-
 import os
-import arabic_reshaper
+import urllib.request
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
 
 
 # 1. دالة معالجة النصوص العربية
@@ -43,32 +47,25 @@ def fix_arabic(text):
 
 # 2. 📍 ضع هذا الكود هنا (تحديد مسار وتسجيل خط Cairo)
 # ضع الاسم الدقيق للملف المرفوع في المستودع هنا
-import os
-import urllib.request
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+
 
 ARABIC_FONT_PATH = "Cairo-Regular.ttf"
 ARABIC_FONT_AVAILABLE = False
 
 try:
-    # إذا لم يكن الخط موجوداً محلياً، قم بتحميله تلقائياً من رابط مباشر وآمن
-    if not os.path.exists(ARABIC_FONT_PATH):
+    # التحقق من أن ملف الخط غير موجود أو تالف (حجمه صغير جداً)
+    if not os.path.exists(ARABIC_FONT_PATH) or os.path.getsize(ARABIC_FONT_PATH) < 5000:
         font_url = "https://github.com/google/fonts/raw/main/ofl/cairo/Cairo-Regular.ttf"
         urllib.request.urlretrieve(font_url, ARABIC_FONT_PATH)
-        
-    # تسجيل الخط بعد التأكد من وجوده
+    
+    # تسجيل الخط في ReportLab
     pdfmetrics.registerFont(TTFont('ArabicFont', ARABIC_FONT_PATH))
     ARABIC_FONT_AVAILABLE = True
 except Exception as e:
     ARABIC_FONT_AVAILABLE = False
+    # عرض سبب الخطأ مباشرة على الشاشة لكي نراه بوضوح
+    st.error(f"⚠️ تفاصيل خطأ تحميل الخط العربي: {e}")
 
-
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-import io
 
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None):
     buffer = io.BytesIO()
