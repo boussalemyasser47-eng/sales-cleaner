@@ -43,17 +43,14 @@ def fix_arabic(text):
 
 # 2. 📍 ضع هذا الكود هنا (تحديد مسار وتسجيل خط Cairo)
 # ضع الاسم الدقيق للملف المرفوع في المستودع هنا
-ARABIC_FONT_PATH = "Cairo-VariableFont_slnt,wght.ttf" 
+ARABIC_FONT_PATH = "Cairo-VariableFont_slnt,wght.ttf"
 ARABIC_FONT_AVAILABLE = False
 
 try:
     if os.path.exists(ARABIC_FONT_PATH):
         pdfmetrics.registerFont(TTFont('ArabicFont', ARABIC_FONT_PATH))
         ARABIC_FONT_AVAILABLE = True
-except Exception as e:
-    ARABIC_FONT_AVAILABLE = False
     elif os.path.exists('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'):
-        # كخيار احتياطي ثانٍ إذا لم توجد النسخة المحلية على السيرفر
         pdfmetrics.registerFont(TTFont('ArabicFont', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
         ARABIC_FONT_AVAILABLE = True
 except Exception as e:
