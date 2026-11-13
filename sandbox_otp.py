@@ -919,7 +919,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 st.session_state["current_view"] = "support_page"
                 st.rerun()
                 
-            st.markdown("</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 if not is_boss_link and "active_merchant_user" not in st.session_state:
     
