@@ -57,6 +57,12 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 # 🖋️ 1. تحميل وتسجيل الخط الثابت والمضمون للعربية (Amiri)
+import os
+import urllib.request
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+# تحميل وتسجيل الخط الثابت (Amiri) المضمون 100% للعربية
 ARABIC_FONT_PATH = "Amiri-Regular.ttf"
 ARABIC_FONT_AVAILABLE = False
 
