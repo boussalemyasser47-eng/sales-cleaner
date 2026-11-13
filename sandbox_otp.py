@@ -922,10 +922,10 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         st.markdown("</div>", unsafe_allow_html=True)
 if not is_boss_link and "active_merchant_user" not in st.session_state:
     
-    # 🛟 (1) إذا اختار التاجر الانتقال لصفحة الدعم الفني المستقلة
-    if st.session_state.get("current_view") == "support_page":
+    # 📢 (1) إذا اختار التاجر الانتقال لصفحة تقديم الشكاوى المستقلة
+    if st.session_state.get("current_view") == "complaint_page":
         
-        # 🎨 حقن تصميم الانيميشن الميكانيكي الانسيابي لظهور صفحة الدعم
+        # 🎨 حقن تأثير الظهور الميكانيكي الانسيابي لصفحة الشكاوى
         st.markdown("""
             <style>
             @keyframes mechanicalPop {
@@ -933,7 +933,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 60% { opacity: 1; transform: translateY(-5px) scale(1.02); }
                 100% { opacity: 1; transform: translateY(0) scale(1); }
             }
-            .mechanical-support-container {
+            .mechanical-complaint-container {
                 animation: mechanicalPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
                 border: 2px solid #ff0055;
                 border-radius: 20px;
@@ -948,34 +948,35 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             </style>
         """, unsafe_allow_html=True)
 
-        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 20px; font-weight: 900; text-shadow: 0 0 15px rgba(255,0,85,0.4);'>🛟 مركز الدعم الفني والمساعدة للتاجر</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #aaa; font-size: 15px;'>نحن هنا لمساعدتك فوراً في حال واجهتك أي مشكلة في التسجيل أو التوثيق.</p>", unsafe_allow_html=True)
+        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 20px; font-weight: 900; text-shadow: 0 0 15px rgba(255,0,85,0.4);'>📢 منصة تسجيل الشكاوى والبلاغات الرسمية</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #aaa; font-size: 15px;'>قم بملء النموذج أدناه لتسجيل شكواك وسيقوم فريق الإدارة بمراجعتها وحلها في أقرب وقت.</p>", unsafe_allow_html=True)
         
-        # صندوق الدعم المستقل الذي يظهر بالحركة الميكانيكية
-        st.markdown("<div class='mechanical-support-container'>", unsafe_allow_html=True)
+        # صندوق الشكاوى المستقل الذي يظهر بالحركة الميكانيكية
+        st.markdown("<div class='mechanical-complaint-container'>", unsafe_allow_html=True)
         
-        sup_email = st.text_input("بريدك الإلكتروني للتواصل:", key="page_sup_email")
-        sup_msg = st.text_area("اشرح مشكلتك بالتفصيل:", key="page_sup_msg", placeholder="اكتب تفاصيل المشكلة هنا...")
+        complaint_email = st.text_input("البريد الإلكتروني الخاص بك:", key="page_comp_email")
+        complaint_phone = st.text_input("رقم الهاتف:", key="page_comp_phone", placeholder="0655xxxxxxxx")
+        complaint_msg = st.text_area("تفاصيل الشكوى أو المشكلة:", key="page_comp_msg", placeholder="اكتب شكواك بوضوح هنا...")
         
-        if st.button("📤 إرسال التذكرة للإدارة", key="page_send_ticket"):
-            if not sup_email or not sup_msg:
-                st.error("⚠️ يرجى تعبئة البريد الإلكتروني ووصف المشكلة أولاً.")
+        if st.button("📤 إرسال الشكوى رسمياً للإدارة", key="page_send_complaint_btn"):
+            if not complaint_email or not complaint_msg or not complaint_phone:
+                st.error("⚠️ يرجى تعبئة جميع الحقول (البريد، الهاتف، وتفاصيل الشكوى) أولاً.")
             else:
-                admin_subject = f"🚨 تذكرة دعم فني جديدة من: {sup_email}"
-                admin_body = f"مرحباً بالمدير،\n\nوردت تذكرة دعم فني جديدة من صفحة الدعم المستقلة:\nالبريد: {sup_email}\n\nالتفاصيل:\n{sup_msg}"
+                admin_subject = f"🚨 شكوى جديدة مرفوعة من التاجر: {complaint_email}"
+                admin_body = f"مرحباً بالمدير،\n\nوردتك شكوى رسمية جديدة من صفحة الشكاوى المستقلة:\nالبريد: {complaint_email}\nالهاتف: {complaint_phone}\n\nنص الشكوى:\n{complaint_msg}"
                 
+                # إرسال إشعار للبريد الإداري
                 send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_subject, admin_body, action_type="LOCK")
                 
-                st.success("✅ تم إرسال رسالتك بنجاح إلى الإدارة وسنتواصل معك قريباً جداً!")
+                st.success("✅ تم إرسال شكواك بنجاح إلى الإدارة وسنرد عليك قريباً جداً!")
                 time.sleep(2)
         
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("⬅️ العودة إلى صفحة تسجيل الدخول", key="page_back_to_auth"):
+        if st.button("⬅️ العودة إلى صفحة تسجيل الدخول", key="page_back_to_auth_from_comp"):
             st.session_state["current_view"] = "auth"
             st.rerun()
             
         st.markdown("</div>", unsafe_allow_html=True)
-  
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
 # ========================================================
