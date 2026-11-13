@@ -48,10 +48,15 @@ def fix_arabic(text):
 
 import os
 import urllib.request
+import io
+import arabic_reshaper
+from bidi.algorithm import get_display
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-# تحميل وتسجيل الخط الثابت (Amiri) المضمون 100% للعربية
+# 🖋️ 1. تحميل وتسجيل الخط الثابت والمضمون للعربية (Amiri)
 ARABIC_FONT_PATH = "Amiri-Regular.ttf"
 ARABIC_FONT_AVAILABLE = False
 
@@ -62,6 +67,18 @@ try:
     ARABIC_FONT_AVAILABLE = True
 except Exception as e:
     ARABIC_FONT_AVAILABLE = False
+
+# 🔄 2. دالة معالجة وتشكيل النصوص العربية
+def fix_arabic(text):
+    if not text:
+        return ""
+    try:
+        reshaped_text = arabic_reshaper.reshape(str(text))
+        return get_display(reshaped_text)
+    except:
+        return str(text)
+
+# 📄 3. دالة توليد الفاتورة الاحترافية (A4)
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
@@ -72,7 +89,7 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     c.setFont(font_name, 16)
     c.drawString(200, 750, fix_arabic(f"فاتورة مبيعات - {shop_name}"))
     
-    # بيانات الزبون (مغلفة بـ fix_arabic لضمان ظهور الحروف العربية بطلاقة وبدون مربعات)
+    # بيانات الزبون (فصل النصوص العربية عن الأرقام لضمان التنسيق السليم)
     c.setFont(font_name, 12)
     c.drawString(50, 700, fix_arabic(f"اسم الزبون: {customer_name}"))
     c.drawString(50, 680, fix_arabic(f"رقم الهاتف: {customer_phone}"))
@@ -86,6 +103,27 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     # المبلغ الإجمالي النهائي
     c.setFont(font_name, 14)
     c.drawString(50, 530, fix_arabic(f"المبلغ الإجمالي النهائي: {final_total} دج"))
+    
+    c.save()
+    buffer.seek(0)
+    return buffer.getvalue()
+
+# 🏷️ 4. دالة توليد ملصق الشحن الحراري
+def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, quantity, final_total, logo_data=None):
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=(288, 288))
+    
+    font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
+    
+    c.setFont(font_name, 10)
+    c.drawString(10, 260, fix_arabic(f"المتجر: {shop_name}"))
+    
+    c.setFont(font_name, 9)
+    c.drawString(10, 235, fix_arabic(f"الزبون: {customer_name}"))
+    c.drawString(10, 215, fix_arabic(f"الهاتف: {customer_phone}"))
+    c.drawString(10, 195, fix_arabic(f"العنوان: {customer_address}"))
+    c.drawString(10, 175, fix_arabic(f"المنتج: {product_name} (x{quantity})"))
+    c.drawString(10, 155, fix_arabic(f"مبلغ التوصيل (COD): {final_total} دج"))
     
     c.save()
     buffer.seek(0)
