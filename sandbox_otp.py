@@ -7,12 +7,230 @@
 # ========================================================
 # [القسم الأول]: إعدادات البيئة، خزانة النسخ الاحتياطي، وجدار حماية الشبح المتقدم
 # ========================================================
+# ========================================================
+# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
+# ========================================================
+import smtplib
+import random
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import streamlit as st
+import pandas as pd
+import sqlite3
+import time
+from datetime import datetime
+import io
+import urllib.parse
+import re
+import time
+import streamlit as st
+
+# 🌟 تصميم نافذة التحقق المنبثقة في المنتصف (Modal Dialog)
+def render_otp_popup(target_email):
+    # إخفاء الخلفية وتثبيت النافذة في المنتصف بتصميم نيون فخم
+    st.markdown("""
+        <style>
+        .otp-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(3, 3, 7, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .otp-modal-box {
+            background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%);
+            border: 2px solid #00fff0;
+            border-radius: 20px;
+            padding: 30px;
+            width: 450px;
+            box-shadow: 0 0 40px rgba(0, 255, 240, 0.4);
+            direction: rtl;
+            text-align: right;
+            animation: elasticPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # محتوى النافذة المنبثقة
+    st.markdown("""
+        <div class="otp-modal-overlay">
+            <div class="otp-modal-box">
+                <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
+                <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 20px;">
+                    سيتم إرسال رمز التحقق إلى بريدك الإلكتروني:<br>
+                    <span style="color: #ff00ff; font-weight: bold;">{email}</span>
+                </p>
+            </div>
+        </div>
+    """.format(email=target_email), unsafe_allow_html=True)
+
+    # 🔢 خانات إدخال الرمز الـ 6 المنفصلة
+    st.markdown("<p style='color: #00fff0; font-weight: bold; text-align: center;'>أدخل الرمز المكون من 6 أرقام:</p>", unsafe_allow_html=True)
+    
+    # تقسيم الحقول إلى 6 أعمدة تشبه الصورة التي أرفقتها تماماً
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
+    d1 = c1.text_input("", key="otp_1", max_chars=1, label_visibility="collapsed")
+    d2 = c2.text_input("", key="otp_2", max_chars=1, label_visibility="collapsed")
+    d3 = c3.text_input("", key="otp_3", max_chars=1, label_visibility="collapsed")
+    d4 = c4.text_input("", key="otp_4", max_chars=1, label_visibility="collapsed")
+    d5 = c5.text_input("", key="otp_5", max_chars=1, label_visibility="collapsed")
+    d6 = c6.text_input("", key="otp_6", max_chars=1, label_visibility="collapsed")
+
+    # تجميع الأرقام المدخلة
+    full_entered_otp = f"{d1}{d2}{d3}{d4}{d5}{d6}"
+
+    # ⏱️ محاكاة العداد التنازلي (Countdown Timer)
+    if "otp_timer" not in st.session_state:
+        st.session_state["otp_timer"] = 59
+
+    st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 13px; margin-top: 10px;'>⏳ إعادة إرسال الرمز خلال: {st.session_state['otp_timer']} ثانية</p>", unsafe_allow_html=True)
+
+    return full_entered_otp
+# 🔒 ضبط إعدادات الشاشة الأساسية للمنصة الموحدة
+st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
+
+query_params = st.query_params
+is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
+if "admin_master_logged" not in st.session_state:
+    st.session_state["admin_master_logged"] = False
+
+# 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
+def init_advanced_db():
+    conn = sqlite3.connect("saas_security_vault.db")
+    cursor = conn.cursor()
+    
+    # 🛡️ جدول المصادقة والتجار مع ضمان وجود عمود التاريخ والتنسيق الثابت
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS saas_users_auth (
+            email TEXT PRIMARY KEY,
+            password TEXT,
+            status TEXT,
+            package TEXT,
+            created_at TEXT,
+            phone TEXT
+        )
+    """)
+    
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS admin_audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action_time TEXT,
+            target_email TEXT,
+            action_type TEXT,
+            details TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS email_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sent_time TEXT,
+            recipient_email TEXT,
+            subject TEXT,
+            status TEXT,
+            error_message TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+init_advanced_db()
+
+# ========================================================
+# 🚀 الدالة الموحدة والوحيدة لإرسال البريد (HTML + Plain Text + تتبع السجل)
+# ========================================================
+def send_gmail_notification(target_email, subject, body_text, action_type="DEFAULT", action_url=None):
+    try:
+        sender_email = st.secrets["GMAIL_USER"]
+        sender_password = st.secrets["GMAIL_APP_PASSWORD"]
+        
+        theme_colors = {
+            "OTP": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔐", "btn_text": "تأكيد الرمز الآن"},
+            "ACTIVATE": {"primary": "#00ff66", "bg_accent": "rgba(0, 255, 102, 0.1)", "icon": "🎉", "btn_text": "الدخول لمتجرك الآن"},
+            "EXTEND": {"primary": "#ffaa00", "bg_accent": "rgba(255, 170, 0, 0.1)", "icon": "⏳", "btn_text": "متابعة متجرك"},
+            "UPGRADE": {"primary": "#ff00ff", "bg_accent": "rgba(255, 0, 255, 0.1)", "icon": "🚀", "btn_text": "استكشاف المميزات الخارقة"},
+            "LOCK": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "⚠️", "btn_text": "التواصل مع الدعم الفني"},
+            "DELETE": {"primary": "#ff0055", "bg_accent": "rgba(255, 0, 85, 0.1)", "icon": "❌", "btn_text": "مراجعة الدعم"},
+            "DEFAULT": {"primary": "#00fff0", "bg_accent": "rgba(0, 255, 240, 0.1)", "icon": "🔔", "btn_text": "الانتقال للمنصة"}
+        }
+        
+        theme = theme_colors.get(action_type, theme_colors["DEFAULT"])
+        btn_link = action_url if action_url else "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
+        logo_url = "https://img.icons8.com/isometric-folders/100/00fff0/cyber-security.png"
+        formatted_body = body_text.replace("\n", "<br>")
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head><meta charset="UTF-8"></head>
+        <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #05050c; color: #ffffff; padding: 20px; direction: rtl; text-align: right;">
+            <div style="max-width: 600px; margin: 0 auto; background: #0d0d21; border: 2px solid {theme['primary']}; border-radius: 16px; padding: 30px; box-shadow: 0 0 20px {theme['primary']}40;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h1 style="color: {theme['primary']}; font-size: 22px; margin: 0;">{theme['icon']} {subject}</h1>
+                </div>
+                <div style="font-size: 15px; line-height: 1.8; color: #e0e0e0; background: rgba(255, 255, 255, 0.03); padding: 15px; border-radius: 8px; border-right: 4px solid {theme['primary']};">
+                    {formatted_body}
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="{btn_link}" style="background: {theme['primary']}; color: #000000; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;" target="_blank">{theme['btn_text']}</a>
+                </div>
+                <div style="text-align: center; font-size: 11px; color: #777; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                    © 2026 NEXUS SAAS PLATFORM — جميع الحقوق محفوظة.
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        message = MIMEMultipart("alternative")
+        message["Subject"] = subject
+        message["From"] = sender_email
+        message["To"] = target_email
+        
+        # إرفاق النسختين معاً (النص البسيط + HTML) لضمان عدم حظرها من قِبل Gmail
+        message.attach(MIMEText(body_text, "plain", "utf-8"))
+        message.attach(MIMEText(html_content, "html", "utf-8"))
+
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, target_email, message.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        st.error(f"⚠️ خطأ في إرسال البريد الإلكتروني: {e}")
+        return False
+
+def send_gmail_notification_with_log(to_email, subject, body, action_type="DEFAULT"):
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    status = "SUCCESS"
+    err_msg = ""
+    
+    try:
+        send_gmail_notification(to_email, subject, body, action_type=action_type)
+    except Exception as e:
+        status = "FAILED"
+        err_msg = str(e)
+    finally:
+        try:
+            conn = sqlite3.connect("saas_security_vault.db")
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO email_logs (sent_time, recipient_email, subject, status, error_message) VALUES (?, ?, ?, ?, ?)",
+                (now, to_email, subject, status, err_msg)
+            )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+    
+    return status == "SUCCESS"
+
 def create_backup_vault():
     import os
     import zipfile
-    import io
-    from datetime import datetime
-    
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         for file in os.listdir("."):
@@ -24,6 +242,10 @@ def create_backup_vault():
                     pass
     zip_buffer.seek(0)
     return zip_buffer
+
+# [باقي كود واجهات التاجر والمالك يعمل بشكل طبيعي الآن...]
+
+# [باقي كود واجهات التاجر والمالك يعمل بشكل طبيعي الآن...]
 import smtplib
 import random
 from email.mime.text import MIMEText
@@ -73,70 +295,30 @@ init_advanced_db()
 
 # 2. دالة تسجيل الحركات في قاعدة البيانات
 def log_admin_action(target_email, action_type, details=""):
-    conn = sqlite3.connect("saas_security_vault.db")
+  """دالة تسجيل نشاطات المالك مع تصحيح استدعاء التاريخ والوقت"""
+  try:
+    # التصحيح هنا: استخدام datetime.now() مباشرة بعد استيرادها بشكل صحيح
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    conn = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor = conn.cursor()
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     cursor.execute(
-        "INSERT INTO admin_audit_logs (action_time, target_email, action_type, details) VALUES (?, ?, ?, ?)",
-        (now, target_email, action_type, details)
+        """
+        INSERT INTO admin_audit_logs (timestamp, target_email, action_type, details)
+        VALUES (?, ?, ?, ?)
+    """,
+        (now, target_email, action_type, details),
     )
     conn.commit()
     conn.close()
+  except Exception as e:
+    print(f"Error logging admin action: {e}")
 
 # 3. تطوير دالة إرسال البريد لتسجيل الحالة مع تتبع الأخطاء (try-except)
-def send_gmail_notification_with_log(to_email, subject, body):
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    status = "SUCCESS"
-    err_msg = ""
-    
-    try:
-        # استدعاء دالة الإرسال الأصلية لديك
-        send_gmail_notification(to_email, subject, body)
-    except Exception as e:
-        status = "FAILED"
-        err_msg = str(e)
-    finally:
-        # حفظ نتيجة الإرسال في سجل البريد
-        conn = sqlite3.connect("saas_security_vault.db")
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO email_logs (sent_time, recipient_email, subject, status, error_message) VALUES (?, ?, ?, ?, ?)",
-            (now, to_email, subject, status, err_msg)
-        )
-        conn.commit()
-        conn.close()
-    
-    return status == "SUCCESS"
-def send_gmail_notification(target_email, subject, body_text):
-    """دالة موحدة لإرسال البريد عبر Gmail SMTP (تدعم OTP والرسائل الترحيبية)"""
-    try:
-        sender_email = st.secrets["GMAIL_USER"]
-        sender_password = st.secrets["GMAIL_APP_PASSWORD"]
+# ========================================================
+# [القسم الأول - المطور]: دالة إرسال الإيميلات الهيكلية الفاخرة (HTML/Neon Pro)
+# ========================================================
 
-        message = MIMEMultipart("alternative")
-        message["Subject"] = subject
-        message["From"] = sender_email
-        message["To"] = target_email
-
-        message.attach(MIMEText(body_text, "plain", "utf-8"))
-
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, target_email, message.as_string())
-        server.quit()
-        return True
-    except Exception as e:
-        st.error(f"⚠️ خطأ في إرسال البريد الإلكتروني: {e}")
-        return False
-# 🔒 ضبط إعدادات الشاشة الأساسية للمنصة الموحدة
-st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
-
-# 🚨 [جدار الحماية الشبح الحاسم]: قراءة الرابط علوياً للتأكد من وجود مفتاحك السري (?role=boss)
-query_params = st.query_params
-is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
-if "admin_master_logged" not in st.session_state:
-    st.session_state["admin_master_logged"] = False
 # ========================================================
 # [القسم الثاني]: الحقن السيبراني وتصميم واجهات النيون الزجاجي للأزرار والعدادات
 # ========================================================
@@ -545,10 +727,24 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         
         input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
         input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
+        input_phone = st.text_input("📱 أدخل رقم الهاتف الخاص بك:", placeholder="مثال: 0655xxxxxxxx", key="merchant_phone").strip()
+# 📱 حقل إدخال رقم الهاتف
+
+    # 🛑 التحقق من صحة رقم الهاتف (منع الحروف والتأكد من الطول)
+        if input_phone:
+            # إزالة علامة الزائد (+) المؤقتة للتحقق إذا كانت الأرقام صحيحة
+            check_phone = input_phone.replace("+", "").strip()
         
+            if not check_phone.isdigit():
+                st.error("❌ خطأ: يرجى إدخال أرقام صحيحة فقط في حقل الهاتف (بدون أحرف أو رموز خاصة).")
+            elif len(check_phone) < 9:
+                st.warning("⚠️ تنبيه: رقم الهاتف قصير جداً، تأكد من إدخال الرقم كاملاً.")
+            else:
+            # تخزين الرقم في الجلسة لأنه صحيح ومستوفي الشروط
+                st.session_state["temp_reg_phone"] = input_phone
         clean_email = input_email.strip()
         clean_pass = input_password.strip()
-        
+        st.session_state["temp_reg_phone"] = input_phone
         if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
             # استدعاء منصة العرض الهولوغرامية الفاخرة بالميزات الجديدة المحدثة 100%
             user_package_choice = render_premium_neon_packages()
@@ -577,27 +773,120 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
                             time.sleep(0.5)
                             st.rerun()
+
             else:
-                st.info(f"تم إرسال الرمز إلى: {st.session_state.get('temp_reg_email')}")
-                entered_otp = st.text_input("أدخل رمز التحقق (6 أرقام):", key="entered_otp_box")
-                
-                if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة"):
-                    if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
-                        reg_email = st.session_state["temp_reg_email"]
-                        reg_pass = st.session_state["temp_reg_pass"]
-                        reg_pkg = st.session_state["temp_reg_package"]
+                # 🌟 تهيئة العداد التنازلي (60 ثانية)
+                if "otp_countdown" not in st.session_state:
+                    st.session_state["otp_countdown"] = 60
+
+                # 🌟 تصميم النافذة المنبثقة المستطيلة في المنتصف
+                st.markdown("""
+                    <style>
+                    .otp-modal-container {
+                        max-width: 500px;
+                        margin: 20px auto;
+                        background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%);
+                        border: 2px solid #00fff0;
+                        border-radius: 20px;
+                        padding: 30px;
+                        box-shadow: 0 0 40px rgba(0, 255, 240, 0.4);
+                        direction: rtl;
+                        text-align: right;
+                    }
+                    div[data-testid="stTextInput"] input {
+                        text-align: center !important;
+                        font-size: 28px !important;
+                        letter-spacing: 15px !important;
+                        font-weight: 900 !important;
+                        color: #00fff0 !important;
+                    }
+                    </style>
+                """, unsafe_allow_html=True)
+
+                target_mail = st.session_state.get('temp_reg_email', 'البريد الإلكتروني')
+
+                st.markdown(f"""
+                    <div class="otp-modal-container">
+                        <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
+                        <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 15px;">
+                            تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني:<br>
+                            <span style="color: #ff00ff; font-weight: bold;">{target_mail}</span>
+                        </p>
+                    </div>
+                """, unsafe_allow_html=True)
+
+                # 🔢 حقل إدخال ذكي واحد يدعم اللصق الفوري للـ 6 أرقام
+                entered_otp = st.text_input(
+                    "أدخل الرمز المكون من 6 أرقام هنا:", 
+                    max_chars=6, 
+                    placeholder="------", 
+                    key="smart_otp_paste_input"
+                )
+
+                # ⏱️ عرض حالة العداد التنازلي (بدون إيقاف الكود هنا!)
+                if st.session_state["otp_countdown"] > 0:
+                    st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 14px; font-weight: bold; margin: 10px 0;'>⏳ إعادة إرسال الرمز خلال: {st.session_state['otp_countdown']} ثانية</p>", unsafe_allow_html=True)
+                else:
+                    if st.button("🔄 إعادة إرسال الرمز الجديد", key="resend_otp_btn"):
+                        generated_otp = f"{random.randint(100000, 999999)}"
+                        st.session_state["temp_reg_otp"] = generated_otp
+                        st.session_state["otp_countdown"] = 60
                         
-                        conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        cursor_reg = conn_reg.cursor()
-                        cursor_reg.execute("INSERT OR IGNORE INTO saas_users_auth VALUES (?, ?, '⏳ في انتظار التفعيل', ?)", (reg_email, reg_pass, reg_pkg))
-                        conn_reg.commit(); conn_reg.close()
-                        
+                        subject = "رمز التحقق (OTP) الجديد لإنشاء حساب متجرك"
+                        body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
+                        if send_gmail_notification(target_mail, subject, body, action_type="OTP"):
+                            st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
+                            time.sleep(0.5)
+                            st.rerun()
+
+                st.markdown("<p style='text-align: center; color: #888899; font-size: 12px;'>💡 يمكنك نسخ الرمز من بريدك واللصق هنا مباشرة ليتم تعبئته تلقائياً.</p>", unsafe_allow_html=True)
+
+                # 🔘 رسم الأزرار أولاً قبل أي تحديث للصفحة لضمان ظهورها دائماً!
+                col_verify_btn, col_cancel_btn = st.columns(2)
+                with col_verify_btn:
+                    if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة", key="verify_otp_submit_btn"):
+                        if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
+
+                            reg_email = st.session_state["temp_reg_email"]
+                            reg_pass = st.session_state["temp_reg_pass"]
+                            reg_pkg = st.session_state["temp_reg_package"]
+                            
+                            # التقاط رقم الهاتف المخزن مؤقتاً
+                            reg_phone = st.session_state.get("temp_reg_phone", "")
+                            
+                            # حفظ وقت التسجيل الحالي
+                           reg_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            
+                            conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
+                            cursor_reg = conn_reg.cursor()
+                            
+                            # حفظ البيانات مع الهاتف والتاريخ
+                            cursor_reg.execute(
+                                "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)", 
+                                (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
+                            )
+                            
+                            conn_reg.commit()
+                            conn_reg.close()
+                            
+                            st.session_state["otp_pending_verification"] = False
+                            st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
+                            time.sleep(1)
+                            st.rerun()
+                        else:
+                            st.error("❌ الرمز غير صحيح، تأكد من إدخال الأرقام الستة بدقة.")
+                            
+                with col_cancel_btn:
+                    if st.button("❌ إلغاء والعودة", key="cancel_otp_btn"):
                         st.session_state["otp_pending_verification"] = False
-                        st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
-                        time.sleep(1)
+                        st.session_state.pop("otp_countdown", None)
                         st.rerun()
-                    else:
-                        st.error("❌ الرمز غير صحيح، حاول مرة أخرى.")
+
+                # 🔄 تشغيل نبضة العداد التنازلي في نهاية الصفحة بعد رسم كل الأزرار
+                if st.session_state.get("otp_countdown", 0) > 0:
+                    time.sleep(1)
+                    st.session_state["otp_countdown"] -= 1
+                    st.rerun()
         else:
             st.markdown("</div>", unsafe_allow_html=True)
             if st.button("🔑 تسجيل الدخول إلى المتجر"):
@@ -623,13 +912,166 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
 # ========================================================
+import streamlit as st
+import sqlite3
+import pandas as pd
+import math
+import time
+from datetime import datetime
+
+# ========================================================
+# 🛠️ الدوال المستقلة لتحديثات لوحة التحكم (KPIs, البحث, الصفحات)
+# ========================================================
+
+def calculate_actual_revenue(df_users):
+    """
+    حساب الإيرادات السنوية الفعلية بناءً على فئة باقة كل تاجر نشط:
+    - الباقة الأساسية: 29,000 DA
+    - الباقة الاحترافية: 45,000 DA
+    - الباقة السيبرانية: 65,000 DA
+    """
+    if df_users.empty or 'package' not in df_users.columns:
+        return 0
+    
+    total_rev = 0
+    for _, row in df_users.iterrows():
+        # نتحقق من التاجر إذا كان حسابه مفعّلاً ونشطاً
+        status_str = str(row.get('status', ''))
+        if 'مفعّل' in status_str:
+            pkg = str(row.get('package', ''))
+            if '29k' in pkg or 'الأساسية' in pkg:
+                total_rev += 29000
+            elif '65k' in pkg or 'السيبرانية' in pkg:
+                total_rev += 65000
+            else:
+                # الباقة الاحترافية أو الافتراضي عند التفعيل
+                total_rev += 45000
+    return total_rev
+
+def render_boss_kpis_and_filters(df_users):
+    """
+    1. عرض 3 بطاقات إحصائية أنيقة في أعلى اللوحة.
+    2. إتاحة شريط البحث وقائمة التصفية وإعادة البيانات المفلترة.
+    """
+    st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📊 لوحة العدادات المالية والمؤشرات الحية (The Boss Revenue HUD)</h2>", unsafe_allow_html=True)
+    
+    # حساب الأرقام الإحصائية
+    total_active = len(df_users[df_users['status'].str.contains('مفعّل', na=False)]) if not df_users.empty and 'status' in df_users.columns else 0
+    total_banned = len(df_users[df_users['status'].str.contains('قفل|مصادرة|محظور', na=False)]) if not df_users.empty and 'status' in df_users.columns else 0
+    total_trial = len(df_users[df_users['status'].str.contains('انتظار|معلّق|مهلة|تجربة', na=False)]) if not df_users.empty and 'status' in df_users.columns else 0
+    
+    actual_revenue = calculate_actual_revenue(df_users)
+    
+    # 💳 عرض البطاقات الإحصائية الثلاث الأنيقة
+    hud_col1, hud_col2, hud_col3 = st.columns(3)
+    with hud_col1:
+        st.markdown(f"<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(5,15,20,0.85); box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); direction:rtl;'><h4 style='color:#00fff0; margin:0;'>👤 التجار (النشطون / المحظورون)</h4><h2>{total_active} نشط | {total_banned} محظور</h2></div>", unsafe_allow_html=True)
+    with hud_col2:
+        st.markdown(f"<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(15,10,5,0.85); box-shadow: 0px 0px 20px rgba(255, 170, 0, 0.25); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 الإيرادات السنوية الفعلية</h4><h2>{actual_revenue:,} DA</h2></div>", unsafe_allow_html=True)
+    with hud_col3:
+        st.markdown(f"<div style='border:2px solid #ff00ff; border-radius:15px; padding:20px; text-align:center; background:rgba(20,5,20,0.85); box-shadow: 0px 0px 20px rgba(255, 0, 255, 0.25); direction:rtl;'><h4 style='color:#ff00ff; margin:0;'>🧪 الحسابات التجريبية والانتظار</h4><h2>{total_trial} حساب</h2></div>", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # 🔍 شريط البحث والتصفية فوق البطاقات
+    filter_col1, filter_col2 = st.columns([2, 1])
+    with filter_col1:
+        search_query = st.text_input("🔍 البحث بالبريد الإلكتروني:", placeholder="اكتب بريد التاجر للبحث السريع...", key="boss_search_input").strip().lower()
+    with filter_col2:
+        status_filter = st.selectbox("📌 تصفية حسب حالة الحساب:", ["الكل", "مفعّل", "في انتظار التفعيل", "محظور"], key="boss_status_filter")
+
+    # تطبيق الفلترة والتصفية
+    filtered_df = df_users.copy()
+    if not filtered_df.empty:
+        if search_query:
+            filtered_df = filtered_df[filtered_df['email'].str.lower().str.contains(search_query, na=False)]
+        
+        if status_filter == "مفعّل":
+            filtered_df = filtered_df[filtered_df['status'].str.contains('مفعّل', na=False)]
+        elif status_filter == "في انتظار التفعيل":
+            filtered_df = filtered_df[filtered_df['status'].str.contains('انتظار|معلّق|مهلة', na=False)]
+        elif status_filter == "محظور":
+            filtered_df = filtered_df[filtered_df['status'].str.contains('قفل|مصادرة|محظور', na=False)]
+
+    return filtered_df
+
+def paginate_dataframe(filtered_df, page_size=10):
+    """
+    تقسيم عرض بطاقات التجار إلى صفحات (10 تجار كحد أقصى في كل صفحة) مع أزرار التنقل.
+    """
+    if filtered_df.empty:
+        return filtered_df, 1, 1
+    
+    total_items = len(filtered_df)
+    total_pages = math.ceil(total_items / page_size)
+    
+    if "boss_current_page" not in st.session_state:
+        st.session_state["boss_current_page"] = 1
+        
+    if st.session_state["boss_current_page"] > total_pages:
+        st.session_state["boss_current_page"] = max(1, total_pages)
+        
+    current_page = st.session_state["boss_current_page"]
+    
+    # 📄 أزرار وشريط التنقل بين الصفحات
+    if total_pages > 1:
+        p_col1, p_col2, p_col3 = st.columns([1, 2, 1])
+        with p_col1:
+            if st.button("⬅️ الصفحة السابقة", key="prev_page_btn") and current_page > 1:
+                st.session_state["boss_current_page"] -= 1
+                st.rerun()
+        with p_col2:
+            st.markdown(f"<p style='text-align: center; color: #00fff0; font-weight: bold; margin-top: 5px;'>الصفحة {current_page} من {total_pages} (إجمالي النتائج: {total_items})</p>", unsafe_allow_html=True)
+        with p_col3:
+            if st.button("الصفحة التالية ➡️", key="next_page_btn") and current_page < total_pages:
+                st.session_state["boss_current_page"] += 1
+                st.rerun()
+                
+    start_idx = (current_page - 1) * page_size
+    end_idx = start_idx + page_size
+    return filtered_df.iloc[start_idx:end_idx], current_page, total_pages
+
+def render_neon_license_ring(email, days_left):
+    """
+    توليد حلقة نيوني متغيرة الحجم واللون رادارياً لتراخيص 7 أيام.
+    """
+    clamped_days = max(0, min(7, days_left))
+    percentage = clamped_days / 7.0
+    total_circumference = 113
+    stroke_offset = total_circumference * (1 - percentage)
+    
+    if clamped_days > 4:
+        glow_color = "#ffaa00"
+    elif clamped_days > 2:
+        glow_color = "#ff5500"
+    else:
+        glow_color = "#ff0055"
+        
+    html_template = f"""
+    <div style='display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(5,5,15,0.6); border-radius: 8px; margin-bottom: 8px; border-left: 4px solid {glow_color}; direction: rtl; text-align: right;'>
+        <div style='display: flex; align-items: center; gap: 15px;'>
+            <svg width="45" height="45" viewBox="0 0 45 45" style="transform: rotate(-90deg); filter: drop-shadow(0px 0px 6px {glow_color});">
+                <circle cx="22.5" cy="22.5" r="18" stroke="rgba(255,255,255,0.1)" stroke-width="3" fill="transparent" />
+                <circle cx="22.5" cy="22.5" r="18" stroke="{glow_color}" stroke-width="3.5" fill="transparent" 
+                        stroke-dasharray="{total_circumference}" stroke-dashoffset="{stroke_offset}" stroke-linecap="round" />
+            </svg>
+            <span style='color:#ffffff; font-size: 15px;'>⚠️ التاجر: <span style='color: #00fff0;'>{email}</span></span>
+        </div>
+        <span style='color:{glow_color}; font-weight:bold; font-size: 14px;'>متبقي: {days_left} أيام فقط!</span>
+    </div>
+    """
+    return html_template
+
+# ========================================================
+# 👑 الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py)
+# ========================================================
 if is_boss_link:
     # تأمين وحقن الهوية علوياً لمنع خطأ NameError
     ADMIN_USERNAME = "admin_master_v4"
     ADMIN_PASSWORD = "SaasPassword2026"
-
+    
     # 🔒 [المستوى الأول]: إذا لم يسجل المالك دخوله، تظهر لوحة الحماية فقط وتُحجب العدادات كلياً
-    if not st.session_state["admin_master_logged"]:
+    if not st.session_state.get("admin_master_logged", False):
         st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown("<div class='centered-box-container' style='max-width: 500px; margin: 60px auto 20px auto; padding: 40px; background: rgba(5, 5, 15, 0.95); border: 2px solid #00fff0; border-radius: 20px; box-shadow: 0px 0px 40px rgba(0, 255, 240, 0.35); direction: rtl; text-align: right; backdrop-filter: blur(15px);'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color: #ff00ff; text-align: center; font-weight: 900; margin-top: 0;'>🔒 غرفة السيادة الكبرى والموافقات السحابية</h2>", unsafe_allow_html=True)
@@ -653,37 +1095,18 @@ if is_boss_link:
     # 👑 [المستوى الثاني مقفل ومحمي]: تنبثق العدادات والرادار هنا حصرياً وفقط بعد نجاح تسجيل الدخول
     else:
         st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900; text-shadow: 0 0 25px #00fff0;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
-
-        # ========================================================
-        # 📊 [الميزة 2]: لوحة العدادات المالية الموحدة للمالك ورادار تنبيه الـ 7 أيام (نسخة الحماية القصوى)
-        # ========================================================
-        st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📊 لوحة العدادات المالية الموحدة (The Boss Revenue HUD)</h2>", unsafe_allow_html=True)
         
-        # فتح اتصال سريع وآمن مع قاعدة البيانات لجلب كافة البيانات المتوفرة بأمان
+        # 1️⃣ قراءة بيانات قاعدة البيانات بالكامل
         conn_hud = sqlite3.connect("saas_security_vault.db", timeout=10)
         try:
             total_merchants_query = pd.read_sql("SELECT * FROM saas_users_auth", conn_hud)
-        except:
-            total_merchants_query = pd.DataFrame(columns=['email', 'status'])
+        except Exception:
+            total_merchants_query = pd.DataFrame(columns=['email', 'password', 'status', 'package'])
         conn_hud.close()
         
-        # التحقق من وجود الأعمدة وحساب العدادات بأمان سيبراني كامل منعاً للـ OperationalError
-        active_count = 0
-        pending_count = 0
-        if not total_merchants_query.empty and 'status' in total_merchants_query.columns:
-            active_count = len(total_merchants_query[total_merchants_query['status'].str.contains('مفعّل', na=False)])
-            pending_count = len(total_merchants_query[total_merchants_query['status'].str.contains('معلّق', na=False)])
-
-        # عرض العدادات الحية المتغيرة تلقائياً بناءً على التجار المسجلين في سيرفرك
-        hud_col1, hud_col2, hud_col3 = st.columns(3)
-        with hud_col1:
-            st.markdown(f"<div style='border:2px solid #00fff0; border-radius:15px; padding:20px; text-align:center; background:rgba(5,15,20,0.85); box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); direction:rtl;'><h4 style='color:#00fff0; margin:0;'>👤 المتاجر النشطة حياً</h4><h2>{active_count} متجر</h2></div>", unsafe_allow_html=True)
-        with hud_col2:
-            st.markdown(f"<div style='border:2px solid #ff0055; border-radius:15px; padding:20px; text-align:center; background:rgba(20,5,10,0.85); box-shadow: 0px 0px 20px rgba(255, 0, 85, 0.25); direction:rtl;'><h4 style='color:#ff0055; margin:0;'>⏳ طلبات معلقة بالتفريغ</h4><h2>{pending_count} طلب</h2></div>", unsafe_allow_html=True)
-        with hud_col3:
-            estimated_revenue = active_count * 45000
-            st.markdown(f"<div style='border:2px solid #ffaa00; border-radius:15px; padding:20px; text-align:center; background:rgba(15,10,5,0.85); box-shadow: 0px 0px 20px rgba(255, 170, 0, 0.25); direction:rtl;'><h4 style='color:#ffaa00; margin:0;'>💰 صافي التدفقات السنوية الحية</h4><h2>{estimated_revenue:,} DA</h2></div>", unsafe_allow_html=True)
-
+        # 2️⃣ تشغيل دالة لوحة المؤشرات الحية المحدثة وشريط البحث والتصفية
+        filtered_merchants_df = render_boss_kpis_and_filters(total_merchants_query)
+        
         # 🚨 رادار فحص التراخيص المقتربة من الانتهاء (تنبيه الـ 7 أيام بموثوقية عالية)
         st.markdown("<br>", unsafe_allow_html=True)
         expired_alerts = []
@@ -702,7 +1125,7 @@ if is_boss_link:
                     days_left = 365 - days_passed
                     if 0 <= days_left <= 7 and row['status'] == 'مفعّل':
                         expired_alerts.append((row['email'], days_left))
-                except:
+                except Exception:
                     pass
         
         # عرض صندوق التنبيهات النيوني المطور باستخدام الحقن المظهري للمؤشرات الدائرية المشعة
@@ -734,21 +1157,18 @@ if is_boss_link:
                 )
             except Exception as e:
                 st.error(f"⚠️ فشل توليد الخزنة الاحتياطية: {e}")
-
         st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
-# ========================================================
-# الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 2]
-# ========================================================
+
+        # 3️⃣ رادار مسح طلبات التسجيل وتقسيم الصفحات
         st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
         
-        conn_view = sqlite3.connect("saas_security_vault.db", timeout=10)
-        df_users = pd.read_sql_query("SELECT email, password, status, package FROM saas_users_auth", conn_view)
-        conn_view.close()
+        # تطبيق التقسيم الصفحي (10 تجار لكل صفحة) على البيانات المفلترة
+        paginated_merchants, current_p, total_p = paginate_dataframe(filtered_merchants_df, page_size=10)
         
-        if not df_users.empty:
-            for index, row in df_users.iterrows():
+        if not paginated_merchants.empty:
+            for index, row in paginated_merchants.iterrows():
                 current_email = row['email']; current_pass = row['password']; current_status = row['status']; current_package = row['package']
-                status_color = "#00ff66" if "مفعّل" in current_status else "#ffaa00" if "انتظار" in current_status else "#ff0055"
+                status_color = "#00ff66" if "مفعّل" in str(current_status) else "#ffaa00" if "انتظار" in str(current_status) else "#ff0055"
                 
                 # 🧠 [قراءة حالة اللون الديناميكي المخصصة للتاجر من الجلسة أو وضع اللون الافتراضي النيوني]
                 current_border_color = st.session_state.get(f"border_color_{current_email}", "#00fff0")
@@ -759,23 +1179,24 @@ if is_boss_link:
                     <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: <span style="color:{current_border_color}; font-weight:bold;">{current_package}</span></p>
                 </div>
                 """, unsafe_allow_html=True)
-                
-                # إنشاء 6 أعمدة تفاعلية مخصصة لاحتواء الزر السادس الجديد للفئات السنوية
+
                 col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-                        
-                        # 📧 إرسال إيميل التفعيل والقبول
-                        welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
-                        welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك والبدء في استغلال كافة الميزات المتاحة في باقتك.\n\nنتمنى لك كل التوفيق والنجاح في تجارتك!"
-                        send_gmail_notification(current_email, welcome_subject, welcome_body)
-                        
+        
+                        # 📧 إرسال الإيميل مع إظهار شاشة انتظار لضمان عدم قطع الاتصال
+                        with st.spinner("جاري إرسال البريد الإلكتروني..."):
+                            welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
+                            welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك."
+                            send_gmail_notification_with_log(current_email, welcome_subject, welcome_body, action_type="ACTIVATE")                        
+                            time.sleep(1.5) # إعطاء مهلة كافية لسيرفر جوجل لإنهاء الإرسال
+            
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
-                        st.toast("🎯 تم التفعيل وإرسال البريد!"); time.sleep(0.5); st.rerun()
-
+                        st.toast("🎯 تم التفعيل وإرسال البريد بنجاح!")
+                        st.rerun()
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
@@ -785,8 +1206,7 @@ if is_boss_link:
                         # 📧 إرسال إيميل تمديد المهلة
                         ext_subject = "⏳ تم تمديد الفترة التجريبية لمتجرك"
                         ext_body = f"مرحباً بك يا تاجرنا العزيز,\n\nنود إعلامك بأنه تم تمديد الفترة التجريبية لمتجرك لمدة 7 أيام إضافية بنجاح.\nيمكنك الآن مواصلة تجربة كافة ميزات المنصة.\n\nنتمنى لك مبيعات موفقة!"
-                        send_gmail_notification(current_email, ext_subject, ext_body)
-                        
+                        send_gmail_notification_with_log(current_email, ext_subject, ext_body, action_type="EXTEND")                        
                         st.session_state[f"border_color_{current_email}"] = "#ffaa00"
                         st.toast("⏳ تم تمديد المهلة وإرسال البريد!"); time.sleep(0.5); st.rerun()
 
@@ -805,8 +1225,7 @@ if is_boss_link:
                         # 📧 إرسال إيميل ترقية الباقة
                         upg_subject = "🚀 مبروك! تم ترقية باقة متجرك إلى الباقة الخارقة"
                         upg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم ترقية باقة حسابك رسمياً إلى (الباقة السيبرانية الخارقة 65k)!\nتم فتح كافة أدوات الأتمتة المتقدمة والذكاء الاصطناعي لمتجرك.\n\nبالتوفيق والنجاح!"
-                        send_gmail_notification(current_email, upg_subject, upg_body)
-                        
+                        send_gmail_notification_with_log(current_email, upg_subject, upg_body, action_type="UPGRADE")                        
                         st.session_state[f"border_color_{current_email}"] = "#ff00ff"
                         st.toast("🚀 تم ترقية الباقة وإرسال البريد!"); time.sleep(0.5); st.rerun()
 
@@ -819,8 +1238,7 @@ if is_boss_link:
                         # 📧 إرسال إيميل الحظر وقفل الحساب
                         lck_subject = "⚠️ تنبيه: تم تجميد حساب متجرك مؤقتاً"
                         lck_body = f"مرحباً,\n\nنحيطك علماً بأنه تم قفل ومصادرة صلاحيات الوصول إلى حسابك مؤقتاً من قبل الإدارة.\nإذا كنت تعتقد أن هذا حدث عن طريق الخطأ، يرجى التواصل مع فريق الدعم الفني للإدارة.\n\nتحياتنا."
-                        send_gmail_notification(current_email, lck_subject, lck_body)
-                        
+                        send_gmail_notification_with_log(current_email, lck_subject, lck_body, action_type="LOCK")                        
                         st.session_state[f"border_color_{current_email}"] = "#ff4500"
                         st.toast("🔒 تم مصادرة الصلاحيات وإرسال البريد!"); time.sleep(0.5); st.rerun()
 
@@ -850,7 +1268,7 @@ if is_boss_link:
                         # 📧 إرسال إيميل تحديث فئة الاشتراك المخصصة
                         pkg_subject = "🏷️ تحديث فئة اشتراك متجرك"
                         pkg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nتم تحديث باقة متجرك رسمياً إلى: {selected_opt}.\nيمكنك الآن استغلال كافة الميزات المتاحة في باقتك الجديدة من خلال لوحة التحكم.\n\nنتمنى لك كل التوفيق والنجاح!"
-                        send_gmail_notification(current_email, pkg_subject, pkg_body)
+                        send_gmail_notification_with_log(current_email, pkg_subject, pkg_body, action_type="UPGRADE")
                         
                         if "29k" in selected_opt:
                             st.session_state[f"border_color_{current_email}"] = "#00ff66"
@@ -877,7 +1295,7 @@ if is_boss_link:
                             
                             del_subject = "❌ إشعار بإغلاق وحذف الحساب"
                             del_body = f"مرحباً،\n\nنحيطك علماً بأنه تم حذف وإغلاق حساب متجرك نهائياً من النظام.\nنتمنى لك التوفيق في مشاريعك المستقبلية."
-                            send_gmail_notification(current_email, del_subject, del_body)
+                            send_gmail_notification_with_log(current_email, del_subject, del_body, action_type="DELETE")
                             
                             if delete_email_completely(current_email): 
                                 st.toast("🔥 تم حذف وتطهير الحساب وإرسال البريد!")
