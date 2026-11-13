@@ -29,27 +29,37 @@ import io
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-import io
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 import os
 import arabic_reshaper
 from bidi.algorithm import get_display
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
+# 1. دالة معالجة النصوص العربية
 def fix_arabic(text):
     """دالة لتشكيل الحروف العربية وعكسها لتبدو صحيحة في الـ PDF"""
     if not text:
         return ""
-    # تحويل النص العادي إلى نص موصول وصحيح اتجاهياً
     reshaped_text = arabic_reshaper.reshape(str(text))
     return get_display(reshaped_text)
-# تسجيل خط يدعم اللغة العربية ومتوفر في نظام التشغيل (Linux / Streamlit Cloud)
+
+# 2. 📍 ضع هذا الكود هنا (تحديد مسار وتسجيل خط Cairo)
+ARABIC_FONT_PATH = "Cairo-Regular.ttf"
+ARABIC_FONT_AVAILABLE = False
+
 try:
-    pdfmetrics.registerFont(TTFont('ArabicFont', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
-    ARABIC_FONT_AVAILABLE = True
+    if os.path.exists(ARABIC_FONT_PATH):
+        # تسجيل خط Cairo المرفق في مجلد المشروع
+        pdfmetrics.registerFont(TTFont('ArabicFont', ARABIC_FONT_PATH))
+        ARABIC_FONT_AVAILABLE = True
+    elif os.path.exists('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'):
+        # كخيار احتياطي ثانٍ إذا لم توجد النسخة المحلية على السيرفر
+        pdfmetrics.registerFont(TTFont('ArabicFont', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
+        ARABIC_FONT_AVAILABLE = True
 except Exception as e:
     ARABIC_FONT_AVAILABLE = False
+
 
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None):
     buffer = io.BytesIO()
