@@ -24,7 +24,9 @@ import urllib.parse
 import re
 import time
 import streamlit as st
-
+# تهيئة حالة عرض الصفحة الافتراضية
+if "current_view" not in st.session_state:
+    st.session_state["current_view"] = "auth"
 # 🌟 تصميم نافذة التحقق المنبثقة في المنتصف (Modal Dialog)
 def render_otp_popup(target_email):
     # إخفاء الخلفية وتثبيت النافذة في المنتصف بتصميم نيون فخم
