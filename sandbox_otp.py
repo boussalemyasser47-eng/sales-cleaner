@@ -819,58 +819,59 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             st.session_state["temp_reg_phone"] = input_phone
     # 🎯 التحقق المباشر: إذا كان هناك طلب تحقق معلق (جاء من الإيميل)، اعرض صندوق الرمز فوراً وتجاوز الباقي
             # 🎯 التحقق المباشر: إذا كان هناك طلب تحقق معلق (جاء من الإيميل)، اعرض صندوق الرمز فوراً وتجاوز الباقي
-    if st.session_state.get("otp_pending_verification", False):
-        st.markdown("""
-            <div style="max-width: 500px; margin: 20px auto; background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%); border: 2px solid #00fff0; border-radius: 20px; padding: 30px; box-shadow: 0 0 40px rgba(0, 255, 240, 0.4); direction: rtl; text-align: right;">
-                <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
-                <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 15px;">
-                    أدخل رمز التحقق (OTP) المرسل إلى بريدك:<br>
-                    <span style="color: #ff00ff; font-weight: bold;">{email}</span>
-                </p>
-            </div>
-        """.format(email=st.session_state.get('temp_reg_email', 'البريد الإلكتروني')), unsafe_allow_html=True)
+# 🎯 التحقق المباشر: إذا جاء التاجر من الإيميل، اعرض صندوق الرمز فوراً
+            if st.session_state.get("otp_pending_verification", False):
+                st.markdown("""
+                    <div style="max-width: 500px; margin: 20px auto; background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%); border: 2px solid #00fff0; border-radius: 20px; padding: 30px; box-shadow: 0 0 40px rgba(0, 255, 240, 0.4); direction: rtl; text-align: right;">
+                        <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
+                        <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 15px;">
+                            أدخل رمز التحقق (OTP) المرسل إلى بريدك:<br>
+                            <span style="color: #ff00ff; font-weight: bold;">{email}</span>
+                        </p>
+                    </div>
+                """.format(email=st.session_state.get('temp_reg_email', 'البريد الإلكتروني')), unsafe_allow_html=True)
 
-        # خانة إدخال الرمز (بدون زر تأكيد، تتحقق تلقائياً عند اكتمال الـ 6 أرقام)
-        entered_otp = st.text_input(
-            "أدخل الرمز المكون من 6 أرقام هنا:", 
-            max_chars=6, 
-            placeholder="------", 
-            key="smart_otp_paste_input"
-        )
-        
-        if len(entered_otp.strip()) == 6:
-            if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
-                reg_email = st.session_state["temp_reg_email"]
-                reg_pass = st.session_state.get("temp_reg_pass", "123456")
-                reg_pkg = st.session_state.get("temp_reg_package", "الباقة الأساسية المبتدئة (29k)")
-                reg_phone = st.session_state.get("temp_reg_phone", "غير مسجل")
-                reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                
-                conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
-                cursor_reg = conn_reg.cursor()
-                cursor_reg.execute(
-                    "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)", 
-                    (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
+                # خانة إدخال الرمز (تتحقق تلقائياً عند اكتمال الـ 6 أرقام)
+                entered_otp = st.text_input(
+                    "أدخل الرمز المكون من 6 أرقام هنا:", 
+                    max_chars=6, 
+                    placeholder="------", 
+                    key="smart_otp_paste_input"
                 )
-                conn_reg.commit()
-                conn_reg.close()
                 
-                st.session_state["otp_pending_verification"] = False
-                st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
-                time.sleep(1)
-                st.rerun()
-            else:
-                st.error("❌ الرمز غير صحيح، تأكد من إدخال الأرقام الستة بدقة.")
-                
-        if st.button("❌ إلغاء والعودة", key="cancel_otp_btn"):
-            st.session_state["otp_pending_verification"] = False
-            st.rerun()
+                if len(entered_otp.strip()) == 6:
+                    if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
+                        reg_email = st.session_state["temp_reg_email"]
+                        reg_pass = st.session_state.get("temp_reg_pass", "123456")
+                        reg_pkg = st.session_state.get("temp_reg_package", "الباقة الأساسية المبتدئة (29k)")
+                        reg_phone = st.session_state.get("temp_reg_phone", "غير مسجل")
+                        reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        
+                        conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
+                        cursor_reg = conn_reg.cursor()
+                        cursor_reg.execute(
+                            "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)", 
+                            (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
+                        )
+                        conn_reg.commit()
+                        conn_reg.close()
+                        
+                        st.session_state["otp_pending_verification"] = False
+                        st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error("❌ الرمز غير صحيح، تأكد من إدخال الأرقام الستة بدقة.")
+                        
+                if st.button("❌ إلغاء والعودة", key="cancel_otp_btn"):
+                    st.session_state["otp_pending_verification"] = False
+                    st.rerun()
 
-    else:
-        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-            user_package_choice = render_premium_neon_packages()
-            st.markdown("</div>", unsafe_allow_html=True)
-            if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
+            else:
+                if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+                user_package_choice = render_premium_neon_packages()
+                st.markdown("</div>", unsafe_allow_html=True)
+                if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
                         
                         # 🛑 شرط إضافي صارم: التأكد من وجود رقم هاتف وعدم وجود خطأ في طوله
                         raw_phone = st.session_state.get("temp_reg_phone", "").replace("+", "").strip()
