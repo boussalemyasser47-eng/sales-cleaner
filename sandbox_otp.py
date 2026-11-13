@@ -1935,7 +1935,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         product_name, price, quantity, product_total, shipping_cost, 
                         final_total, logo_data, lang=selected_lang
                     )
-                    )
+                  
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(
                         shop_name, customer_name, customer_phone, customer_address, 
                         product_name, quantity, final_total, logo_data, lang=selected_lang
