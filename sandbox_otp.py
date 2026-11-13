@@ -25,6 +25,52 @@ import re
 import time
 import streamlit as st
 import pandas as pd
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None):
+    """دالة لتوليد ملف PDF للفاتورة الكبيرة A4"""
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    
+    # محتوى الفاتورة البسيط والآمن
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(200, 750, f"Invoice - {shop_name}")
+    
+    c.setFont("Helvetica", 12)
+    c.drawString(50, 700, f"Customer Name: {customer_name}")
+    c.drawString(50, 680, f"Phone: {customer_phone}")
+    c.drawString(50, 660, f"Address: {customer_address}")
+    
+    c.drawString(50, 620, f"Product: {product_name} (Qty: {quantity})")
+    c.drawString(50, 600, f"Price: {price} DA | Total: {product_total} DA")
+    c.drawString(50, 580, f"Shipping Cost: {shipping_cost} DA")
+    c.drawString(50, 550, f"Final Total: {final_total} DA")
+    
+    c.save()
+    buffer.seek(0)
+    return buffer.getvalue()
+
+def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, quantity, final_total, logo_data=None):
+    """دالة لتوليد ملصق الشحن الحراري 4x4"""
+    buffer = io.BytesIO()
+    # مقاس الملصق الحراري (مثلاً 4x4 إنش تقريباً بالنقاط: 288x288)
+    c = canvas.Canvas(buffer, pagesize=(288, 288))
+    
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(10, 260, f"STORE: {shop_name}")
+    
+    c.setFont("Helvetica", 9)
+    c.drawString(10, 235, f"Client: {customer_name}")
+    c.drawString(10, 215, f"Phone: {customer_phone}")
+    c.drawString(10, 195, f"Address: {customer_address}")
+    c.drawString(10, 175, f"Item: {product_name} (x{quantity})")
+    c.drawString(10, 155, f"COD Amount: {final_total} DA")
+    
+    c.save()
+    buffer.seek(0)
+    return buffer.getvalue()
 def render_data_insights(df):
     """
     دالة لعرض رؤى وإحصائيات سريعة حول البيانات المعالجة
