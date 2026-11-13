@@ -1944,7 +1944,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     conne.commit()
                     
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(
+                    st.session_state["generate_invoice_pdf"] = generate_invoice_pdf(
                         shop_name, customer_name, customer_phone, customer_address, 
                         product_name, price, quantity, product_total, shipping_cost, 
                         final_total, logo_data, lang=selected_lang
