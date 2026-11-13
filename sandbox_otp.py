@@ -46,51 +46,38 @@ def render_data_insights(df):
         avg_order = total_sales / total_orders if total_orders > 0 else 0
         st.metric("متوسط قيمة الطلبية", f"{avg_order:,.2f} DA")
 def process_sales_file(uploaded_file):
-    """
-    دالة تطهير ومعالجة ملفات المبيعات الخاصة بالتجار الجزائريين
-    تتعامل مع ملفات الـ Excel أو CSV وتقوم بتنظيف البيانات واكتشاف الأخطاء والتكرارات
-    """
     try:
-        # قراءة الملف حسب نوعه
         if uploaded_file.name.endswith('.csv'):
             df_raw = pd.read_csv(uploaded_file)
         else:
             df_raw = pd.read_excel(uploaded_file)
     except Exception as e:
-        # في حال حدوث خطأ في قراءة الملف، نعيد إطارات بيانات فارغة مع رسالة فارغة
+        st.error(f"خطأ في قراءة الملف: {e}")
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
 
-    # إنشاء نسخة للعمل عليها
     df = df_raw.copy()
-
-    # توحيد أسماء الأعمدة الأساسية إن وجدت لتجنب أخطاء المسافات
+    
+    # تنظيف مسافات أسماء الأعمدة
     df.columns = [str(c).strip() for c in df.columns]
 
-    # 1. اكتشاف الصفوف المكررة (بناءً على رقم الطلبية أو الهاتف)
-    duplicates_mask = pd.Series(False, index=df.index)
+    # اكتشاف التكرارات
+    duplicated_rows = pd.DataFrame()
     if 'رقم الطلبية' in df.columns:
-        duplicates_mask = df.duplicated(subset=['رقم الطلبية'], keep='first')
+        duplicated_rows = df[df.duplicated(subset=['رقم الطلبية'], keep='first')]
     elif 'رقم الهاتف' in df.columns:
-        duplicates_mask = df.duplicated(subset=['رقم الهاتف'], keep='first')
-    
-    duplicated_rows = df[duplicates_mask].copy()
+        duplicated_rows = df[df.duplicated(subset=['رقم الهاتف'], keep='first')]
 
-    # 2. تنظيف البيانات الأساسية وإزالة المسافات الزائدة
-    for col in df.select_dtypes(include=['object']).columns:
-        df[col] = df[col].astype(str).str.strip()
-        df[col] = df[col].replace('nan', '')
-
-    # 3. اكتشاف الأسعار الخاطئة أو السلبية أو الفارغة
-    bad_prices = pd.DataFrame()
+    # تنظيف الأسعار وحساب الإجمالي
     price_col = next((c for c in df.columns if 'سعر' in c or 'price' in c.lower()), None)
-    if price_col:
-        # تحويل الأسعار إلى أرقام ومعالجة القيم غير الرقمية
-        df[price_col] = pd.to_numeric(df[price_col], errors='coerce')
-        bad_prices_mask = (df[price_col].isna()) | (df[price_col] <= 0)
-        bad_prices = df[bad_prices_mask].copy()
+    qty_col = next((c for c in df.columns if 'كمية' in c or 'qty' in c.lower() or 'quantity' in c.lower()), None)
+    
+    if price_col and qty_col:
+        df['total_row_sales'] = pd.to_numeric(df[price_col], errors='coerce').fillna(0) * pd.to_numeric(df[qty_col], errors='coerce').fillna(1)
+    else:
+        df['total_row_sales'] = 0.0
 
-    # تنظيف نهائي للـ DataFrame المعالج
     df_cleaned = df.drop_duplicates().copy()
+    bad_prices = pd.DataFrame() # يمكن تخصيصها لاحقاً
 
     return df_raw, df_cleaned, duplicated_rows, bad_prices
 # تهيئة حالة عرض الصفحة الافتراضية
