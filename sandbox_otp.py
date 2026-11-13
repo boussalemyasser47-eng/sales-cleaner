@@ -25,7 +25,26 @@ import re
 import time
 import streamlit as st
 import pandas as pd
-
+def render_data_insights(df):
+    """
+    دالة لعرض رؤى وإحصائيات سريعة حول البيانات المعالجة
+    """
+    st.markdown("### 📊 ملخص الرؤى الذكية للمبيعات")
+    if df.empty:
+        st.info("لا توجد بيانات كافية لعرض الرؤى.")
+        return
+        
+    total_sales = df['total_row_sales'].sum() if 'total_row_sales' in df.columns else 0
+    total_orders = len(df)
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("إجمالي الطلبيات المعالجة", f"{total_orders}")
+    with col2:
+        st.metric("إجمالي العائدات", f"{total_sales:,.2f} DA")
+    with col3:
+        avg_order = total_sales / total_orders if total_orders > 0 else 0
+        st.metric("متوسط قيمة الطلبية", f"{avg_order:,.2f} DA")
 def process_sales_file(uploaded_file):
     """
     دالة تطهير ومعالجة ملفات المبيعات الخاصة بالتجار الجزائريين
