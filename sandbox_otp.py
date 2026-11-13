@@ -29,44 +29,64 @@ import io
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+import os
+
+# تسجيل خط يدعم اللغة العربية ومتوفر في نظام التشغيل (Linux / Streamlit Cloud)
+try:
+    pdfmetrics.registerFont(TTFont('ArabicFont', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
+    ARABIC_FONT_AVAILABLE = True
+except Exception as e:
+    ARABIC_FONT_AVAILABLE = False
+
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None):
-    """دالة لتوليد ملف PDF للفاتورة الكبيرة A4"""
+    """دالة لتوليد ملف PDF للفاتورة الكبيرة A4 مع دعم كامل للغة العربية"""
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     
-    # محتوى الفاتورة البسيط والآمن
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(200, 750, f"Invoice - {shop_name}")
+    # اختيار الخط المناسب (عربي أو إنجليزي قياسي احتياطياً)
+    font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
     
-    c.setFont("Helvetica", 12)
-    c.drawString(50, 700, f"Customer Name: {customer_name}")
-    c.drawString(50, 680, f"Phone: {customer_phone}")
-    c.drawString(50, 660, f"Address: {customer_address}")
+    # عنوان الفاتورة والمتجر
+    c.setFont(font_name, 16)
+    c.drawString(200, 750, f"فاتورة مبيعات - {shop_name}")
     
-    c.drawString(50, 620, f"Product: {product_name} (Qty: {quantity})")
-    c.drawString(50, 600, f"Price: {price} DA | Total: {product_total} DA")
-    c.drawString(50, 580, f"Shipping Cost: {shipping_cost} DA")
-    c.drawString(50, 550, f"Final Total: {final_total} DA")
+    c.setFont(font_name, 11)
+    c.drawString(50, 700, f"اسم الزبون: {customer_name}")
+    c.drawString(50, 680, f"رقم الهاتف: {customer_phone}")
+    c.drawString(50, 660, f"العنوان: {customer_address}")
+    
+    c.drawString(50, 620, f"المنتج: {product_name} (الكمية: {quantity})")
+    c.drawString(50, 600, f"سعر الوحدة: {price} دج | الإجمالي الفرعي: {product_total} دج")
+    c.drawString(50, 580, f"تكلفة الشحن: {shipping_cost} دج")
+    
+    c.setFont(font_name, 13)
+    c.drawString(50, 540, f"المبلغ الإجمالي النهائي (الدفع عند الاستلام): {final_total} دج")
     
     c.save()
     buffer.seek(0)
     return buffer.getvalue()
 
 def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, quantity, final_total, logo_data=None):
-    """دالة لتوليد ملصق الشحن الحراري 4x4"""
+    """دالة لتوليد ملصق الشحن الحراري 4x4 مع دعم كامل للغة العربية"""
     buffer = io.BytesIO()
-    # مقاس الملصق الحراري (مثلاً 4x4 إنش تقريباً بالنقاط: 288x288)
+    # مقاس الملصق الحراري (288x288 نقطة)
     c = canvas.Canvas(buffer, pagesize=(288, 288))
     
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(10, 260, f"STORE: {shop_name}")
+    font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
     
-    c.setFont("Helvetica", 9)
-    c.drawString(10, 235, f"Client: {customer_name}")
-    c.drawString(10, 215, f"Phone: {customer_phone}")
-    c.drawString(10, 195, f"Address: {customer_address}")
-    c.drawString(10, 175, f"Item: {product_name} (x{quantity})")
-    c.drawString(10, 155, f"COD Amount: {final_total} DA")
+    c.setFont(font_name, 10)
+    c.drawString(10, 260, f"المتجر: {shop_name}")
+    
+    c.setFont(font_name, 9)
+    c.drawString(10, 235, f"الزبون: {customer_name}")
+    c.drawString(10, 215, f"الهاتف: {customer_phone}")
+    c.drawString(10, 195, f"العنوان: {customer_address}")
+    c.drawString(10, 175, f"المنتج: {product_name} (x{quantity})")
+    c.drawString(10, 155, f"مبلغ التوصيل (COD): {final_total} دج")
     
     c.save()
     buffer.seek(0)
