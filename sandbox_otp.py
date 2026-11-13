@@ -43,16 +43,25 @@ def fix_arabic(text):
 
 # 2. 📍 ضع هذا الكود هنا (تحديد مسار وتسجيل خط Cairo)
 # ضع الاسم الدقيق للملف المرفوع في المستودع هنا
-ARABIC_FONT_PATH = "Cairo-VariableFont_slnt,wght.ttf"
+import os
+import urllib.request
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+ARABIC_FONT_PATH = "Cairo-Regular.ttf"
 ARABIC_FONT_AVAILABLE = False
 
 try:
-    if os.path.exists(ARABIC_FONT_PATH):
-        pdfmetrics.registerFont(TTFont('ArabicFont', ARABIC_FONT_PATH))
-        ARABIC_FONT_AVAILABLE = True
-    elif os.path.exists('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'):
-        pdfmetrics.registerFont(TTFont('ArabicFont', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
-        ARABIC_FONT_AVAILABLE = True
+    # إذا لم يكن الخط موجوداً محلياً، قم بتحميله تلقائياً من رابط مباشر وآمن
+    if not os.path.exists(ARABIC_FONT_PATH):
+        font_url = "https://github.com/google/fonts/raw/main/ofl/cairo/Cairo-Regular.ttf"
+        urllib.request.urlretrieve(font_url, ARABIC_FONT_PATH)
+        
+    # تسجيل الخط بعد التأكد من وجوده
+    pdfmetrics.registerFont(TTFont('ArabicFont', ARABIC_FONT_PATH))
+    ARABIC_FONT_AVAILABLE = True
 except Exception as e:
     ARABIC_FONT_AVAILABLE = False
 
