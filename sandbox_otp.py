@@ -24,6 +24,16 @@ import urllib.parse
 import re
 import time
 import streamlit as st
+import streamlit as st
+import random
+import time
+
+# 🧠 ضع هذا الكود في أول الملف تماماً ليلتقط البريد إذا جاء من الإيميل
+query_params = st.query_params
+if "verify_email" in query_params:
+    incoming_email = query_params["verify_email"]
+    st.session_state["otp_pending_verification"] = True
+    st.session_state["temp_reg_email"] = incoming_email
 # تهيئة حالة عرض الصفحة الافتراضية
 if "current_view" not in st.session_state:
     st.session_state["current_view"] = "auth"
@@ -832,6 +842,19 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 st.session_state["temp_reg_package"] = validated_package
                                 
                                 subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
+                                # رابط منصتك الأساسي على Streamlit
+                                base_app_url = "https://sales-cleaner-qqzrjsdzlsrsgyagohnq.streamlit.app/"
+
+                                # جعل رابط الزر يمرر البريد معه تلقائياً
+                                verify_link = f"{base_app_url}?verify_email={clean_email}"
+
+                                body = f"""مرحباً بك،
+
+                                رمز التحقق العشوائي الخاص بك هو:{generated_otp}
+
+                                يرجى الضغط على الزر أدناه للانتقال للمنصة وإدخال الكود:
+                                {verify_link}
+                                """
                                 body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
                                 
                                 if send_gmail_notification(clean_email, subject, body):
