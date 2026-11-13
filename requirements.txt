@@ -4,3 +4,6 @@ reportlab
 arabic-reshaper
 python-bidi
 resend
+streamlit
+pandas
+openpyxl
