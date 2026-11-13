@@ -869,9 +869,9 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
             else:
                 if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-                user_package_choice = render_premium_neon_packages()
-                st.markdown("</div>", unsafe_allow_html=True)
-                if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
+                    user_package_choice = render_premium_neon_packages()
+                    st.markdown("</div>", unsafe_allow_html=True)
+                    if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
                         
                         # 🛑 شرط إضافي صارم: التأكد من وجود رقم هاتف وعدم وجود خطأ في طوله
                         raw_phone = st.session_state.get("temp_reg_phone", "").replace("+", "").strip()
