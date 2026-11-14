@@ -2195,7 +2195,7 @@ if "choice" in locals() or "choice" in globals():
             customer_address = st.text_input("عنوان التوصيل والولاية:", key="invoice_customer_address_input")
             uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
             
-            
+            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
             # === إضافة خيار لغة طباعة الفاتورة في الواجهة الأمامية ===
             st.markdown("🌐 **لغة طباعة الفاتورة (PDF):**")
             selected_invoice_lang = st.radio(
@@ -2207,7 +2207,7 @@ if "choice" in locals() or "choice" in globals():
             )
             lang_code = "fr" if "الفرنسية" in selected_invoice_lang else "ar"
 
-            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
+            
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
