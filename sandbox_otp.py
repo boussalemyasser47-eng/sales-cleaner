@@ -25,119 +25,164 @@ import re
 import time
 import streamlit as st
 import io
+import os
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+# === تسجيل الخط العربي لدعم اللغة العربية ومنع ظهور المربعات ===
+# يمكنك استبدال مسار الخط ('Cairo.ttf' أو غيره) بمسار خط مدعوم في مستودع مشروعك
+try:
+    # محاولة تسجيل خط يدعم العربية، مع وضع بديل احتياطي للنظام إن لم يتوفر
+    pdfmetrics.registerFont(TTFont('ArabicFont', 'Cairo.ttf'))
+    ARABIC_FONT_AVAILABLE = True
+except Exception:
+    try:
+        # محاولة البحث عن خط نظام افتراضي يدعم العربية في بيئة السيرفر إن وجدت
+        pdfmetrics.registerFont(TTFont('ArabicFont', 'Amiri-Regular.ttf'))
+        ARABIC_FONT_AVAILABLE = True
+    except Exception:
+        ARABIC_FONT_AVAILABLE = False
+
+FONT_NAME = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
 
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data):
     """
-    دالة توليد فاتورة مبيعات رسمية بحجم A4 باستخدام ReportLab
-    متوافقة مع معايير القسم (4 - ب)
+    دالة توليد فاتورة مبيعات رسمية بحجم A4 محسنة ومنسقة (RTL) باستخدام ReportLab
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer, 
         pagesize=A4, 
-        rightMargin=30, 
-        leftMargin=30, 
-        topMargin=30, 
-        bottomMargin=30
+        rightMargin=35, 
+        leftMargin=35, 
+        topMargin=35, 
+        bottomMargin=35
     )
     elements = []
     
     styles = getSampleStyleSheet()
     
-    # أنماط النصوص
+    # أنماط النصوص المحدثة لدعم الخط العربي والمحاذاة الصحيحة
     title_style = ParagraphStyle(
         'InvoiceTitle',
         parent=styles['Heading1'],
-        fontSize=20,
+        fontName=FONT_NAME,
+        fontSize=22,
         textColor=colors.HexColor('#003366'),
         alignment=1, # توسيط
-        spaceAfter=10
+        spaceAfter=8
     )
     
     sub_title_style = ParagraphStyle(
         'InvoiceSubTitle',
         parent=styles['Normal'],
+        fontName=FONT_NAME,
         fontSize=12,
         textColor=colors.HexColor('#555555'),
         alignment=1,
-        spaceAfter=20
+        spaceAfter=15
     )
     
-    normal_style = ParagraphStyle(
-        'InvoiceNormal',
+    normal_style_right = ParagraphStyle(
+        'InvoiceNormalRight',
         parent=styles['Normal'],
+        fontName=FONT_NAME,
         fontSize=10,
         textColor=colors.HexColor('#333333'),
-        alignment=2 # محاذاة لليمين للنصوص العربية
+        alignment=2 # محاذاة لليمين
+    )
+
+    normal_style_center = ParagraphStyle(
+        'InvoiceNormalCenter',
+        parent=styles['Normal'],
+        fontName=FONT_NAME,
+        fontSize=10,
+        textColor=colors.HexColor('#333333'),
+        alignment=1 # توسيط
     )
 
     # إضافة اللوغو إن وجد
     if logo_data:
         try:
             logo_buffer = io.BytesIO(logo_data)
-            img = Image(logo_buffer, width=70, height=70)
+            img = Image(logo_buffer, width=65, height=65)
             elements.append(img)
-            elements.append(Spacer(1, 10))
+            elements.append(Spacer(1, 8))
         except Exception:
             pass
 
     elements.append(Paragraph(f"<b>{shop_name}</b>", title_style))
-    elements.append(Paragraph("<b>فاتورة مبيعات وتأكيد طلبية</b>", sub_title_style))
-    elements.append(Spacer(1, 15))
+    elements.append(Paragraph("<b>فاتورة مبيعات وتأكيد طلبية رسمية</b>", sub_title_style))
+    elements.append(Spacer(1, 10))
 
-    # جدول بيانات المتجر والزبون
+    # جدول بيانات المتجر والزبون (مرتب واحترافي من اليمين لليسار)
     customer_info_data = [
-        [Paragraph(f"<b>اسم الزبون:</b> {customer_name}", normal_style), Paragraph(f"<b>اسم المتجر:</b> {shop_name}", normal_style)],
-        [Paragraph(f"<b>رقم الهاتف:</b> {customer_phone}", normal_style), Paragraph(f"<b>عنوان التوصيل:</b> {customer_address}", normal_style)]
+        [Paragraph(f"<b>عنوان التوصيل:</b> {customer_address}", normal_style_right), Paragraph(f"<b>اسم الزبون:</b> {customer_name}", normal_style_right)],
+        [Paragraph(f"<b>اسم المتجر:</b> {shop_name}", normal_style_right), Paragraph(f"<b>رقم الهاتف:</b> {customer_phone}", normal_style_right)]
     ]
-    t_info = Table(customer_info_data, colWidths=[250, 250])
+    t_info = Table(customer_info_data, colWidths=[260, 260])
     t_info.setStyle(TableStyle([
         ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('TOPPADDING', (0,0), (-1,-1), 8),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8f9fa')),
-        ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#e0e0e0')),
-        ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e0e0e0')),
+        ('BOX', (0,0), (-1,-1), 0.7, colors.HexColor('#d0d7de')),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e1e4e8')),
     ]))
     elements.append(t_info)
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 15))
 
-    # جدول تفاصيل المنتجات والأسعار
+    # جدول تفاصيل المنتجات والأسعار (مرتب الأعمدة بشكل متناسق)
     table_data = [
-        ["الإجمالي الفرعي (DA)", "الكمية", "سعر القطعة (DA)", "اسم المنتج"],
-        [f"{product_total:,.2f}", str(quantity), f"{price:,.2f}", product_name]
+        [
+            Paragraph("<b>الإجمالي (DA)</b>", normal_style_center), 
+            Paragraph("<b>السعر الفردي</b>", normal_style_center), 
+            Paragraph("<b>الكمية</b>", normal_style_center), 
+            Paragraph("<b>اسم المنتج</b>", normal_style_right)
+        ],
+        [
+            Paragraph(f"{product_total:,.2f}", normal_style_center), 
+            Paragraph(f"{price:,.2f}", normal_style_center), 
+            Paragraph(str(quantity), normal_style_center), 
+            Paragraph(product_name, normal_style_right)
+        ]
     ]
-    t_items = Table(table_data, colWidths=[120, 60, 120, 200])
+    t_items = Table(table_data, colWidths=[110, 110, 60, 240])
     t_items.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')),
         ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+        ('TOPPADDING', (0,0), (-1,-1), 10),
         ('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#ffffff')),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cccccc')),
     ]))
     elements.append(t_items)
     elements.append(Spacer(1, 15))
 
-    # جدول المجاميع النهائية
+    # جدول المجاميع النهائية (محاذاة دقيقة لليمين)
     totals_data = [
-        ["المجموع الفرعي للمنتج:", f"{product_total:,.2f} DA"],
-        ["تكلفة الشحن والتوصيل:", f"{shipping_cost:,.2f} DA"],
-        ["الإجمالي النهائي المطلوب:", f"{final_total:,.2f} DA"]
+        [Paragraph(f"<b>{product_total:,.2f} DA</b>", normal_style_right), Paragraph("<b>المجموع الفرعي للمنتج:</b>", normal_style_right)],
+        [Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", normal_style_right), Paragraph("<b>تكلفة الشحن والتوصيل:</b>", normal_style_right)],
+        [Paragraph(f"<b>{final_total:,.2f} DA</b>", ParagraphStyle('FinalTotal', parent=normal_style_right, fontSize=11, textColor=colors.HexColor('#003366'))), Paragraph("<b>الإجمالي النهائي المطلوب:</b>", ParagraphStyle('FinalTotalLbl', parent=normal_style_right, fontSize=11, textColor=colors.HexColor('#003366')))]
     ]
-    t_totals = Table(totals_data, colWidths=[180, 120])
+    t_totals = Table(totals_data, colWidths=[150, 200])
     t_totals.setStyle(TableStyle([
         ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
-        ('FONTNAME', (0,-1), (-1,-1), 'Helvetica-Bold'),
-        ('TEXTCOLOR', (0,-1), (-1,-1), colors.HexColor('#003366')),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+        ('LINEABOVE', (0,2), (-1,2), 1, colors.HexColor('#003366')),
     ]))
     
+    # محاذاة جدول المجاميع لليسار أو اليمين عبر وضعه داخل جدول حاوي أو إبقائه منسقاً
     elements.append(t_totals)
     doc.build(elements)
     buffer.seek(0)
@@ -146,18 +191,16 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
 
 def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date):
     """
-    دالة توليد ملصق الشحن الحراري (4x4 بوصة) باستخدام ReportLab
-    متوافقة مع معايير القسم (4 - ب)[cite: 1]
+    دالة توليد ملصق الشحن الحراري (4x4 بوصة) بشكل مرتب واحترافي يدعم العربية[cite: 1]
     """
     buffer = io.BytesIO()
-    # قياس ملصق الشحن الحراري القياسي (4 × 4 بوصة)
     doc = SimpleDocTemplate(
         buffer, 
         pagesize=(4 * inch, 4 * inch), 
-        rightMargin=15, 
-        leftMargin=15, 
-        topMargin=15, 
-        bottomMargin=15
+        rightMargin=12, 
+        leftMargin=12, 
+        topMargin=12, 
+        bottomMargin=12
     )
     elements = []
     
@@ -165,27 +208,42 @@ def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, custome
     label_title = ParagraphStyle(
         'LabelTitle',
         parent=styles['Heading2'],
-        fontSize=13,
+        fontName=FONT_NAME,
+        fontSize=12,
         textColor=colors.HexColor('#000000'),
         alignment=1,
-        spaceAfter=6
+        spaceAfter=5
     )
     label_normal = ParagraphStyle(
         'LabelNormal',
         parent=styles['Normal'],
-        fontSize=9.5,
+        fontName=FONT_NAME,
+        fontSize=9,
         textColor=colors.HexColor('#111111'),
-        alignment=2,
+        alignment=2, # محاذاة لليمين
         spaceAfter=4
     )
+    label_price = ParagraphStyle(
+        'LabelPrice',
+        parent=label_normal,
+        fontName=FONT_NAME,
+        fontSize=11,
+        textColor=colors.HexColor('#990000'),
+        alignment=1
+    )
     
-    elements.append(Paragraph(f"<b>{shop_name} - ملصق شحن حراري</b>", label_title))
+    elements.append(Paragraph(f"<b>{shop_name}</b>", label_title))
+    elements.append(Paragraph("<b>--- ملصق شحن وتوصيل حراري ---</b>", ParagraphStyle('SubLbl', parent=label_normal, alignment=1, fontSize=8, textColor=colors.HexColor('#666666'))))
+    elements.append(Spacer(1, 4))
+    
     elements.append(Paragraph(f"<b>📅 التاريخ:</b> {current_date}", label_normal))
     elements.append(Paragraph(f"<b>👤 الزبون:</b> {customer_name}", label_normal))
     elements.append(Paragraph(f"<b>📞 الهاتف:</b> {customer_phone}", label_normal))
     elements.append(Paragraph(f"<b>📍 العنوان:</b> {customer_address}", label_normal))
     elements.append(Paragraph(f"<b>📦 المنتج:</b> {product_name}", label_normal))
-    elements.append(Paragraph(f"<b>💰 المبلغ الواجب تحصيله:</b> {final_total:,.2f} DA", ParagraphStyle('PriceHighlight', parent=label_normal, fontSize=11, fontName='Helvetica-Bold', textColor=colors.HexColor('#990000'))))
+    
+    elements.append(Spacer(1, 4))
+    elements.append(Paragraph(f"<b>💰 المبلغ الواجب تحصيله: {final_total:,.2f} DA</b>", label_price))
 
     doc.build(elements)
     buffer.seek(0)
