@@ -1835,20 +1835,24 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
             conne.commit()
             
-            logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-            st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(
-                shop_name, customer_name, customer_phone, customer_address, 
-                product_name, price, quantity, product_total, shipping_cost, 
-                final_total, logo_data, lang=selected_lang, discount=discount_amount
-            )
-            st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
-            st.session_state["last_active_customer"] = customer_name
-            st.session_state["last_active_phone"] = customer_phone
-            st.session_state["last_active_shop"] = shop_name
-            st.session_state["last_active_product"] = product_name
-            st.session_state["last_active_total"] = final_total
-            st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
+                    logo_data = uploaded_logo.read() if uploaded_logo is not None else None
                     
+                    # تعريف لغة الفاتورة افتراضياً لتجنب أي NameError
+                    selected_lang = "ar"
+                    
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(
+                        shop_name, customer_name, customer_phone, customer_address, 
+                        product_name, price, quantity, product_total, shipping_cost, 
+                        final_total, logo_data, lang=selected_lang, discount=discount_amount
+                    )
+                    st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
+                    st.session_state["last_active_customer"] = customer_name
+                    st.session_state["last_active_phone"] = customer_phone
+                    st.session_state["last_active_shop"] = shop_name
+                    st.session_state["last_active_product"] = product_name
+                    st.session_state["last_active_total"] = final_total
+                    st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
+
         if "generated_pdf_invoice" in st.session_state:
             col_btn1, col_btn2 = st.columns(2)
             with col_btn1: 
