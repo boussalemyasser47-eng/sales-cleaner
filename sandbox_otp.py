@@ -1912,17 +1912,17 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             
         product_total = price * quantity
         # خيارات التخفيض والعروض
-    col_disc1, col_disc2 = st.columns(2)
-    with col_disc1:
-        discount_type = st.selectbox("نوع التخفيض:", ["بدون تخفيض", "مبلغ ثابت (دج)", "نسبة مئوية (%)"], key="invoice_discount_type_select")
-    with col_disc2:
-        if discount_type == "مبلغ ثابت (دج)":
-            discount_amount = st.number_input("قيمة التخفيض (دج):", min_value=0.0, value=0.0, step=50.0, key="invoice_fixed_discount_input")
-        elif discount_type == "نسبة مئوية (%)":
-            discount_pct = st.number_input("نسبة التخفيض (%):", min_value=0.0, max_value=100.0, value=0.0, step=5.0, key="invoice_pct_discount_input")
-            discount_amount = (product_total * discount_pct) / 100.0
-        else:
-            discount_amount = 0.0
+        col_disc1, col_disc2 = st.columns(2)
+        with col_disc1:
+            discount_type = st.selectbox("نوع التخفيض:", ["بدون تخفيض", "مبلغ ثابت (دج)", "نسبة مئوية (%)"], key="invoice_discount_type_select")
+        with col_disc2:
+            if discount_type == "مبلغ ثابت (دج)":
+                discount_amount = st.number_input("قيمة التخفيض (دج):", min_value=0.0, value=0.0, step=50.0, key="invoice_fixed_discount_input")
+            elif discount_type == "نسبة مئوية (%)":
+                discount_pct = st.number_input("نسبة التخفيض (%):", min_value=0.0, max_value=100.0, value=0.0, step=5.0, key="invoice_pct_discount_input")
+                discount_amount = (product_total * discount_pct) / 100.0
+            else:
+                discount_amount = 0.0
         final_total = max(0.0, (product_total + shipping_cost) - discount_amount)
         current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
         current_month = datetime.now().strftime("%Y-%m")
