@@ -25,7 +25,52 @@ import streamlit as st
 # تهيئة حالة عرض الصفحة الافتراضية
 if "current_view" not in st.session_state:
     st.session_state["current_view"] = "auth"
+# 🧼 دالة تنظيق وتطهير ملفات المبيعات وإزالة التكرارات والأسعار السالبة
+def process_sales_file(uploaded_file):
+    if uploaded_file.name.endswith('.csv'):
+        df_raw = pd.read_csv(uploaded_file)
+    else:
+        df_raw = pd.read_excel(uploaded_file)
+    
+    df = df_raw.copy()
+    
+    # توحيد أسماء الأعمدة إن وجدت لتجنب الأخطاء
+    df.columns = [str(c).strip().lower() for c in df.columns]
+    
+    # محاولة كشف أعمدة الأسعار والكميات لتنظيفها
+    price_col = next((col for col in df.columns if 'price' in col or 'سعر' in col or 'montant' in col), None)
+    qty_col = next((col for col in df.columns if 'qty' in col or 'quantity' in col or 'كمية' in col), None)
+    prod_col = next((col for col in df.columns if 'product' in col or 'item' in col or 'منتج' in col), df.columns[0])
+    
+    # تجهيز أعمدة موحدة للعمليات الحسابية
+    if price_col and qty_col:
+        df['clean_price'] = pd.to_numeric(df[price_col], errors='coerce').fillna(0)
+        df['clean_qty'] = pd.to_numeric(df[qty_col], errors='coerce').fillna(1)
+        
+        # رصد الأسعار أو الكميات السالبة
+        bad_prices = df[(df['clean_price'] < 0) | (df['clean_qty'] < 0)]
+        df = df[(df['clean_price'] >= 0) & (df['clean_qty'] >= 0)]
+        
+        df['total_row_sales'] = df['clean_price'] * df['clean_qty']
+    else:
+        df['total_row_sales'] = 0
+        bad_prices = pd.DataFrame()
+        
+    # رصد وإزالة السطور المكررة تماماً
+    duplicated_rows = df[df.duplicated()]
+    df = df.drop_duplicates()
+    
+    # إعادة تسمية العمود الافتراضي للمنتج لضمان توافق العرض
+    df['product_name'] = df[prod_col]
+    
+    return df_raw, df, duplicated_rows, bad_prices
+
+def render_data_insights(df):
+    total_revenue = df['total_row_sales'].sum() if 'total_row_sales' in df.columns else 0
+    total_orders = len(df)
+    st.info(isinstance(total_revenue, (int, float)) and f"📊 **إحصائيات سريعة:** إجمالي المبيعات الصافية = {total_revenue:,.2f} DA | عدد الطلبيات النظيفة = {total_orders}" or "")
 # 🌟 تصميم نافذة التحقق المنبثقة في المنتصف (Modal Dialog)
+
 def render_otp_popup(target_email):
     # إخفاء الخلفية وتثبيت النافذة في المنتصف بتصميم نيون فخم
     st.markdown("""
