@@ -2205,7 +2205,11 @@ if "choice" in locals() or "choice" in globals():
                 key="sec4b_invoice_lang_selector_unique"
             )
             lang_code = "fr" if "الفرنسية" in selected_invoice_lang else "ar"
-
+            uploaded_logo = st.file_uploader(
+                "اختر لوغو متجرك (اختياري)", 
+                type=["png", "jpg", "jpeg"], 
+                key="sec4b_invoice_logo_uploader_unique"
+            )
 
 
 
