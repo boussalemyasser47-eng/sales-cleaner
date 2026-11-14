@@ -1864,7 +1864,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     conne.commit()
     
     # 🌐 جدار حجب الأدوات التلقائي بناءً على فئة باقة التاجر الحالية
-    available_tools = ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي"]
+    available_tools = ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي", "🚀 ممر العبور السحابي للشحن"]
     if "45k" in user_package:
         available_tools.append("🧼 مطهر ملفات المبيعات وإحصائيات الولايات")
     elif "65k" in user_package:
@@ -1877,90 +1877,9 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
 # ========================================================
 # القسم (4 - أ): ممر العبور السحابي وتمرير البيانات لشركة التوصيل
 # ========================================================
-import urllib.parse
-import streamlit as st
 
-def render_shipping_bridge_gateway():
-    st.markdown("### 🚀 ممر العبور السحابي لشركات التوصيل")
-    st.markdown("إرسال بيانات الزبون والمنتج تلقائياً إلى نظام شركة الشحن بضغطة زر واحدة دون تدخل يدوي.")
 
-    # التأكد من وجود اتصال بقاعدة البيانات والجدول الخاص بالفواتير
-    conne = st.session_state.get("merchant_db_conn")
-    if not conne:
-        st.warning("⚠️ لا يوجد اتصال نشط بقاعدة البيانات الخاصة بالمتجر.")
-        return
 
-    cursor = conne.cursor()
-    
-    # 1. سحب أحدث فاتورة مُصدّرة تلقائياً لاستخراج بيانات الزبون والعنوان والمنتج
-    try:
-        cursor.execute('''
-            SELECT customer_name, customer_phone, product_name, final_total, shop_name, date_created 
-            FROM v4_customer_invoices 
-            ORDER BY invoice_id DESC LIMIT 1
-        ''')
-        latest_invoice = cursor.fetchone()
-    except Exception as e:
-        st.error(f"❌ حدث خطأ أثناء جذب بيانات الفاتورة: {e}")
-        return
-
-    if not latest_invoice:
-        st.info("ℹ️ لم يتم إصدار أي فواتير بعد لجلب بياناتها إلى ممر العبور.")
-        return
-
-    c_name, c_phone, p_name, f_total, s_name, d_created = latest_invoice
-
-    # عرض ملخص البيانات المسحوبة تلقائياً للتأكيد قبل الإرسال
-    st.markdown(f"""
-    <div style="border: 1px solid #00fff0; border-radius: 10px; padding: 12px; background: rgba(0,255,240,0.05); margin-bottom: 12px; direction: rtl; text-align: right;">
-        <p style="color: #00fff0; font-weight: bold; margin: 0 0 5px 0;">📦 بيانات آخر طلبية مسحوبة تلقائياً:</p>
-        <span style="color: #ffffff; font-size: 13px;">
-            • <b>الزبون:</b> {c_name} | <b>الهاتف:</b> {c_phone}<br>
-            • <b>المنتج:</b> {p_name} | <b>المبلغ الإجمالي:</b> {f_total} دج<br>
-            • <b>تاريخ الإصدار:</b> {d_created}
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # اختيار شركة التوصيل (مثال: Yalidine أو Zrex أو توصيل محلي)
-    delivery_company = st.selectbox(
-        "اختر منصة أو شركة التوصيل المستهدفة:",
-        ["شركة ياليدين (Yalidine Express)", "شركة زريكس (Zrex)", "توصيل خاص / درايف"],
-        key="selected_delivery_partner_bridge"
-    )
-
-    # تجهيز رسالة أو رابط التمرير الآمن بالصيغة المطلوبة
-    # بناء رسالة نصية جاهزة للترميز والإرسال عبر API أو واتساب أو بوابة الشركة
-    shipping_payload_text = (
-        f"طلب توصيل جديد من المتجر: {s_name}\n"
-        f"اسم الزبون: {c_name}\n"
-        f"رقم الهاتف: {c_phone}\n"
-        f"المنتج المطلُوْب: {p_name}\n"
-        f"المبلغ الواجب تحصيله: {f_total} دج"
-    )
-    
-    encoded_message = urllib.parse.quote(shipping_payload_text)
-
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🚀 إرسال سريع لشركة الشحن", key="execute_fast_shipping_push_btn"):
-            # محاكاة الاتصال أو تمرير البيانات الآمن
-            st.success(f"✅ تم تمرير بيانات الزبون ({c_name}) بنجاح إلى نظام {delivery_company}!")
-            st.balloons()
-            
-    with col2:
-        # زر إضافي لتصدير البيانات عبر رابط مباشر (مثل واتساب أو منصة خارجية)
-        whatsapp_link = f"https://wa.me/?text={encoded_message}"
-        st.markdown(
-            f'<a href="{whatsapp_link}" target="_blank" style="text-decoration:none;">'
-            f'<div style="background:#25d366; color:white; text-align:center; padding:8px 12px; border-radius:8px; font-weight:bold; font-size:14px; margin-top:2px;">'
-            f'💬 إرسال عبر واتساب للمُوصِّل</div></a>',
-            unsafe_allow_html=True
-        )
-
-# استدعاء دالة ممر العبور ضمن السياق النشط للمتجر
-if "current_merchant" in locals() or "current_merchant" in globals():
-    render_shipping_bridge_gateway()
     # === إضافات نظام العزل والاتصال والمساعد الذكي المحاذى هندسياً كلياً ===
     def render_sidebar_helper():
         st.sidebar.markdown("---")
@@ -2176,7 +2095,82 @@ if "current_merchant" in locals() or "current_merchant" in globals():
 # 🚨 [الخط الأحمر الهندسي المقفل]: سطر استدعاء الدالة مفرّد وحرّ في أقصى جهة اليسار (0 مسافات بادئة) ليتصل بالشروط الكبرى دون اختفاء
     render_sidebar_helper()
 
+# ========================================================
+# 🚀 ممر العبور السحابي لشركات التوصيل (يُضاف في نهاية الملف)
+# ========================================================
+def render_shipping_bridge_gateway():
+    st.markdown("### 🚀 ممر العبور السحابي لشركات التوصيل")
+    st.markdown("إرسال بيانات الزبون والمنتج تلقائياً إلى نظام شركة الشحن بضغطة زر واحدة دون تدخل يدوي.")
 
+    conne = st.session_state.get("merchant_db_conn")
+    if not conne:
+        st.warning("⚠️ لا يوجد اتصال نشط بقاعدة البيانات الخاصة بالمتجر.")
+        return
+
+    cursor = conne.cursor()
+    
+    try:
+        cursor.execute('''
+            SELECT customer_name, customer_phone, product_name, final_total, shop_name, date_created 
+            FROM v4_customer_invoices 
+            ORDER BY invoice_id DESC LIMIT 1
+        ''')
+        latest_invoice = cursor.fetchone()
+    except Exception as e:
+        st.error(f"❌ حدث خطأ أثناء جذب بيانات الفاتورة: {e}")
+        return
+
+    if not latest_invoice:
+        st.info("ℹ️ لم يتم إصدار أي فواتير بعد لجلب بياناتها إلى ممر العبور.")
+        return
+
+    c_name, c_phone, p_name, f_total, s_name, d_created = latest_invoice
+
+    st.markdown(f"""
+    <div style="border: 1px solid #00fff0; border-radius: 10px; padding: 12px; background: rgba(0,255,240,0.05); margin-bottom: 12px; direction: rtl; text-align: right;">
+        <p style="color: #00fff0; font-weight: bold; margin: 0 0 5px 0;">📦 بيانات آخر طلبية مسحوبة تلقائياً:</p>
+        <span style="color: #ffffff; font-size: 13px;">
+            • <b>الزبون:</b> {c_name} | <b>الهاتف:</b> {c_phone}<br>
+            • <b>المنتج:</b> {p_name} | <b>المبلغ الإجمالي:</b> {f_total} دج<br>
+            • <b>تاريخ الإصدار:</b> {d_created}
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    delivery_company = st.selectbox(
+        "اختر منصة أو شركة التوصيل المستهدفة:",
+        ["شركة ياليدين (Yalidine Express)", "شركة زريكس (Zrex)", "توصيل خاص / درايف"],
+        key="selected_delivery_partner_bridge"
+    )
+
+    shipping_payload_text = (
+        f"طلب توصيل جديد من المتجر: {s_name}\n"
+        f"اسم الزبون: {c_name}\n"
+        f"رقم الهاتف: {c_phone}\n"
+        f"المنتج المطلوب: {p_name}\n"
+        f"المبلغ الواجب تحصيله: {f_total} دج"
+    )
+    
+    encoded_message = urllib.parse.quote(shipping_payload_text)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🚀 إرسال سريع لشركة الشحن", key="execute_fast_shipping_push_btn"):
+            st.success(f"✅ تم تمرير بيانات الزبون ({c_name}) بنجاح إلى نظام {delivery_company}!")
+            st.balloons()
+            
+    with col2:
+        whatsapp_link = f"https://wa.me/?text={encoded_message}"
+        st.markdown(
+            f'<a href="{whatsapp_link}" target="_blank" style="text-decoration:none;">'
+            f'<div style="background:#25d366; color:white; text-align:center; padding:8px 12px; border-radius:8px; font-weight:bold; font-size:14px; margin-top:2px;">'
+            f'💬 إرسال عبر واتساب للمُوصِّل</div></a>',
+            unsafe_allow_html=True
+        )
+
+# هذا الشرط يضمن أن ممر العبور يظهر فقط عندما يختاره التاجر من القائمة
+if choice == "🚀 ممر العبور السحابي للشحن":
+    render_shipping_bridge_gateway()
   
     # القسم (4 - ب): صانع الفواتير والملصقات الحرارية والإحصائيات
     # ========================================================
