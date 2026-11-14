@@ -25,6 +25,19 @@ import streamlit as st
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 ARABIC_FONT_AVAILABLE = False
+# 🔤 دالة معالجة النصوص العربية لـ ReportLab لضمان عدم تقطيع الحروف
+def fix_arabic(text):
+    if not text:
+        return ""
+    try:
+        import arabic_reshaper
+        from bidi.algorithm import get_display
+        reshaped_text = arabic_reshaper.reshape(str(text))
+        bidi_text = get_display(reshaped_text)
+        return bidi_text
+    except ImportError:
+        # إذا كانت المكتبات غير مثبتة، تعيد النص كما هو لتجنب انهيار التطبيق
+        return str(text)
 # 📄 دالة توليد الفاتورة الاحترافية (A4) مع دعم التخفيضات
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None, lang="ar", discount=0):
     buffer = io.BytesIO()
