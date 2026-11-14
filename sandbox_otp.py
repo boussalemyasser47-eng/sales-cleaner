@@ -2189,25 +2189,32 @@ if "choice" in locals() or "choice" in globals():
         col_left, col_right = st.columns(2)
         with col_left:
             st.subheader("🏪 معلومات المتجر والزبون")
+            # --- المفاتيح الأصلية المحمية (ممنوع تغييرها لضمان دقة الحفظ المحاسبي) ---
             shop_name = st.text_input("اسم متجرك الإلكتروني:", "DZ Cyber Store", key="invoice_shop_name_input")
             customer_name = st.text_input("اسم الزبون الكامل:", key="invoice_customer_name_input")
             customer_phone = st.text_input("رقم هاتف الزبون:", key="invoice_customer_phone_input")
             customer_address = st.text_input("عنوان التوصيل والولاية:", key="invoice_customer_address_input")
-            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
-            
-            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
-            # === إضافة خيار لغة طباعة الفاتورة في الواجهة الأمامية ===
+
+            # --- مفتاح فريد وحصري لزر اختيار لغة الفاتورة (عربي / فرنسي) ---
             st.markdown("🌐 **لغة طباعة الفاتورة (PDF):**")
             selected_invoice_lang = st.radio(
                 label="اختر لغة الفاتورة:",
                 options=["🇩🇿 اللغة العربية (RTL)", "🇫🇷 اللغة الفرنسية (LTR)"],
                 horizontal=True,
                 label_visibility="collapsed",
-                key="invoice_print_language_radio"
+                key="sec4b_invoice_lang_selector_unique"
             )
             lang_code = "fr" if "الفرنسية" in selected_invoice_lang else "ar"
 
-            
+            # --- مفتاح فريد وحصري لرفع لوغو المتجر لمنع أي تكرار في الصفحة ---
+            uploaded_logo = st.file_uploader(
+                "اختر لوغو متجرك (اختياري)", 
+                type=["png", "jpg", "jpeg"], 
+                key="sec4b_invoice_logo_uploader_unique"
+            )
+            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
+
+
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
