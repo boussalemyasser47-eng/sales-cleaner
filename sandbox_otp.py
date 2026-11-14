@@ -1,4 +1,3 @@
-# ========================================================
 # الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
 # ========================================================
 # ========================================================
@@ -23,161 +22,7 @@ import io
 import urllib.parse
 import re
 import time
-import pandas as pd
-import io
-from reportlab.pdfgen import canvas
-import os
-import urllib.request
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-
-
-
-# 1. دالة معالجة النصوص العربية
-def fix_arabic(text):
-    """دالة لتشكيل الحروف العربية وعكسها لتبدو صحيحة في الـ PDF"""
-    if not text:
-        return ""
-    reshaped_text = arabic_reshaper.reshape(str(text))
-    return get_display(reshaped_text)
-
-# 2. 📍 ضع هذا الكود هنا (تحديد مسار وتسجيل خط Cairo)
-# ضع الاسم الدقيق للملف المرفوع في المستودع هنا
-
-
-import os
-import urllib.request
-import io
-import arabic_reshaper
-from bidi.algorithm import get_display
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-
-# 🖋️ 1. تحميل وتسجيل الخط الثابت والمضمون للعربية (Amiri)
-import os
-import urllib.request
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-
-# تحميل وتسجيل الخط الثابت (Amiri) المضمون 100% للعربية
-ARABIC_FONT_PATH = "Amiri-Regular.ttf"
-ARABIC_FONT_AVAILABLE = False
-
-try:
-    if not os.path.exists(ARABIC_FONT_PATH) or os.path.getsize(ARABIC_FONT_PATH) < 10000:
-        urllib.request.urlretrieve("https://raw.githubusercontent.com/google/fonts/main/ofl/amiri/Amiri-Regular.ttf", ARABIC_FONT_PATH)
-    pdfmetrics.registerFont(TTFont('ArabicFont', ARABIC_FONT_PATH))
-    ARABIC_FONT_AVAILABLE = True
-except Exception as e:
-    ARABIC_FONT_AVAILABLE = False
-
-# 🔄 2. دالة معالجة وتشكيل النصوص العربية
-
-# 📄 3. دالة توليد الفاتورة الاحترافية (A4)
-# 📄 دالة توليد الفاتورة الاحترافية (A4) مع دعم تبديل اللغة (عربي / فرنسي)
-import qrcode
-from reportlab.lib.utils import ImageReader
-import io
-
-# 🏷️ دالة توليد ملصق الشحن الحراري مع دعم الـ QR Code وتبديل اللغة
-# 🏷️ دالة توليد ملصق الشحن الحراري مع دعم الـ QR Code وتبديل اللغة (عربي / فرنسي)
-# 📄 1. دالة توليد الفاتورة الاحترافية (A4)
-# 📄 1. دالة توليد الفاتورة الاحترافية (A4) مع دعم التخفيضات
-def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None, lang="ar", discount=0):
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-    font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
-    
-    if lang == "fr":
-        c.setFont(font_name, 16)
-        c.drawString(180, 750, fix_arabic(f"Facture de Vente - {shop_name}"))
-        c.setFont(font_name, 12)
-        c.drawString(50, 700, fix_arabic(f"Nom du Client : {customer_name}"))
-        c.drawString(50, 680, fix_arabic(f"Téléphone : {customer_phone}"))
-        c.drawString(50, 660, fix_arabic(f"Adresse : {customer_address}"))
-        c.drawString(50, 620, fix_arabic(f"Produit : {product_name} (Qté : {quantity})"))
-        c.drawString(50, 600, fix_arabic(f"Prix Unitaire : {price} DA | Sous-total : {product_total} DA"))
-        c.drawString(50, 580, fix_arabic(f"Frais de Livraison : {shipping_cost} DA"))
-        if discount > 0:
-            c.drawString(50, 560, fix_arabic(f"Remise appliquée : -{discount} DA"))
-        c.setFont(font_name, 14)
-        c.drawString(50, 520, fix_arabic(f"Total Général à Payer : {final_total} DA"))
-    else:
-        c.setFont(font_name, 16)
-        c.drawString(200, 750, fix_arabic(f"فاتورة مبيعات - {shop_name}"))
-        c.setFont(font_name, 12)
-        c.drawString(50, 700, fix_arabic(f"اسم الزبون: {customer_name}"))
-        c.drawString(50, 680, fix_arabic(f"رقم الهاتف: {customer_phone}"))
-        c.drawString(50, 660, fix_arabic(f"العنوان: {customer_address}"))
-        c.drawString(50, 620, fix_arabic(f"المنتج: {product_name} (الكمية: {quantity})"))
-        c.drawString(50, 600, fix_arabic(f"سعر الوحدة: {price} دج | المجموع: {product_total} دج"))
-        c.drawString(50, 580, fix_arabic(f"تكلفة الشحن: {shipping_cost} دج"))
-        if discount > 0:
-            c.drawString(50, 560, fix_arabic(f"تخفيض خاص: -{discount} دج"))
-        c.setFont(font_name, 14)
-        c.drawString(50, 520, fix_arabic(f"المبلغ الإجمالي النهائي: {final_total} دج"))
-    
-    c.save()
-    buffer.seek(0)
-    return buffer.getvalue()
-def render_data_insights(df):
-    """
-    دالة لعرض رؤى وإحصائيات سريعة حول البيانات المعالجة
-    """
-    st.markdown("### 📊 ملخص الرؤى الذكية للمبيعات")
-    if df.empty:
-        st.info("لا توجد بيانات كافية لعرض الرؤى.")
-        return
-        
-    total_sales = df['total_row_sales'].sum() if 'total_row_sales' in df.columns else 0
-    total_orders = len(df)
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("إجمالي الطلبيات المعالجة", f"{total_orders}")
-    with col2:
-        st.metric("إجمالي العائدات", f"{total_sales:,.2f} DA")
-    with col3:
-        avg_order = total_sales / total_orders if total_orders > 0 else 0
-        st.metric("متوسط قيمة الطلبية", f"{avg_order:,.2f} DA")
-def process_sales_file(uploaded_file):
-    try:
-        if uploaded_file.name.endswith('.csv'):
-            df_raw = pd.read_csv(uploaded_file)
-        else:
-            df_raw = pd.read_excel(uploaded_file)
-    except Exception as e:
-        st.error(f"خطأ في قراءة الملف: {e}")
-        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-
-    df = df_raw.copy()
-    
-    # تنظيف مسافات أسماء الأعمدة
-    df.columns = [str(c).strip() for c in df.columns]
-
-    # اكتشاف التكرارات
-    duplicated_rows = pd.DataFrame()
-    if 'رقم الطلبية' in df.columns:
-        duplicated_rows = df[df.duplicated(subset=['رقم الطلبية'], keep='first')]
-    elif 'رقم الهاتف' in df.columns:
-        duplicated_rows = df[df.duplicated(subset=['رقم الهاتف'], keep='first')]
-
-    # تنظيف الأسعار وحساب الإجمالي
-    price_col = next((c for c in df.columns if 'سعر' in c or 'price' in c.lower()), None)
-    qty_col = next((c for c in df.columns if 'كمية' in c or 'qty' in c.lower() or 'quantity' in c.lower()), None)
-    
-    if price_col and qty_col:
-        df['total_row_sales'] = pd.to_numeric(df[price_col], errors='coerce').fillna(0) * pd.to_numeric(df[qty_col], errors='coerce').fillna(1)
-    else:
-        df['total_row_sales'] = 0.0
-
-    df_cleaned = df.drop_duplicates().copy()
-    bad_prices = pd.DataFrame() # يمكن تخصيصها لاحقاً
-
-    return df_raw, df_cleaned, duplicated_rows, bad_prices
+import streamlit as st
 # تهيئة حالة عرض الصفحة الافتراضية
 if "current_view" not in st.session_state:
     st.session_state["current_view"] = "auth"
@@ -403,6 +248,10 @@ def create_backup_vault():
 # [باقي كود واجهات التاجر والمالك يعمل بشكل طبيعي الآن...]
 
 # [باقي كود واجهات التاجر والمالك يعمل بشكل طبيعي الآن...]
+import smtplib
+import random
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import streamlit as st
 import pandas as pd
 import sqlite3
@@ -1892,13 +1741,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             customer_phone = st.text_input("رقم هاتف الزبون:", key="invoice_customer_phone_input")
             customer_address = st.text_input("عنوان التوصيل والولاية:", key="invoice_customer_address_input")
             uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
-            invoice_lang_label = st.radio(
-                "🌐 لغة الفاتورة والملصق:",
-                ["🇩🇿 العربية", "🇫🇷 Français"],
-                horizontal=True,
-                key="invoice_lang_selector"
-            )
-            selected_lang = "fr" if "Français" in invoice_lang_label else "ar"
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
@@ -1911,10 +1753,9 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600, key="invoice_shipping_input")
             
         product_total = price * quantity
-        # خيارات التخفيض والعروض
-
-                current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
-                current_month = datetime.now().strftime("%Y-%m")
+        final_total = product_total + shipping_cost
+        current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
+        current_month = datetime.now().strftime("%Y-%m")
         st.markdown("---")
         if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون", key="issue_invoice_and_clear_stock_btn"):
             if not customer_name or not product_name: 
@@ -1929,62 +1770,33 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     conne.commit()
                     
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(
-                        shop_name, customer_name, customer_phone, customer_address, 
-                        product_name, price, quantity, product_total, shipping_cost, 
-                        final_total, logo_data, lang=selected_lang, discount=discount_amount
-                    )
-                  
-                    st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(
-                        shop_name, customer_name, customer_phone, customer_address, 
-                        product_name, quantity, final_total, logo_data, lang=selected_lang
-                    )
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
+                    st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
                     st.session_state["last_active_customer"] = customer_name
                     st.session_state["last_active_phone"] = customer_phone
                     st.session_state["last_active_shop"] = shop_name
                     st.session_state["last_active_product"] = product_name
                     st.session_state["last_active_total"] = final_total
                     st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
-    if "generated_pdf_invoice" in st.session_state and "generated_pdf_label" in st.session_state:
-        col_btn1, col_btn2 = st.columns(2)
-        with col_btn1:
-            st.download_button(
-                label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", 
-                data=st.session_state["generated_pdf_invoice"], 
-                file_name=f"invoice_{st.session_state.get('last_active_customer', 'customer')}.pdf", 
-                mime="application/pdf", 
-                key="dl_invoice_pdf_btn"
-            )
-        with col_btn2:
-            st.download_button(
-                label="🏷️ تحميل ملصق الشحن الحراري (PDF)", 
-                data=st.session_state["generated_pdf_label"], 
-                file_name=f"label_{st.session_state.get('last_active_customer', 'customer')}.pdf", 
-                mime="application/pdf", 
-                key="dl_label_pdf_btn"
-            )
-        
-        if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة", key="quick_thermal_print_window_btn"):
-            st.components.v1.html("<script>window.print();</script>", height=0)
+                    
+        if "generated_pdf_invoice" in st.session_state:
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1: 
+                st.download_button(label="📥 تحميل الفاتورة الكبيرة A4 (PDF)", data=st.session_state["generated_pdf_invoice"], file_name=f"invoice_{st.session_state['last_active_customer']}.pdf", mime="application/pdf", key="dl_invoice_pdf_btn")
+            with col_btn2: 
+                st.download_button(label="🖨️ تحميل ملصق الشحن الحراري 4x4 (PDF)", data=st.session_state["generated_pdf_label"], file_name=f"thermal_label_{st.session_state['last_active_customer']}.pdf", mime="application/pdf", key="dl_label_pdf_btn")
+            if st.button("🖨️ فتح نافذة الطباعة الحرارية السريعة", key="quick_thermal_print_window_btn"): 
+                st.components.v1.html("<script>window.print();</script>", height=0)
+            st.markdown("---")
+            st.subheader("📲 أزرار الإرسال السريع الفوري لزبونك:")
+            msg_text = f"مرحباً {st.session_state['last_active_customer']}، تم تأكيد طلبيتك بنجاح من متجر {st.session_state['last_active_shop']}. المنتج: {st.session_state['last_active_product']}، الإجمالي للدفع هو: {st.session_state['last_active_total']:,} DA."
+            encoded_msg = urllib.parse.quote(msg_text)
             
-        st.markdown("---")
-        st.subheader("📲 أزرار الإرسال السريع لزبونك:")
-        
-        safe_customer = st.session_state.get('last_active_customer', 'customer')
-        safe_shop = st.session_state.get('last_active_shop', 'shop')
-        safe_phone = st.session_state.get('last_active_phone', '')
-        
-        msg_text = f"مرحباً {safe_customer}، تم تأكيد طلبك بنجاح من متجر {safe_shop}."
-        encoded_msg = urllib.parse.quote(msg_text)
-
-        send_col1, send_col2 = st.columns(2)
-        with send_col1:
-            st.link_button(
-                "💬 إرسال تفاصيل الفاتورة عبر WhatsApp", 
-                f"https://wa.me/{safe_phone}?text={encoded_msg}"
-            )
-        with send_col2: 
-            st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
+            send_col1, send_col2 = st.columns(2)
+            with send_col1: 
+                st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{st.session_state['last_active_phone']}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
+            with send_col2: 
+                st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
         # === إضافة صندوق المعاينة الحية للفاتورة النيونية ===
         st.markdown("---")
         st.subheader("👁️ معاينة حية فورية قبل الحفظ:")
@@ -2150,21 +1962,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             st.subheader("📋 1. جدول البيانات الأصلي المرفوع (قبل التطهير):")
             st.dataframe(df_raw, use_container_width=True)
             st.success("✅ تم تنظيف الداتا بنجاح وتجهيز المقارنة البصرية!")
+            
             col_clean, col_trash = st.columns(2)
             with col_clean:
-                st.subheader("💎 2. جدول البيانات التنظيف (بعد التطهير)")
+                st.subheader("💎 2. جدول البيانات النظيف (بعد التطهير):")
                 st.dataframe(df, use_container_width=True)
-        
-        # 💡 حماية وحساب عمود 'total_row_sales' تلقائياً لتجنب أي KeyError
-                if 'total_row_sales' not in df.columns:
-                    price_col = next((c for c in df.columns if 'سعر' in c or 'price' in c.lower()), None)
-                    qty_col = next((c for c in df.columns if 'كمية' in c or 'qty' in c.lower() or 'quantity' in c.lower()), None)
-            
-                    if price_col and qty_col:
-                        df['total_row_sales'] = pd.to_numeric(df[price_col], errors='coerce').fillna(0) * pd.to_numeric(df[qty_col], errors='coerce').fillna(1)
-                    else:
-                       df['total_row_sales'] = 0.0
-
                 st.metric(label="صافي الأرباح الحقيقية المتوقعة", value=f"{df['total_row_sales'].sum():,.2f} DA")
             with col_trash:
                 st.subheader("⚠️ 3. التكرارات والأخطاء المحذوفة:")
@@ -2177,30 +1979,18 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             st.markdown("---"); render_data_insights(df); st.markdown("---")
             st.subheader("📈 المخططات البيانية الملونة للولايات والمبيعات:")
             chart_col1, chart_col2 = st.columns(2)
-    
             with chart_col1:
-                st.write("📦 حجم المبيعات الإجمالي لكل منتج")
-                if 'product_name' in df.columns and 'total_row_sales' in df.columns:
-            # تجميع المبيعات حسب المنتج لتجنب تداخل الرسم البياني
-                    df_product = df.groupby('product_name')['total_row_sales'].sum().reset_index()
-                    st.bar_chart(data=df_product, x='product_name', y='total_row_sales')
-                else:
-                    st.info("عمود اسم المنتج غير متوفر في البيانات.")
-
+                st.write("💰 حجم المبيعات الإجمالي الحقيقي لكل منتج:")
+                st.bar_chart(data=df, x='product_name', y='total_row_sales', color='#00ffcc')
             with chart_col2:
                 wilaya_col = None
                 for col in df.columns:
                     if 'address' in col.lower() or 'wilaya' in col.lower() or 'ولاية' in col:
-                        wilaya_col = col
-                        break
-        
-                if wilaya_col and 'total_row_sales' in df.columns:
-                    st.write(f"🇩🇿 حجم الشحن والمبيعات حسب الولاية")
-            # تجميع المبيعات حسب الولاية
-                    df_wilaya = df.groupby(wilaya_col)['total_row_sales'].sum().reset_index()
-                    st.bar_chart(data=df_wilaya, x=wilaya_col, y='total_row_sales')
-                else:
-                    st.info("💡 لم يظهر مخطط فرز الولايات، نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya'.")
+                        wilaya_col = col; break
+                if wilaya_col:
+                    st.write(f"🗺️ حجم الشحن والمبيعات حسب الولايات الجزائرية:")
+                    st.bar_chart(data=df, x=wilaya_col, y='total_row_sales', color='#ff007f')
+                else: st.info("💡 نصيحة: سمّ عمود السكن في ملفك باسم 'wilaya' ليظهر مخطط فرز الولايات.")
             csv_buffer = df.to_csv(index=False).encode('utf-8')
             st.download_button(label="📥 تحميل ملف المبيعات المطهّر بالكامل", data=csv_buffer, file_name="cleaned_neon_sales.csv", mime="text/csv")
 
