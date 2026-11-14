@@ -33,6 +33,9 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+# استيراد أداة توليد الباركود المربع (QR Code) من ReportLab
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.barcode.qr import QrCodeWidget
 
 # استيراد أدوات إصلاح وعكس النصوص العربية لتظهر متصلة وباتجاه صحيح (RTL)
 try:
@@ -72,7 +75,7 @@ FONT_NAME = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
 
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data):
     """
-    دالة توليد فاتورة مبيعات رسمية بحجم A4 بالجدول الأزرق الاحترافي مع دعم كامل ومعالجة للـ RTL[cite: 1]
+    دالة توليد فاتورة مبيعات رسمية بحجم A4 بالجدول الأزرق الاحترافي مع دعم QR Code رقمي موثق[cite: 1]
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -137,7 +140,7 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
             pass
 
     elements.append(Paragraph(fix_arabic(f"<b>{shop_name}</b>"), title_style))
-    elements.append(Paragraph(fix_arabic("<b>فاتورة مبيعات وتأكيد طلبية رسمية</b>"), sub_title_style))
+    elements.append(Paragraph(fix_arabic("<b>فاتورة مبيعات وتأكيد طلبية رسمية وموثقة</b>"), sub_title_style))
     elements.append(Spacer(1, 10))
 
     # جدول بيانات المتجر والزبون (تصميم هندسي متناسق ومن اليمين لليسار)
@@ -158,7 +161,7 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     elements.append(t_info)
     elements.append(Spacer(1, 15))
 
-    # جدول تفاصيل المنتجات والأسعار (التصميم الأزرق الكلاسيكي المفضل)
+    # جدول تفاصيل المنتجات والأسعار (التصميم الأزرق الكلاسيكي Mفضل)
     table_data = [
         [
             Paragraph(fix_arabic("<b>الإجمالي (DA)</b>"), ParagraphStyle('H1', parent=cell_style_center, fontName=FONT_NAME, textColor=colors.whitesmoke)),
@@ -186,7 +189,7 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     elements.append(t_items)
     elements.append(Spacer(1, 15))
 
-    # جدول المجاميع النهائية (معالجة تامة للحقول السفلية لتجنب أي انعكاس)
+    # جدول المجاميع النهائية
     totals_data = [
         [Paragraph(f"<b>{product_total:,.2f} DA</b>", cell_style_right), Paragraph(fix_arabic("<b>المجموع الفرعي للمنتج:</b>"), cell_style_right)],
         [Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", cell_style_right), Paragraph(fix_arabic("<b>تكلفة الشحن والتوصيل:</b>"), cell_style_right)],
@@ -203,8 +206,49 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         ('TOPPADDING', (0,0), (-1,-1), 7),
         ('LINEABOVE', (0,2), (-1,2), 1, colors.HexColor('#003366')),
     ]))
-    
     elements.append(t_totals)
+    elements.append(Spacer(1, 20))
+
+    # === إضافة الختم الرقمي أو QR Code الديناميكي الموثق في أسفل الفاتورة ===
+    qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Phone: {customer_phone} | Product: {product_name} | Total: {final_total} DA | Status: Verified"
+    
+    qr = QrCodeWidget(qr_data_string)
+    qr.barWidth = 70
+    qr.barHeight = 70
+    qr.qrVersion = 1
+    
+    d = Drawing(70, 70)
+    d.add(qr)
+
+    verification_text_style = ParagraphStyle(
+        'VerifyText',
+        parent=styles['Normal'],
+        fontName=FONT_NAME,
+        fontSize=8.5,
+        textColor=colors.HexColor('#444444'),
+        alignment=2
+    )
+
+    qr_section_data = [
+        [
+            Paragraph(fix_arabic("<b>ختم التحقق الرقمي الموثق:</b><br/>هذه الفاتورة صادرة إلكترونياً ومؤمنة عبر نظام NEXUS CENTRAL GATE. يمنع تزويرها أو تعديل بياناتها وتخضع للسجل التجاري للمتجر."), verification_text_style),
+            d
+        ]
+    ]
+    t_qr = Table(qr_section_data, colWidths=[380, 120])
+    t_qr.setStyle(TableStyle([
+        ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f1f5f9')),
+        ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+        ('TOPPADDING', (0,0), (-1,-1), 8),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+        ('LEFTPADDING', (0,0), (-1,-1), 10),
+        ('RIGHTPADDING', (0,0), (-1,-1), 10),
+    ]))
+    
+    elements.append(t_qr)
+    
     doc.build(elements)
     buffer.seek(0)
     return buffer.getvalue()
