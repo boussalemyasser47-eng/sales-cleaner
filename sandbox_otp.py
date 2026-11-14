@@ -1,4 +1,3 @@
-# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
 # ========================================================
 # ========================================================
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
@@ -1753,7 +1752,19 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600, key="invoice_shipping_input")
             
         product_total = price * quantity
-        final_total = product_total + shipping_cost
+        # خيارات التخفيض والعروض
+        col_disc1, col_disc2 = st.columns(2)
+        with col_disc1:
+            discount_type = st.selectbox("نوع التخفيض:", ["بدون تخفيض", "مبلغ ثابت (دج)", "نسبة مئوية (%)"], key="invoice_discount_type_select")
+        with col_disc2:
+            if discount_type == "مبلغ ثابت (دج)":
+                discount_amount = st.number_input("قيمة التخفيض (دج):", min_value=0.0, value=0.0, step=50.0, key="invoice_fixed_discount_input")
+            elif discount_type == "نسبة مئوية (%)":
+                discount_pct = st.number_input("نسبة التخفيض (%):", min_value=0.0, max_value=100.0, value=0.0, step=5.0, key="invoice_pct_discount_input")
+                discount_amount = (product_total * discount_pct) / 100.0
+            else:
+                discount_amount = 0.0
+        final_total = max(0.0, (product_total + shipping_cost) - discount_amount)
         current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
         current_month = datetime.now().strftime("%Y-%m")
         st.markdown("---")
@@ -1770,7 +1781,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     conne.commit()
                     
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(
+                        shop_name, customer_name, customer_phone, customer_address, 
+                        product_name, price, quantity, product_total, shipping_cost, 
+                        final_total, logo_data, lang=selected_lang, discount=discount_amount
+                    )
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
                     st.session_state["last_active_customer"] = customer_name
                     st.session_state["last_active_phone"] = customer_phone
