@@ -2206,13 +2206,7 @@ if "choice" in locals() or "choice" in globals():
             )
             lang_code = "fr" if "الفرنسية" in selected_invoice_lang else "ar"
 
-            # --- مفتاح فريد وحصري لرفع لوغو المتجر لمنع أي تكرار في الصفحة ---
-            uploaded_logo = st.file_uploader(
-                "اختر لوغو متجرك (اختياري)", 
-                type=["png", "jpg", "jpeg"], 
-                key="sec4b_invoice_logo_uploader_unique"
-            )
-            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
+
 
 
         with col_right:
