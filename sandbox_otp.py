@@ -24,6 +24,29 @@ import time
 import streamlit as st
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+# 🏷️ دالة توليد الملصق الحراري (Thermal Label)
+def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date):
+    buffer = io.BytesIO()
+    # مقاس الملصق الحراري الصغير (عرض 4 إنش × طول 6 إنش أو ما يعادله بالنقاط)
+    from reportlab.lib.units import inch
+    c = canvas.Canvas(buffer, pagesize=(4 * inch, 6 * inch))
+    font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
+    
+    c.setFont(font_name, 14)
+    c.drawString(20, 380, fix_arabic(f"متجر: {shop_name}"))
+    c.setFont(font_name, 10)
+    c.drawString(20, 350, fix_arabic(f"التاريخ: {current_date}"))
+    c.drawString(20, 320, fix_arabic(f"الزبون: {customer_name}"))
+    c.drawString(20, 290, fix_arabic(f"الهاتف: {customer_phone}"))
+    c.drawString(20, 260, fix_arabic(f"العنوان: {customer_address}"))
+    c.drawString(20, 220, fix_arabic(f"المنتج: {product_name}"))
+    c.setFont(font_name, 12)
+    c.drawString(20, 180, fix_arabic(f"المبلغ الإجمالي: {final_total} دج"))
+    c.drawString(20, 130, fix_arabic("--- شكراً لتسوقكم معنا ---"))
+    
+    c.save()
+    buffer.seek(0)
+    return buffer.getvalue()
 ARABIC_FONT_AVAILABLE = False
 # 🔤 دالة معالجة النصوص العربية لـ ReportLab لضمان عدم تقطيع الحروف
 def fix_arabic(text):
