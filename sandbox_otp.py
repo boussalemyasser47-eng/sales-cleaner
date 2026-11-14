@@ -36,6 +36,67 @@ from reportlab.pdfbase.ttfonts import TTFont
 # استيراد أداة توليد الباركود المربع (QR Code) من ReportLab
 from reportlab.graphics.shapes import Drawing
 from reportlab.graphics.barcode.qr import QrCodeWidget
+def process_sales_file(uploaded_file):
+    """
+    دالة لقراءة ملفات المبيعات (CSV أو Excel) وتطهيرها من التكرارات والأسعار السالبة.
+    """
+    try:
+        if uploaded_file.name.endswith('.csv'):
+            df_raw = pd.read_csv(uploaded_file)
+        else:
+            df_raw = pd.read_excel(uploaded_file)
+    except Exception as e:
+        st.error(f"⚠️ خطأ في قراءة الملف: {e}")
+        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+
+    df = df_raw.copy()
+    
+    # توحيد أسماء الأعمدة لتجنب أخطاء المطابقة
+    df.columns = [str(c).strip().lower() for c in df.columns]
+    
+    price_col = next((c for c in df.columns if 'price' in c or 'سعر' in c), None)
+    qty_col = next((c for c in df.columns if 'qty' in c or 'quantity' in c or 'كمية' in c), None)
+    prod_col = next((c for c in df.columns if 'product' in c or 'item' in c or 'منتج' in c or 'سلعة' in c), df.columns[0])
+    
+    if not price_col:
+        df['price'] = 1000
+        price_col = 'price'
+    if not qty_col:
+        df['quantity'] = 1
+        qty_col = 'quantity'
+        
+    df['total_row_sales'] = pd.to_numeric(df[price_col], errors='coerce') * pd.to_numeric(df[qty_col], errors='coerce')
+    
+    # تصفية الأسعار السالبة
+    bad_prices = df[df['total_row_sales'] < 0]
+    df = df[df['total_row_sales'] >= 0]
+    
+    # تصفية التكرارات
+    duplicated_rows = df[df.duplicated()]
+    df = df.drop_duplicates()
+    
+    if 'product_name' not in df.columns:
+        df['product_name'] = df[prod_col]
+        
+    return df_raw, df, duplicated_rows, bad_prices
+
+def render_data_insights(df):
+    """
+    عرض ملخص إحصائي سريع للبيانات المطهرة.
+    """
+    if df.empty:
+        st.info("لا توجد بيانات كافية لعرض التحليلات.")
+        return
+    total_items_sold = df['quantity'].sum() if 'quantity' in df.columns else len(df)
+    avg_price = df['total_row_sales'].mean() if 'total_row_sales' in df.columns else 0
+    st.markdown(f"""
+    <div style="background: rgba(0, 255, 240, 0.05); border: 1px solid #00fff0; border-radius: 10px; padding: 15px; direction: rtl; text-align: right;">
+        <h4 style="color: #00fff0; margin-top: 0;">📊 إحصائيات سريعة للبيانات المطهرة:</h4>
+        <p style="color: #fff; margin: 5px 0;">• إجمالي عدد السطور النظيفة: <b>{len(df)} سطر</b></p>
+        <p style="color: #fff; margin: 5px 0;">• مجموع الوحدات المباعة: <b>{total_items_sold} وحدة</b></p>
+        <p style="color: #fff; margin: 5px 0;">• متوسط قيمة المبيعات للطلب الواحد: <b>{avg_price:,.2f} DA</b></p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # استيراد أدوات إصلاح وعكس النصوص العربية لتظهر متصلة وباتجاه صحيح (RTL)
 try:
