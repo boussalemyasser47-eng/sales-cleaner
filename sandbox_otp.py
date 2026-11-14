@@ -1688,7 +1688,7 @@ if is_boss_link:
                         if st.button("❌ تراجع", key=f"final_no_{current_email}"):
                             st.session_state[f"ask_confirm_{current_email}"] = False
                             st.rerun()
-            
+ 
             # 🛑 تم حذف زر المغادرة من هنا لئلا يتكرر مع كل تاجر!
 
         else: 
@@ -1700,15 +1700,38 @@ if is_boss_link:
         st.session_state["admin_master_logged"] = False
         st.rerun()
 # === الإضافات والتعديلات الجديدة لغرفة المالك ===
-# === الإضافات والتعديلات الجديدة لغرفة المالك ===
-
-# === الإضافات والتعديلات الجديدة لغرفة المالك ===
-
-
+# === إضافة مؤشر التراخيص الدائري المشع للرادار ===
+def render_neon_license_ring(email, days_left):
+    """
+    تقوم بتوليد واجهة HTML/SVG مخصصة تحتوي على حلقة نيوني متغيرة الحجم واللون ديناميكياً
+    تبدأ من الأصفر وتتحول للأحمر الناري كلما اقتربت الأيام من الصفر.
+    """
+    clamped_days = max(0, min(7, days_left))
+    percentage = clamped_days / 7.0
+    total_circumference = 113
+    stroke_offset = total_circumference * (1 - percentage)
+    
+    if clamped_days > 4:
+        glow_color = "#ffaa00"
+    elif clamped_days > 2:
+        glow_color = "#ff5500"
+    else:
+        glow_color = "#ff0055"
+        
+    html_template = f"""
+    <div style='display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(5,5,15,0.6); border-radius: 8px; margin-bottom: 8px; border-left: 4px solid {glow_color}; direction: rtl; text-align: right;'>
+        <div style='display: flex; align-items: center; gap: 15px;'>
+            <svg width="45" height="45" viewBox="0 0 45 45" style="transform: rotate(-90deg); filter: drop-shadow(0px 0px 6px {glow_color});">
+                <circle cx="22.5" cy="22.5" r="18" stroke="rgba(255,255,255,0.1)" stroke-width="3" fill="transparent" />
+                <circle cx="22.5" cy="22.5" r="18" stroke="{glow_color}" stroke-width="3.5" fill="transparent" 
+                        stroke-dasharray="{total_circumference}" stroke-dashoffset="{stroke_offset}" stroke-linecap="round" />
+            </svg>
+            <span style='color:#ffffff; font-size: 15px;'>⚠️ التاجر: <span style='color: #00fff0;'>{email}</span></span>
+        </div>
+        <span style='color:{glow_color}; font-weight:bold; font-size: 14px;'>متبقي: {days_left} أيام فقط!</span>
+    </div>
+    """
     return html_template
-
-
-
 # ========================================================
 # القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
 # ========================================================
