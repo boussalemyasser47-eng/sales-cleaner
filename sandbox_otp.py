@@ -256,7 +256,7 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
 
 def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date):
     """
-    دالة توليد ملصق الشحن الحراري (4x4 بوصة) بشكل هندسي منظم وداعم لاتصال الحروف العربية بدون انعكاس[cite: 1]
+    دالة توليد ملصق الشحن الحراري (4x4 بوصة) بشكل هندسي منظم وداعم لاتصال الحروف العربية بدون مربعات أو انعكاسات
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -285,30 +285,33 @@ def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, custome
         fontName=FONT_NAME,
         fontSize=9,
         textColor=colors.HexColor('#111111'),
-        alignment=2,
+        alignment=2, # محاذاة صحيحة من اليمين
         spaceAfter=4
     )
     label_price = ParagraphStyle(
         'LabelPrice',
         parent=label_normal,
         fontName=FONT_NAME,
-        fontSize=11,
+        fontSize=10,
         textColor=colors.HexColor('#990000'),
         alignment=1
     )
     
-    elements.append(Paragraph(fix_arabic(f"<b>{shop_name}</b>"), label_title))
-    elements.append(Paragraph(fix_arabic("<b>--- ملصق شحن وتوصيل حراري ---</b>"), ParagraphStyle('SubLbl', parent=label_normal, alignment=1, fontSize=8, textColor=colors.HexColor('#555555'))))
+    # اسم المتجر والعنوان الفرعي بدون رموز تعبيرية مسببة للمربعات
+    elements.append(Paragraph(fix_arabic(shop_name), label_title))
+    elements.append(Paragraph(fix_arabic("--- ملصق شحن وتوصيل حراري ---"), ParagraphStyle('SubLbl', parent=label_normal, alignment=1, fontSize=8, textColor=colors.HexColor('#555555'))))
     elements.append(Spacer(1, 4))
     
-    elements.append(Paragraph(fix_arabic(f"<b>📅 التاريخ:</b> {current_date}"), label_normal))
-    elements.append(Paragraph(fix_arabic(f"<b>👤 الزبون:</b> {customer_name}"), label_normal))
-    elements.append(Paragraph(fix_arabic(f"<b>📞 الهاتف:</b> {customer_phone}"), label_normal))
-    elements.append(Paragraph(fix_arabic(f"<b>📍 العنوان:</b> {customer_address}"), label_normal))
-    elements.append(Paragraph(fix_arabic(f"<b>📦 المنتج:</b> {product_name}"), label_normal))
+    # تنظيم الأسطر بفصل النصوص العربية المعالجة عن المتغيرات والأرقام لضمان عدم انعكاسها
+    elements.append(Paragraph(f"{current_date} : {fix_arabic('التاريخ')}", label_normal))
+    elements.append(Paragraph(f"{customer_name} : {fix_arabic('الزبون')}", label_normal))
+    elements.append(Paragraph(f"{customer_phone} : {fix_arabic('الهاتف')}", label_normal))
+    elements.append(Paragraph(f"{customer_address} : {fix_arabic('العنوان')}", label_normal))
+    elements.append(Paragraph(f"{product_name} : {fix_arabic('المنتج')}", label_normal))
     
     elements.append(Spacer(1, 4))
-    elements.append(Paragraph(fix_arabic(f"<b>💰 المبلغ الواجب تحصيله: {final_total:,.2f} DA</b>"), label_price))
+    price_str = f"{final_total:,.2f} DA"
+    elements.append(Paragraph(f"{price_str} : {fix_arabic('المبلغ الواجب تحصيله')}", label_price))
 
     doc.build(elements)
     buffer.seek(0)
