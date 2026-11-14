@@ -22,6 +22,44 @@ import urllib.parse
 import re
 import time
 import streamlit as st
+# 📄 دالة توليد الفاتورة الاحترافية (A4) مع دعم التخفيضات
+def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None, lang="ar", discount=0):
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
+    
+    if lang == "fr":
+        c.setFont(font_name, 16)
+        c.drawString(180, 750, fix_arabic(f"Facture de Vente - {shop_name}"))
+        c.setFont(font_name, 12)
+        c.drawString(50, 700, fix_arabic(f"Nom du Client : {customer_name}"))
+        c.drawString(50, 680, fix_arabic(f"Téléphone : {customer_phone}"))
+        c.drawString(50, 660, fix_arabic(f"Adresse : {customer_address}"))
+        c.drawString(50, 620, fix_arabic(f"Produit : {product_name} (Qté : {quantity})"))
+        c.drawString(50, 600, fix_arabic(f"Prix Unitaire : {price} DA | Sous-total : {product_total} DA"))
+        c.drawString(50, 580, fix_arabic(f"Frais de Livraison : {shipping_cost} DA"))
+        if discount > 0:
+            c.drawString(50, 560, fix_arabic(f"Remise appliquée : -{discount} DA"))
+        c.setFont(font_name, 14)
+        c.drawString(50, 520, fix_arabic(f"Total Général à Payer : {final_total} DA"))
+    else:
+        c.setFont(font_name, 16)
+        c.drawString(200, 750, fix_arabic(f"فاتورة مبيعات - {shop_name}"))
+        c.setFont(font_name, 12)
+        c.drawString(50, 700, fix_arabic(f"اسم الزبون: {customer_name}"))
+        c.drawString(50, 680, fix_arabic(f"رقم الهاتف: {customer_phone}"))
+        c.drawString(50, 660, fix_arabic(f"العنوان: {customer_address}"))
+        c.drawString(50, 620, fix_arabic(f"المنتج: {product_name} (الكمية: {quantity})"))
+        c.drawString(50, 600, fix_arabic(f"سعر الوحدة: {price} دج | المجموع: {product_total} دج"))
+        c.drawString(50, 580, fix_arabic(f"تكلفة الشحن: {shipping_cost} دج"))
+        if discount > 0:
+            c.drawString(50, 560, fix_arabic(f"تخفيض خاص: -{discount} دج"))
+        c.setFont(font_name, 14)
+        c.drawString(50, 520, fix_arabic(f"المبلغ الإجمالي النهائي: {final_total} دج"))
+    
+    c.save()
+    buffer.seek(0)
+    return buffer.getvalue()
 # تهيئة حالة عرض الصفحة الافتراضية
 if "current_view" not in st.session_state:
     st.session_state["current_view"] = "auth"
@@ -2153,3 +2191,34 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         
     # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
     conne.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
