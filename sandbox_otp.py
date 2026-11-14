@@ -24,6 +24,7 @@ import time
 import streamlit as st
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+ARABIC_FONT_AVAILABLE = False
 # 📄 دالة توليد الفاتورة الاحترافية (A4) مع دعم التخفيضات
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None, lang="ar", discount=0):
     buffer = io.BytesIO()
