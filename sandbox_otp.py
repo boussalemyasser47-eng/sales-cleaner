@@ -1923,9 +1923,9 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 discount_amount = (product_total * discount_pct) / 100.0
             else:
                 discount_amount = 0.0
-        final_total = max(0.0, (product_total + shipping_cost) - discount_amount)
-        current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
-        current_month = datetime.now().strftime("%Y-%m")
+                final_total = max(0.0, (product_total + shipping_cost) - discount_amount)
+                current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
+                current_month = datetime.now().strftime("%Y-%m")
         st.markdown("---")
         if st.button("🚀 إصدار وحفظ الفاتورة والملصق وخصم المخزون", key="issue_invoice_and_clear_stock_btn"):
             if not customer_name or not product_name: 
