@@ -123,17 +123,14 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         textColor=colors.HexColor('#222222'),
         alignment=1
     )
-
     cell_header_center = ParagraphStyle(
         'HeaderCenter',
         parent=styles['Normal'],
         fontName=FONT_NAME,
         fontSize=10,
-        fontName='Helvetica-Bold',
         textColor=colors.whitesmoke,
         alignment=1
     )
-
     # إضافة اللوغو إن وجد
     if logo_data:
         try:
