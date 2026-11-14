@@ -1,3 +1,4 @@
+# ========================================================
 # الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
 # ========================================================
 # ========================================================
@@ -722,245 +723,262 @@ def validate_and_process_registration(email, password):
 
 if not is_boss_link and "active_merchant_user" not in st.session_state:
     
-    # 📢 (1) إذا اختار التاجر صفحة الشكاوى المستقلة
+    # 📢 (1) إذا اختار التاجر الانتقال لصفحة تقديم الشكاوى المستقلة
     if st.session_state.get("current_view") == "complaint_page":
         
+        # 🎨 حقن تأثير الظهور الميكانيكي الانسيابي لصفحة الشكاوى
         st.markdown("""
             <style>
             @keyframes mechanicalPop {
-                0% { opacity: 0; transform: translateY(20px) scale(0.95); }
-                60% { opacity: 1; transform: translateY(-3px) scale(1.01); }
+                0% { opacity: 0; transform: translateY(25px) scale(0.93); }
+                60% { opacity: 1; transform: translateY(-5px) scale(1.02); }
                 100% { opacity: 1; transform: translateY(0) scale(1); }
             }
-            .mechanical-box {
-                animation: mechanicalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            .mechanical-complaint-container {
+                animation: mechanicalPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
                 border: 2px solid #ff0055;
                 border-radius: 20px;
-                padding: 30px;
+                padding: 35px;
                 background: linear-gradient(135deg, rgba(20, 5, 12, 0.96) 0%, rgba(5, 1, 3, 0.99) 100%);
-                box-shadow: 0 0 35px rgba(255, 0, 85, 0.4);
+                box-shadow: 0 0 40px rgba(255, 0, 85, 0.45);
                 direction: rtl;
                 text-align: right;
                 max-width: 600px;
-                margin: 30px auto;
+                margin: 40px auto;
             }
             </style>
         """, unsafe_allow_html=True)
 
-        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 20px; font-weight: 900;'>📢 منصة تسجيل الشكاوى والبلاغات الرسمية</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #aaa; font-size: 14px;'>املأ النموذج أدناه لتسجيل شكواك وسنرد عليك في أقرب وقت.</p>", unsafe_allow_html=True)
+        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 20px; font-weight: 900; text-shadow: 0 0 15px rgba(255,0,85,0.4);'>📢 منصة تسجيل الشكاوى والبلاغات الرسمية</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #aaa; font-size: 15px;'>قم بملء النموذج أدناه لتسجيل شكواك وسيقوم فريق الإدارة بمراجعتها وحلها في أقرب وقت.</p>", unsafe_allow_html=True)
         
-        st.markdown("<div class='mechanical-box'>", unsafe_allow_html=True)
+        # صندوق الشكاوى المستقل الذي يظهر بالحركة الميكانيكية
+        st.markdown("<div class='mechanical-complaint-container'>", unsafe_allow_html=True)
         
-        c_email = st.text_input("البريد الإلكتروني الخاص بك:", key="comp_email_input")
-        c_phone = st.text_input("رقم الهاتف:", key="comp_phone_input", placeholder="0655xxxxxxxx")
-        c_msg = st.text_area("تفاصيل الشكوى أو المشكلة:", key="comp_msg_input", placeholder="اكتب شكواك هنا...")
+        complaint_email = st.text_input("البريد الإلكتروني الخاص بك:", key="page_comp_email")
+        complaint_phone = st.text_input("رقم الهاتف:", key="page_comp_phone", placeholder="0655xxxxxxxx")
+        complaint_msg = st.text_area("تفاصيل الشكوى أو المشكلة:", key="page_comp_msg", placeholder="اكتب شكواك بوضوح هنا...")
         
-        if st.button("📤 إرسال الشكوى للإدارة", key="send_comp_action_btn"):
-            if not c_email or not c_phone or not c_msg:
-                st.error("⚠️ يرجى تعبئة جميع الحقول أولاً.")
+        if st.button("📤 إرسال الشكوى رسمياً للإدارة", key="page_send_complaint_btn"):
+            if not complaint_email or not complaint_msg or not complaint_phone:
+                st.error("⚠️ يرجى تعبئة جميع الحقول (البريد، الهاتف، وتفاصيل الشكوى) أولاً.")
             else:
-                admin_subject = f"🚨 شكوى جديدة من: {c_email}"
-                admin_body = f"البريد: {c_email}\nالهاتف: {c_phone}\n\nتفاصيل الشكوى:\n{c_msg}"
+                admin_subject = f"🚨 شكوى جديدة مرفوعة من التاجر: {complaint_email}"
+                admin_body = f"مرحباً بالمدير،\n\nوردتك شكوى رسمية جديدة من صفحة الشكاوى المستقلة:\nالبريد: {complaint_email}\nالهاتف: {complaint_phone}\n\nنص الشكوى:\n{complaint_msg}"
+                
+                # إرسال إشعار للبريد الإداري
                 send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_subject, admin_body, action_type="LOCK")
-                st.success("✅ تم إرسال شكواك بنجاح للإدارة!")
+                
+                st.success("✅ تم إرسال شكواك بنجاح إلى الإدارة وسنرد عليك قريباً جداً!")
                 time.sleep(2)
         
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("⬅️ العودة إلى صفحة تسجيل الدخول", key="back_to_auth_btn"):
+        if st.button("⬅️ العودة إلى صفحة تسجيل الدخول", key="page_back_to_auth_from_comp"):
             st.session_state["current_view"] = "auth"
             st.rerun()
             
         st.markdown("</div>", unsafe_allow_html=True)
-
-    # 🔑 (2) صفحة التسجيل والدخول الأصلية (تظهر وحدها ولا تظهر الشكاوى معها)
     else:
-        st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
-        
+        # ==========================================
+        # 🔑 (2) صفحة تسجيل الدخول والتسجيل الأصلية
+        # ==========================================
         col_side_left, col_center_box, col_side_right = st.columns(3)
         with col_center_box:
-            st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
-            st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
-            
-            auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
-            st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
-            
-            input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
-            input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
-            input_phone = st.text_input("📱 أدخل رقم الهاتف الخاص بك:", placeholder="مثال: 0655xxxxxxxx", key="merchant_phone").strip()
-            
-            # 🛑 التحقق من صحة رقم الهاتف (منع الحروف والتأكد من الطول)
-            if input_phone:
-                check_phone = input_phone.replace("+", "").strip()
-            
-                if not check_phone.isdigit():
-                    st.error("❌ خطأ: يرجى إدخال أرقام صحيحة فقط في حقل الهاتف (بدون أحرف أو رموز خاصة).")
-                elif len(check_phone) < 9:
-                    st.warning("⚠️ تنبيه: رقم الهاتف قصير جداً، تأكد من إدخال الرقم كاملاً.")
-                else:
-                    st.session_state["temp_reg_phone"] = input_phone
-            
-            clean_email = input_email.strip()
-            clean_pass = input_password.strip()
-            st.session_state["temp_reg_phone"] = input_phone
-            
-            if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-                user_package_choice = render_premium_neon_packages()
-                st.markdown("</div>", unsafe_allow_html=True)
-                
-                if "otp_pending_verification" not in st.session_state:
-                    st.session_state["otp_pending_verification"] = False
+            st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
+    
+            col_side_left, col_center_box, col_side_right = st.columns(3)
+            with col_center_box:
+        st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
+        
+        auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
+        st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
+        
+        input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
+        input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
+        input_phone = st.text_input("📱 أدخل رقم الهاتف الخاص بك:", placeholder="مثال: 0655xxxxxxxx", key="merchant_phone").strip()
+# 📱 حقل إدخال رقم الهاتف
 
-                if not st.session_state["otp_pending_verification"]:
-                    if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
+    # 🛑 التحقق من صحة رقم الهاتف (منع الحروف والتأكد من الطول)
+        if input_phone:
+            # إزالة علامة الزائد (+) المؤقتة للتحقق إذا كانت الأرقام صحيحة
+            check_phone = input_phone.replace("+", "").strip()
+        
+            if not check_phone.isdigit():
+                st.error("❌ خطأ: يرجى إدخال أرقام صحيحة فقط في حقل الهاتف (بدون أحرف أو رموز خاصة).")
+            elif len(check_phone) < 9:
+                st.warning("⚠️ تنبيه: رقم الهاتف قصير جداً، تأكد من إدخال الرقم كاملاً.")
+            else:
+            # تخزين الرقم في الجلسة لأنه صحيح ومستوفي الشروط
+                st.session_state["temp_reg_phone"] = input_phone
+        clean_email = input_email.strip()
+        clean_pass = input_password.strip()
+        st.session_state["temp_reg_phone"] = input_phone
+        if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
+            # استدعاء منصة العرض الهولوغرامية الفاخرة بالميزات الجديدة المحدثة 100%
+            user_package_choice = render_premium_neon_packages()
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+# تهيئة حالة الجلسة للـ OTP إن لم تكن موجودة
+            if "otp_pending_verification" not in st.session_state:
+                st.session_state["otp_pending_verification"] = False
+
+            if not st.session_state["otp_pending_verification"]:
+                if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
+                    validated_package = validate_and_process_registration(clean_email, clean_pass)
+                    if validated_package:
+                        generated_otp = f"{random.randint(100000, 999999)}"
+                        st.session_state["temp_reg_otp"] = generated_otp
+                        st.session_state["temp_reg_email"] = clean_email
+                        st.session_state["temp_reg_pass"] = clean_pass
+                        st.session_state["temp_reg_package"] = validated_package
                         
-                        # 🛑 شرط إضافي صارم: التأكد من وجود رقم هاتف وعدم وجود خطأ في طوله
-                        raw_phone = st.session_state.get("temp_reg_phone", "").replace("+", "").strip()
+                        # إرسال البريد عبر Gmail
+                        subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
+                        body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
                         
-                        if not input_phone:
-                            st.error("⚠️ يرجى إدخال رقم الهاتف أولاً!")
-                        elif not raw_phone.isdigit() or len(raw_phone) < 9:
-                            st.error("❌ لا يمكن إرسال الرمز: رقم الهاتف المدخل قصير أو غير صحيح. يرجى تصحيحه أولاً.")
-                        else:
-                            validated_package = validate_and_process_registration(clean_email, clean_pass)
-                            if validated_package:
-                                generated_otp = f"{random.randint(100000, 999999)}"
-                                st.session_state["temp_reg_otp"] = generated_otp
-                                st.session_state["temp_reg_email"]  = clean_email
-                                st.session_state["temp_reg_pass"]   = clean_pass
-                                st.session_state["temp_reg_package"] = validated_package
-                                
-                                subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
-                                body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
-                                
-                                if send_gmail_notification(clean_email, subject, body):
-                                    st.session_state["otp_pending_verification"] = True
-                                    st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
-                                    time.sleep(0.5)
-                                    st.rerun()
-
-                else:
-                    if "otp_countdown" not in st.session_state:
-                        st.session_state["otp_countdown"] = 60
-
-                    st.markdown("""
-                        <style>
-                        .otp-modal-container {
-                            max-width: 500px;
-                            margin: 20px auto;
-                            background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%);
-                            border: 2px solid #00fff0;
-                            border-radius: 20px;
-                            padding: 30px;
-                            box-shadow: 0 0 40px rgba(0, 255, 240, 0.4);
-                            direction: rtl;
-                            text-align: right;
-                        }
-                        div[data-testid="stTextInput"] input {
-                            text-align: center !important;
-                            font-size: 28px !important;
-                            letter-spacing: 15px !important;
-                            font-weight: 900 !important;
-                            color: #00fff0 !important;
-                        }
-                        </style>
-                    """, unsafe_allow_html=True)
-
-                    target_mail = st.session_state.get('temp_reg_email', 'البريد الإلكتروني')
-
-                    st.markdown(f"""
-                        <div class="otp-modal-container">
-                            <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
-                            <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 15px;">
-                                تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني:<br>
-                                <span style="color: #ff00ff; font-weight: bold;">{target_mail}</span>
-                            </p>
-                        </div>
-                    """, unsafe_allow_html=True)
-
-                    entered_otp = st.text_input(
-                        "أدخل الرمز المكون من 6 أرقام هنا:", 
-                        max_chars=6, 
-                        placeholder="------", 
-                        key="smart_otp_paste_input"
-                    )
-
-                    if st.session_state["otp_countdown"] > 0:
-                        st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 14px; font-weight: bold; margin: 10px 0;'>⏳ إعادة إرسال الرمز خلال: {st.session_state['otp_countdown']} ثانية</p>", unsafe_allow_html=True)
-                    else:
-                        if st.button("🔄 إعادة إرسال الرمز الجديد", key="resend_otp_btn"):
-                            generated_otp = f"{random.randint(100000, 999999)}"
-                            st.session_state["temp_reg_otp"] = generated_otp
-                            st.session_state["otp_countdown"] = 60
-                            
-                            subject = "رمز التحقق (OTP) الجديد لإنشاء حساب متجرك"
-                            body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
-                            if send_gmail_notification(target_mail, subject, body, action_type="OTP"):
-                                st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
-                                time.sleep(0.5)
-                                st.rerun()
-
-                    st.markdown("<p style='text-align: center; color: #888899; font-size: 12px;'>💡 يمكنك نسخ الرمز من بريدك واللصق هنا مباشرة ليتم تعبئته تلقائياً.</p>", unsafe_allow_html=True)
-
-                    col_verify_btn, col_cancel_btn = st.columns(2)
-                    with col_verify_btn:
-                        if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة", key="verify_otp_submit_btn"):
-                            if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
-                                reg_email = st.session_state["temp_reg_email"]
-                                reg_pass = st.session_state["temp_reg_pass"]
-                                reg_pkg = st.session_state["temp_reg_package"]
-                                reg_phone = st.session_state.get("temp_reg_phone", "")
-                                reg_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                                
-                                conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
-                                cursor_reg = conn_reg.cursor()
-                                cursor_reg.execute(
-                                    "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)", 
-                                    (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
-                                )
-                                conn_reg.commit()
-                                conn_reg.close()
-                                
-                                st.session_state["otp_pending_verification"] = False
-                                st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
-                                time.sleep(1)
-                                st.rerun()
-                            else:
-                                st.error("❌ الرمز غير صحيح، تأكد من إدخال الأرقام الستة بدقة.")
-                                
-                    with col_cancel_btn:
-                        if st.button("❌ إلغاء والعودة", key="cancel_otp_btn"):
-                            st.session_state["otp_pending_verification"] = False
-                            st.session_state.pop("otp_countdown", None)
+                        if send_gmail_notification(clean_email, subject, body):
+                            st.session_state["otp_pending_verification"] = True
+                            st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
+                            time.sleep(0.5)
                             st.rerun()
 
-                    if st.session_state.get("otp_countdown", 0) > 0:
-                        time.sleep(1)
-                        st.session_state["otp_countdown"] -= 1
-                        st.rerun()
             else:
-                st.markdown("</div>", unsafe_allow_html=True)
-                if st.button("🔑 تسجيل الدخول إلى المتجر"):
-                    if clean_email == "" or clean_pass == "": 
-                        st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
-                    else:
-                        conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        cursor_login = conn_login.cursor()
-                        cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
-                        user_status_row = cursor_login.fetchone()
-                        conn_login.close()
+                # 🌟 تهيئة العداد التنازلي (60 ثانية)
+                if "otp_countdown" not in st.session_state:
+                    st.session_state["otp_countdown"] = 60
+
+                # 🌟 تصميم النافذة المنبثقة المستطيلة في المنتصف
+                st.markdown("""
+                    <style>
+                    .otp-modal-container {
+                        max-width: 500px;
+                        margin: 20px auto;
+                        background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%);
+                        border: 2px solid #00fff0;
+                        border-radius: 20px;
+                        padding: 30px;
+                        box-shadow: 0 0 40px rgba(0, 255, 240, 0.4);
+                        direction: rtl;
+                        text-align: right;
+                    }
+                    div[data-testid="stTextInput"] input {
+                        text-align: center !important;
+                        font-size: 28px !important;
+                        letter-spacing: 15px !important;
+                        font-weight: 900 !important;
+                        color: #00fff0 !important;
+                    }
+                    </style>
+                """, unsafe_allow_html=True)
+
+                target_mail = st.session_state.get('temp_reg_email', 'البريد الإلكتروني')
+
+                st.markdown(f"""
+                    <div class="otp-modal-container">
+                        <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
+                        <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 15px;">
+                            تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني:<br>
+                            <span style="color: #ff00ff; font-weight: bold;">{target_mail}</span>
+                        </p>
+                    </div>
+                """, unsafe_allow_html=True)
+
+                # 🔢 حقل إدخال ذكي واحد يدعم اللصق الفوري للـ 6 أرقام
+                entered_otp = st.text_input(
+                    "أدخل الرمز المكون من 6 أرقام هنا:", 
+                    max_chars=6, 
+                    placeholder="------", 
+                    key="smart_otp_paste_input"
+                )
+
+                # ⏱️ عرض حالة العداد التنازلي (بدون إيقاف الكود هنا!)
+                if st.session_state["otp_countdown"] > 0:
+                    st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 14px; font-weight: bold; margin: 10px 0;'>⏳ إعادة إرسال الرمز خلال: {st.session_state['otp_countdown']} ثانية</p>", unsafe_allow_html=True)
+                else:
+                    if st.button("🔄 إعادة إرسال الرمز الجديد", key="resend_otp_btn"):
+                        generated_otp = f"{random.randint(100000, 999999)}"
+                        st.session_state["temp_reg_otp"] = generated_otp
+                        st.session_state["otp_countdown"] = 60
                         
-                        if user_status_row:
-                            if "🟢 مفعّل ونشط" in user_status_row:
-                                st.session_state["active_merchant_user"] = clean_email
-                                st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
-                                time.sleep(0.5); st.rerun()
-                            else:
-                                st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
+                        subject = "رمز التحقق (OTP) الجديد لإنشاء حساب متجرك"
+                        body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
+                        if send_gmail_notification(target_mail, subject, body, action_type="OTP"):
+                            st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
+                            time.sleep(0.5)
+                            st.rerun()
+
+                st.markdown("<p style='text-align: center; color: #888899; font-size: 12px;'>💡 يمكنك نسخ الرمز من بريدك واللصق هنا مباشرة ليتم تعبئته تلقائياً.</p>", unsafe_allow_html=True)
+
+                # 🔘 رسم الأزرار أولاً قبل أي تحديث للصفحة لضمان ظهورها دائماً!
+                col_verify_btn, col_cancel_btn = st.columns(2)
+                with col_verify_btn:
+                    if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة", key="verify_otp_submit_btn"):
+                        if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
+
+                            reg_email = st.session_state["temp_reg_email"]
+                            reg_pass = st.session_state["temp_reg_pass"]
+                            reg_pkg = st.session_state["temp_reg_package"]
+                            
+                            # التقاط رقم الهاتف المخزن مؤقتاً
+                            reg_phone = st.session_state.get("temp_reg_phone", "")
+                            
+                            # حفظ وقت التسجيل الحالي
+                            reg_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            
+                            conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
+                            cursor_reg = conn_reg.cursor()
+                            
+                            # حفظ البيانات مع الهاتف والتاريخ
+                            cursor_reg.execute(
+                                "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)", 
+                                (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
+                            )
+                            
+                            conn_reg.commit()
+                            conn_reg.close()
+                            
+                            st.session_state["otp_pending_verification"] = False
+                            st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
+                            time.sleep(1)
+                            st.rerun()
                         else:
-                            st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
+                            st.error("❌ الرمز غير صحيح، تأكد من إدخال الأرقام الستة بدقة.")
+                            
+                with col_cancel_btn:
+                    if st.button("❌ إلغاء والعودة", key="cancel_otp_btn"):
+                        st.session_state["otp_pending_verification"] = False
+                        st.session_state.pop("otp_countdown", None)
+                        st.rerun()
+
+                # 🔄 تشغيل نبضة العداد التنازلي في نهاية الصفحة بعد رسم كل الأزرار
+                if st.session_state.get("otp_countdown", 0) > 0:
+                    time.sleep(1)
+                    st.session_state["otp_countdown"] -= 1
+                    st.rerun()
+        else:
+            st.markdown("</div>", unsafe_allow_html=True)
+            if st.button("🔑 تسجيل الدخول إلى المتجر"):
+                if clean_email == "" or clean_pass == "": st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
+                else:
+                    conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    cursor_login = conn_login.cursor()
+                    cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
+                    user_status_row = cursor_login.fetchone()
+                    conn_login.close()
+                    
+                    if user_status_row:
+                        if "🟢 مفعّل ونشط" in user_status_row:
+                            st.session_state["active_merchant_user"] = clean_email
+                            st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
+                            time.sleep(0.5); st.rerun()
+                        else:
+                            st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
+                    else:
+                        st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
+            # ... [حقول البريد، الكلمة السرية، رقم الهاتف، والباقات الخاصة بك هنا] ...
             
-            # 📢 زر الانتقال إلى صفحة الشكاوى المستقلة (موضع آمن في أسفل الصندوق الأوسط)
+            # 📢 زر الانتقال لصفحة الشكاوى المستقلة (موضع آمن في أسفل الصندوق الأوسط)
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("📢 تسجيل شكوى أو بلاغ جديد", key="go_to_complaint_page_btn"):
                 st.session_state["current_view"] = "complaint_page"
@@ -1230,20 +1248,13 @@ if is_boss_link:
                 
                 # 🧠 [قراءة حالة اللون الديناميكي المخصصة للتاجر من الجلسة أو وضع اللون الافتراضي النيوني]
                 current_border_color = st.session_state.get(f"border_color_{current_email}", "#00fff0")
-                current_phone = row.get('phone', 'غير متوفر')
-                if not current_phone or current_phone == 'nan':
-                    current_phone = 'غير مسجل' 
-# 🧠 قراءة حالة اللون الديناميكي للتاجر
-                current_border_color = st.session_state.get(f"border_color_{current_email}", "#00fff0")
-# 🎨 تحديث البطاقة لتشمل رقم الهاتف بوضوح
+                
                 st.markdown(f"""
                 <div style="border: 2px solid {current_border_color}; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right; box-shadow: 0px 0px 15px {current_border_color}40;">
-                    <p style="margin:0 0 8px 0; font-weight:700;">💻 البريد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر: <span style="color: #ff00ff;">{current_pass}</span> | 📱 الهاتف: <span style="color: #ffaa00;">{current_phone}</span></p>
-                    <p style="margin:0;">📊 الحالة: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة: <span style="color:{current_border_color}; font-weight:bold;">{current_package}</span></p>
+                    <p style="margin:0 0 8px 0; font-weight:700;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
+                    <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: <span style="color:{current_border_color}; font-weight:bold;">{current_package}</span></p>
                 </div>
                 """, unsafe_allow_html=True)
-                
-
 
                 col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
                 with col_1:
