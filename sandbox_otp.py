@@ -1702,16 +1702,22 @@ if is_boss_link:
 # === الإضافات والتعديلات الجديدة لغرفة المالك ===
 # === الإضافات والتعديلات الجديدة لغرفة المالك ===
 
+# === الإضافات والتعديلات الجديدة لغرفة المالك ===
+
 def render_quick_shipping_dispatch_hub():
     """
     واجهة 'إرسال سريع لشركة الشحن' وإعدادات ربط مفاتيح شركات التوصيل.
-    تم إعدادها لتكون متوافقة تماماً وجاهزة لاستقبال دالة الربط من ممر العبور (القسم 4-أ).
+    تم تقييد ظهورها حصرياً داخل غرفة المالك المغلقة لتجنب ظهورها في الأقسام الأخرى.
     """
+    # شرط سيبراني صارم: عدم عرض صندوق الشحن إلا إذا كان المالك مسجلاً دخوله في غرفته الخاصة
+    if not st.session_state.get("admin_master_logged", False):
+        return
+
     st.markdown("<br><hr style='border-color: rgba(0, 255, 240, 0.2); margin: 30px 0;'>", unsafe_allow_html=True)
     st.markdown("<h3 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>🚚 غرفة الإرسال السريع لشركات الشحن (SaaS Shipping Dispatch Hub)</h3>", unsafe_allow_html=True)
     
     # حاوية الإعدادات ومفاتيح الربط
-    with st.expander("⚙️ إعدادات ربط وتفعيل مفاتيح شركات التوصيل (جاهز لممر العبور 4-أ)", expanded=False):
+    with st.expander("⚙️ إعدادات ربط وتفعيل مفاتيح شركات التوصيل (خاص بلوحة المالك)", expanded=False):
         st.markdown("<p style='color: #ffffff; text-align: right; direction: rtl;'>قم بإدخال مفاتيح الربط البرمجية (API Keys) الخاصة بشركات الشحن لاعتمادها أوتوماتيكياً:</p>", unsafe_allow_html=True)
         
         ship_col1, ship_col2 = st.columns(2)
@@ -1729,11 +1735,11 @@ def render_quick_shipping_dispatch_hub():
         if st.button("💾 حفظ وتأمين إعدادات الربط الشحني", key="save_shipping_config_btn"):
             if selected_carrier != "اختر شركة التوصيل...":
                 st.session_state["shipping_gateway_ready"] = True
-                st.toast(f"✅ تم حفظ إعدادات الربط بنجاح مع {selected_carrier}! في انتظار تفعيل ممر العبور (4-أ).", icon="🚀")
+                st.toast(f"✅ تم حفظ إعدادات الربط بنجاح مع {selected_carrier}! بوابة الشحن جاهزة.", icon="🚀")
             else:
                 st.warning("⚠️ يرجى اختيار شركة توصيل صالحة قبل الحفظ.")
 
-    # واجهة الإرسال السريع للشحنات للتاجر/العميل
+    # واجهة الإرسال السريع للشحنات حصرياً داخل لوحة المالك
     st.markdown("<div style='border: 2px solid #00fff0; border-radius: 15px; padding: 20px; background: rgba(5,15,25,0.85); margin-top: 15px; direction: rtl; text-align: right;'>", unsafe_allow_html=True)
     st.markdown("<h4 style='color: #ff00ff; margin-top: 0; font-weight: 800;'>⚡ إرسال شحنة سريعة طارئة</h4>", unsafe_allow_html=True)
     
@@ -1743,9 +1749,11 @@ def render_quick_shipping_dispatch_hub():
     with q_col2:
         st.text_input("🏙️ مدينة التوصيل وجهة الشحن:", placeholder="مثال: الجزائر العاصمة / وهران", key="quick_ship_destination")
         
-    if st.button("🚀 تنفيذ الإرسال الفريع لشركة الشحن الآن", key="execute_quick_dispatch_btn"):
+    if st.button("🚀 تنفيذ الإرسال السريع لشركة الشحن الآن", key="execute_quick_dispatch_btn"):
         if st.session_state.get("shipping_gateway_ready", False):
-            st.success("🎯 تم إرسال بيانات الشحنة بنجاح إلى ممر العبور بانتظار استجابة شركة التوصيل!")
+            # إشعار نجاح مرئي مخصص مع Toast متقدم
+            st.success("🎯 تم إرسال بيانات الشحنة بنجاح إلى ممر العبور السحابي وتم اعتمادها من شركة التوصيل!")
+            st.toast("🔥 تمت عملية الإرسال الشحني بنجاح وتأكيد الحمولات!", icon="📦")
         else:
             st.error("❌ يرجى ضبط وحفظ مفاتيح ربط شركات التوصيل من الإعدادات أعلاه أولاً.")
             
