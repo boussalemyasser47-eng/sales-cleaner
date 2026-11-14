@@ -256,7 +256,7 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
 
 def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date):
     """
-    دالة توليد ملصق الشحن الحراري (4x4 بوصة) بشكل هندسي منظم وداعم لاتصال الحروف العربية بدون مربعات أو انعكاسات
+    دالة توليد ملصق الشحن الحراري (4x4 بوصة) بشكل هندسي منظم، مع إطار خارجي وخط فاصل أنيق[cite: 1]
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -277,7 +277,7 @@ def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, custome
         fontSize=12,
         textColor=colors.HexColor('#000000'),
         alignment=1,
-        spaceAfter=4
+        spaceAfter=2
     )
     label_normal = ParagraphStyle(
         'LabelNormal',
@@ -285,33 +285,59 @@ def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, custome
         fontName=FONT_NAME,
         fontSize=9,
         textColor=colors.HexColor('#111111'),
-        alignment=2, # محاذاة صحيحة من اليمين
+        alignment=2,
         spaceAfter=4
     )
     label_price = ParagraphStyle(
         'LabelPrice',
         parent=label_normal,
         fontName=FONT_NAME,
-        fontSize=10,
+        fontSize=10.5,
         textColor=colors.HexColor('#990000'),
         alignment=1
     )
     
-    # اسم المتجر والعنوان الفرعي بدون رموز تعبيرية مسببة للمربعات
-    elements.append(Paragraph(fix_arabic(shop_name), label_title))
-    elements.append(Paragraph(fix_arabic("--- ملصق شحن وتوصيل حراري ---"), ParagraphStyle('SubLbl', parent=label_normal, alignment=1, fontSize=8, textColor=colors.HexColor('#555555'))))
-    elements.append(Spacer(1, 4))
+    # محتوى العناصر الداخلية للملصق
+    inner_elements = []
     
-    # تنظيم الأسطر بفصل النصوص العربية المعالجة عن المتغيرات والأرقام لضمان عدم انعكاسها
-    elements.append(Paragraph(f"{current_date} : {fix_arabic('التاريخ')}", label_normal))
-    elements.append(Paragraph(f"{customer_name} : {fix_arabic('الزبون')}", label_normal))
-    elements.append(Paragraph(f"{customer_phone} : {fix_arabic('الهاتف')}", label_normal))
-    elements.append(Paragraph(f"{customer_address} : {fix_arabic('العنوان')}", label_normal))
-    elements.append(Paragraph(f"{product_name} : {fix_arabic('المنتج')}", label_normal))
+    # اسم المتجر والعنوان الفرعي
+    inner_elements.append(Paragraph(fix_arabic(shop_name), label_title))
+    inner_elements.append(Paragraph(fix_arabic("--- ملصق شحن وتوصيل حراري ---"), ParagraphStyle('SubLbl', parent=label_normal, alignment=1, fontSize=8, textColor=colors.HexColor('#555555'))))
     
-    elements.append(Spacer(1, 4))
+    # خط فاصل أنيق تحت اسم المتجر والعنوان الفرعي
+    inner_elements.append(Spacer(1, 2))
+    divider_table = Table([[""]], colWidths=[250], rowHeights=[1])
+    divider_table.setStyle(TableStyle([
+        ('LINEABOVE', (0,0), (-1,-1), 1, colors.HexColor('#333333')),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+        ('TOPPADDING', (0,0), (-1,-1), 0),
+    ]))
+    inner_elements.append(divider_table)
+    inner_elements.append(Spacer(1, 6))
+    
+    # بيانات الشحن والزبون منظمة من اليمين لليسار
+    inner_elements.append(Paragraph(f"{current_date} : {fix_arabic('التاريخ')}", label_normal))
+    inner_elements.append(Paragraph(f"{customer_name} : {fix_arabic('الزبون')}", label_normal))
+    inner_elements.append(Paragraph(f"{customer_phone} : {fix_arabic('الهاتف')}", label_normal))
+    inner_elements.append(Paragraph(f"{customer_address} : {fix_arabic('العنوان')}", label_normal))
+    inner_elements.append(Paragraph(f"{product_name} : {fix_arabic('المنتج')}", label_normal))
+    
+    inner_elements.append(Spacer(1, 4))
     price_str = f"{final_total:,.2f} DA"
-    elements.append(Paragraph(f"{price_str} : {fix_arabic('المبلغ الواجب تحصيله')}", label_price))
+    inner_elements.append(Paragraph(f"{price_str} : {fix_arabic('المبلغ الواجب تحصيله')}", label_price))
+
+    # وضع العناصر داخل جدول يحيط به إطار خارجي (Border) واضح للطباعة
+    outer_table = Table([[inner_elements]], colWidths=[260])
+    outer_table.setStyle(TableStyle([
+        ('BOX', (0,0), (-1,-1), 1.5, colors.HexColor('#000000')),
+        ('TOPPADDING', (0,0), (-1,-1), 10),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+        ('LEFTPADDING', (0,0), (-1,-1), 10),
+        ('RIGHTPADDING', (0,0), (-1,-1), 10),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#ffffff')),
+    ]))
+    
+    elements.append(outer_table)
 
     doc.build(elements)
     buffer.seek(0)
