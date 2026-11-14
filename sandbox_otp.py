@@ -23,6 +23,44 @@ import urllib.parse
 import re
 import time
 import streamlit as st
+# 📄 1. دالة توليد الفاتورة الاحترافية (A4) مع دعم التخفيضات
+def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None, lang="ar", discount=0):
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
+    
+    if lang == "fr":
+        c.setFont(font_name, 16)
+        c.drawString(180, 750, fix_arabic(f"Facture de Vente - {shop_name}"))
+        c.setFont(font_name, 12)
+        c.drawString(50, 700, fix_arabic(f"Nom du Client : {customer_name}"))
+        c.drawString(50, 680, fix_arabic(f"Téléphone : {customer_phone}"))
+        c.drawString(50, 660, fix_arabic(f"Adresse : {customer_address}"))
+        c.drawString(50, 620, fix_arabic(f"Produit : {product_name} (Qté : {quantity})"))
+        c.drawString(50, 600, fix_arabic(f"Prix Unitaire : {price} DA | Sous-total : {product_total} DA"))
+        c.drawString(50, 580, fix_arabic(f"Frais de Livraison : {shipping_cost} DA"))
+        if discount > 0:
+            c.drawString(50, 560, fix_arabic(f"Remise appliquée : -{discount} DA"))
+        c.setFont(font_name, 14)
+        c.drawString(50, 520, fix_arabic(f"Total Général à Payer : {final_total} DA"))
+    else:
+        c.setFont(font_name, 16)
+        c.drawString(200, 750, fix_arabic(f"فاتورة مبيعات - {shop_name}"))
+        c.setFont(font_name, 12)
+        c.drawString(50, 700, fix_arabic(f"اسم الزبون: {customer_name}"))
+        c.drawString(50, 680, fix_arabic(f"رقم الهاتف: {customer_phone}"))
+        c.drawString(50, 660, fix_arabic(f"العنوان: {customer_address}"))
+        c.drawString(50, 620, fix_arabic(f"المنتج: {product_name} (الكمية: {quantity})"))
+        c.drawString(50, 600, fix_arabic(f"سعر الوحدة: {price} دج | المجموع: {product_total} دج"))
+        c.drawString(50, 580, fix_arabic(f"تكلفة الشحن: {shipping_cost} دج"))
+        if discount > 0:
+            c.drawString(50, 560, fix_arabic(f"تخفيض خاص: -{discount} دج"))
+        c.setFont(font_name, 14)
+        c.drawString(50, 520, fix_arabic(f"المبلغ الإجمالي النهائي: {final_total} دج"))
+    
+    c.save()
+    buffer.seek(0)
+    return buffer.getvalue()
 # تهيئة حالة عرض الصفحة الافتراضية
 if "current_view" not in st.session_state:
     st.session_state["current_view"] = "auth"
@@ -1770,7 +1808,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     conne.commit()
                     
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang=selected_lang, discount=discount_amount)
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
                     st.session_state["last_active_customer"] = customer_name
                     st.session_state["last_active_phone"] = customer_phone
@@ -1911,6 +1949,18 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         </div>
                         """
                         st.write(neon_html, unsafe_allow_html=True)
+                # خيارات التخفيض والعروض
+    col_disc1, col_disc2 = st.columns(2)
+    with col_disc1:
+        discount_type = st.selectbox("نوع التخفيض:", ["بدون تخفيض", "مبلغ ثابت (دج)", "نسبة مئوية (%)"], key="invoice_discount_type_select")
+    with col_disc2:
+        if discount_type == "مبلغ ثابت (دج)":
+            discount_amount = st.number_input("قيمة التخفيض (دج):", min_value=0.0, value=0.0, step=50.0, key="invoice_fixed_discount_input")
+        elif discount_type == "نسبة مئوية (%)":
+            discount_pct = st.number_input("نسبة التخفيض (%):", min_value=0.0, max_value=100.0, value=0.0, step=5.0, key="invoice_pct_discount_input")
+            discount_amount = (product_total * discount_pct) / 100.0
+        else:
+            discount_amount = 0.0
                 
                 render_neon_stock_fire_bar(stock_df)
                 
