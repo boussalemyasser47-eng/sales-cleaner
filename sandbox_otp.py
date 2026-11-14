@@ -1852,7 +1852,6 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                     st.session_state["last_active_product"] = product_name
                     st.session_state["last_active_total"] = final_total
                     st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
-
         if "generated_pdf_invoice" in st.session_state:
             col_btn1, col_btn2 = st.columns(2)
             with col_btn1: 
