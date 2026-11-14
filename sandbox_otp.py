@@ -2280,59 +2280,57 @@ if "choice" in locals() or "choice" in globals():
         </div>
         """
         st.markdown(neon_card_html, unsafe_allow_html=True)
+# === إضافات نظام صانع الفواتير والملصقات الحرارية ===
+    # دالة حاسبة الأرباح الصافية وتقارير الأداء المالي (Net Profit & P&L Calculator)
+    st.markdown("---")
+    st.subheader("📊 حاسبة الأرباح الصافية وتقارير الأداء المالي (Net Profit & P&L)")
 
+    with st.expander("💡 افتح لوحة حاسبة الأرباح وتحليل الأداء المالي المتقدم", expanded=True):
+        p_col1, p_col2 = st.columns(2)
+        
+        with p_col1:
+            calc_buy_price = st.number_input("سعر شراء السلعة (DA):", min_value=0.0, value=700.0, step=50.0, key="calc_buy_price_input")
+            calc_sell_price = st.number_input("سعر بيع السلعة للزبون (DA):", min_value=0.0, value=float(price) if 'price' in locals() else 1200.0, step=50.0, key="calc_sell_price_input")
+            calc_shipping_cost = st.number_input("تكلفة التوصيل الفعلية (DA):", min_value=0.0, value=float(shipping_cost) if 'shipping_cost' in locals() else 600.0, step=50.0, key="calc_shipping_cost_input")
+            
+        with p_col2:
+            calc_return_rate = st.slider("نسبة الإرجاع المتوقعة (Retour %):", min_value=0, max_value=50, value=10, step=1, key="calc_return_rate_slider")
+            calc_ads_cost = st.number_input("تلفة الإعلانات التقديرية للقطعة (DA):", min_value=0.0, value=150.0, step=10.0, key="calc_ads_cost_input")
+            calc_other_expenses = st.number_input("مصاريف تشغيلية أخرى (تغليف، تلف...) (DA):", min_value=0.0, value=50.0, step=10.0, key="calc_other_expenses_input")
+
+        # حسابات الأرباح الصافية مع أخذ نسبة الإرجاع بعين الاعتبار
+        effective_return_penalty = (calc_shipping_cost * 1.5) * (calc_return_rate / 100.0)
+        gross_profit = calc_sell_price - calc_buy_price
+        total_expenses = calc_shipping_cost + calc_ads_cost + calc_other_expenses + effective_return_penalty
+        net_profit_per_piece = gross_profit - total_expenses
+        profit_margin_percent = (net_profit_per_piece / calc_sell_price * 100) if calc_sell_price > 0 else 0
+
+        # عرض النتائج في كرت زجاجي نيوكي مشع متناسق مع واجهة المعاينة
+        net_card_color = "#00fff0" if net_profit_per_piece > 0 else "#ff4d4d"
+        
+        net_profit_card_html = f"""
+        <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; border: 1px solid rgba(0, 255, 240, 0.2); box-shadow: 0 0 20px rgba(0, 255, 240, 0.08); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: right; direction: rtl; margin-top: 15px;">
+            <div style="font-size: 16px; font-weight: bold; color: #00fff0; border-bottom: 1px dashed rgba(0, 255, 240, 0.3); padding-bottom: 8px; margin-bottom: 12px;">
+                🧮 تقرير تحليل الأداء المالي وصافي الربح للقطعة الواحدة
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #e0e0e0; font-size: 14px;">
+                <span>إجمالي الربح الإسمي (قبل المصاريف):</span>
+                <span style="color: #fff; font-weight: bold;">{gross_profit:,.2f} DA</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #e0e0e0; font-size: 14px;">
+                <span>إجمالي التكاليف والمصاريف (شحن + إعلانات + نسبة الإرجاع):</span>
+                <span style="color: #ff9999; font-weight: bold;">-{total_expenses:,.2f} DA</span>
+            </div>
+            <div style="background: rgba(0, 255, 240, 0.05); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0, 255, 240, 0.15); margin-top: 10px;">
+                <span style="font-size: 15px; font-weight: bold; color: #fff;">💎 صافي الربح الحقيقي للقطعة:</span>
+                <span style="font-size: 20px; font-weight: bold; color: {net_card_color}; text-shadow: 0 0 12px {net_card_color};">{net_profit_per_piece:,.2f} DA ({profit_margin_percent:.1f}%)</span>
+            </div>
+        </div>
+        """
+        st.markdown(net_profit_card_html, unsafe_allow_html=True)
 # === إضافات نظام صانع الفواتير والملصقات الحرارية ===
 # دالة حاسبة الأرباح الصافية وتقارير الأداء المالي (Net Profit & P&L Calculator)
 
-st.markdown("---")
-st.subheader("📊 حاسبة الأرباح الصافية وتقارير الأداء المالي (Net Profit & P&L)")
-
-with st.expander("💡 افتح لوحة حاسبة الأرباح وتحليل الأداء المالي المتقدم", expanded=True):
-    p_col1, p_col2 = st.columns(2)
-    
-    with p_col1:
-        calc_buy_price = st.number_input("سعر شراء السلعة (DA):", min_value=0.0, value=700.0, step=50.0, key="calc_buy_price_input")
-        calc_sell_price = st.number_input("سعر بيع السلعة للزبون (DA):", min_value=0.0, value=float(price) if 'price' in locals() else 1200.0, step=50.0, key="calc_sell_price_input")
-        calc_shipping_cost = st.number_input("تكلفة التوصيل الفعلية (DA):", min_value=0.0, value=float(shipping_cost) if 'shipping_cost' in locals() else 600.0, step=50.0, key="calc_shipping_cost_input")
-        
-    with p_col2:
-        calc_return_rate = st.slider("نسبة الإرجاع المتوقعة (Retour %):", min_value=0, max_value=50, value=10, step=1, key="calc_return_rate_slider")
-        calc_ads_cost = st.number_input("تلفة الإعلانات التقديرية للقطعة (DA):", min_value=0.0, value=150.0, step=10.0, key="calc_ads_cost_input")
-        calc_other_expenses = st.number_input("مصاريف تشغيلية أخرى (تغليف، تلف...) (DA):", min_value=0.0, value=50.0, step=10.0, key="calc_other_expenses_input")
-
-    # حسابات الأرباح الصافية مع أخذ نسبة الإرجاع بعين الاعتبار
-    # في حال الإرجاع، يخسر التاجر تكلفة الشحن ذهاباً وإياباً أو مصاريف التغليف الإعلانية تقديرياً
-    effective_return_penalty = (calc_shipping_cost * 1.5) * (calc_return_rate / 100.0)
-    gross_profit = calc_sell_price - calc_buy_price
-    total_expenses = calc_shipping_cost + calc_ads_cost + calc_other_expenses + effective_return_penalty
-    net_profit_per_piece = gross_profit - total_expenses
-    profit_margin_percent = (net_profit_per_piece / calc_sell_price * 100) if calc_sell_price > 0 else 0
-
-    # عرض النتائج في كرت زجاجي نيوكي مشع متناسق مع واجهة المعاينة
-    net_card_color = "#00fff0" if net_profit_per_piece > 0 else "#ff4d4d"
-    
-    net_profit_card_html = f"""
-    <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; border: 1px solid rgba(0, 255, 240, 0.2); box-shadow: 0 0 20px rgba(0, 255, 240, 0.08); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: right; direction: rtl; margin-top: 15px;">
-        <div style="font-size: 16px; font-weight: bold; color: #00fff0; border-bottom: 1px dashed rgba(0, 255, 240, 0.3); padding-bottom: 8px; margin-bottom: 12px;">
-            🧮 تقرير تحليل الأداء المالي وصافي الربح للقطعة الواحدة
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #e0e0e0; font-size: 14px;">
-            <span>إجمالي الربح الإسمي (قبل المصاريف):</span>
-            <span style="color: #fff; font-weight: bold;">{gross_profit:,.2f} DA</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #e0e0e0; font-size: 14px;">
-            <span>إجمالي التكاليف والمصاريف (شحن + إعلانات + نسبة الإرجاع):</span>
-            <span style="color: #ff9999; font-weight: bold;">-{total_expenses:,.2f} DA</span>
-        </div>
-        <div style="background: rgba(0, 255, 240, 0.05); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0, 255, 240, 0.15); margin-top: 10px;">
-            <span style="font-size: 15px; font-weight: bold; color: #fff;">💎 صافي الربح الحقيقي للقطعة:</span>
-            <span style="font-size: 20px; font-weight: bold; color: {net_card_color}; text-shadow: 0 0 12px {net_card_color};">{net_profit_per_piece:,.2f} DA ({profit_margin_percent:.1f}%)</span>
-        </div>
-    </div>
-    """
-    st.markdown(net_profit_card_html, unsafe_allow_html=True)
-        
-        
 
 
  
