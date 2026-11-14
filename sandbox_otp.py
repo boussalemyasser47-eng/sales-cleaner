@@ -1,3 +1,4 @@
+# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
 # ========================================================
 # ========================================================
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
@@ -22,132 +23,10 @@ import urllib.parse
 import re
 import time
 import streamlit as st
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-# 🏷️ دالة توليد الملصق الحراري (Thermal Label)
-def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date):
-    buffer = io.BytesIO()
-    # مقاس الملصق الحراري الصغير (عرض 4 إنش × طول 6 إنش أو ما يعادله بالنقاط)
-    from reportlab.lib.units import inch
-    c = canvas.Canvas(buffer, pagesize=(4 * inch, 6 * inch))
-    font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
-    
-    c.setFont(font_name, 14)
-    c.drawString(20, 380, fix_arabic(f"متجر: {shop_name}"))
-    c.setFont(font_name, 10)
-    c.drawString(20, 350, fix_arabic(f"التاريخ: {current_date}"))
-    c.drawString(20, 320, fix_arabic(f"الزبون: {customer_name}"))
-    c.drawString(20, 290, fix_arabic(f"الهاتف: {customer_phone}"))
-    c.drawString(20, 260, fix_arabic(f"العنوان: {customer_address}"))
-    c.drawString(20, 220, fix_arabic(f"المنتج: {product_name}"))
-    c.setFont(font_name, 12)
-    c.drawString(20, 180, fix_arabic(f"المبلغ الإجمالي: {final_total} دج"))
-    c.drawString(20, 130, fix_arabic("--- شكراً لتسوقكم معنا ---"))
-    
-    c.save()
-    buffer.seek(0)
-    return buffer.getvalue()
-ARABIC_FONT_AVAILABLE = False
-# 🔤 دالة معالجة النصوص العربية لـ ReportLab لضمان عدم تقطيع الحروف
-def fix_arabic(text):
-    if not text:
-        return ""
-    try:
-        import arabic_reshaper
-        from bidi.algorithm import get_display
-        reshaped_text = arabic_reshaper.reshape(str(text))
-        bidi_text = get_display(reshaped_text)
-        return bidi_text
-    except ImportError:
-        # إذا كانت المكتبات غير مثبتة، تعيد النص كما هو لتجنب انهيار التطبيق
-        return str(text)
-# 📄 دالة توليد الفاتورة الاحترافية (A4) مع دعم التخفيضات
-def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data=None, lang="ar", discount=0):
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-    font_name = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
-    
-    if lang == "fr":
-        c.setFont(font_name, 16)
-        c.drawString(180, 750, fix_arabic(f"Facture de Vente - {shop_name}"))
-        c.setFont(font_name, 12)
-        c.drawString(50, 700, fix_arabic(f"Nom du Client : {customer_name}"))
-        c.drawString(50, 680, fix_arabic(f"Téléphone : {customer_phone}"))
-        c.drawString(50, 660, fix_arabic(f"Adresse : {customer_address}"))
-        c.drawString(50, 620, fix_arabic(f"Produit : {product_name} (Qté : {quantity})"))
-        c.drawString(50, 600, fix_arabic(f"Prix Unitaire : {price} DA | Sous-total : {product_total} DA"))
-        c.drawString(50, 580, fix_arabic(f"Frais de Livraison : {shipping_cost} DA"))
-        if discount > 0:
-            c.drawString(50, 560, fix_arabic(f"Remise appliquée : -{discount} DA"))
-        c.setFont(font_name, 14)
-        c.drawString(50, 520, fix_arabic(f"Total Général à Payer : {final_total} DA"))
-    else:
-        c.setFont(font_name, 16)
-        c.drawString(200, 750, fix_arabic(f"فاتورة مبيعات - {shop_name}"))
-        c.setFont(font_name, 12)
-        c.drawString(50, 700, fix_arabic(f"اسم الزبون: {customer_name}"))
-        c.drawString(50, 680, fix_arabic(f"رقم الهاتف: {customer_phone}"))
-        c.drawString(50, 660, fix_arabic(f"العنوان: {customer_address}"))
-        c.drawString(50, 620, fix_arabic(f"المنتج: {product_name} (الكمية: {quantity})"))
-        c.drawString(50, 600, fix_arabic(f"سعر الوحدة: {price} دج | المجموع: {product_total} دج"))
-        c.drawString(50, 580, fix_arabic(f"تكلفة الشحن: {shipping_cost} دج"))
-        if discount > 0:
-            c.drawString(50, 560, fix_arabic(f"تخفيض خاص: -{discount} دج"))
-        c.setFont(font_name, 14)
-        c.drawString(50, 520, fix_arabic(f"المبلغ الإجمالي النهائي: {final_total} دج"))
-    
-    c.save()
-    buffer.seek(0)
-    return buffer.getvalue()
 # تهيئة حالة عرض الصفحة الافتراضية
 if "current_view" not in st.session_state:
     st.session_state["current_view"] = "auth"
-# 🧼 دالة تنظيق وتطهير ملفات المبيعات وإزالة التكرارات والأسعار السالبة
-def process_sales_file(uploaded_file):
-    if uploaded_file.name.endswith('.csv'):
-        df_raw = pd.read_csv(uploaded_file)
-    else:
-        df_raw = pd.read_excel(uploaded_file)
-    
-    df = df_raw.copy()
-    
-    # توحيد أسماء الأعمدة إن وجدت لتجنب الأخطاء
-    df.columns = [str(c).strip().lower() for c in df.columns]
-    
-    # محاولة كشف أعمدة الأسعار والكميات لتنظيفها
-    price_col = next((col for col in df.columns if 'price' in col or 'سعر' in col or 'montant' in col), None)
-    qty_col = next((col for col in df.columns if 'qty' in col or 'quantity' in col or 'كمية' in col), None)
-    prod_col = next((col for col in df.columns if 'product' in col or 'item' in col or 'منتج' in col), df.columns[0])
-    
-    # تجهيز أعمدة موحدة للعمليات الحسابية
-    if price_col and qty_col:
-        df['clean_price'] = pd.to_numeric(df[price_col], errors='coerce').fillna(0)
-        df['clean_qty'] = pd.to_numeric(df[qty_col], errors='coerce').fillna(1)
-        
-        # رصد الأسعار أو الكميات السالبة
-        bad_prices = df[(df['clean_price'] < 0) | (df['clean_qty'] < 0)]
-        df = df[(df['clean_price'] >= 0) & (df['clean_qty'] >= 0)]
-        
-        df['total_row_sales'] = df['clean_price'] * df['clean_qty']
-    else:
-        df['total_row_sales'] = 0
-        bad_prices = pd.DataFrame()
-        
-    # رصد وإزالة السطور المكررة تماماً
-    duplicated_rows = df[df.duplicated()]
-    df = df.drop_duplicates()
-    
-    # إعادة تسمية العمود الافتراضي للمنتج لضمان توافق العرض
-    df['product_name'] = df[prod_col]
-    
-    return df_raw, df, duplicated_rows, bad_prices
-
-def render_data_insights(df):
-    total_revenue = df['total_row_sales'].sum() if 'total_row_sales' in df.columns else 0
-    total_orders = len(df)
-    st.info(isinstance(total_revenue, (int, float)) and f"📊 **إحصائيات سريعة:** إجمالي المبيعات الصافية = {total_revenue:,.2f} DA | عدد الطلبيات النظيفة = {total_orders}" or "")
 # 🌟 تصميم نافذة التحقق المنبثقة في المنتصف (Modal Dialog)
-
 def render_otp_popup(target_email):
     # إخفاء الخلفية وتثبيت النافذة في المنتصف بتصميم نيون فخم
     st.markdown("""
@@ -1874,21 +1753,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             shipping_cost = st.number_input("مصاريف الشحن (DA):", min_value=0, value=600, key="invoice_shipping_input")
             
         product_total = price * quantity
-
-        # خيارات التخفيض والعروض
-        col_disc1, col_disc2 = st.columns(2)
-        with col_disc1:
-            discount_type = st.selectbox("نوع التخفيض:", ["بدون تخفيض", "مبلغ ثابت (دج)", "نسبة مئوية (%)"], key="invoice_discount_type_select")
-        with col_disc2:
-            if discount_type == "مبلغ ثابت (دج)":
-                discount_amount = st.number_input("قيمة التخفيض (دج):", min_value=0.0, value=0.0, step=50.0, key="invoice_fixed_discount_input")
-            elif discount_type == "نسبة مئوية (%)":
-                discount_pct = st.number_input("نسبة التخفيض (%):", min_value=0.0, max_value=100.0, value=0.0, step=5.0, key="invoice_pct_discount_input")
-                discount_amount = (product_total * discount_pct) / 100.0
-            else:
-                discount_amount = 0.0
-
-        final_total = max(0.0, (product_total + shipping_cost) - discount_amount)
+        final_total = product_total + shipping_cost
         current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
         current_month = datetime.now().strftime("%Y-%m")
         st.markdown("---")
@@ -1897,38 +1762,23 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
             else:
                 check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
-# حساب التخفيضات والإجمالي النهائي للتأكد من توفر المتغيرات داخل زر الإصدار
-        product_total = price * quantity
-        
-        # إذا لم يتم تعريف نوع التخفيض، نجعله صفر لتجنب أي NameError
-        discount_amount = locals().get('discount_amount', 0.0)
-        final_total = max(0.0, (product_total + shipping_cost) - discount_amount)
-
-        check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
-        if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
-            st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
-        else:
-            cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
-            cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
-            conne.commit()
-            
-            logo_data = uploaded_logo.read() if uploaded_logo is not None else None
+                if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
+                    st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
+                else:
+                    cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
+                    cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
+                    conne.commit()
                     
-                    # تعريف لغة الفاتورة افتراضياً لتجنب أي NameError
-            selected_lang = "ar"
+                    logo_data = uploaded_logo.read() if uploaded_logo is not None else None
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
+                    st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
+                    st.session_state["last_active_customer"] = customer_name
+                    st.session_state["last_active_phone"] = customer_phone
+                    st.session_state["last_active_shop"] = shop_name
+                    st.session_state["last_active_product"] = product_name
+                    st.session_state["last_active_total"] = final_total
+                    st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
                     
-            st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(
-                shop_name, customer_name, customer_phone, customer_address, 
-                product_name, price, quantity, product_total, shipping_cost, 
-                final_total, logo_data, lang=selected_lang, discount=discount_amount
-            )
-            st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
-            st.session_state["last_active_customer"] = customer_name
-            st.session_state["last_active_phone"] = customer_phone
-            st.session_state["last_active_shop"] = shop_name
-            st.session_state["last_active_product"] = product_name
-            st.session_state["last_active_total"] = final_total
-            st.success("💾 تم تسجيل البيع وتوليد المستندات بنجاح!")
         if "generated_pdf_invoice" in st.session_state:
             col_btn1, col_btn2 = st.columns(2)
             with col_btn1: 
@@ -2230,34 +2080,3 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         
     # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
     conne.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
