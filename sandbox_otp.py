@@ -24,9 +24,7 @@ import urllib.parse
 import re
 import time
 import streamlit as st
-# تهيئة حالة عرض الصفحة الافتراضية
-if "current_view" not in st.session_state:
-    st.session_state["current_view"] = "auth"
+
 # 🌟 تصميم نافذة التحقق المنبثقة في المنتصف (Modal Dialog)
 def render_otp_popup(target_email):
     # إخفاء الخلفية وتثبيت النافذة في المنتصف بتصميم نيون فخم
@@ -100,22 +98,34 @@ if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
+# 1. تهيئة وإنشاء الجداول وتحديث الهيكل تلقائياً
 def init_advanced_db():
-    conn = sqlite3.connect("saas_security_vault.db")
+    conn = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor = conn.cursor()
     
-    # 🛡️ جدول المصادقة والتجار مع ضمان وجود عمود التاريخ والتنسيق الثابت
+    # جدول المستخدمين الأساسي
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS saas_users_auth (
             email TEXT PRIMARY KEY,
             password TEXT,
             status TEXT,
-            package TEXT,
-            created_at TEXT,
-            phone TEXT
+            package TEXT
         )
     """)
     
+    # إضافة عمود التاريخ تلقائياً إذا لم يكن موجوداً
+    try:
+        cursor.execute("ALTER TABLE saas_users_auth ADD COLUMN created_at TEXT")
+    except Exception:
+        pass
+        
+    # إضافة عمود الهاتف تلقائياً إذا لم يكن موجوداً
+    try:
+        cursor.execute("ALTER TABLE saas_users_auth ADD COLUMN phone TEXT")
+    except Exception:
+        pass
+
+    # جدول سجل النشاطات والحركات (Audit Log)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS admin_audit_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,6 +135,8 @@ def init_advanced_db():
             details TEXT
         )
     """)
+    
+    # جدول سجل حالة البريد الإلكتروني (Email Delivery Log)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS email_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -135,11 +147,12 @@ def init_advanced_db():
             error_message TEXT
         )
     """)
+    
     conn.commit()
     conn.close()
 
+# تشغيل التهيئة فوراً عند إقلاع التطبيق
 init_advanced_db()
-
 # ========================================================
 # 🚀 الدالة الموحدة والوحيدة لإرسال البريد (HTML + Plain Text + تتبع السجل)
 # ========================================================
@@ -206,7 +219,6 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         return False
 
 def send_gmail_notification_with_log(to_email, subject, body, action_type="DEFAULT"):
-    from datetime import datetime  # استيراد محلي لتجنب أي تعارض في الملف
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     status = "SUCCESS"
     err_msg = ""
@@ -263,38 +275,9 @@ import urllib.parse
 import datetime
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
-def init_advanced_db():
-    conn = sqlite3.connect("saas_security_vault.db")
-    cursor = conn.cursor()
-    
-    # جدول سجل النشاطات والحركات (Audit Log)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS admin_audit_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            action_time TEXT,
-            target_email TEXT,
-            action_type TEXT,
-            details TEXT
-        )
-    """)
-    
-    # جدول سجل حالة البريد الإلكتروني (Email Delivery Log)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS email_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sent_time TEXT,
-            recipient_email TEXT,
-            subject TEXT,
-            status TEXT,
-            error_message TEXT
-        )
-    """)
-    
-    conn.commit()
-    conn.close()
 
 # تشغيل التهيئة فوراً
-init_advanced_db()
+
 
 # 2. دالة تسجيل الحركات في قاعدة البيانات
 def log_admin_action(target_email, action_type, details=""):
@@ -519,20 +502,30 @@ st.markdown("""
 # ========================================================
 
 # صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
+# صياغة ومزامنة جدول الـ Auth
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
     CREATE TABLE IF NOT EXISTS saas_users_auth (
-        email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT
+        email TEXT PRIMARY KEY, 
+        password TEXT, 
+        status TEXT, 
+        package TEXT,
+        created_at TEXT,
+        phone TEXT
     )
 """)
 db_conn.commit()
 
-# [إصلاح الثغرة الذكية]: منع حقن الحساب الافتراضي تلقائياً إذا قام المالك بحذفه يدوياً
+# [إصلاح الثغرة الذكية]: منع حقن الحساب الافتراضي تلقائياً مع مراعاة الأعمدة الجديدة
+# [إصلاح الثغرة الذكية]: منع حقن الحساب الافتراضي تلقائياً مع مراعاة الأعمدة الجديدة الستة
 db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
 account_exists = db_cursor.fetchone()
 if account_exists[0] == 0 and "destroyed_flag" not in st.session_state:
-    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
+    db_cursor.execute(
+        "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)",
+        ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة', '', '')
+    )
     db_conn.commit()
 db_conn.close()
 
@@ -717,77 +710,11 @@ def validate_and_process_registration(email, password):
 # ========================================================
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
 # ========================================================
-
-
-
-
 if not is_boss_link and "active_merchant_user" not in st.session_state:
+    st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
     
-    # 📢 (1) إذا اختار التاجر الانتقال لصفحة تقديم الشكاوى المستقلة
-    if st.session_state.get("current_view") == "complaint_page":
-        
-        # 🎨 حقن تأثير الظهور الميكانيكي الانسيابي لصفحة الشكاوى
-        st.markdown("""
-            <style>
-            @keyframes mechanicalPop {
-                0% { opacity: 0; transform: translateY(25px) scale(0.93); }
-                60% { opacity: 1; transform: translateY(-5px) scale(1.02); }
-                100% { opacity: 1; transform: translateY(0) scale(1); }
-            }
-            .mechanical-complaint-container {
-                animation: mechanicalPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-                border: 2px solid #ff0055;
-                border-radius: 20px;
-                padding: 35px;
-                background: linear-gradient(135deg, rgba(20, 5, 12, 0.96) 0%, rgba(5, 1, 3, 0.99) 100%);
-                box-shadow: 0 0 40px rgba(255, 0, 85, 0.45);
-                direction: rtl;
-                text-align: right;
-                max-width: 600px;
-                margin: 40px auto;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-
-        st.markdown("<h1 style='color: #ff0055; text-align: center; margin-top: 20px; font-weight: 900; text-shadow: 0 0 15px rgba(255,0,85,0.4);'>📢 منصة تسجيل الشكاوى والبلاغات الرسمية</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #aaa; font-size: 15px;'>قم بملء النموذج أدناه لتسجيل شكواك وسيقوم فريق الإدارة بمراجعتها وحلها في أقرب وقت.</p>", unsafe_allow_html=True)
-        
-        # صندوق الشكاوى المستقل الذي يظهر بالحركة الميكانيكية
-        st.markdown("<div class='mechanical-complaint-container'>", unsafe_allow_html=True)
-        
-        complaint_email = st.text_input("البريد الإلكتروني الخاص بك:", key="page_comp_email")
-        complaint_phone = st.text_input("رقم الهاتف:", key="page_comp_phone", placeholder="0655xxxxxxxx")
-        complaint_msg = st.text_area("تفاصيل الشكوى أو المشكلة:", key="page_comp_msg", placeholder="اكتب شكواك بوضوح هنا...")
-        
-        if st.button("📤 إرسال الشكوى رسمياً للإدارة", key="page_send_complaint_btn"):
-            if not complaint_email or not complaint_msg or not complaint_phone:
-                st.error("⚠️ يرجى تعبئة جميع الحقول (البريد، الهاتف، وتفاصيل الشكوى) أولاً.")
-            else:
-                admin_subject = f"🚨 شكوى جديدة مرفوعة من التاجر: {complaint_email}"
-                admin_body = f"مرحباً بالمدير،\n\nوردتك شكوى رسمية جديدة من صفحة الشكاوى المستقلة:\nالبريد: {complaint_email}\nالهاتف: {complaint_phone}\n\nنص الشكوى:\n{complaint_msg}"
-                
-                # إرسال إشعار للبريد الإداري
-                send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_subject, admin_body, action_type="LOCK")
-                
-                st.success("✅ تم إرسال شكواك بنجاح إلى الإدارة وسنرد عليك قريباً جداً!")
-                time.sleep(2)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("⬅️ العودة إلى صفحة تسجيل الدخول", key="page_back_to_auth_from_comp"):
-            st.session_state["current_view"] = "auth"
-            st.rerun()
-            
-        st.markdown("</div>", unsafe_allow_html=True)
-    else:
-        # ==========================================
-        # 🔑 (2) صفحة تسجيل الدخول والتسجيل الأصلية
-        # ==========================================
-        col_side_left, col_center_box, col_side_right = st.columns(3)
-        with col_center_box:
-            st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
-    
-        col_side_left, col_center_box, col_side_right = st.columns(3)
-        with col_center_box:
+    col_side_left, col_center_box, col_side_right = st.columns(3)
+    with col_center_box:
         st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
         st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
         
@@ -800,17 +727,26 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 # 📱 حقل إدخال رقم الهاتف
 
     # 🛑 التحقق من صحة رقم الهاتف (منع الحروف والتأكد من الطول)
+# 📱 حقل إدخال رقم الهاتف مع جدار منع الأرقام المتكررة والوهمية
         if input_phone:
-            # إزالة علامة الزائد (+) المؤقتة للتحقق إذا كانت الأرقام صحيحة
             check_phone = input_phone.replace("+", "").strip()
         
+            # فحص هل يحتوي على أرقام فقط
             if not check_phone.isdigit():
                 st.error("❌ خطأ: يرجى إدخال أرقام صحيحة فقط في حقل الهاتف (بدون أحرف أو رموز خاصة).")
             elif len(check_phone) < 9:
-                st.warning("⚠️ تنبيه: رقم الهاتف قصير جداً، تأكد من إدخال الرقم كاملاً.")
+                st.warning("⚠️ تنبيه: رقم الهاتف قصير جداً، يجب أن يتكون من 9 أرقام على الأقل.")
+            # 🚨 جدار منع الأرقام المتكررة تماماً (مثل 222222222 أو 333333333)
+            elif len(set(check_phone)) == 1:
+                st.error("❌ خطأ: رقم الهاتف مدخل بطريقة وهمية أو متكررة بشكل غير منطقي (مثل 222222222). يرجى إدخال رقم حقيقي.")
+                # مسح رقم الهاتف المؤقت لئلا يتم حفظه
+                if "temp_reg_phone" in st.session_state:
+                    st.session_state.pop("temp_reg_phone")
             else:
-            # تخزين الرقم في الجلسة لأنه صحيح ومستوفي الشروط
+                # الرقم حقيقي، منطقي، وغير متكرر تماماً -> يتم تخزينه بنجاح
                 st.session_state["temp_reg_phone"] = input_phone
+
+                
         clean_email = input_email.strip()
         clean_pass = input_password.strip()
         st.session_state["temp_reg_phone"] = input_phone
@@ -824,24 +760,31 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 st.session_state["otp_pending_verification"] = False
 
             if not st.session_state["otp_pending_verification"]:
+
                 if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
-                    validated_package = validate_and_process_registration(clean_email, clean_pass)
-                    if validated_package:
-                        generated_otp = f"{random.randint(100000, 999999)}"
-                        st.session_state["temp_reg_otp"] = generated_otp
-                        st.session_state["temp_reg_email"] = clean_email
-                        st.session_state["temp_reg_pass"] = clean_pass
-                        st.session_state["temp_reg_package"] = validated_package
-                        
-                        # إرسال البريد عبر Gmail
-                        subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
-                        body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
-                        
-                        if send_gmail_notification(clean_email, subject, body):
-                            st.session_state["otp_pending_verification"] = True
-                            st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
-                            time.sleep(0.5)
-                            st.rerun()
+                    
+                    # 🛑 جدار إلزامي: التأكد من أن التاجر أدخل رقم الهاتف وأنه مخزن في الجلسة بشكل صحيح
+                    reg_phone_check = st.session_state.get("temp_reg_phone", "").strip()
+                    if not reg_phone_check:
+                        st.error("❌ خطأ إلزامي: يجب إدخال رقم هاتف صحيح ومكون من 9 أرقام على الأقل قبل طلب رمز التحقق!")
+                    else:
+                        validated_package = validate_and_process_registration(clean_email, clean_pass)
+                        if validated_package:
+                            generated_otp = f"{random.randint(100000, 999999)}"
+                            st.session_state["temp_reg_otp"] = generated_otp
+                            st.session_state["temp_reg_email"] = clean_email
+                            st.session_state["temp_reg_pass"] = clean_pass
+                            st.session_state["temp_reg_package"] = validated_package
+                            
+                            # إرسال البريد عبر Gmail
+                            subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
+                            body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
+                            
+                            if send_gmail_notification(clean_email, subject, body):
+                                st.session_state["otp_pending_verification"] = True
+                                st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
+                                time.sleep(0.5)
+                                st.rerun()
 
             else:
                 # 🌟 تهيئة العداد التنازلي (60 ثانية)
@@ -915,7 +858,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 with col_verify_btn:
                     if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة", key="verify_otp_submit_btn"):
                         if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
-
                             reg_email = st.session_state["temp_reg_email"]
                             reg_pass = st.session_state["temp_reg_pass"]
                             reg_pkg = st.session_state["temp_reg_package"]
@@ -928,13 +870,23 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             
                             conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                             cursor_reg = conn_reg.cursor()
-                            
+                            cursor_reg.execute("""
+                                CREATE TABLE IF NOT EXISTS saas_users_auth (
+                                    email TEXT PRIMARY KEY,
+                                    password TEXT,
+                                    status TEXT,
+                                    package TEXT,
+                                    created_at TEXT,
+                                    phone TEXT
+                                )
+                            """)
                             # حفظ البيانات مع الهاتف والتاريخ
                             cursor_reg.execute(
                                 "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)", 
                                 (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
                             )
                             
+                            # 🔑 الأسطر المفقودة التي كانت تمنع حفظ البيانات رسمياً:
                             conn_reg.commit()
                             conn_reg.close()
                             
@@ -976,15 +928,45 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
                     else:
                         st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
-            # ... [حقول البريد، الكلمة السرية، رقم الهاتف، والباقات الخاصة بك هنا] ...
-            
-            # 📢 زر الانتقال لصفحة الشكاوى المستقلة (موضع آمن في أسفل الصندوق الأوسط)
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("📢 تسجيل شكوى أو بلاغ جديد", key="go_to_complaint_page_btn"):
-                st.session_state["current_view"] = "complaint_page"
+ 
+# 🛟 زر مركز الدعم الفني السريع للتاجر (موضع آمن في أسفل الواجهة)
+    st.markdown("<br><hr style='border-color: rgba(255, 0, 85, 0.2);'>", unsafe_allow_html=True)
+    if st.button("🛟 هل تواجه مشكلة في التسجيل؟ اتصل بالدعم الفني", key="goto_support_safe_btn"):
+        st.session_state["show_merchant_support"] = True
+        st.rerun()
+
+    # واجهة كتابة المشكلة المنبثقة
+    if st.session_state.get("show_merchant_support", False):
+        st.markdown("""
+            <div style="border: 2px solid #ff0055; border-radius: 15px; padding: 25px; background: rgba(20,5,10,0.95); margin-top: 15px; direction: rtl; text-align: right; box-shadow: 0px 0px 30px rgba(255, 0, 85, 0.2);">
+                <h3 style="color: #ff0055; margin-top: 0; font-weight: 900;">🛟 مركز الدعم الفني السريع للتاجر</h3>
+                <p style="color: #e0e0e0; font-size: 14px;">اكتب تفاصيل المشكلة التي تواجهك (مشكلة في الرمز، الهاتف، أو الدخول)، وسيتواصل معك الفريق فوراً:</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        support_email = st.text_input("بريدك الإلكتروني للتواصل:", key="support_user_email_safe")
+        support_message = st.text_area("اشرح مشكلتك باختصار:", key="support_user_msg_safe", placeholder="اكتب تفاصيل المشكلة هنا...")
+        
+        col_sup1, col_sup2 = st.columns(2)
+        with col_sup1:
+            if st.button("📤 إرسال المشكلة للإدارة", key="send_support_ticket_safe_btn"):
+                if not support_email or not support_message:
+                    st.error("⚠️ يرجى كتابة البريد الإلكتروني وصف المشكلة أولاً!")
+                else:
+                    admin_notification_subject = f"🚨 بلاغ مشكلة جديد من تاجر: {support_email}"
+                    admin_notification_body = f"مرحباً بالمدير،\n\nوردتك رسالة دعم فني جديدة من البريد:\n{support_email}\n\nنص المشكلة:\n{support_message}"
+                    
+                    send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", "admin@nexus.com"), admin_notification_subject, admin_notification_body, action_type="LOCK")
+                    
+                    st.success("✅ تم إرسال مشكلتك بنجاح إلى فريق الدعم الفني! سنتواصل معك قريباً.")
+                    time.sleep(2)
+                    st.session_state["show_merchant_support"] = False
+                    st.rerun()
+        with col_sup2:
+            if st.button("❌ إغلاق الدعم", key="close_support_safe_btn"):
+                st.session_state["show_merchant_support"] = False
                 st.rerun()
-                
-            st.markdown("</div>", unsafe_allow_html=True)
+
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
 # ========================================================
@@ -1048,7 +1030,7 @@ def render_boss_kpis_and_filters(df_users):
         st.markdown(f"<div style='border:2px solid #ff00ff; border-radius:15px; padding:20px; text-align:center; background:rgba(20,5,20,0.85); box-shadow: 0px 0px 20px rgba(255, 0, 255, 0.25); direction:rtl;'><h4 style='color:#ff00ff; margin:0;'>🧪 الحسابات التجريبية والانتظار</h4><h2>{total_trial} حساب</h2></div>", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    
+
     # 🔍 شريط البحث والتصفية فوق البطاقات
     filter_col1, filter_col2 = st.columns([2, 1])
     with filter_col1:
@@ -1065,10 +1047,9 @@ def render_boss_kpis_and_filters(df_users):
         if status_filter == "مفعّل":
             filtered_df = filtered_df[filtered_df['status'].str.contains('مفعّل', na=False)]
         elif status_filter == "في انتظار التفعيل":
-            filtered_df = filtered_df[filtered_df['status'].str.contains('انتظار|معلّق|مهلة', na=False)]
+            filtered_df = filtered_df[filtered_df['status'].str.contains('انتظار|التفعيل|معلّق|مهلة', na=False)]
         elif status_filter == "محظور":
             filtered_df = filtered_df[filtered_df['status'].str.contains('قفل|مصادرة|محظور', na=False)]
-
     return filtered_df
 
 def paginate_dataframe(filtered_df, page_size=10):
@@ -1237,25 +1218,48 @@ if is_boss_link:
 
         # 3️⃣ رادار مسح طلبات التسجيل وتقسيم الصفحات
         st.markdown("<h2 style='color: #00fff0; text-align: right; font-weight:900; direction:rtl;'>📡 (SaaS Incoming Queue) رادار مسح طلبات التسجيل المفتوحة</h2>", unsafe_allow_html=True)
-        
+        # 🧪 زر مؤقت للاختبار والتأكد من ظهور التجار في الرادار فوراً
+# 🧪 زر مؤقت للاختبار والتأكد من ظهور التجار في الرادار فوراً
+        if st.button("🧪 إضافة تاجر تجريبي وهمي للاختبار"):
+            conn_test = sqlite3.connect("saas_security_vault.db", timeout=10)
+            cursor_test = conn_test.cursor()
+            cursor_test.execute(
+                "INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)",
+                ("test.merchant@gmail.com", "123456", "⏳ في انتظار التفعيل", "الباقة الأساسية المبتدئة (29k)", datetime.now().strftime('%Y-%m-%d %H:%M:%S'), "0600000000")
+            )
+            conn_test.commit()
+            conn_test.close()
+            st.success("✅ تمت إضافة تاجر تجريبي بنجاح! حدّث الصفحة.")
+            time.sleep(0.5)
+            st.rerun()
         # تطبيق التقسيم الصفحي (10 تجار لكل صفحة) على البيانات المفلترة
         paginated_merchants, current_p, total_p = paginate_dataframe(filtered_merchants_df, page_size=10)
         
         if not paginated_merchants.empty:
             for index, row in paginated_merchants.iterrows():
-                current_email = row['email']; current_pass = row['password']; current_status = row['status']; current_package = row['package']
+                current_email = row['email']
+                current_pass = row['password']
+                current_status = row['status']
+                current_package = row['package']
+            
+                # جلب رقم الهاتف بلطف من صف الجدول (مع وضع قيمة افتراضية إذا لم يكن موجوداً)
+                current_phone = row.get('phone', 'غير متوفر') if 'phone' in row else 'غير متوفر'
+                if not current_phone or str(current_phone).lower() == 'nan':
+                    current_phone = 'غير متوفر'
+                
                 status_color = "#00ff66" if "مفعّل" in str(current_status) else "#ffaa00" if "انتظار" in str(current_status) else "#ff0055"
-                
-                # 🧠 [قراءة حالة اللون الديناميكي المخصصة للتاجر من الجلسة أو وضع اللون الافتراضي النيوني]
+            
+            # 🧠 [قراءة حالة اللون الديناميكي المخصصة للتاجر من الجلسة أو وضع اللون الافتراضي النيوني]
                 current_border_color = st.session_state.get(f"border_color_{current_email}", "#00fff0")
-                
+            
                 st.markdown(f"""
                 <div style="border: 2px solid {current_border_color}; border-radius: 15px; padding: 25px; background: rgba(10,10,26,0.9); margin-bottom: 15px; direction: rtl; text-align: right; box-shadow: 0px 0px 15px {current_border_color}40;">
-                    <p style="margin:0 0 8px 0; font-weight:700;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
+                    <p style="margin:0 0 8px 0; font-weight:700;">💻 بريد التاجر الجديد: <span style="color: #00fff0;">{current_email}</span> | 📱 الهاتف: <span style="color: #ffaa00;">{current_phone}</span></p>
+                    <p style="margin:0 0 8px 0; font-weight:700;">كلمة السر المختارة: <span style="color: #ff00ff;">{current_pass}</span></p>
                     <p style="margin:0;">📊 الحالة الحالية: <span style="color: {status_color}; font-weight:bold;">{current_status}</span> | فئة الاشتراك المطلوبة للعمل: <span style="color:{current_border_color}; font-weight:bold;">{current_package}</span></p>
                 </div>
                 """, unsafe_allow_html=True)
-
+            
                 col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
