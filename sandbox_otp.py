@@ -136,7 +136,7 @@ FONT_NAME = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
 
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar"):
     """
-    دالة توليد فاتورة مبيعات رسمية بحجم A4 تدعم اللغتين العربية (RTL) والفرنسية (LTR) مع QR Code رقمي موثق[cite: 1]
+    دالة توليد فاتورة مبيعات رسمية بحجم A4 مع دعم التبديل التلقائي بين العربية (RTL) والفرنسية (LTR)
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -149,64 +149,73 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     )
     elements = []
     styles = getSampleStyleSheet()
-    
-    is_ar = (lang == "ar")
-    active_font = FONT_NAME if is_ar else 'Helvetica'
-    active_font_bold = FONT_NAME if is_ar else 'Helvetica-Bold'
-    align_dir = 2 if is_ar else 0
-    table_align = 'RIGHT' if is_ar else 'LEFT'
+    is_fr = (lang == "fr")
+    active_font = 'Helvetica' if is_fr else FONT_NAME
 
-    def fmt(txt):
-        return fix_arabic(txt) if is_ar else str(txt)
+    # إعداد النصوص حسب اللغة المختارة
+    if is_fr:
+        lbl_subtitle = "FACTURE DE VENTE ET BON DE COMMANDE"
+        lbl_shop = f"<b>Magasin :</b> {shop_name}"
+        lbl_cust = f"<b>Client :</b> {customer_name}"
+        lbl_addr = f"<b>Adresse :</b> {customer_address}"
+        lbl_phone = f"<b>Téléphone :</b> {customer_phone}"
+        h_prod, h_qty, h_price, h_tot = "Désignation", "Qté", "Prix Unitaire", "Total (DA)"
+        lbl_sub = "Sous-total Produit :"
+        lbl_ship = "Frais de Livraison :"
+        lbl_final = "NET À PAYER :"
+        lbl_qr_title = "Sceau de Vérification Numérique :"
+        lbl_qr_desc = "Document généré électroniquement et sécurisé par NEXUS CENTRAL GATE."
+    else:
+        lbl_subtitle = fix_arabic("فاتورة مبيعات وتأكيد طلبية رسمية وموثقة")
+        lbl_shop = fix_arabic(f"<b>اسم المتجر:</b> {shop_name}")
+        lbl_cust = fix_arabic(f"<b>اسم الزبون:</b> {customer_name}")
+        lbl_addr = fix_arabic(f"<b>عنوان التوصيل:</b> {customer_address}")
+        lbl_phone = fix_arabic(f"<b>رقم الهاتف:</b> {customer_phone}")
+        h_prod = fix_arabic("اسم المنتج")
+        h_qty = fix_arabic("الكمية")
+        h_price = fix_arabic("السعر الفردي")
+        h_tot = fix_arabic("الإجمالي (DA)")
+        lbl_sub = fix_arabic("المجموع الفرعي للمنتج:")
+        lbl_ship = fix_arabic("تكلفة الشحن والتوصيل:")
+        lbl_final = fix_arabic("الإجمالي النهائي المطلوب:")
+        lbl_qr_title = fix_arabic("ختم التحقق الرقمي الموثق:")
+        lbl_qr_desc = fix_arabic("هذه الفاتورة صادرة إلكترونياً ومؤمنة عبر نظام NEXUS CENTRAL GATE.")
 
-    labels = {
-        "sub_title": "فاتورة مبيعات وتأكيد طلبية رسمية وموثقة" if is_ar else "FACTURE DE VENTE ET CONFIRMATION DE COMMANDE",
-        "shop": "اسم المتجر:" if is_ar else "Boutique :",
-        "cust": "اسم الزبون:" if is_ar else "Client :",
-        "addr": "عنوان التوصيل:" if is_ar else "Adresse :",
-        "phone": "رقم الهاتف:" if is_ar else "Téléphone :",
-        "h_total": "الإجمالي (DA)" if is_ar else "Total (DA)",
-        "h_price": "السعر الفردي" if is_ar else "Prix Unitaire",
-        "h_qty": "الكمية" if is_ar else "Qté",
-        "h_prod": "اسم المنتج" if is_ar else "Désignation du Produit",
-        "sub_tot": "المجموع الفرعي للمنتج:" if is_ar else "Sous-total Produit :",
-        "ship": "تكلفة الشحن والتوصيل:" if is_ar else "Frais de Livraison :",
-        "final": "الإجمالي النهائي المطلوب:" if is_ar else "TOTAL NET À PAYER :",
-        "verify": "<b>ختم التحقق الرقمي الموثق:</b><br/>هذه الفاتورة صادرة إلكترونياً ومؤمنة عبر نظام NEXUS CENTRAL GATE. يمنع تزويرها أو تعديل بياناتها وتخضع للسجل التجاري للمتجر." if is_ar else "<b>SCEAU DE VÉRIFICATION NUMÉRIQUE :</b><br/>Facture générée électroniquement et sécurisée via NEXUS CENTRAL GATE. Interdiction de falsification."
-    }
-
-    title_style = ParagraphStyle('InvoiceTitle', parent=styles['Heading1'], fontName=active_font_bold, fontSize=22, textColor=colors.HexColor('#003366'), alignment=1, spaceAfter=6)
-    sub_title_style = ParagraphStyle('InvoiceSubTitle', parent=styles['Normal'], fontName=active_font, fontSize=11, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=15)
-    cell_style_dir = ParagraphStyle('CellDir', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=align_dir)
-    cell_style_center = ParagraphStyle('CellCenter', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=1)
+    # أنماط النصوص والاتجاهات (RTL للعربية / LTR للفرنسية)
+    title_style = ParagraphStyle('InvTitle', parent=styles['Heading1'], fontName=active_font, fontSize=22, textColor=colors.HexColor('#003366'), alignment=1, spaceAfter=6)
+    sub_style = ParagraphStyle('InvSub', parent=styles['Normal'], fontName=active_font, fontSize=11, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=15)
+    align_style = ParagraphStyle('AlignStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=0 if is_fr else 2)
+    center_style = ParagraphStyle('CenterStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=1)
+    header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.whitesmoke, alignment=1)
 
     if logo_data:
         try:
-            logo_buffer = io.BytesIO(logo_data)
-            img = Image(logo_buffer, width=65, height=65)
+            img = Image(io.BytesIO(logo_data), width=65, height=65)
             elements.append(img)
             elements.append(Spacer(1, 8))
         except Exception:
             pass
 
-    elements.append(Paragraph(fmt(f"<b>{shop_name}</b>"), title_style))
-    elements.append(Paragraph(fmt(f"<b>{labels['sub_title']}</b>"), sub_title_style))
+    shop_display = shop_name if is_fr else fix_arabic(shop_name)
+    elements.append(Paragraph(f"<b>{shop_display}</b>", title_style))
+    elements.append(Paragraph(f"<b>{lbl_subtitle}</b>", sub_style))
     elements.append(Spacer(1, 10))
 
-    if is_ar:
-        t_info_formatted = [
-            [Paragraph(fmt(f"<b>{labels['shop']}</b> {shop_name}"), cell_style_dir), Paragraph(fmt(f"<b>{labels['cust']}</b> {customer_name}"), cell_style_dir)],
-            [Paragraph(fmt(f"<b>{labels['addr']}</b> {customer_address}"), cell_style_dir), Paragraph(fmt(f"<b>{labels['phone']}</b> {customer_phone}"), cell_style_dir)]
+    # 1. جدول بيانات المتجر والزبون (يعكس الترتيب تلقائياً حسب اللغة)
+    if is_fr:
+        info_data = [
+            [Paragraph(lbl_cust, align_style), Paragraph(lbl_shop, align_style)],
+            [Paragraph(lbl_phone, align_style), Paragraph(lbl_addr, align_style)]
         ]
     else:
-        t_info_formatted = [
-            [Paragraph(f"<b>{labels['cust']}</b> {customer_name}", cell_style_dir), Paragraph(f"<b>{labels['shop']}</b> {shop_name}", cell_style_dir)],
-            [Paragraph(f"<b>{labels['phone']}</b> {customer_phone}", cell_style_dir), Paragraph(f"<b>{labels['addr']}</b> {customer_address}", cell_style_dir)]
+        info_data = [
+            [Paragraph(lbl_shop, align_style), Paragraph(lbl_cust, align_style)],
+            [Paragraph(lbl_addr, align_style), Paragraph(lbl_phone, align_style)]
         ]
 
-    t_info = Table(t_info_formatted, colWidths=[260, 260])
+    t_info = Table(info_data, colWidths=[260, 260])
     t_info.setStyle(TableStyle([
-        ('ALIGN', (0,0), (-1,-1), table_align),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT' if is_fr else 'RIGHT'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('TOPPADDING', (0,0), (-1,-1), 8),
         ('BOTTOMPADDING', (0,0), (-1,-1), 8),
@@ -217,43 +226,24 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     elements.append(t_info)
     elements.append(Spacer(1, 15))
 
-    if is_ar:
-        table_data = [
-            [
-                Paragraph(fmt(f"<b>{labels['h_total']}</b>"), ParagraphStyle('H1', parent=cell_style_center, fontName=active_font_bold, textColor=colors.whitesmoke)),
-                Paragraph(fmt(f"<b>{labels['h_price']}</b>"), ParagraphStyle('H2', parent=cell_style_center, fontName=active_font_bold, textColor=colors.whitesmoke)),
-                Paragraph(fmt(f"<b>{labels['h_qty']}</b>"), ParagraphStyle('H3', parent=cell_style_center, fontName=active_font_bold, textColor=colors.whitesmoke)),
-                Paragraph(fmt(f"<b>{labels['h_prod']}</b>"), ParagraphStyle('H4', parent=cell_style_dir, fontName=active_font_bold, textColor=colors.whitesmoke))
-            ],
-            [
-                Paragraph(f"{product_total:,.2f}", cell_style_center),
-                Paragraph(f"{price:,.2f}", cell_style_center),
-                Paragraph(str(quantity), cell_style_center),
-                Paragraph(fmt(product_name), cell_style_dir)
-            ]
+    # 2. جدول المنتجات (ترتيب الأعمدة من اليسار لليمين للفرنسية، ومن اليمين لليسار للعربية)
+    prod_display = product_name if is_fr else fix_arabic(product_name)
+    if is_fr:
+        items_data = [
+            [Paragraph(f"<b>{h_prod}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_tot}</b>", header_style)],
+            [Paragraph(prod_display, align_style), Paragraph(str(quantity), center_style), Paragraph(f"{price:,.2f}", center_style), Paragraph(f"{product_total:,.2f}", center_style)]
         ]
-        col_widths = [110, 110, 60, 240]
+        col_widths_items = [240, 60, 110, 110]
     else:
-        table_data = [
-            [
-                Paragraph(f"<b>{labels['h_prod']}</b>", ParagraphStyle('H4', parent=cell_style_dir, fontName=active_font_bold, textColor=colors.whitesmoke)),
-                Paragraph(f"<b>{labels['h_qty']}</b>", ParagraphStyle('H3', parent=cell_style_center, fontName=active_font_bold, textColor=colors.whitesmoke)),
-                Paragraph(f"<b>{labels['h_price']}</b>", ParagraphStyle('H2', parent=cell_style_center, fontName=active_font_bold, textColor=colors.whitesmoke)),
-                Paragraph(f"<b>{labels['h_total']}</b>", ParagraphStyle('H1', parent=cell_style_center, fontName=active_font_bold, textColor=colors.whitesmoke))
-            ],
-            [
-                Paragraph(str(product_name), cell_style_dir),
-                Paragraph(str(quantity), cell_style_center),
-                Paragraph(f"{price:,.2f}", cell_style_center),
-                Paragraph(f"{product_total:,.2f}", cell_style_center)
-            ]
+        items_data = [
+            [Paragraph(f"<b>{h_tot}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_prod}</b>", header_style)],
+            [Paragraph(f"{product_total:,.2f}", center_style), Paragraph(f"{price:,.2f}", center_style), Paragraph(str(quantity), center_style), Paragraph(prod_display, align_style)]
         ]
-        col_widths = [240, 60, 110, 110]
+        col_widths_items = [110, 110, 60, 240]
 
-    t_items = Table(table_data, colWidths=col_widths)
+    t_items = Table(items_data, colWidths=col_widths_items)
     t_items.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('BOTTOMPADDING', (0,0), (-1,-1), 9),
         ('TOPPADDING', (0,0), (-1,-1), 9),
@@ -263,28 +253,25 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     elements.append(t_items)
     elements.append(Spacer(1, 15))
 
-    if is_ar:
+    # 3. جدول المجاميع النهائية
+    final_style = ParagraphStyle('FinalSt', parent=align_style, fontName=active_font, fontSize=11, textColor=colors.HexColor('#003366'))
+    if is_fr:
         totals_data = [
-            [Paragraph(f"<b>{product_total:,.2f} DA</b>", cell_style_dir), Paragraph(fmt(f"<b>{labels['sub_tot']}</b>"), cell_style_dir)],
-            [Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", cell_style_dir), Paragraph(fmt(f"<b>{labels['ship']}</b>"), cell_style_dir)],
-            [
-                Paragraph(f"<b>{final_total:,.2f} DA</b>", ParagraphStyle('FTotal', parent=cell_style_dir, fontName=active_font_bold, fontSize=11, textColor=colors.HexColor('#003366'))), 
-                Paragraph(fmt(f"<b>{labels['final']}</b>"), ParagraphStyle('FTotalLbl', parent=cell_style_dir, fontName=active_font_bold, fontSize=11, textColor=colors.HexColor('#003366')))
-            ]
+            [Paragraph(f"<b>{lbl_sub}</b>", align_style), Paragraph(f"<b>{product_total:,.2f} DA</b>", align_style)],
+            [Paragraph(f"<b>{lbl_ship}</b>", align_style), Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", align_style)],
+            [Paragraph(f"<b>{lbl_final}</b>", final_style), Paragraph(f"<b>{final_total:,.2f} DA</b>", final_style)]
         ]
+        col_widths_tot = [190, 160]
     else:
         totals_data = [
-            [Paragraph(f"<b>{labels['sub_tot']}</b>", cell_style_dir), Paragraph(f"<b>{product_total:,.2f} DA</b>", cell_style_dir)],
-            [Paragraph(f"<b>{labels['ship']}</b>", cell_style_dir), Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", cell_style_dir)],
-            [
-                Paragraph(f"<b>{labels['final']}</b>", ParagraphStyle('FTotalLbl', parent=cell_style_dir, fontName=active_font_bold, fontSize=11, textColor=colors.HexColor('#003366'))),
-                Paragraph(f"<b>{final_total:,.2f} DA</b>", ParagraphStyle('FTotal', parent=cell_style_dir, fontName=active_font_bold, fontSize=11, textColor=colors.HexColor('#003366')))
-            ]
+            [Paragraph(f"<b>{product_total:,.2f} DA</b>", align_style), Paragraph(f"<b>{lbl_sub}</b>", align_style)],
+            [Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", align_style), Paragraph(f"<b>{lbl_ship}</b>", align_style)],
+            [Paragraph(f"<b>{final_total:,.2f} DA</b>", final_style), Paragraph(f"<b>{lbl_final}</b>", final_style)]
         ]
+        col_widths_tot = [160, 190]
 
-    t_totals = Table(totals_data, colWidths=[180, 180])
+    t_totals = Table(totals_data, colWidths=col_widths_tot)
     t_totals.setStyle(TableStyle([
-        ('ALIGN', (0,0), (-1,-1), table_align),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('BOTTOMPADDING', (0,0), (-1,-1), 7),
         ('TOPPADDING', (0,0), (-1,-1), 7),
@@ -293,20 +280,22 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     elements.append(t_totals)
     elements.append(Spacer(1, 20))
 
-    qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Total: {final_total} DA | Verified"
+    # 4. الختم الرقمي QR Code
+    qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Phone: {customer_phone} | Total: {final_total} DA | Lang: {lang}"
     qr = QrCodeWidget(qr_data_string)
     qr.barWidth = 70
     qr.barHeight = 70
-    qr.qrVersion = 1
     d = Drawing(70, 70)
     d.add(qr)
 
-    verification_text_style = ParagraphStyle('VerifyText', parent=styles['Normal'], fontName=active_font, fontSize=8.5, textColor=colors.HexColor('#444444'), alignment=align_dir)
-    qr_section_data = [[Paragraph(fmt(labels['verify']), verification_text_style), d]] if is_ar else [[d, Paragraph(labels['verify'], verification_text_style)]]
+    qr_text_style = ParagraphStyle('QrTxt', parent=styles['Normal'], fontName=active_font, fontSize=8.5, textColor=colors.HexColor('#444444'), alignment=0 if is_fr else 2)
+    qr_para = Paragraph(f"<b>{lbl_qr_title}</b><br/>{lbl_qr_desc}", qr_text_style)
 
-    t_qr = Table(qr_section_data, colWidths=[380, 120] if is_ar else [120, 380])
+    qr_data = [[qr_para, d]] if not is_fr else [[d, qr_para]]
+    qr_widths = [380, 120] if not is_fr else [120, 380]
+
+    t_qr = Table(qr_data, colWidths=qr_widths)
     t_qr.setStyle(TableStyle([
-        ('ALIGN', (0,0), (-1,-1), table_align),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f1f5f9')),
         ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
@@ -316,7 +305,7 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         ('RIGHTPADDING', (0,0), (-1,-1), 10),
     ]))
     elements.append(t_qr)
-    
+
     doc.build(elements)
     buffer.seek(0)
     return buffer.getvalue()
