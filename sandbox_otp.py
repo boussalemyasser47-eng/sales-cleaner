@@ -2205,6 +2205,20 @@ if "choice" in locals() or "choice" in globals():
             customer_phone = st.text_input("رقم هاتف الزبون:", key="invoice_customer_phone_input")
             customer_address = st.text_input("عنوان التوصيل والولاية:", key="invoice_customer_address_input")
             uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
+            
+            
+            # === إضافة خيار لغة طباعة الفاتورة في الواجهة الأمامية ===
+            st.markdown("🌐 **لغة طباعة الفاتورة (PDF):**")
+            selected_invoice_lang = st.radio(
+                label="اختر لغة الفاتورة:",
+                options=["🇩🇿 اللغة العربية (RTL)", "🇫🇷 اللغة الفرنسية (LTR)"],
+                horizontal=True,
+                label_visibility="collapsed",
+                key="invoice_print_language_radio"
+            )
+            lang_code = "fr" if "الفرنسية" in selected_invoice_lang else "ar"
+
+            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
@@ -2234,7 +2248,7 @@ if "choice" in locals() or "choice" in globals():
                     conne.commit()
                     
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang=lang_code)
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
                     st.session_state["last_active_customer"] = customer_name
                     st.session_state["last_active_phone"] = customer_phone
