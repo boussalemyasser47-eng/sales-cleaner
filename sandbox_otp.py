@@ -1820,21 +1820,27 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
             else:
                 check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
-                if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
-                    st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
+# حساب التخفيضات والإجمالي النهائي للتأكد من توفر المتغيرات داخل زر الإصدار
+        product_total = price * quantity
+        
+        # إذا لم يتم تعريف نوع التخفيض، نجعله صفر لتجنب أي NameError
+        discount_amount = locals().get('discount_amount', 0.0)
+        final_total = max(0.0, (product_total + shipping_cost) - discount_amount)
 
-
-                else:
-                    cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
-                    cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
-                    conne.commit()
-                    
-                    logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(
-                        shop_name, customer_name, customer_phone, customer_address, 
-                        product_name, price, quantity, product_total, shipping_cost, 
-                        final_total, logo_data, lang=selected_lang, discount=discount_amount
-                    )
+        check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
+        if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
+            st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
+        else:
+            cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
+            cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
+            conne.commit()
+            
+            logo_data = uploaded_logo.read() if uploaded_logo is not None else None
+            st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(
+                shop_name, customer_name, customer_phone, customer_address, 
+                product_name, price, quantity, product_total, shipping_cost, 
+                final_total, logo_data, lang=selected_lang, discount=discount_amount
+            )
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
                     st.session_state["last_active_customer"] = customer_name
                     st.session_state["last_active_phone"] = customer_phone
