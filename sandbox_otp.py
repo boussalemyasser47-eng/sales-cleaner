@@ -892,11 +892,15 @@ st.markdown("""
 # ========================================================
 
 # صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
+# ========================================================
+# [القسم الرابع]: إدارة ومزامنة جدول قاعدة بيانات الـ Auth وجدار الحماية الاستباقي للثغرات
+# ========================================================
+# صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
     CREATE TABLE IF NOT EXISTS saas_users_auth (
-        email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT
+        email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT, created_at TEXT, phone TEXT
     )
 """)
 db_conn.commit()
@@ -905,8 +909,9 @@ db_conn.commit()
 db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
 account_exists = db_cursor.fetchone()
 if account_exists[0] == 0 and "destroyed_flag" not in st.session_state:
-    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
+    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth (email, password, status, package) VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
     db_conn.commit()
+
 db_conn.close()
 
 # دالة التدمير الفوري لأي حساب في قاعدة البيانات دون إعطاب الاتصالات المفتوحة حياً
@@ -915,10 +920,15 @@ def delete_email_completely(email_to_delete):
         conn = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor = conn.cursor()
         cursor.execute("DELETE FROM saas_users_auth WHERE email = ?", (email_to_delete,))
-        conn.commit(); conn.close()
+        conn.commit()
+        conn.close()
         return True
     except Exception as e:
-        st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
+        st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}")
+        return False
+
+# === الإضافات والتعديلات الجديدة ===
+# جاهز ومؤمن بالكامل هنا لاستقبال أي ميزات إضافية في المحادثات القادمة...
 
 # === الإضافات والتعديلات الجديدة ===
 # جاهز ومؤمن بالكامل هنا لاستقبال أي ميزات إضافية في المحادثات القادمة...
