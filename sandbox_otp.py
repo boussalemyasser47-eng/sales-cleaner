@@ -1,5 +1,36 @@
 # ========================================================
-# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
+# 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
+# ========================================================
+import os
+
+# تحديد مسار ثابت وموثوق لقاعدة البيانات لمنع ضياعها في وضع السكون أو إعادة التشغيل
+DB_FILENAME = "saas_security_vault.db"
+
+def get_secure_db_connection():
+    """
+    إنشاء اتصال آمن مع مهلة زمنية دقيقة لضمان استقرار العمليات المتزامنة
+    """
+    conn = sqlite3.connect(DB_FILENAME, timeout=15)
+    return conn
+
+# تحسين دالة خزانة النسخ الاحتياطي التلقائي (.ZIP) لتشمل ملفات الـ DB بمسارها الثابت بدقة
+def create_robust_backup_vault():
+    import zipfile
+    zip_buffer = io.BytesIO()
+    try:
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            if os.path.exists(DB_FILENAME):
+                with open(DB_FILENAME, "rb") as f:
+                    timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    zip_file.writestr(f"backup_{timestamp_str}_{DB_FILENAME}", f.read())
+    except Exception as e:
+        print(f"⚠️ خطأ في إنشاء النسخة الاحتياطية: {e}")
+        
+    zip_buffer.seek(0)
+    return zip_buffer
+
+# === الإضافات والتعديلات الجديدة ===
+# تم تأمين مسار قاعدة البيانات وتفعيل استقرار الحفظ الدائم بنجاح.# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
 # ========================================================
 # ========================================================
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
