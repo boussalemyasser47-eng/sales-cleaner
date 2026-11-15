@@ -151,19 +151,29 @@ def fix_arabic(text):
         except Exception:
             return text
     return text
-
 # === تسجيل الخط العربي لدعم اللغة العربية ومنع ظهور المربعات ===
-try:
-    pdfmetrics.registerFont(TTFont('ArabicFont', 'Cairo.ttf'))
-    ARABIC_FONT_AVAILABLE = True
-except Exception:
-    try:
-        pdfmetrics.registerFont(TTFont('ArabicFont', 'Amiri-Regular.ttf'))
-        ARABIC_FONT_AVAILABLE = True
-    except Exception:
-        ARABIC_FONT_AVAILABLE = False
+import os
 
-FONT_NAME = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
+FONT_NAME = "Helvetica" # الافتراضي كاحتياط
+font_filename = "Cairo.ttf"
+
+try:
+    # التأكد من المسار النسبي والمطلق للملف في المستودع
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    full_font_path = os.path.join(base_path, font_filename)
+    
+    if os.path.exists(full_font_path):
+        pdfmetrics.registerFont(TTFont('ArabicFont', full_font_path))
+        FONT_NAME = 'ArabicFont'
+        print("✅ تم تسجيل الخط العربي Cairo.ttf بنجاح!")
+    else:
+        # محاولة أخيرة بالاسم المباشر
+        pdfmetrics.registerFont(TTFont('ArabicFont', font_filename))
+        FONT_NAME = 'ArabicFont'
+        print("✅ تم تسجيل الخط العربي بالاسم المباشر!")
+except Exception as e:
+    print(f"⚠️ تنبيه: فشل تحميل الخط العربي، سيتم استخدام Helvetica والسبب: {e}")
+    FONT_NAME = 'Helvetica'
 
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar"):
     """
