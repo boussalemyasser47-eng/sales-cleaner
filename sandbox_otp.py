@@ -1,4 +1,3 @@
-# ========================================================
 # 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
 # ========================================================
 import os
@@ -216,6 +215,7 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         lbl_qr_desc = "Document généré électroniquement et sécurisé par NEXUS CENTRAL GATE."
     else:
         lbl_subtitle = fix_arabic("فاتورة مبيعات وتأكيد طلبية رسمية وموثقة")
+
         lbl_shop = fix_arabic(f"<b>اسم المتجر:</b> {shop_name}")
         lbl_cust = fix_arabic(f"<b>اسم الزبون:</b> {customer_name}")
         lbl_addr = fix_arabic(f"<b>عنوان التوصيل:</b> {customer_address}")
