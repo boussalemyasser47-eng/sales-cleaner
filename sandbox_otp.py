@@ -1,4 +1,3 @@
-# ========================================================
 # 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
 # ========================================================
 import os
@@ -2263,28 +2262,70 @@ if "choice" in locals() or "choice" in globals():
                 type=["png", "jpg", "jpeg"], 
                 key="sec4b_invoice_logo_uploader_unique"
             )
-# === إضافة خيار اختيار تصميم وقالب الفاتورة (Template Style) ===
-        st.markdown("🎨 **تصميم وقالب الفاتورة (Template Style):**")
-        selected_template_option = st.radio(
-            label="اختر قالب الفاتورة:",
-            options=[
-                "🏛️ القالب الرسمي الموثق (جداول زرقاء + QR Code)",
-                "⚡ القالب الاقتصادي البسيط (خفيف وسريع للطباعة)",
-                "✨ القالب التجاري الحديث (عصري ومبرز للمجاميع)"
-            ],
-            horizontal=False,
-            label_visibility="collapsed",
-            key="sec4b_invoice_template_selector_unique"
-        )
-        
-        # تحويل الخيار إلى رمز برمجي لتمريره للدالة
-        if "الاقتصادي" in selected_template_option:
-            invoice_template = "simple"
-        elif "الحديث" in selected_template_option:
-            invoice_template = "modern"
-        else:
-            invoice_template = "formal"
+# ==========================================
+            # === بداية الكتلة الجديدة (المعاينة البصرية للقوالب) ===
+            # ==========================================
+            st.markdown("🎨 **تصميم وقالب الفاتورة (Template Style & Preview):**")
+            st.markdown("<span style='font-size: 12px; color: #666;'>اختر التصميم الذي يناسب هوية متجرك:</span>", unsafe_allow_html=True)
 
+            prev_col1, prev_col2, prev_col3 = st.columns(3)
+
+            with prev_col1:
+                st.markdown("""
+                <div style="background: rgba(0, 51, 102, 0.04); border: 1.5px solid #003366; border-radius: 10px; padding: 12px; text-align: right; direction: rtl; min-height: 125px;">
+                    <div style="font-weight: bold; color: #003366; font-size: 12.5px; margin-bottom: 6px;">🏛️ القالب الرسمي الموثق</div>
+                    <div style="font-size: 11px; color: #444; line-height: 1.4;">
+                        • جدول أزرق احترافي<br>
+                        • معلومات متكاملة للزبون<br>
+                        • ختم QR Code للتحقق
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with prev_col2:
+                st.markdown("""
+                <div style="background: rgba(51, 51, 51, 0.04); border: 1.5px solid #666666; border-radius: 10px; padding: 12px; text-align: right; direction: rtl; min-height: 125px;">
+                    <div style="font-weight: bold; color: #333333; font-size: 12.5px; margin-bottom: 6px;">⚡ القالب الاقتصادي</div>
+                    <div style="font-size: 11px; color: #444; line-height: 1.4;">
+                        • تصميم نصي خفيف وسريع<br>
+                        • مساحات بيضاء واسعة<br>
+                        • مثالي للطباعة المباشرة
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with prev_col3:
+                st.markdown("""
+                <div style="background: rgba(15, 118, 110, 0.04); border: 1.5px solid #0f766e; border-radius: 10px; padding: 12px; text-align: right; direction: rtl; min-height: 125px;">
+                    <div style="font-weight: bold; color: #0f766e; font-size: 12.5px; margin-bottom: 6px;">✨ القالب التجاري الحديث</div>
+                    <div style="font-size: 11px; color: #444; line-height: 1.4;">
+                        • لون تيل (Teal) عصري أنيق<br>
+                        • إبراز واضح للمجاميع<br>
+                        • مظهر تجاري راقي
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
+
+            selected_template_option = st.radio(
+                label="اختر قالب الفاتورة:",
+                options=[
+                    "🏛️ القالب الرسمي الموثق (جداول زرقاء + QR Code)",
+                    "⚡ القالب الاقتصادي البسيط (خفيف وسريع للطباعة)",
+                    "✨ القالب التجاري الحديث (عصري ومبرز للمجاميع)"
+                ],
+                horizontal=False,
+                label_visibility="collapsed",
+                key="sec4b_invoice_visual_template_selector_unique"
+            )
+
+            if "الاقتصادي" in selected_template_option:
+                invoice_template = "simple"
+            elif "الحديث" in selected_template_option:
+                invoice_template = "modern"
+            else:
+                invoice_template = "formal"
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
