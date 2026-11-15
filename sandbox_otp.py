@@ -152,22 +152,37 @@ def fix_arabic(text):
     return text
 
 # === تسجيل الخط العربي لدعم اللغة العربية ومنع ظهور المربعات ===
-import os
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttffonts import TTFFont
-
-# تحديد اسم الخط ومساره المحلي
-FONT_NAME = "CairoArabic"
-font_filename = "Cairo.ttf"  # الاسم المبسط بعد التسمية في المجلد
-
+# === الاستيراد الآمن لمكتبة ReportLab والخطوط لتفادي توقف التطبيق ===
 try:
-    if os.path.exists(font_filename):
-        pdfmetrics.registerFont(TTFFont(FONT_NAME, font_filename))
-    else:
-        # بديل احتياطي آمن في حال عدم وجود الملف محلياً
-        FONT_NAME = "Helvetica"
-except Exception as e:
-    FONT_NAME = "Helvetica"
+    import os
+    import io
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import inch
+    from reportlab.lib import colors
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttffonts import TTFFont
+    from reportlab.graphics.shapes import Drawing
+    from reportlab.graphics.barcode.qr import QrCodeWidget
+    
+    REPORTLAB_AVAILABLE = True
+except ImportError as e:
+    REPORTLAB_AVAILABLE = False
+    print(⚠️ تنبيه: مكتبة ReportLab غير مثبتة في البيئة الحالية: {e})
+
+# === تسجيل الخط العربي بشكل آمن ===
+FONT_NAME = "Helvetica"  # البديل الافتراضي الآمن
+if REPORTLAB_AVAILABLE:
+    font_filename = "Cairo.ttf"  # تأكد من أن اسم الملف في المستودع مطابق تماماً
+    try:
+        if os.path.exists(font_filename):
+            pdfmetrics.registerFont(TTFFont("CairoArabic", font_filename))
+            FONT_NAME = "CairoArabic"
+        else:
+            print(⚠️ ملف الخط Cairo.ttf غير موجود في المجلد الرئيسي، سيتم استخدام الخط الافتراضي.)
+    except Exception as e:
+        print(⚠️ خطأ أثناء تسجيل الخط العربي: {e})
 
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar", template_style="formal"):
     """
