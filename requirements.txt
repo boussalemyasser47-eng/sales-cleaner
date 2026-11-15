@@ -1,12 +1,8 @@
-pandas
-streamlit
-reportlab
-arabic-reshaper
-python-bidi
-resend
 streamlit
 pandas
 openpyxl
-qrcode[pil]
 reportlab
- 
+arabic-reshaper
+python-bidi
+qrcode[pil]
+resend
