@@ -152,17 +152,22 @@ def fix_arabic(text):
     return text
 
 # === تسجيل الخط العربي لدعم اللغة العربية ومنع ظهور المربعات ===
-try:
-    pdfmetrics.registerFont(TTFont('ArabicFont', 'Cairo.ttf'))
-    ARABIC_FONT_AVAILABLE = True
-except Exception:
-    try:
-        pdfmetrics.registerFont(TTFont('ArabicFont', 'Amiri-Regular.ttf'))
-        ARABIC_FONT_AVAILABLE = True
-    except Exception:
-        ARABIC_FONT_AVAILABLE = False
+import os
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttffonts import TTFFont
 
-FONT_NAME = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
+# تحديد اسم الخط ومساره المحلي
+FONT_NAME = "CairoArabic"
+font_filename = "Cairo.ttf"  # الاسم المبسط بعد التسمية في المجلد
+
+try:
+    if os.path.exists(font_filename):
+        pdfmetrics.registerFont(TTFFont(FONT_NAME, font_filename))
+    else:
+        # بديل احتياطي آمن في حال عدم وجود الملف محلياً
+        FONT_NAME = "Helvetica"
+except Exception as e:
+    FONT_NAME = "Helvetica"
 
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar", template_style="formal"):
     """
@@ -225,7 +230,7 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         lbl_qr_title = fix_arabic("ختم التحقق الرقمي:")
         lbl_qr_desc = fix_arabic("فاتورة مؤمنة عبر نظام NEXUS CENTRAL GATE.")
 
-    title_style = ParagraphStyle('TTitle', parent=styles['Heading1'], fontName=active_font, fontSize=20, textColor=primary_color, alignment=1, spaceAfter=4)
+    title_style = ParagraphStyle('TTitle', parent=styles['Heading1'], fontName=FONT_NAME, fontSize=20, textColor=primary_color, alignment=1, spaceAfter=4)
     sub_style = ParagraphStyle('TSub', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=12)
     align_style = ParagraphStyle('TAlign', parent=styles['Normal'], fontName=active_font, fontSize=9.5, textColor=colors.HexColor('#222222'), alignment=0 if is_fr else 2)
     center_style = ParagraphStyle('TCenter', parent=styles['Normal'], fontName=active_font, fontSize=9.5, textColor=colors.HexColor('#222222'), alignment=1)
