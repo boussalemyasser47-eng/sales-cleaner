@@ -137,9 +137,17 @@ try:
 except ImportError:
     ARABIC_TEXT_PROCESSING = False
 
+# استيراد أدوات إصلاح وعكس النصوص العربية لتظهر متصلة وباتجاه صحيح (RTL)
+try:
+    import arabic_reshaper
+    from bidi.algorithm import get_display
+    ARABIC_TEXT_PROCESSING = True
+except ImportError:
+    ARABIC_TEXT_PROCESSING = False
+
 def fix_arabic(text):
     """
-    دالة مساعدة لمعالجة النصوص العربية لضمان اتصالها واتجاهها الصحيح (RTL) وتفادي أي انعكاس
+    دالة مساعدة لمعالجة النصوص العربية لضمان اتصالها واتجاهها الصحيح (RTL) وتفادي أي انعكاس أو مستطيلات
     """
     if not text or not isinstance(text, str):
         return str(text)
