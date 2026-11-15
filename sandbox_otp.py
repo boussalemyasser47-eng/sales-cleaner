@@ -2262,52 +2262,13 @@ if "choice" in locals() or "choice" in globals():
                 type=["png", "jpg", "jpeg"], 
                 key="sec4b_invoice_logo_uploader_unique"
             )
-# ==========================================
-            # === بداية الكتلة الجديدة (المعاينة البصرية للقوالب) ===
-            # ==========================================
-            st.markdown("🎨 **تصميم وقالب الفاتورة (Template Style & Preview):**")
-            st.markdown("<span style='font-size: 12px; color: #666;'>اختر التصميم الذي يناسب هوية متجرك:</span>", unsafe_allow_html=True)
+# ==========================================================
+            # === بداية الكتلة الجديدة: بطاقات المعاينة النيونية (Holographic Cards) ===
+            # ==========================================================
+            st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
+            st.markdown("🎨 **اختر هوية وتصميم الفاتورة (Holographic Invoice Templates):**")
 
-            prev_col1, prev_col2, prev_col3 = st.columns(3)
-
-            with prev_col1:
-                st.markdown("""
-                <div style="background: rgba(0, 51, 102, 0.04); border: 1.5px solid #003366; border-radius: 10px; padding: 12px; text-align: right; direction: rtl; min-height: 125px;">
-                    <div style="font-weight: bold; color: #003366; font-size: 12.5px; margin-bottom: 6px;">🏛️ القالب الرسمي الموثق</div>
-                    <div style="font-size: 11px; color: #444; line-height: 1.4;">
-                        • جدول أزرق احترافي<br>
-                        • معلومات متكاملة للزبون<br>
-                        • ختم QR Code للتحقق
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with prev_col2:
-                st.markdown("""
-                <div style="background: rgba(51, 51, 51, 0.04); border: 1.5px solid #666666; border-radius: 10px; padding: 12px; text-align: right; direction: rtl; min-height: 125px;">
-                    <div style="font-weight: bold; color: #333333; font-size: 12.5px; margin-bottom: 6px;">⚡ القالب الاقتصادي</div>
-                    <div style="font-size: 11px; color: #444; line-height: 1.4;">
-                        • تصميم نصي خفيف وسريع<br>
-                        • مساحات بيضاء واسعة<br>
-                        • مثالي للطباعة المباشرة
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with prev_col3:
-                st.markdown("""
-                <div style="background: rgba(15, 118, 110, 0.04); border: 1.5px solid #0f766e; border-radius: 10px; padding: 12px; text-align: right; direction: rtl; min-height: 125px;">
-                    <div style="font-weight: bold; color: #0f766e; font-size: 12.5px; margin-bottom: 6px;">✨ القالب التجاري الحديث</div>
-                    <div style="font-size: 11px; color: #444; line-height: 1.4;">
-                        • لون تيل (Teal) عصري أنيق<br>
-                        • إبراز واضح للمجاميع<br>
-                        • مظهر تجاري راقي
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
-
+            # شفرة تفاعلية لالتقاط الاختيار عبر st.radio المدمج
             selected_template_option = st.radio(
                 label="اختر قالب الفاتورة:",
                 options=[
@@ -2317,15 +2278,76 @@ if "choice" in locals() or "choice" in globals():
                 ],
                 horizontal=False,
                 label_visibility="collapsed",
-                key="sec4b_invoice_visual_template_selector_unique"
+                key="sec4b_holo_template_selector_unique"
             )
 
+            # تحديد القالب البرمجي بناءً على اختيار التاجر
             if "الاقتصادي" in selected_template_option:
                 invoice_template = "simple"
+                active_glow_formal = "rgba(0, 51, 102, 0.08);"
+                active_border_formal = "1px solid rgba(0, 51, 102, 0.2);"
+                active_glow_simple = "rgba(0, 255, 240, 0.15);"
+                active_border_simple = "2px solid #00fff0; box-shadow: 0 0 15px rgba(0, 255, 240, 0.3);"
+                active_glow_modern = "rgba(15, 118, 110, 0.08);"
+                active_border_modern = "1px solid rgba(15, 118, 110, 0.2);"
             elif "الحديث" in selected_template_option:
                 invoice_template = "modern"
+                active_glow_formal = "rgba(0, 51, 102, 0.08);"
+                active_border_formal = "1px solid rgba(0, 51, 102, 0.2);"
+                active_glow_simple = "rgba(51, 51, 51, 0.04);"
+                active_border_simple = "1px solid rgba(102, 102, 102, 0.2);"
+                active_glow_modern = "rgba(0, 255, 240, 0.15);"
+                active_border_modern = "2px solid #00fff0; box-shadow: 0 0 15px rgba(0, 255, 240, 0.3);"
             else:
                 invoice_template = "formal"
+                active_glow_formal = "rgba(0, 255, 240, 0.15);"
+                active_border_formal = "2px solid #00fff0; box-shadow: 0 0 15px rgba(0, 255, 240, 0.3);"
+                active_glow_simple = "rgba(51, 51, 51, 0.04);"
+                active_border_simple = "1px solid rgba(102, 102, 102, 0.2);"
+                active_glow_modern = "rgba(15, 118, 110, 0.08);"
+                active_border_modern = "1px solid rgba(15, 118, 110, 0.2);"
+
+            # عرض البطاقات الهولوغرافية الثلاث بشكل متناسق
+            holo_col1, holo_col2, holo_col3 = st.columns(3)
+
+            with holo_col1:
+                st.markdown(f"""
+                <div style="background: {active_glow_formal}; backdrop-filter: blur(10px); border-radius: 12px; padding: 14px; border: {active_border_formal}; text-align: right; direction: rtl; min-height: 130px; transition: all 0.3s ease;">
+                    <div style="font-weight: bold; color: #00fff0 if '{invoice_template}'=='formal' else '#003366'; font-size: 13px; margin-bottom: 6px;">🏛️ القالب الرسمي الموثق</div>
+                    <div style="font-size: 11px; color: #cbd5e1; line-height: 1.4;">
+                        • جدول زرقاء هندسي<br>
+                        • بيانات الزبون الكاملة<br>
+                        • ختم QR Code الموثق
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with holo_col2:
+                st.markdown(f"""
+                <div style="background: {active_glow_simple}; backdrop-filter: blur(10px); border-radius: 12px; padding: 14px; border: {active_border_simple}; text-align: right; direction: rtl; min-height: 130px; transition: all 0.3s ease;">
+                    <div style="font-weight: bold; color: #00fff0 if '{invoice_template}'=='simple' else '#e2e8f0'; font-size: 13px; margin-bottom: 6px;">⚡ القالب الاقتصادي</div>
+                    <div style="font-size: 11px; color: #cbd5e1; line-height: 1.4;">
+                        • تصميم نصي خفيف وسريع<br>
+                        • بدون خلفيات ثقيلة<br>
+                        • مثالي للطابعات الحرارية الكبيرة
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with holo_col3:
+                st.markdown(f"""
+                <div style="background: {active_glow_modern}; backdrop-filter: blur(10px); border-radius: 12px; padding: 14px; border: {active_border_modern}; text-align: right; direction: rtl; min-height: 130px; transition: all 0.3s ease;">
+                    <div style="font-weight: bold; color: #00fff0 if '{invoice_template}'=='modern' else '#0f766e'; font-size: 13px; margin-bottom: 6px;">✨ القالب التجاري الحديث</div>
+                    <div style="font-size: 11px; color: #cbd5e1; line-height: 1.4;">
+                        • ألوان تيل (Teal) عصرية<br>
+                        • إبراز المجاميع بدقة<br>
+                        • مظهر تجاري فاخر
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+            # ==========================================================
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
