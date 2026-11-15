@@ -1,3 +1,4 @@
+# ========================================================
 # 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
 # ========================================================
 import os
@@ -152,41 +153,21 @@ def fix_arabic(text):
     return text
 
 # === تسجيل الخط العربي لدعم اللغة العربية ومنع ظهور المربعات ===
-# === الاستيراد الآمن لمكتبة ReportLab والخطوط لتفادي توقف التطبيق ===
 try:
-    import os
-    import io
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib.units import inch
-    from reportlab.lib import colors
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.pdfbase import pdfmetrics
-    from reportlab.pdfbase.ttffonts import TTFFont
-    from reportlab.graphics.shapes import Drawing
-    from reportlab.graphics.barcode.qr import QrCodeWidget
-    
-    REPORTLAB_AVAILABLE = True
-except ImportError as e:
-    REPORTLAB_AVAILABLE = False
-    print(⚠️ تنبيه: مكتبة ReportLab غير مثبتة في البيئة الحالية: {e})
-
-# === تسجيل الخط العربي بشكل آمن ===
-FONT_NAME = "Helvetica"  # البديل الافتراضي الآمن
-if REPORTLAB_AVAILABLE:
-    font_filename = "Cairo.ttf"  # تأكد من أن اسم الملف في المستودع مطابق تماماً
+    pdfmetrics.registerFont(TTFont('ArabicFont', 'Cairo.ttf'))
+    ARABIC_FONT_AVAILABLE = True
+except Exception:
     try:
-        if os.path.exists(font_filename):
-            pdfmetrics.registerFont(TTFFont("CairoArabic", font_filename))
-            FONT_NAME = "CairoArabic"
-        else:
-            print(⚠️ ملف الخط Cairo.ttf غير موجود في المجلد الرئيسي، سيتم استخدام الخط الافتراضي.)
-    except Exception as e:
-        print(⚠️ خطأ أثناء تسجيل الخط العربي: {e})
+        pdfmetrics.registerFont(TTFont('ArabicFont', 'Amiri-Regular.ttf'))
+        ARABIC_FONT_AVAILABLE = True
+    except Exception:
+        ARABIC_FONT_AVAILABLE = False
 
-def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar", template_style="formal"):
+FONT_NAME = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
+
+def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar"):
     """
-    دالة توليد فاتورة مبيعات بحجم A4 تدعم متعدد اللغات وقوالب التصميم (formal, simple, modern)
+    دالة توليد فاتورة مبيعات رسمية بحجم A4 مع دعم التبديل التلقائي بين العربية (RTL) والفرنسية (LTR)
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -202,35 +183,21 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     is_fr = (lang == "fr")
     active_font = 'Helvetica' if is_fr else FONT_NAME
 
-    # تحديد الألوان حسب القالب
-    if template_style == "modern":
-        primary_color = colors.HexColor('#0f766e') # تيل عصري
-        bg_header_color = colors.HexColor('#f0fdf4')
-        border_color = colors.HexColor('#14b8a6')
-    elif template_style == "simple":
-        primary_color = colors.HexColor('#333333') # أسود/رمادي اقتصادي
-        bg_header_color = colors.HexColor('#ffffff')
-        border_color = colors.HexColor('#666666')
-    else: # formal (الافتراضي - الجدول الأزرق)
-        primary_color = colors.HexColor('#003366')
-        bg_header_color = colors.HexColor('#f8f9fa')
-        border_color = colors.HexColor('#cbd5e1')
-
-    # نصوص الواجهة حسب اللغة
+    # إعداد النصوص حسب اللغة المختارة
     if is_fr:
-        lbl_subtitle = "FACTURE DE VENTE ET BON DE COMMANDE" if template_style != "simple" else "BON DE COMMANDE SIMPLIFIÉ"
+        lbl_subtitle = "FACTURE DE VENTE ET BON DE COMMANDE"
         lbl_shop = f"<b>Magasin :</b> {shop_name}"
         lbl_cust = f"<b>Client :</b> {customer_name}"
         lbl_addr = f"<b>Adresse :</b> {customer_address}"
         lbl_phone = f"<b>Téléphone :</b> {customer_phone}"
         h_prod, h_qty, h_price, h_tot = "Désignation", "Qté", "Prix Unitaire", "Total (DA)"
-        lbl_sub = "Sous-total :"
-        lbl_ship = "Livraison :"
-        lbl_final = "TOTAL NET :"
-        lbl_qr_title = "Sceau Numérique :"
-        lbl_qr_desc = "Document sécurisé par NEXUS CENTRAL GATE."
+        lbl_sub = "Sous-total Produit :"
+        lbl_ship = "Frais de Livraison :"
+        lbl_final = "NET À PAYER :"
+        lbl_qr_title = "Sceau de Vérification Numérique :"
+        lbl_qr_desc = "Document généré électroniquement et sécurisé par NEXUS CENTRAL GATE."
     else:
-        lbl_subtitle = fix_arabic("فاتورة مبيعات وتأكيد طلبية رسمية وموثقة") if template_style != "simple" else fix_arabic("فاتورة مبيعات مبسطة وسريعة")
+        lbl_subtitle = fix_arabic("فاتورة مبيعات وتأكيد طلبية رسمية وموثقة")
         lbl_shop = fix_arabic(f"<b>اسم المتجر:</b> {shop_name}")
         lbl_cust = fix_arabic(f"<b>اسم الزبون:</b> {customer_name}")
         lbl_addr = fix_arabic(f"<b>عنوان التوصيل:</b> {customer_address}")
@@ -239,83 +206,86 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         h_qty = fix_arabic("الكمية")
         h_price = fix_arabic("السعر الفردي")
         h_tot = fix_arabic("الإجمالي (DA)")
-        lbl_sub = fix_arabic("المجموع الفرعي:")
-        lbl_ship = fix_arabic("تكلفة الشحن:")
+        lbl_sub = fix_arabic("المجموع الفرعي للمنتج:")
+        lbl_ship = fix_arabic("تكلفة الشحن والتوصيل:")
         lbl_final = fix_arabic("الإجمالي النهائي المطلوب:")
-        lbl_qr_title = fix_arabic("ختم التحقق الرقمي:")
-        lbl_qr_desc = fix_arabic("فاتورة مؤمنة عبر نظام NEXUS CENTRAL GATE.")
+        lbl_qr_title = fix_arabic("ختم التحقق الرقمي الموثق:")
+        lbl_qr_desc = fix_arabic("هذه الفاتورة صادرة إلكترونياً ومؤمنة عبر نظام NEXUS CENTRAL GATE.")
 
-    title_style = ParagraphStyle('TTitle', parent=styles['Heading1'], fontName=FONT_NAME, fontSize=20, textColor=primary_color, alignment=1, spaceAfter=4)
-    sub_style = ParagraphStyle('TSub', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=12)
-    align_style = ParagraphStyle('TAlign', parent=styles['Normal'], fontName=active_font, fontSize=9.5, textColor=colors.HexColor('#222222'), alignment=0 if is_fr else 2)
-    center_style = ParagraphStyle('TCenter', parent=styles['Normal'], fontName=active_font, fontSize=9.5, textColor=colors.HexColor('#222222'), alignment=1)
-    header_style = ParagraphStyle('THeader', parent=styles['Normal'], fontName=active_font, fontSize=9.5, textColor=colors.whitesmoke, alignment=1)
+    # أنماط النصوص والاتجاهات (RTL للعربية / LTR للفرنسية)
+    title_style = ParagraphStyle('InvTitle', parent=styles['Heading1'], fontName=active_font, fontSize=22, textColor=colors.HexColor('#003366'), alignment=1, spaceAfter=6)
+    sub_style = ParagraphStyle('InvSub', parent=styles['Normal'], fontName=active_font, fontSize=11, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=15)
+    align_style = ParagraphStyle('AlignStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=0 if is_fr else 2)
+    center_style = ParagraphStyle('CenterStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=1)
+    header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.whitesmoke, alignment=1)
 
-    if logo_data and template_style != "simple":
+    if logo_data:
         try:
-            img = Image(io.BytesIO(logo_data), width=55, height=55)
+            img = Image(io.BytesIO(logo_data), width=65, height=65)
             elements.append(img)
-            elements.append(Spacer(1, 6))
+            elements.append(Spacer(1, 8))
         except Exception:
             pass
 
-    elements.append(Paragraph(f"<b>{shop_name if is_fr else fix_arabic(shop_name)}</b>", title_style))
+    shop_display = shop_name if is_fr else fix_arabic(shop_name)
+    elements.append(Paragraph(f"<b>{shop_display}</b>", title_style))
     elements.append(Paragraph(f"<b>{lbl_subtitle}</b>", sub_style))
-    elements.append(Spacer(1, 8))
+    elements.append(Spacer(1, 10))
 
-    # معلومات المتجر والزبون
+    # 1. جدول بيانات المتجر والزبون (يعكس الترتيب تلقائياً حسب اللغة)
     if is_fr:
-        info_data = [[Paragraph(lbl_cust, align_style), Paragraph(lbl_shop, align_style)], [Paragraph(lbl_phone, align_style), Paragraph(lbl_addr, align_style)]]
+        info_data = [
+            [Paragraph(lbl_cust, align_style), Paragraph(lbl_shop, align_style)],
+            [Paragraph(lbl_phone, align_style), Paragraph(lbl_addr, align_style)]
+        ]
     else:
-        info_data = [[Paragraph(lbl_shop, align_style), Paragraph(lbl_cust, align_style)], [Paragraph(lbl_addr, align_style), Paragraph(lbl_phone, align_style)]]
+        info_data = [
+            [Paragraph(lbl_shop, align_style), Paragraph(lbl_cust, align_style)],
+            [Paragraph(lbl_addr, align_style), Paragraph(lbl_phone, align_style)]
+        ]
 
     t_info = Table(info_data, colWidths=[260, 260])
     t_info.setStyle(TableStyle([
         ('ALIGN', (0,0), (-1,-1), 'LEFT' if is_fr else 'RIGHT'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-        ('BACKGROUND', (0,0), (-1,-1), bg_header_color),
-        ('BOX', (0,0), (-1,-1), 0.5, border_color),
-        ('INNERGRID', (0,0), (-1,-1), 0.3, colors.HexColor('#e2e8f0')),
+        ('TOPPADDING', (0,0), (-1,-1), 8),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8f9fa')),
+        ('BOX', (0,0), (-1,-1), 0.7, colors.HexColor('#cbd5e1')),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e2e8f0')),
     ]))
     elements.append(t_info)
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 15))
 
-    # جدول المنتجات (يختلف حسب القالب: الاقتصادي بلا خلفيات ملونة وبسيطة)
+    # 2. جدول المنتجات (ترتيب الأعمدة من اليسار لليمين للفرنسية، ومن اليمين لليسار للعربية)
     prod_display = product_name if is_fr else fix_arabic(product_name)
     if is_fr:
         items_data = [
-            [Paragraph(f"<b>{h_prod}</b>", header_style if template_style != "simple" else align_style), Paragraph(f"<b>{h_qty}</b>", header_style if template_style != "simple" else center_style), Paragraph(f"<b>{h_price}</b>", header_style if template_style != "simple" else center_style), Paragraph(f"<b>{h_tot}</b>", header_style if template_style != "simple" else center_style)],
+            [Paragraph(f"<b>{h_prod}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_tot}</b>", header_style)],
             [Paragraph(prod_display, align_style), Paragraph(str(quantity), center_style), Paragraph(f"{price:,.2f}", center_style), Paragraph(f"{product_total:,.2f}", center_style)]
         ]
         col_widths_items = [240, 60, 110, 110]
     else:
         items_data = [
-            [Paragraph(f"<b>{h_tot}</b>", header_style if template_style != "simple" else center_style), Paragraph(f"<b>{h_price}</b>", header_style if template_style != "simple" else center_style), Paragraph(f"<b>{h_qty}</b>", header_style if template_style != "simple" else center_style), Paragraph(f"<b>{h_prod}</b>", header_style if template_style != "simple" else align_style)],
+            [Paragraph(f"<b>{h_tot}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_prod}</b>", header_style)],
             [Paragraph(f"{product_total:,.2f}", center_style), Paragraph(f"{price:,.2f}", center_style), Paragraph(str(quantity), center_style), Paragraph(prod_display, align_style)]
         ]
         col_widths_items = [110, 110, 60, 240]
 
     t_items = Table(items_data, colWidths=col_widths_items)
-    item_table_style = [
+    t_items.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 7),
-        ('TOPPADDING', (0,0), (-1,-1), 7),
-        ('GRID', (0,0), (-1,-1), 0.5, border_color),
-    ]
-    if template_style != "simple":
-        item_table_style.insert(0, ('BACKGROUND', (0,0), (-1,0), primary_color))
-        item_table_style.append(('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#ffffff')))
-    else:
-        item_table_style.insert(0, ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f1f5f9')))
-
-    t_items.setStyle(TableStyle(item_table_style))
+        ('BOTTOMPADDING', (0,0), (-1,-1), 9),
+        ('TOPPADDING', (0,0), (-1,-1), 9),
+        ('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#ffffff')),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+    ]))
     elements.append(t_items)
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 15))
 
-    # المجاميع النهائية
-    final_style = ParagraphStyle('FinalSt', parent=align_style, fontName=active_font, fontSize=10.5, textColor=primary_color)
+    # 3. جدول المجاميع النهائية
+    final_style = ParagraphStyle('FinalSt', parent=align_style, fontName=active_font, fontSize=11, textColor=colors.HexColor('#003366'))
     if is_fr:
         totals_data = [
             [Paragraph(f"<b>{lbl_sub}</b>", align_style), Paragraph(f"<b>{product_total:,.2f} DA</b>", align_style)],
@@ -334,39 +304,38 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     t_totals = Table(totals_data, colWidths=col_widths_tot)
     t_totals.setStyle(TableStyle([
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
-        ('TOPPADDING', (0,0), (-1,-1), 5),
-        ('LINEABOVE', (0,2), (-1,2), 1, primary_color),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 7),
+        ('TOPPADDING', (0,0), (-1,-1), 7),
+        ('LINEABOVE', (0,2), (-1,2), 1, colors.HexColor('#003366')),
     ]))
     elements.append(t_totals)
-    elements.append(Spacer(1, 15))
+    elements.append(Spacer(1, 20))
 
-    # الختم الرقمي (يظهر في القالب الرسمي والحديث، ويُختصر في الاقتصادي)
-    if template_style != "simple":
-        qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Total: {final_total} DA | Style: {template_style}"
-        qr = QrCodeWidget(qr_data_string)
-        qr.barWidth = 60
-        qr.barHeight = 60
-        d = Drawing(60, 60)
-        d.add(qr)
+    # 4. الختم الرقمي QR Code
+    qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Phone: {customer_phone} | Total: {final_total} DA | Lang: {lang}"
+    qr = QrCodeWidget(qr_data_string)
+    qr.barWidth = 70
+    qr.barHeight = 70
+    d = Drawing(70, 70)
+    d.add(qr)
 
-        qr_text_style = ParagraphStyle('QrTxt', parent=styles['Normal'], fontName=active_font, fontSize=8, textColor=colors.HexColor('#444444'), alignment=0 if is_fr else 2)
-        qr_para = Paragraph(f"<b>{lbl_qr_title}</b><br/>{lbl_qr_desc}", qr_text_style)
+    qr_text_style = ParagraphStyle('QrTxt', parent=styles['Normal'], fontName=active_font, fontSize=8.5, textColor=colors.HexColor('#444444'), alignment=0 if is_fr else 2)
+    qr_para = Paragraph(f"<b>{lbl_qr_title}</b><br/>{lbl_qr_desc}", qr_text_style)
 
-        qr_data = [[qr_para, d]] if not is_fr else [[d, qr_para]]
-        qr_widths = [400, 100] if not is_fr else [100, 400]
+    qr_data = [[qr_para, d]] if not is_fr else [[d, qr_para]]
+    qr_widths = [380, 120] if not is_fr else [120, 380]
 
-        t_qr = Table(qr_data, colWidths=qr_widths)
-        t_qr.setStyle(TableStyle([
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('BACKGROUND', (0,0), (-1,-1), bg_header_color),
-            ('BOX', (0,0), (-1,-1), 0.5, border_color),
-            ('TOPPADDING', (0,0), (-1,-1), 6),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-            ('LEFTPADDING', (0,0), (-1,-1), 8),
-            ('RIGHTPADDING', (0,0), (-1,-1), 8),
-        ]))
-        elements.append(t_qr)
+    t_qr = Table(qr_data, colWidths=qr_widths)
+    t_qr.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f1f5f9')),
+        ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+        ('TOPPADDING', (0,0), (-1,-1), 8),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+        ('LEFTPADDING', (0,0), (-1,-1), 10),
+        ('RIGHTPADDING', (0,0), (-1,-1), 10),
+    ]))
+    elements.append(t_qr)
 
     doc.build(elements)
     buffer.seek(0)
@@ -2282,100 +2251,9 @@ if "choice" in locals() or "choice" in globals():
                 type=["png", "jpg", "jpeg"], 
                 key="sec4b_invoice_logo_uploader_unique"
             )
-# ==========================================================
-            # === بداية الكتلة الجديدة: قائمة منبثقة نيونية لاختيار القوالب ===
-            # ==========================================================
-            st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
-            
-            # استخدام expander كممر تفاعلي منبثق لإخفاء أو إظهار تفاصيل القوالب والمعاينة
-            with st.expander("🎨 تخصيص وتغيير قالب الفاتورة (اضغط للإظهار / الإخفاء)", expanded=False):
-                st.markdown("<span style='font-size: 12px; color: #a5b4fc;'>اختر التصميم الذي يناسب هوية متجرك بدقة:</span>", unsafe_allow_html=True)
-                st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
 
-                # شفرة تفاعلية لالتقاط الاختيار عبر st.radio المدمج داخل القائمة
-                selected_template_option = st.radio(
-                    label="اختر قالب الفاتورة:",
-                    options=[
-                        "🏛️ القالب الرسمي الموثق (جداول زرقاء + QR Code)",
-                        "⚡ القالب الاقتصادي البسيط (خفيف وسريع للطباعة)",
-                        "✨ القالب التجاري الحديث (عصري ومبرز للمجاميع)"
-                    ],
-                    horizontal=False,
-                    label_visibility="collapsed",
-                    key="sec4b_holo_expandable_template_selector_unique"
-                )
 
-                # تحديد القالب البرمجي وتأثيرات الإضاءة النيونية بناءً على اختيار التاجر
-                if "الاقتصادي" in selected_template_option:
-                    invoice_template = "simple"
-                    active_glow_formal = "rgba(0, 51, 102, 0.04);"
-                    active_border_formal = "1px solid rgba(0, 51, 102, 0.2);"
-                    active_glow_simple = "rgba(0, 255, 240, 0.15);"
-                    active_border_simple = "2px solid #00fff0; box-shadow: 0 0 12px rgba(0, 255, 240, 0.25);"
-                    active_glow_modern = "rgba(15, 118, 110, 0.04);"
-                    active_border_modern = "1px solid rgba(15, 118, 110, 0.2);"
-                elif "الحديث" in selected_template_option:
-                    invoice_template = "modern"
-                    active_glow_formal = "rgba(0, 51, 102, 0.04);"
-                    active_border_formal = "1px solid rgba(0, 51, 102, 0.2);"
-                    active_glow_simple = "rgba(51, 51, 51, 0.02);"
-                    active_border_simple = "1px solid rgba(102, 102, 102, 0.2);"
-                    active_glow_modern = "rgba(0, 255, 240, 0.15);"
-                    active_border_modern = "2px solid #00fff0; box-shadow: 0 0 12px rgba(0, 255, 240, 0.25);"
-                else:
-                    invoice_template = "formal"
-                    active_glow_formal = "rgba(0, 255, 240, 0.15);"
-                    active_border_formal = "2px solid #00fff0; box-shadow: 0 0 12px rgba(0, 255, 240, 0.25);"
-                    active_glow_simple = "rgba(51, 51, 51, 0.02);"
-                    active_border_simple = "1px solid rgba(102, 102, 102, 0.2);"
-                    active_glow_modern = "rgba(15, 118, 110, 0.04);"
-                    active_border_modern = "1px solid rgba(15, 118, 110, 0.2);"
 
-                st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
-                
-                # عرض البطاقات الهولوغرافية الثلاث بشكل مصغر داخل القائمة المنبثقة
-                holo_col1, holo_col2, holo_col3 = st.columns(3)
-
-                with holo_col1:
-                    st.markdown(f"""
-                    <div style="background: {active_glow_formal}; backdrop-filter: blur(8px); border-radius: 10px; padding: 10px; border: {active_border_formal}; text-align: right; direction: rtl; min-height: 110px;">
-                        <div style="font-weight: bold; color: #00fff0; font-size: 12px; margin-bottom: 4px;">🏛️ الرسمي الموثق</div>
-                        <div style="font-size: 10.5px; color: #cbd5e1; line-height: 1.3;">
-                            • جدول أزرق هندسي<br>
-                            • ختم QR Code للتحقق
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                with holo_col2:
-                    st.markdown(f"""
-                    <div style="background: {active_glow_simple}; backdrop-filter: blur(8px); border-radius: 10px; padding: 10px; border: {active_border_simple}; text-align: right; direction: rtl; min-height: 110px;">
-                        <div style="font-weight: bold; color: #00fff0; font-size: 12px; margin-bottom: 4px;">⚡ الاقتصادي البسيط</div>
-                        <div style="font-size: 10.5px; color: #cbd5e1; line-height: 1.3;">
-                            • تصميم نصي خفيف<br>
-                            • سريع للطباعة المباشرة
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                with holo_col3:
-                    st.markdown(f"""
-                    <div style="background: {active_glow_modern}; backdrop-filter: blur(8px); border-radius: 10px; padding: 10px; border: {active_border_modern}; text-align: right; direction: rtl; min-height: 110px;">
-                        <div style="font-weight: bold; color: #00fff0; font-size: 12px; margin-bottom: 4px;">✨ التجاري الحديث</div>
-                        <div style="font-size: 10.5px; color: #cbd5e1; line-height: 1.3;">
-                            • ألوان تيل عصرية<br>
-                            • إبراز دقيق للمجاميع
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-            # قيمة افتراضية في حال كانت القائمة مغلقة (القالب الرسمي الموثق كافتراضي)
-            if 'invoice_template' not in locals():
-                invoice_template = "formal"
-
-            st.markdown("<div style='margin-top: 12px;'></div>", unsafe_allow_html=True)
-            # ==========================================================
-            # ==========================================================
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
@@ -2405,7 +2283,7 @@ if "choice" in locals() or "choice" in globals():
                     conne.commit()
                     
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang=lang_code, template_style=invoice_template)
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang=lang_code)
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
                     st.session_state["last_active_customer"] = customer_name
                     st.session_state["last_active_phone"] = customer_phone
