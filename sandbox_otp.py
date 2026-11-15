@@ -215,11 +215,10 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         lbl_qr_desc = "Document généré électroniquement et sécurisé par NEXUS CENTRAL GATE."
     else:
         lbl_subtitle = fix_arabic("فاتورة مبيعات وتأكيد طلبية رسمية وموثقة")
-
-        lbl_shop = fix_arabic(f"<b>اسم المتجر:</b> {shop_name}")
-        lbl_cust = fix_arabic(f"<b>اسم الزبون:</b> {customer_name}")
-        lbl_addr = fix_arabic(f"<b>عنوان التوصيل:</b> {customer_address}")
-        lbl_phone = fix_arabic(f"<b>رقم الهاتف:</b> {customer_phone}")
+        lbl_shop = f"<b>{fix_arabic('اسم المتجر')} :</b> {fix_arabic(shop_name)}"
+        lbl_cust = f"<b>{fix_arabic('اسم الزبون')} :</b> {fix_arabic(customer_name)}"
+        lbl_addr = f"<b>{fix_arabic('عنوان التوصيل')} :</b> {fix_arabic(customer_address)}"
+        lbl_phone = f"<b>{fix_arabic('رقم الهاتف')} :</b> {fix_arabic(customer_phone)}"
         h_prod = fix_arabic("اسم المنتج")
         h_qty = fix_arabic("الكمية")
         h_price = fix_arabic("السعر الفردي")
@@ -405,10 +404,11 @@ def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, custome
     inner_elements = []
     
     # اسم المتجر والعنوان الفرعي
+# اسم المتجر والعنوان الفرعي
     inner_elements.append(Paragraph(fix_arabic(shop_name), label_title))
     inner_elements.append(Paragraph(fix_arabic("--- ملصق شحن وتوصيل حراري ---"), ParagraphStyle('SubLbl', parent=label_normal, alignment=1, fontSize=8, textColor=colors.HexColor('#555555'))))
     
-    # خط فاصل أنيق تحت اسم المتجر والعنوان الفرعي
+    # خط فاصل أنيق
     inner_elements.append(Spacer(1, 2))
     divider_table = Table([[""]], colWidths=[250], rowHeights=[1])
     divider_table.setStyle(TableStyle([
@@ -419,17 +419,16 @@ def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, custome
     inner_elements.append(divider_table)
     inner_elements.append(Spacer(1, 6))
     
-    # بيانات الشحن والزبون منظمة من اليمين لليسار
-    inner_elements.append(Paragraph(f"{current_date} : {fix_arabic('التاريخ')}", label_normal))
-    inner_elements.append(Paragraph(f"{customer_name} : {fix_arabic('الزبون')}", label_normal))
-    inner_elements.append(Paragraph(f"{customer_phone} : {fix_arabic('الهاتف')}", label_normal))
-    inner_elements.append(Paragraph(f"{customer_address} : {fix_arabic('العنوان')}", label_normal))
-    inner_elements.append(Paragraph(f"{product_name} : {fix_arabic('المنتج')}", label_normal))
+    # بيانات الشحن والزبون (عربي مفصول عن التاريخ والأرقام لتفادي المستطيلات)
+    inner_elements.append(Paragraph(f"{fix_arabic('التاريخ')} : {current_date}", label_normal))
+    inner_elements.append(Paragraph(f"{fix_arabic('الزبون')} : {customer_name}", label_normal))
+    inner_elements.append(Paragraph(f"{fix_arabic('الهاتف')} : {customer_phone}", label_normal))
+    inner_elements.append(Paragraph(f"{fix_arabic('العنوان')} : {customer_address}", label_normal))
+    inner_elements.append(Paragraph(f"{fix_arabic('المنتج')} : {product_name}", label_normal))
     
     inner_elements.append(Spacer(1, 4))
     price_str = f"{final_total:,.2f} DA"
-    inner_elements.append(Paragraph(f"{price_str} : {fix_arabic('المبلغ الواجب تحصيله')}", label_price))
-
+    inner_elements.append(Paragraph(f"{fix_arabic('المبلغ الواجب تحصيله')} : {price_str}", label_price))
     # وضع العناصر داخل جدول يحيط به إطار خارجي (Border) واضح للطباعة
     outer_table = Table([[inner_elements]], colWidths=[260])
     outer_table.setStyle(TableStyle([
