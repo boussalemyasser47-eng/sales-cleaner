@@ -2265,7 +2265,99 @@ if "choice" in locals() or "choice" in globals():
                 type=["png", "jpg", "jpeg"], 
                 key="sec4b_invoice_logo_uploader_unique"
             )
+# ==========================================================
+            # === بداية الكتلة الجديدة: قائمة منبثقة نيونية لاختيار القوالب ===
+            # ==========================================================
+            st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+            
+            # استخدام expander كممر تفاعلي منبثق لإخفاء أو إظهار تفاصيل القوالب والمعاينة
+            with st.expander("🎨 تخصيص وتغيير قالب الفاتورة (اضغط للإظهار / الإخفاء)", expanded=False):
+                st.markdown("<span style='font-size: 12px; color: #a5b4fc;'>اختر التصميم الذي يناسب هوية متجرك بدقة:</span>", unsafe_allow_html=True)
+                st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
 
+                # شفرة تفاعلية لالتقاط الاختيار عبر st.radio المدمج داخل القائمة
+                selected_template_option = st.radio(
+                    label="اختر قالب الفاتورة:",
+                    options=[
+                        "🏛️ القالب الرسمي الموثق (جداول زرقاء + QR Code)",
+                        "⚡ القالب الاقتصادي البسيط (خفيف وسريع للطباعة)",
+                        "✨ القالب التجاري الحديث (عصري ومبرز للمجاميع)"
+                    ],
+                    horizontal=False,
+                    label_visibility="collapsed",
+                    key="sec4b_holo_expandable_template_selector_unique"
+                )
+
+                # تحديد القالب البرمجي وتأثيرات الإضاءة النيونية بناءً على اختيار التاجر
+                if "الاقتصادي" in selected_template_option:
+                    invoice_template = "simple"
+                    active_glow_formal = "rgba(0, 51, 102, 0.04);"
+                    active_border_formal = "1px solid rgba(0, 51, 102, 0.2);"
+                    active_glow_simple = "rgba(0, 255, 240, 0.15);"
+                    active_border_simple = "2px solid #00fff0; box-shadow: 0 0 12px rgba(0, 255, 240, 0.25);"
+                    active_glow_modern = "rgba(15, 118, 110, 0.04);"
+                    active_border_modern = "1px solid rgba(15, 118, 110, 0.2);"
+                elif "الحديث" in selected_template_option:
+                    invoice_template = "modern"
+                    active_glow_formal = "rgba(0, 51, 102, 0.04);"
+                    active_border_formal = "1px solid rgba(0, 51, 102, 0.2);"
+                    active_glow_simple = "rgba(51, 51, 51, 0.02);"
+                    active_border_simple = "1px solid rgba(102, 102, 102, 0.2);"
+                    active_glow_modern = "rgba(0, 255, 240, 0.15);"
+                    active_border_modern = "2px solid #00fff0; box-shadow: 0 0 12px rgba(0, 255, 240, 0.25);"
+                else:
+                    invoice_template = "formal"
+                    active_glow_formal = "rgba(0, 255, 240, 0.15);"
+                    active_border_formal = "2px solid #00fff0; box-shadow: 0 0 12px rgba(0, 255, 240, 0.25);"
+                    active_glow_simple = "rgba(51, 51, 51, 0.02);"
+                    active_border_simple = "1px solid rgba(102, 102, 102, 0.2);"
+                    active_glow_modern = "rgba(15, 118, 110, 0.04);"
+                    active_border_modern = "1px solid rgba(15, 118, 110, 0.2);"
+
+                st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
+                
+                # عرض البطاقات الهولوغرافية الثلاث بشكل مصغر داخل القائمة المنبثقة
+                holo_col1, holo_col2, holo_col3 = st.columns(3)
+
+                with holo_col1:
+                    st.markdown(f"""
+                    <div style="background: {active_glow_formal}; backdrop-filter: blur(8px); border-radius: 10px; padding: 10px; border: {active_border_formal}; text-align: right; direction: rtl; min-height: 110px;">
+                        <div style="font-weight: bold; color: #00fff0; font-size: 12px; margin-bottom: 4px;">🏛️ الرسمي الموثق</div>
+                        <div style="font-size: 10.5px; color: #cbd5e1; line-height: 1.3;">
+                            • جدول أزرق هندسي<br>
+                            • ختم QR Code للتحقق
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with holo_col2:
+                    st.markdown(f"""
+                    <div style="background: {active_glow_simple}; backdrop-filter: blur(8px); border-radius: 10px; padding: 10px; border: {active_border_simple}; text-align: right; direction: rtl; min-height: 110px;">
+                        <div style="font-weight: bold; color: #00fff0; font-size: 12px; margin-bottom: 4px;">⚡ الاقتصادي البسيط</div>
+                        <div style="font-size: 10.5px; color: #cbd5e1; line-height: 1.3;">
+                            • تصميم نصي خفيف<br>
+                            • سريع للطباعة المباشرة
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with holo_col3:
+                    st.markdown(f"""
+                    <div style="background: {active_glow_modern}; backdrop-filter: blur(8px); border-radius: 10px; padding: 10px; border: {active_border_modern}; text-align: right; direction: rtl; min-height: 110px;">
+                        <div style="font-weight: bold; color: #00fff0; font-size: 12px; margin-bottom: 4px;">✨ التجاري الحديث</div>
+                        <div style="font-size: 10.5px; color: #cbd5e1; line-height: 1.3;">
+                            • ألوان تيل عصرية<br>
+                            • إبراز دقيق للمجاميع
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            # قيمة افتراضية في حال كانت القائمة مغلقة (القالب الرسمي الموثق كافتراضي)
+            if 'invoice_template' not in locals():
+                invoice_template = "formal"
+
+            st.markdown("<div style='margin-top: 12px;'></div>", unsafe_allow_html=True)
+            # ==========================================================
 
 
         with col_right:
