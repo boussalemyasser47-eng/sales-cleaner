@@ -159,27 +159,24 @@ def fix_arabic(text):
             return text
     return text
 # === تسجيل الخط العربي لدعم اللغة العربية ومنع ظهور المربعات ===
+# === تحميل وتسجيل الخط العربي تلقائياً (ضمان عدم ظهور المستطيلات) ===
+import urllib.request
 import os
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
-FONT_NAME = "Helvetica" # الافتراضي كاحتياط
-font_filename = "Cairo.ttf"
+FONT_FILE = "Amiri-Regular.ttf"
+FONT_URL = "https://raw.githubusercontent.com/google/fonts/main/ofl/amiri/Amiri-Regular.ttf"
 
 try:
-    # التأكد من المسار النسبي والمطلق للملف في المستودع
-    base_path = os.path.dirname(os.path.abspath(__file__))
-    full_font_path = os.path.join(base_path, font_filename)
+    if not os.path.exists(FONT_FILE) or os.path.getsize(FONT_FILE) < 10000:
+        urllib.request.urlretrieve(FONT_URL, FONT_FILE)
     
-    if os.path.exists(full_font_path):
-        pdfmetrics.registerFont(TTFont('ArabicFont', full_font_path))
-        FONT_NAME = 'ArabicFont'
-        print("✅ تم تسجيل الخط العربي Cairo.ttf بنجاح!")
-    else:
-        # محاولة أخيرة بالاسم المباشر
-        pdfmetrics.registerFont(TTFont('ArabicFont', font_filename))
-        FONT_NAME = 'ArabicFont'
-        print("✅ تم تسجيل الخط العربي بالاسم المباشر!")
+    pdfmetrics.registerFont(TTFont('CustomArabic', FONT_FILE))
+    FONT_NAME = 'CustomArabic'
+    print("✅ تم تحميل وتسجيل خط Amiri بنجاح تام!")
 except Exception as e:
-    print(f"⚠️ تنبيه: فشل تحميل الخط العربي، سيتم استخدام Helvetica والسبب: {e}")
+    print(f"⚠️ فشل تحميل الخط، سيتم استخدام البديل: {e}")
     FONT_NAME = 'Helvetica'
 
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar"):
