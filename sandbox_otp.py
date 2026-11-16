@@ -1,33 +1,87 @@
 # 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
-# ========================================================
-import os
+import sqlite3
+import datetime
 
-# تحديد مسار ثابت وموثوق لقاعدة البيانات لمنع ضياعها في وضع السكون أو إعادة التشغيل
-DB_FILENAME = "saas_security_vault.db"
-
-def get_secure_db_connection():
-    """
-    إنشاء اتصال آمن مع مهلة زمنية دقيقة لضمان استقرار العمليات المتزامنة
-    """
-    conn = sqlite3.connect(DB_FILENAME, timeout=15)
+# دالة اتصال آمنة ومستقرة بقاعدة البيانات الثابتة
+def get_persistent_db_connection():
+    conn = sqlite3.connect("saas_security_vault.db", timeout=15)
+    conn.row_factory = sqlite3.Row
     return conn
 
-# تحسين دالة خزانة النسخ الاحتياطي التلقائي (.ZIP) لتشمل ملفات الـ DB بمسارها الثابت بدقة
-def create_robust_backup_vault():
-    import zipfile
-    zip_buffer = io.BytesIO()
-    try:
-        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-            if os.path.exists(DB_FILENAME):
-                with open(DB_FILENAME, "rb") as f:
-                    timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
-                    zip_file.writestr(f"backup_{timestamp_str}_{DB_FILENAME}", f.read())
-    except Exception as e:
-        print(f"⚠️ خطأ في إنشاء النسخة الاحتياطية: {e}")
-        
-    zip_buffer.seek(0)
-    return zip_buffer
+# تهيئة الجدول الأساسي وضمان عدم ضياع بيانات التجار المسجلين أبداً
+def init_persistent_auth_db():
+    conn = get_persistent_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS saas_users_auth (
+            email TEXT PRIMARY KEY,
+            password TEXT,
+            status TEXT,
+            package TEXT,
+            created_at TEXT,
+            phone TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS admin_audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action_time TEXT,
+            target_email TEXT,
+            action_type TEXT,
+            details TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS email_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sent_time TEXT,
+            recipient_email TEXT,
+            subject TEXT,
+            status TEXT,
+            error_message TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
 
+# تشغيل التهيئة فور بدء تشغيل التطبيق لضمان تثبيت الجداول
+init_persistent_auth_db()
+
+# دالة حفظ وتثبيت بيانات التاجر الجديد بصفة دائمة (تمنع الاختفاء وتحفظ رقم الهاتف والحالة)
+def save_new_merchant_permanently(email, password, phone, package="الباقة الأساسية المبتدئة (29k)", status="⏳ في انتظار التفعيل"):
+    try:
+        conn = get_persistent_db_connection()
+        cursor = conn.cursor()
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # استخدام INSERT OR REPLACE لضمان تحديث بيانات التاجر الحالية أو إضافتها إذا كانت جديدة كلياً
+        cursor.execute("""
+            INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone)
+            VALUES (?, ?, ?, ?, COALESCE((SELECT created_at FROM saas_users_auth WHERE email = ?), ?), ?)
+        """, (email, password, status, package, email, current_time, phone))
+        
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"⚠️ خطأ في الحفظ الدائم للتاجر: {e}")
+        return False
+
+# دالة التحقق الدائم من تسجيل الدخول (تجلب حالة وحساب التاجر بدقة من الملف الثابت)
+def verify_merchant_login_permanently(email, password):
+    try:
+        conn = get_persistent_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT status, package, phone FROM saas_users_auth WHERE email = ? AND password = ?",
+            (email, password)
+        )
+        user_row = cursor.fetchone()
+        conn.close()
+        return user_row  # يعود ببيانات التاجر كاملة ولن تختفي أبداً
+    except Exception as e:
+        print(f"⚠️ خطأ في التحقق من تسجيل الدخول: {e}")
+        return None
 # === الإضافات والتعديلات الجديدة ===
 # تم تأمين مسار قاعدة البيانات وتفعيل استقرار الحفظ الدائم بنجاح.# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
 # ========================================================
@@ -518,45 +572,7 @@ if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
-def init_advanced_db():
-    conn = sqlite3.connect("saas_security_vault.db")
-    cursor = conn.cursor()
-    
-    # 🛡️ جدول المصادقة والتجار مع ضمان وجود عمود التاريخ والتنسيق الثابت
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS saas_users_auth (
-            email TEXT PRIMARY KEY,
-            password TEXT,
-            status TEXT,
-            package TEXT,
-            created_at TEXT,
-            phone TEXT
-        )
-    """)
-    
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS admin_audit_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            action_time TEXT,
-            target_email TEXT,
-            action_type TEXT,
-            details TEXT
-        )
-    """)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS email_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sent_time TEXT,
-            recipient_email TEXT,
-            subject TEXT,
-            status TEXT,
-            error_message TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
 
-init_advanced_db()
 
 # ========================================================
 # 🚀 الدالة الموحدة والوحيدة لإرسال البريد (HTML + Plain Text + تتبع السجل)
@@ -681,38 +697,6 @@ import urllib.parse
 import datetime
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
-def init_advanced_db():
-    conn = sqlite3.connect("saas_security_vault.db")
-    cursor = conn.cursor()
-    
-    # جدول سجل النشاطات والحركات (Audit Log)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS admin_audit_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            action_time TEXT,
-            target_email TEXT,
-            action_type TEXT,
-            details TEXT
-        )
-    """)
-    
-    # جدول سجل حالة البريد الإلكتروني (Email Delivery Log)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS email_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sent_time TEXT,
-            recipient_email TEXT,
-            subject TEXT,
-            status TEXT,
-            error_message TEXT
-        )
-    """)
-    
-    conn.commit()
-    conn.close()
-
-# تشغيل التهيئة فوراً
-init_advanced_db()
 
 # 2. دالة تسجيل الحركات في قاعدة البيانات
 def log_admin_action(target_email, action_type, details=""):
