@@ -6,4 +6,4 @@ arabic-reshaper
 python-bidi
 qrcode[pil]
 resend
-psycopg2
+
