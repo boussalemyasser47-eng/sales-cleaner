@@ -6,9 +6,19 @@ import os
 DB_FILENAME = "saas_security_vault.db"
 
 # 🛡️ دالة الاتصال الموحدة بقاعدة بيانات Supabase السحابية الدائمة
+import psycopg2
+import streamlit as st
+
 def get_secure_db_connection():
-    db_url = st.secrets["DATABASE_URL"]
-    conn = psycopg2.connect(db_url)
+    # الاتصال المباشر باستخدام البيانات المفصلة لضمان عدم حدوث أي خطأ OperationalError
+    conn = psycopg2.connect(
+        dbname="postgres",
+        user="postgres",
+        password="mohmedkh2012",
+        host="db.ujfluxdutpxoiecrkxnw.supabase.co",
+        port="5432",
+        sslmode="require"
+    )
     return conn
 # تحسين دالة خزانة النسخ الاحتياطي التلقائي (.ZIP) لتشمل ملفات الـ DB بمسارها الثابت بدقة
 def create_robust_backup_vault():
