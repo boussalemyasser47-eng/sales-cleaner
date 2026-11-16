@@ -5,15 +5,13 @@ import os
 # تحديد مسار ثابت وموثوق لقاعدة البيانات لمنع ضياعها في وضع السكون أو إعادة التشغيل
 DB_FILENAME = "saas_security_vault.db"
 
-# 🛡️ دالة الاتصال الموحدة بقاعدة بيانات Supabase السحابية الدائمة
-import psycopg2
-import streamlit as st
-
 def get_secure_db_connection():
-    # قراءة رابط الاتصال المباشر من إعدادات الـ Secrets بأمان
-    db_url = st.secrets["DATABASE_URL"]
-    conn = psycopg2.connect(db_url)
+    """
+    إنشاء اتصال آمن مع مهلة زمنية دقيقة لضمان استقرار العمليات المتزامنة
+    """
+    conn = sqlite3.connect(DB_FILENAME, timeout=15)
     return conn
+
 # تحسين دالة خزانة النسخ الاحتياطي التلقائي (.ZIP) لتشمل ملفات الـ DB بمسارها الثابت بدقة
 def create_robust_backup_vault():
     import zipfile
@@ -48,12 +46,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import streamlit as st
 import pandas as pd
-# احذف هذا:
-# import sqlite3
-
-# واجعله هكذا:
-import psycopg2
-import urllib.parse
+import sqlite3
 import time
 from datetime import datetime
 import io
@@ -186,9 +179,9 @@ except Exception as e:
     print(f"⚠️ فشل تحميل الخط، سيتم استخدام البديل: {e}")
     FONT_NAME = 'Helvetica'
 
-def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar", template_style="formal"):
+def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar"):
     """
-    دالة توليد فاتورة مبيعات بحجم A4 تدعم متعدد اللغات وقوالب التصميم (formal, simple, modern)
+    دالة توليد فاتورة مبيعات رسمية بحجم A4 مع دعم التبديل التلقائي بين العربية (RTL) والفرنسية (LTR)
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -204,120 +197,109 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     is_fr = (lang == "fr")
     active_font = 'Helvetica' if is_fr else FONT_NAME
 
-    # تحديد الألوان حسب القالب
-    if template_style == "modern":
-        primary_color = colors.HexColor('#0f766e') # تيل عصري
-        bg_header_color = colors.HexColor('#f0fdf4')
-        border_color = colors.HexColor('#14b8a6')
-    elif template_style == "simple":
-        primary_color = colors.HexColor('#333333') # أسود/رمادي اقتصادي
-        bg_header_color = colors.HexColor('#ffffff')
-        border_color = colors.HexColor('#666666')
-    else: # formal (الافتراضي - الجدول الأزرق)
-        primary_color = colors.HexColor('#003366')
-        bg_header_color = colors.HexColor('#f8f9fa')
-        border_color = colors.HexColor('#cbd5e1')
-
-    # نصوص الواجهة حسب اللغة
+    # إعداد النصوص حسب اللغة المختارة
     if is_fr:
-        lbl_subtitle = "FACTURE DE VENTE ET BON DE COMMANDE" if template_style != "simple" else "BON DE COMMANDE SIMPLIFIÉ"
+        lbl_subtitle = "FACTURE DE VENTE ET BON DE COMMANDE"
         lbl_shop = f"<b>Magasin :</b> {shop_name}"
         lbl_cust = f"<b>Client :</b> {customer_name}"
         lbl_addr = f"<b>Adresse :</b> {customer_address}"
         lbl_phone = f"<b>Téléphone :</b> {customer_phone}"
         h_prod, h_qty, h_price, h_tot = "Désignation", "Qté", "Prix Unitaire", "Total (DA)"
-        lbl_sub = "Sous-total :"
-        lbl_ship = "Livraison :"
-        lbl_final = "TOTAL NET :"
-        lbl_qr_title = "Sceau Numérique :"
-        lbl_qr_desc = "Document sécurisé par NEXUS CENTRAL GATE."
+        lbl_sub = "Sous-total Produit :"
+        lbl_ship = "Frais de Livraison :"
+        lbl_final = "NET À PAYER :"
+        lbl_qr_title = "Sceau de Vérification Numérique :"
+        lbl_qr_desc = "Document généré électroniquement et sécurisé par NEXUS CENTRAL GATE."
     else:
-        lbl_subtitle = fix_arabic("فاتورة مبيعات وتأكيد طلبية رسمية وموثقة") if template_style != "simple" else fix_arabic("فاتورة مبيعات مبسطة وسريعة")
-        lbl_shop = fix_arabic(f"<b>اسم المتجر:</b> {shop_name}")
-        lbl_cust = fix_arabic(f"<b>اسم الزبون:</b> {customer_name}")
-        lbl_addr = fix_arabic(f"<b>عنوان التوصيل:</b> {customer_address}")
-        lbl_phone = fix_arabic(f"<b>رقم الهاتف:</b> {customer_phone}")
+        lbl_subtitle = fix_arabic("فاتورة مبيعات وتأكيد طلبية رسمية وموثقة")
+        lbl_shop = f"<b>{fix_arabic('اسم المتجر')} :</b> {fix_arabic(shop_name)}"
+        lbl_cust = f"<b>{fix_arabic('اسم الزبون')} :</b> {fix_arabic(customer_name)}"
+        lbl_addr = f"<b>{fix_arabic('عنوان التوصيل')} :</b> {fix_arabic(customer_address)}"
+        lbl_phone = f"<b>{fix_arabic('رقم الهاتف')} :</b> {fix_arabic(customer_phone)}"
         h_prod = fix_arabic("اسم المنتج")
         h_qty = fix_arabic("الكمية")
         h_price = fix_arabic("السعر الفردي")
         h_tot = fix_arabic("الإجمالي (DA)")
-        lbl_sub = fix_arabic("المجموع الفرعي:")
-        lbl_ship = fix_arabic("تكلفة الشحن:")
+        lbl_sub = fix_arabic("المجموع الفرعي للمنتج:")
+        lbl_ship = fix_arabic("تكلفة الشحن والتوصيل:")
         lbl_final = fix_arabic("الإجمالي النهائي المطلوب:")
-        lbl_qr_title = fix_arabic("ختم التحقق الرقمي:")
-        lbl_qr_desc = fix_arabic("فاتورة مؤمنة عبر نظام NEXUS CENTRAL GATE.")
+        lbl_qr_title = fix_arabic("ختم التحقق الرقمي الموثق:")
+        lbl_qr_desc = fix_arabic("هذه الفاتورة صادرة إلكترونياً ومؤمنة عبر نظام NEXUS CENTRAL GATE.")
 
-    title_style = ParagraphStyle('TTitle', parent=styles['Heading1'], fontName=active_font, fontSize=20, textColor=primary_color, alignment=1, spaceAfter=4)
-    sub_style = ParagraphStyle('TSub', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=12)
-    align_style = ParagraphStyle('TAlign', parent=styles['Normal'], fontName=active_font, fontSize=9.5, textColor=colors.HexColor('#222222'), alignment=0 if is_fr else 2)
-    center_style = ParagraphStyle('TCenter', parent=styles['Normal'], fontName=active_font, fontSize=9.5, textColor=colors.HexColor('#222222'), alignment=1)
-    header_style = ParagraphStyle('THeader', parent=styles['Normal'], fontName=active_font, fontSize=9.5, textColor=colors.whitesmoke, alignment=1)
+    # أنماط النصوص والاتجاهات (RTL للعربية / LTR للفرنسية)
+    title_style = ParagraphStyle('InvTitle', parent=styles['Heading1'], fontName=active_font, fontSize=22, textColor=colors.HexColor('#003366'), alignment=1, spaceAfter=6)
+    sub_style = ParagraphStyle('InvSub', parent=styles['Normal'], fontName=active_font, fontSize=11, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=15)
+    align_style = ParagraphStyle('AlignStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=0 if is_fr else 2)
+    center_style = ParagraphStyle('CenterStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=1)
+    header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.whitesmoke, alignment=1)
 
-    if logo_data and template_style != "simple":
+    if logo_data:
         try:
-            img = Image(io.BytesIO(logo_data), width=55, height=55)
+            img = Image(io.BytesIO(logo_data), width=65, height=65)
             elements.append(img)
-            elements.append(Spacer(1, 6))
+            elements.append(Spacer(1, 8))
         except Exception:
             pass
 
-    elements.append(Paragraph(f"<b>{shop_name if is_fr else fix_arabic(shop_name)}</b>", title_style))
+    shop_display = shop_name if is_fr else fix_arabic(shop_name)
+    elements.append(Paragraph(f"<b>{shop_display}</b>", title_style))
     elements.append(Paragraph(f"<b>{lbl_subtitle}</b>", sub_style))
-    elements.append(Spacer(1, 8))
+    elements.append(Spacer(1, 10))
 
-    # معلومات المتجر والزبون
+    # 1. جدول بيانات المتجر والزبون (يعكس الترتيب تلقائياً حسب اللغة)
     if is_fr:
-        info_data = [[Paragraph(lbl_cust, align_style), Paragraph(lbl_shop, align_style)], [Paragraph(lbl_phone, align_style), Paragraph(lbl_addr, align_style)]]
+        info_data = [
+            [Paragraph(lbl_cust, align_style), Paragraph(lbl_shop, align_style)],
+            [Paragraph(lbl_phone, align_style), Paragraph(lbl_addr, align_style)]
+        ]
     else:
-        info_data = [[Paragraph(lbl_shop, align_style), Paragraph(lbl_cust, align_style)], [Paragraph(lbl_addr, align_style), Paragraph(lbl_phone, align_style)]]
+        info_data = [
+            [Paragraph(lbl_shop, align_style), Paragraph(lbl_cust, align_style)],
+            [Paragraph(lbl_addr, align_style), Paragraph(lbl_phone, align_style)]
+        ]
 
     t_info = Table(info_data, colWidths=[260, 260])
     t_info.setStyle(TableStyle([
         ('ALIGN', (0,0), (-1,-1), 'LEFT' if is_fr else 'RIGHT'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-        ('BACKGROUND', (0,0), (-1,-1), bg_header_color),
-        ('BOX', (0,0), (-1,-1), 0.5, border_color),
-        ('INNERGRID', (0,0), (-1,-1), 0.3, colors.HexColor('#e2e8f0')),
+        ('TOPPADDING', (0,0), (-1,-1), 8),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8f9fa')),
+        ('BOX', (0,0), (-1,-1), 0.7, colors.HexColor('#cbd5e1')),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e2e8f0')),
     ]))
     elements.append(t_info)
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 15))
 
-    # جدول المنتجات (يختلف حسب القالب: الاقتصادي بلا خلفيات ملونة وبسيطة)
+    # 2. جدول المنتجات (ترتيب الأعمدة من اليسار لليمين للفرنسية، ومن اليمين لليسار للعربية)
     prod_display = product_name if is_fr else fix_arabic(product_name)
     if is_fr:
         items_data = [
-            [Paragraph(f"<b>{h_prod}</b>", header_style if template_style != "simple" else align_style), Paragraph(f"<b>{h_qty}</b>", header_style if template_style != "simple" else center_style), Paragraph(f"<b>{h_price}</b>", header_style if template_style != "simple" else center_style), Paragraph(f"<b>{h_tot}</b>", header_style if template_style != "simple" else center_style)],
+            [Paragraph(f"<b>{h_prod}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_tot}</b>", header_style)],
             [Paragraph(prod_display, align_style), Paragraph(str(quantity), center_style), Paragraph(f"{price:,.2f}", center_style), Paragraph(f"{product_total:,.2f}", center_style)]
         ]
         col_widths_items = [240, 60, 110, 110]
     else:
         items_data = [
-            [Paragraph(f"<b>{h_tot}</b>", header_style if template_style != "simple" else center_style), Paragraph(f"<b>{h_price}</b>", header_style if template_style != "simple" else center_style), Paragraph(f"<b>{h_qty}</b>", header_style if template_style != "simple" else center_style), Paragraph(f"<b>{h_prod}</b>", header_style if template_style != "simple" else align_style)],
+            [Paragraph(f"<b>{h_tot}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_prod}</b>", header_style)],
             [Paragraph(f"{product_total:,.2f}", center_style), Paragraph(f"{price:,.2f}", center_style), Paragraph(str(quantity), center_style), Paragraph(prod_display, align_style)]
         ]
         col_widths_items = [110, 110, 60, 240]
 
     t_items = Table(items_data, colWidths=col_widths_items)
-    item_table_style = [
+    t_items.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 7),
-        ('TOPPADDING', (0,0), (-1,-1), 7),
-        ('GRID', (0,0), (-1,-1), 0.5, border_color),
-    ]
-    if template_style != "simple":
-        item_table_style.insert(0, ('BACKGROUND', (0,0), (-1,0), primary_color))
-        item_table_style.append(('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#ffffff')))
-    else:
-        item_table_style.insert(0, ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f1f5f9')))
-
-    t_items.setStyle(TableStyle(item_table_style))
+        ('BOTTOMPADDING', (0,0), (-1,-1), 9),
+        ('TOPPADDING', (0,0), (-1,-1), 9),
+        ('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#ffffff')),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+    ]))
     elements.append(t_items)
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 15))
 
-    # المجاميع النهائية
-    final_style = ParagraphStyle('FinalSt', parent=align_style, fontName=active_font, fontSize=10.5, textColor=primary_color)
+    # 3. جدول المجاميع النهائية
+    final_style = ParagraphStyle('FinalSt', parent=align_style, fontName=active_font, fontSize=11, textColor=colors.HexColor('#003366'))
     if is_fr:
         totals_data = [
             [Paragraph(f"<b>{lbl_sub}</b>", align_style), Paragraph(f"<b>{product_total:,.2f} DA</b>", align_style)],
@@ -336,39 +318,38 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     t_totals = Table(totals_data, colWidths=col_widths_tot)
     t_totals.setStyle(TableStyle([
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
-        ('TOPPADDING', (0,0), (-1,-1), 5),
-        ('LINEABOVE', (0,2), (-1,2), 1, primary_color),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 7),
+        ('TOPPADDING', (0,0), (-1,-1), 7),
+        ('LINEABOVE', (0,2), (-1,2), 1, colors.HexColor('#003366')),
     ]))
     elements.append(t_totals)
-    elements.append(Spacer(1, 15))
+    elements.append(Spacer(1, 20))
 
-    # الختم الرقمي (يظهر في القالب الرسمي والحديث، ويُختصر في الاقتصادي)
-    if template_style != "simple":
-        qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Total: {final_total} DA | Style: {template_style}"
-        qr = QrCodeWidget(qr_data_string)
-        qr.barWidth = 60
-        qr.barHeight = 60
-        d = Drawing(60, 60)
-        d.add(qr)
+    # 4. الختم الرقمي QR Code
+    qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Phone: {customer_phone} | Total: {final_total} DA | Lang: {lang}"
+    qr = QrCodeWidget(qr_data_string)
+    qr.barWidth = 70
+    qr.barHeight = 70
+    d = Drawing(70, 70)
+    d.add(qr)
 
-        qr_text_style = ParagraphStyle('QrTxt', parent=styles['Normal'], fontName=active_font, fontSize=8, textColor=colors.HexColor('#444444'), alignment=0 if is_fr else 2)
-        qr_para = Paragraph(f"<b>{lbl_qr_title}</b><br/>{lbl_qr_desc}", qr_text_style)
+    qr_text_style = ParagraphStyle('QrTxt', parent=styles['Normal'], fontName=active_font, fontSize=8.5, textColor=colors.HexColor('#444444'), alignment=0 if is_fr else 2)
+    qr_para = Paragraph(f"<b>{lbl_qr_title}</b><br/>{lbl_qr_desc}", qr_text_style)
 
-        qr_data = [[qr_para, d]] if not is_fr else [[d, qr_para]]
-        qr_widths = [400, 100] if not is_fr else [100, 400]
+    qr_data = [[qr_para, d]] if not is_fr else [[d, qr_para]]
+    qr_widths = [380, 120] if not is_fr else [120, 380]
 
-        t_qr = Table(qr_data, colWidths=qr_widths)
-        t_qr.setStyle(TableStyle([
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('BACKGROUND', (0,0), (-1,-1), bg_header_color),
-            ('BOX', (0,0), (-1,-1), 0.5, border_color),
-            ('TOPPADDING', (0,0), (-1,-1), 6),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-            ('LEFTPADDING', (0,0), (-1,-1), 8),
-            ('RIGHTPADDING', (0,0), (-1,-1), 8),
-        ]))
-        elements.append(t_qr)
+    t_qr = Table(qr_data, colWidths=qr_widths)
+    t_qr.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f1f5f9')),
+        ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+        ('TOPPADDING', (0,0), (-1,-1), 8),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+        ('LEFTPADDING', (0,0), (-1,-1), 10),
+        ('RIGHTPADDING', (0,0), (-1,-1), 10),
+    ]))
+    elements.append(t_qr)
 
     doc.build(elements)
     buffer.seek(0)
@@ -537,11 +518,11 @@ if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
-# 1. تهيئة وإنشاء الجداول في Supabase باستخدام psycopg2
 def init_advanced_db():
-    conn = get_secure_db_connection()
+    conn = sqlite3.connect("saas_security_vault.db")
     cursor = conn.cursor()
     
+    # 🛡️ جدول المصادقة والتجار مع ضمان وجود عمود التاريخ والتنسيق الثابت
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS saas_users_auth (
             email TEXT PRIMARY KEY,
@@ -555,17 +536,16 @@ def init_advanced_db():
     
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS admin_audit_logs (
-            id SERIAL PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             action_time TEXT,
             target_email TEXT,
             action_type TEXT,
             details TEXT
         )
     """)
-    
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS email_logs (
-            id SERIAL PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             sent_time TEXT,
             recipient_email TEXT,
             subject TEXT,
@@ -573,12 +553,11 @@ def init_advanced_db():
             error_message TEXT
         )
     """)
-    
     conn.commit()
-    cursor.close()
     conn.close()
 
 init_advanced_db()
+
 # ========================================================
 # 🚀 الدالة الموحدة والوحيدة لإرسال البريد (HTML + Plain Text + تتبع السجل)
 # ========================================================
@@ -694,7 +673,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import streamlit as st
 import pandas as pd
-
+import sqlite3
 import time
 from datetime import datetime
 import io
@@ -702,8 +681,35 @@ import urllib.parse
 import datetime
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
-
+def init_advanced_db():
+    conn = sqlite3.connect("saas_security_vault.db")
+    cursor = conn.cursor()
     
+    # جدول سجل النشاطات والحركات (Audit Log)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS admin_audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action_time TEXT,
+            target_email TEXT,
+            action_type TEXT,
+            details TEXT
+        )
+    """)
+    
+    # جدول سجل حالة البريد الإلكتروني (Email Delivery Log)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS email_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sent_time TEXT,
+            recipient_email TEXT,
+            subject TEXT,
+            status TEXT,
+            error_message TEXT
+        )
+    """)
+    
+    conn.commit()
+    conn.close()
 
 # تشغيل التهيئة فوراً
 init_advanced_db()
@@ -958,7 +964,7 @@ def delete_email_completely(email_to_delete):
     try:
         conn = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM saas_users_auth WHERE email =%s", (email_to_delete,))
+        cursor.execute("DELETE FROM saas_users_auth WHERE email = ?", (email_to_delete,))
         conn.commit()
         conn.close()
         return True
@@ -977,6 +983,7 @@ def delete_email_completely(email_to_delete):
 # === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
 # ====================================================================
 import streamlit as st
+import sqlite3
 import time
 import re
 
@@ -1123,7 +1130,7 @@ def validate_and_process_registration(email, password):
     try:
         conn_check = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor_check = conn_check.cursor()
-        cursor_check.execute("SELECT email FROM saas_users_auth WHERE email = %s", (email,))
+        cursor_check.execute("SELECT email FROM saas_users_auth WHERE email = ?", (email,))
         existing_user = cursor_check.fetchone()
         conn_check.close()
         
@@ -1368,7 +1375,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     else:
                         conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
                         cursor_login = conn_login.cursor()
-                        cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = %s", (clean_email, clean_pass))
+                        cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
                         user_status_row = cursor_login.fetchone()
                         conn_login.close()
                         
@@ -1393,7 +1400,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
 # ========================================================
 import streamlit as st
-
+import sqlite3
 import pandas as pd
 import math
 import time
@@ -1671,7 +1678,7 @@ if is_boss_link:
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = %s", (current_email,))
+                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
         
                         # 📧 إرسال الإيميل مع إظهار شاشة انتظار لضمان عدم قطع الاتصال
@@ -1687,7 +1694,7 @@ if is_boss_link:
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = %s", (current_email,))
+                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
                         # 📧 إرسال إيميل تمديد المهلة
@@ -1706,7 +1713,7 @@ if is_boss_link:
                 with col_4:
                     if st.button("💸 ترقية فئة الباقة", key=f"btn_upg_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = %s", (current_email,))
+                        conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
                         # 📧 إرسال إيميل ترقية الباقة
@@ -1719,7 +1726,7 @@ if is_boss_link:
                 with col_5:
                     if st.button("🔒 حظر وقفل الحساب", key=f"btn_lck_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = %s", (current_email,))
+                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
                         
                         # 📧 إرسال إيميل الحظر وقفل الحساب
@@ -1749,7 +1756,7 @@ if is_boss_link:
                     
                     if st.button("💾 تأمين وحفظ الباقة برمجياً حياً", key=f"btn_confirm_pkg_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE email = %s", (selected_opt, current_email))
+                        conn.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE email = ?", (selected_opt, current_email))
                         conn.commit(); conn.close()
                         
                         # 📧 إرسال إيميل تحديث فئة الاشتراك المخصصة
@@ -1842,6 +1849,7 @@ def render_neon_license_ring(email, days_left):
 # حقن الدوال الأساسية لمنع خطأ NameError في التطبيق كلياً
 # ========================================================
 import streamlit as st
+import sqlite3
 import urllib.parse
 import time
 
@@ -1849,7 +1857,7 @@ import time
 # القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
 # ========================================================
 import streamlit as st
-
+import sqlite3
 import urllib.parse
 import time
 
@@ -1862,7 +1870,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     # 🔒 الفحص السحابي الصارم وجلب حالة الحساب ونوع الباقة (package) لمتجرك الجديد
     conn_final_auth = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor_final_auth = conn_final_auth.cursor()
-    cursor_final_auth.execute("SELECT status, package FROM saas_users_auth WHERE email = %s", (current_merchant,))
+    cursor_final_auth.execute("SELECT status, package FROM saas_users_auth WHERE email = ?", (current_merchant,))
     chk_row = cursor_final_auth.fetchone()
     conn_final_auth.close()
     
@@ -2376,12 +2384,12 @@ if "choice" in locals() or "choice" in globals():
                 if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
                     st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
                 else:
-                    cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = %s", (quantity, product_name))
+                    cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
                     cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
                     conne.commit()
                     
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang=lang_code, template_style=invoice_template)
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang=lang_code)
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
                     st.session_state["last_active_customer"] = customer_name
                     st.session_state["last_active_phone"] = customer_phone
@@ -2576,7 +2584,7 @@ if "choice" in locals() or "choice" in globals():
                 st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
                 delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
                 if st.button("❌ محو السلعة المحددة"):
-                    cursor.execute("DELETE FROM store_stock WHERE product_name = %s", (delete_prod,))
+                    cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
                     conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
                 
                 low_stock = stock_df[stock_df['available_qty'] <= 5]
