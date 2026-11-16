@@ -7,9 +7,10 @@ DB_FILENAME = "saas_security_vault.db"
 
 def get_secure_db_connection():
     """
-    إنشاء اتصال آمن مع مهلة زمنية دقيقة لضمان استقرار العمليات المتزامنة
+    الاتصال بقاعدة بيانات Supabase السحابية الدائمة
     """
-    conn = sqlite3.connect(DB_FILENAME, timeout=15)
+    db_url = st.secrets["DATABASE_URL"]
+    conn = psycopg2.connect(db_url)
     return conn
 
 # تحسين دالة خزانة النسخ الاحتياطي التلقائي (.ZIP) لتشمل ملفات الـ DB بمسارها الثابت بدقة
@@ -46,7 +47,12 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import streamlit as st
 import pandas as pd
-import sqlite3
+# احذف هذا:
+# import sqlite3
+
+# واجعله هكذا:
+import psycopg2
+import urllib.parse
 import time
 from datetime import datetime
 import io
@@ -685,7 +691,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import streamlit as st
 import pandas as pd
-import sqlite3
+
 import time
 from datetime import datetime
 import io
@@ -995,7 +1001,6 @@ def delete_email_completely(email_to_delete):
 # === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
 # ====================================================================
 import streamlit as st
-import sqlite3
 import time
 import re
 
@@ -1412,7 +1417,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
 # ========================================================
 import streamlit as st
-import sqlite3
+
 import pandas as pd
 import math
 import time
@@ -1861,7 +1866,6 @@ def render_neon_license_ring(email, days_left):
 # حقن الدوال الأساسية لمنع خطأ NameError في التطبيق كلياً
 # ========================================================
 import streamlit as st
-import sqlite3
 import urllib.parse
 import time
 
@@ -1869,7 +1873,7 @@ import time
 # القسم (4 - أ): ممر العبور السحابي وجدار العزل الفردي لمتجرك الجديد
 # ========================================================
 import streamlit as st
-import sqlite3
+
 import urllib.parse
 import time
 
