@@ -5,14 +5,11 @@ import os
 # تحديد مسار ثابت وموثوق لقاعدة البيانات لمنع ضياعها في وضع السكون أو إعادة التشغيل
 DB_FILENAME = "saas_security_vault.db"
 
+# 🛡️ دالة الاتصال الموحدة بقاعدة بيانات Supabase السحابية الدائمة
 def get_secure_db_connection():
-    """
-    الاتصال بقاعدة بيانات Supabase السحابية الدائمة
-    """
     db_url = st.secrets["DATABASE_URL"]
     conn = psycopg2.connect(db_url)
     return conn
-
 # تحسين دالة خزانة النسخ الاحتياطي التلقائي (.ZIP) لتشمل ملفات الـ DB بمسارها الثابت بدقة
 def create_robust_backup_vault():
     import zipfile
@@ -536,11 +533,11 @@ if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
+# 1. تهيئة وإنشاء الجداول في Supabase باستخدام psycopg2
 def init_advanced_db():
-    conn = sqlite3.connect("saas_security_vault.db")
+    conn = get_secure_db_connection()
     cursor = conn.cursor()
     
-    # 🛡️ جدول المصادقة والتجار مع ضمان وجود عمود التاريخ والتنسيق الثابت
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS saas_users_auth (
             email TEXT PRIMARY KEY,
@@ -554,16 +551,17 @@ def init_advanced_db():
     
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS admin_audit_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             action_time TEXT,
             target_email TEXT,
             action_type TEXT,
             details TEXT
         )
     """)
+    
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS email_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             sent_time TEXT,
             recipient_email TEXT,
             subject TEXT,
@@ -571,11 +569,12 @@ def init_advanced_db():
             error_message TEXT
         )
     """)
+    
     conn.commit()
+    cursor.close()
     conn.close()
 
 init_advanced_db()
-
 # ========================================================
 # 🚀 الدالة الموحدة والوحيدة لإرسال البريد (HTML + Plain Text + تتبع السجل)
 # ========================================================
@@ -699,35 +698,8 @@ import urllib.parse
 import datetime
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
-def init_advanced_db():
-    conn = sqlite3.connect("saas_security_vault.db")
-    cursor = conn.cursor()
+
     
-    # جدول سجل النشاطات والحركات (Audit Log)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS admin_audit_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            action_time TEXT,
-            target_email TEXT,
-            action_type TEXT,
-            details TEXT
-        )
-    """)
-    
-    # جدول سجل حالة البريد الإلكتروني (Email Delivery Log)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS email_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sent_time TEXT,
-            recipient_email TEXT,
-            subject TEXT,
-            status TEXT,
-            error_message TEXT
-        )
-    """)
-    
-    conn.commit()
-    conn.close()
 
 # تشغيل التهيئة فوراً
 init_advanced_db()
@@ -982,7 +954,7 @@ def delete_email_completely(email_to_delete):
     try:
         conn = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM saas_users_auth WHERE email = ?", (email_to_delete,))
+        cursor.execute("DELETE FROM saas_users_auth WHERE email =%s", (email_to_delete,))
         conn.commit()
         conn.close()
         return True
@@ -1147,7 +1119,7 @@ def validate_and_process_registration(email, password):
     try:
         conn_check = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor_check = conn_check.cursor()
-        cursor_check.execute("SELECT email FROM saas_users_auth WHERE email = ?", (email,))
+        cursor_check.execute("SELECT email FROM saas_users_auth WHERE email = %s", (email,))
         existing_user = cursor_check.fetchone()
         conn_check.close()
         
@@ -1392,7 +1364,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     else:
                         conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
                         cursor_login = conn_login.cursor()
-                        cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
+                        cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = %s", (clean_email, clean_pass))
                         user_status_row = cursor_login.fetchone()
                         conn_login.close()
                         
@@ -1695,7 +1667,7 @@ if is_boss_link:
                 with col_1:
                     if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
+                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = %s", (current_email,))
                         conn.commit(); conn.close()
         
                         # 📧 إرسال الإيميل مع إظهار شاشة انتظار لضمان عدم قطع الاتصال
@@ -1711,7 +1683,7 @@ if is_boss_link:
                 with col_2:
                     if st.button("⏳ تمديد 7 أيام مهلة", key=f"btn_ext_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
+                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = %s", (current_email,))
                         conn.commit(); conn.close()
                         
                         # 📧 إرسال إيميل تمديد المهلة
@@ -1730,7 +1702,7 @@ if is_boss_link:
                 with col_4:
                     if st.button("💸 ترقية فئة الباقة", key=f"btn_upg_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
+                        conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = %s", (current_email,))
                         conn.commit(); conn.close()
                         
                         # 📧 إرسال إيميل ترقية الباقة
@@ -1743,7 +1715,7 @@ if is_boss_link:
                 with col_5:
                     if st.button("🔒 حظر وقفل الحساب", key=f"btn_lck_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
+                        conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = %s", (current_email,))
                         conn.commit(); conn.close()
                         
                         # 📧 إرسال إيميل الحظر وقفل الحساب
@@ -1773,7 +1745,7 @@ if is_boss_link:
                     
                     if st.button("💾 تأمين وحفظ الباقة برمجياً حياً", key=f"btn_confirm_pkg_{current_email}"):
                         conn = sqlite3.connect("saas_security_vault.db")
-                        conn.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE email = ?", (selected_opt, current_email))
+                        conn.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE email = %s", (selected_opt, current_email))
                         conn.commit(); conn.close()
                         
                         # 📧 إرسال إيميل تحديث فئة الاشتراك المخصصة
@@ -1886,7 +1858,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     # 🔒 الفحص السحابي الصارم وجلب حالة الحساب ونوع الباقة (package) لمتجرك الجديد
     conn_final_auth = sqlite3.connect("saas_security_vault.db", timeout=10)
     cursor_final_auth = conn_final_auth.cursor()
-    cursor_final_auth.execute("SELECT status, package FROM saas_users_auth WHERE email = ?", (current_merchant,))
+    cursor_final_auth.execute("SELECT status, package FROM saas_users_auth WHERE email = %s", (current_merchant,))
     chk_row = cursor_final_auth.fetchone()
     conn_final_auth.close()
     
@@ -2400,7 +2372,7 @@ if "choice" in locals() or "choice" in globals():
                 if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
                     st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
                 else:
-                    cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
+                    cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = %s", (quantity, product_name))
                     cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
                     conne.commit()
                     
@@ -2600,7 +2572,7 @@ if "choice" in locals() or "choice" in globals():
                 st.write("🗑️ **قسم محو وإزالة السلع من المستودع:**")
                 delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
                 if st.button("❌ محو السلعة المحددة"):
-                    cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
+                    cursor.execute("DELETE FROM store_stock WHERE product_name = %s", (delete_prod,))
                     conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
                 
                 low_stock = stock_df[stock_df['available_qty'] <= 5]
