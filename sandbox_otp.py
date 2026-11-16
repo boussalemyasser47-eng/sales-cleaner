@@ -10,15 +10,9 @@ import psycopg2
 import streamlit as st
 
 def get_secure_db_connection():
-    # الاتصال المباشر باستخدام البيانات المفصلة لضمان عدم حدوث أي خطأ OperationalError
-    conn = psycopg2.connect(
-        dbname="postgres",
-        user="postgres",
-        password="mohmedkh2012",
-        host="db.ujfluxdutpxoiecrkxnw.supabase.co",
-        port="5432",
-        sslmode="require"
-    )
+    # قراءة رابط الاتصال المباشر من إعدادات الـ Secrets بأمان
+    db_url = st.secrets["DATABASE_URL"]
+    conn = psycopg2.connect(db_url)
     return conn
 # تحسين دالة خزانة النسخ الاحتياطي التلقائي (.ZIP) لتشمل ملفات الـ DB بمسارها الثابت بدقة
 def create_robust_backup_vault():
