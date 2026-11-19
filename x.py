@@ -1,5 +1,130 @@
 # 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
 # ========================================================
+# 🛡️ [كتلة الحقن السحابي فائق السرعة - GitHub Instant Bridge]
+import streamlit as st
+import sqlite3
+import pandas as pd
+import requests
+import base64
+import json
+import threading
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+GH_TOKEN = st.secrets.get("GITHUB_TOKEN", "")
+GH_REPO = "boussalemyasser47-eng/tijaratna-dataDZ"
+GH_FILE = "merchants_data.json"
+GH_HOST = "api." + "github" + ".com"
+GH_API_URL = f"https://{GH_HOST}/repos/{GH_REPO}/contents/{GH_FILE}"
+GH_HEADERS = {
+    "Authorization": f"Bearer {GH_TOKEN}",
+    "Accept": "application/vnd.github+json"
+}
+_orig_sqlite_connect = sqlite3.connect
+
+def sync_github_to_local_db(force=False):
+    if not GH_TOKEN:
+        return
+    if not force and st.session_state.get("gh_session_synced", False):
+        return
+    try:
+        res = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=6)
+        if res.status_code == 200:
+            data = res.json()
+            raw_text = base64.b64decode(data.get("content", "")).decode("utf-8").strip()
+            records = json.loads(raw_text) if raw_text else list()
+            conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS saas_users_auth (
+                    email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT, created_at TEXT, phone TEXT
+                )
+            """)
+            if records:
+                cursor.execute("DELETE FROM saas_users_auth")
+                for row in records:
+                    em = str(row.get("email", "")).strip()
+                    if em:
+                        ph = str(row.get("phone", "")).lstrip("'")
+                        if ph.lower() == "nan":
+                            ph = ""
+                        cursor.execute("""
+                            INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        """, (
+                            em,
+                            str(row.get("password", "")),
+                            str(row.get("status", "⏳ في انتظار التفعيل")),
+                            str(row.get("package", "الباقة الأساسية المبتدئة (29k)")),
+                            str(row.get("created_at", "")),
+                            ph
+                        ))
+            conn.commit()
+            conn.close()
+            st.session_state["gh_session_synced"] = True
+    except Exception:
+        pass
+
+_sync_lock = threading.Lock()
+
+def _bg_github_push(records):
+    if not GH_TOKEN:
+        return
+    with _sync_lock:
+        try:
+            res_get = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=6)
+            sha = res_get.json().get("sha") if res_get.status_code == 200 else None
+            encoded = base64.b64encode(
+                json.dumps(records, ensure_ascii=False, indent=2).encode("utf-8")
+            ).decode("utf-8")
+            payload = {
+                "message": "Fast sync merchants",
+                "content": encoded
+            }
+            if sha:
+                payload["sha"] = sha
+            requests.put(GH_API_URL, headers=GH_HEADERS, json=payload, timeout=8)
+        except Exception:
+            pass
+
+def push_local_db_to_github():
+    try:
+        conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
+        df = pd.read_sql("SELECT email, password, status, package, created_at, phone FROM saas_users_auth", conn)
+        conn.close()
+        df = df.fillna("")
+        df["phone"] = df["phone"].apply(lambda x: "" if str(x).lower() == "nan" else str(x))
+        records = df.astype(str).to_dict(orient="records")
+        threading.Thread(target=_bg_github_push, args=(records,), daemon=True).start()
+    except Exception:
+        pass
+
+class _CloudSyncConnectionWrapper:
+    def __init__(self, conn, is_auth_db):
+        self._conn = conn
+        self._is_auth_db = is_auth_db
+
+    def commit(self):
+        self._conn.commit()
+        if self._is_auth_db:
+            push_local_db_to_github()
+
+    def __getattr__(self, name):
+        return getattr(self._conn, name)
+
+def _smart_sqlite_connect(database, *args, **kwargs):
+    conn = _orig_sqlite_connect(database, *args, **kwargs)
+    is_auth = "saas_security_vault.db" in str(database)
+    return _CloudSyncConnectionWrapper(conn, is_auth)
+
+sync_github_to_local_db(force=False)
+sqlite3.connect = _smart_sqlite_connect
+
+def get_persistent_db_connection():
+    return sqlite3.connect("saas_security_vault.db", timeout=15)
+# === نهاية كتلة الحقن السحابي فائق السرعة ===
+
 import os
 
 # تحديد مسار ثابت وموثوق لقاعدة البيانات لمنع ضياعها في وضع السكون أو إعادة التشغيل
