@@ -10,7 +10,9 @@ st.title("🚀 مختبر الحفظ الدائم في GitHub")
 TOKEN = st.secrets["GITHUB_TOKEN"]
 REPO = "boussalemyasser47-eng/tijaratna-dataDZ"
 FILE_PATH = "merchants_data.json"
-API_URL = f"https://github.com{REPO}/contents/{FILE_PATH}"
+GH_API = "api." + "github" + ".com"
+API_URL = f"https://{GH_API}/repos/{REPO}/contents/{FILE_PATH}"
+
 HEADERS = {
     "Authorization": f"Bearer {TOKEN}",
     "Accept": "application/vnd.github+json"
