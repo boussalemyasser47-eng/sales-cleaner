@@ -1,25 +1,20 @@
 # 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
-# 🛡️ [كتلة الحقن السحابي الذكي - Google Sheets Sync Bridge]
+# 🛡️ [كتلة الحقن السحابي الذكي - Google Sheets Direct Bridge]
 import streamlit as st
 import sqlite3
 import pandas as pd
 import gspread
-from google.oauth2.service_account import Credentials
 
 def get_gsheet_worksheet():
     try:
-        scopes = [
-            "https://googleapis.com",
-            "https://googleapis.com"
-        ]
-        creds = Credentials.from_service_account_info(
-            dict(st.secrets["gcp_service_account"]), scopes=scopes
-        )
-        client = gspread.authorize(creds)
-        sheet = client.open_by_url(st.secrets["GSHEET_URL"])
+        creds_dict = dict(st.secrets["gcp_service_account"])
+        if "private_key" in creds_dict:
+            creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+        client = gspread.service_account_from_dict(creds_dict)
+        sheet = client.open_by_key("1qgFH38D9MKGb1jflwc0tfvvT_-qwKa4kiIKso6--7VU")
         return sheet.get_worksheet(0)
     except Exception as e:
-        st.error(f"⚠️ خطأ في الربط: {type(e).__name__} -> {repr(e)}")
+        st.error(f"⚠️ خطأ في الاتصال بـ Google Sheets: {type(e).__name__} -> {e}")
         return None
 
 def sync_gsheet_to_local_db():
@@ -55,7 +50,7 @@ def sync_gsheet_to_local_db():
         conn.commit()
         conn.close()
     except Exception as e:
-        st.error(f"⚠️ خطأ أثناء الجلب من السحابة: {e}")
+        st.error(f"⚠️ خطأ أثناء القراءة من الجدول: {e}")
 
 def push_local_db_to_gsheet():
     ws = get_gsheet_worksheet()
@@ -72,7 +67,7 @@ def push_local_db_to_gsheet():
         ws.clear()
         ws.update(rows)
     except Exception as e:
-        st.error(f"⚠️ خطأ أثناء الرفع إلى السحابة: {e}")
+        st.error(f"⚠️ خطأ أثناء الحفظ في الجدول: {e}")
 
 _orig_sqlite_connect = sqlite3.connect
 
@@ -97,10 +92,10 @@ def _smart_sqlite_connect(database, *args, **kwargs):
 sync_gsheet_to_local_db()
 sqlite3.connect = _smart_sqlite_connect
 
-# تعويض الدالة المفقودة حتى لا يتوقف الكود الأصلي
 def get_persistent_db_connection():
     return sqlite3.connect("saas_security_vault.db", timeout=15)
 # === نهاية كتلة الحقن السحابي الذكي ===
+
 
 
 
