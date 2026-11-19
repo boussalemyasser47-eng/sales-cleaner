@@ -5,14 +5,20 @@ import sqlite3
 import pandas as pd
 import gspread
 
+from google.oauth2.service_account import Credentials
+
 def get_gsheet_worksheet():
     try:
         creds_dict = dict(st.secrets["gcp_service_account"])
         if "private_key" in creds_dict:
             creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
-        client = gspread.service_account_from_dict(creds_dict)
+        scopes = [
+            "https://googleapis.com",
+            "https://googleapis.com"
+        ]
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+        client = gspread.authorize(creds)
         sheet = client.open_by_key("1qgFH38D9MKGb1jfIwc0tfvvT_-qwKa4kiIKso6--7VU")
-
         return sheet.get_worksheet(0)
     except Exception as e:
         st.error(f"⚠️ خطأ في الاتصال بـ Google Sheets: {type(e).__name__} -> {e}")
