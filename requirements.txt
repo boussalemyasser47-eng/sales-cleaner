@@ -7,3 +7,5 @@ python-bidi
 qrcode[pil]
 resend
 psycopg2-binary
+gspread
+google-auth
