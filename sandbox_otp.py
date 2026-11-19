@@ -1,16 +1,23 @@
 # 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
 # 🛡️ [كتلة الحقن السحابي الذكي - Google Sheets Direct Bridge]
 # 🛡️ [كتلة الحقن السحابي المباشر - Apps Script Webhook]
+# 🛡️ [كتلة الحقن السحابي فائق السرعة - Background Sync]
 import streamlit as st
 import sqlite3
 import pandas as pd
 import requests
+import json
+import threading
 
-GSHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwjhXSfX65fU5nisCXZXPWFlnquUv_KE-LeEIJ61mDrjLbrCnP6uTL1qmTUeENrsYLTTQ/exec"
+GSHEET_WEBHOOK_URL = "https://google.com"
+_orig_sqlite_connect = sqlite3.connect
 
 def sync_gsheet_to_local_db():
+    # الجلب مرة واحدة فقط في الجلسة لمنع البطء عند الضغط على الأزرار
+    if st.session_state.get("gsheet_initial_synced", False):
+        return
     try:
-        res = requests.get(GSHEET_WEBHOOK_URL, timeout=15)
+        res = requests.get(GSHEET_WEBHOOK_URL, timeout=10)
         text_body = res.text.strip()
         if res.status_code == 200 and text_body.startswith("["):
             records = res.json()
@@ -27,6 +34,7 @@ def sync_gsheet_to_local_db():
                     em = str(row.get("email", "")).strip()
                     if em:
                         ph = str(row.get("phone", "")).lstrip("'")
+                        if ph.lower() == "nan": ph = ""
                         cursor.execute("""
                             INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone)
                             VALUES (?, ?, ?, ?, ?, ?)
@@ -40,6 +48,17 @@ def sync_gsheet_to_local_db():
                         ))
             conn.commit()
             conn.close()
+            st.session_state["gsheet_initial_synced"] = True
+    except Exception:
+        pass
+
+def _bg_upload_worker(records):
+    try:
+        requests.get(
+            GSHEET_WEBHOOK_URL,
+            params={"action": "save", "data": json.dumps(records, ensure_ascii=False)},
+            timeout=15
+        )
     except Exception:
         pass
 
@@ -51,18 +70,10 @@ def push_local_db_to_gsheet():
         df = df.fillna("")
         df["phone"] = df["phone"].apply(lambda x: "" if str(x).lower() == "nan" else str(x))
         records = df.astype(str).to_dict(orient="records")
-        import json
-        requests.post(
-            GSHEET_WEBHOOK_URL,
-            data=json.dumps(records),
-            headers={"Content-Type": "text/plain;charset=utf-8"},
-            allow_redirects=True,
-            timeout=15
-        )
-    except Exception as e:
-        st.error(f"⚠️ خطأ أثناء الحفظ في الجدول: {e}")
-
-_orig_sqlite_connect = sqlite3.connect
+        # إرسال في الخلفية حتى لا يتأخر أو يبطئ الموقع نهائياً
+        threading.Thread(target=_bg_upload_worker, args=(records,), daemon=True).start()
+    except Exception:
+        pass
 
 class _CloudSyncConnectionWrapper:
     def __init__(self, conn, is_auth_db):
@@ -87,9 +98,7 @@ sqlite3.connect = _smart_sqlite_connect
 
 def get_persistent_db_connection():
     return sqlite3.connect("saas_security_vault.db", timeout=15)
-# === نهاية كتلة الحقن السحابي المباشر ===
-
-
+# === نهاية كتلة الحقن السحابي فائق السرعة ===
 
 
 
