@@ -11,7 +11,8 @@ GSHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwjhXSfX65fU5nisCX
 def sync_gsheet_to_local_db():
     try:
         res = requests.get(GSHEET_WEBHOOK_URL, timeout=15)
-        if res.status_code == 200:
+        text_body = res.text.strip()
+        if res.status_code == 200 and text_body.startswith("["):
             records = res.json()
             conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
             cursor = conn.cursor()
@@ -39,8 +40,8 @@ def sync_gsheet_to_local_db():
                         ))
             conn.commit()
             conn.close()
-    except Exception as e:
-        st.error(f"⚠️ خطأ أثناء الجلب من الجدول: {e}")
+    except Exception:
+        pass
 
 def push_local_db_to_gsheet():
     try:
