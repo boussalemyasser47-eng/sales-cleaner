@@ -19,7 +19,7 @@ def get_gsheet_worksheet():
         sheet = client.open_by_url(st.secrets["GSHEET_URL"])
         return sheet.get_worksheet(0)
     except Exception as e:
-        st.error(f"⚠️ خطأ في الربط مع Google Sheets: {e}")
+        st.error(f"⚠️ خطأ في الربط: {type(e).__name__} -> {repr(e)}")
         return None
 
 def sync_gsheet_to_local_db():
