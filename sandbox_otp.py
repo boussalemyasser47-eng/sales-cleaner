@@ -1,12 +1,104 @@
 # 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
+# 🛡️ [كتلة الحقن السحابي الذكي - Google Sheets Sync Bridge]
+import streamlit as st
 import sqlite3
-import datetime
+import pandas as pd
+import gspread
+from google.oauth2.service_account import Credentials
 
-# دالة اتصال آمنة ومستقرة بقاعدة البيانات الثابتة
-def get_persistent_db_connection():
-    conn = sqlite3.connect("saas_security_vault.db", timeout=15)
-    conn.row_factory = sqlite3.Row
-    return conn
+def get_gsheet_worksheet():
+    try:
+        scopes = [
+            "https://googleapis.com",
+            "https://googleapis.com"
+        ]
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]), scopes=scopes
+        )
+        client = gspread.authorize(creds)
+        sheet = client.open_by_url(st.secrets["GSHEET_URL"])
+        return sheet.get_worksheet(0)
+    except Exception as e:
+        print(f"⚠️ تعذر الاتصال بـ Google Sheets: {e}")
+        return None
+
+def sync_gsheet_to_local_db():
+    ws = get_gsheet_worksheet()
+    if ws is None:
+        return
+    try:
+        records = ws.get_all_records()
+        conn = sqlite3.connect("saas_security_vault.db", timeout=15)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS saas_users_auth (
+                email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT, created_at TEXT, phone TEXT
+            )
+        """)
+        if records:
+            cursor.execute("DELETE FROM saas_users_auth")
+            for row in records:
+                em = str(row.get("email", "")).strip()
+                if em:
+                    cursor.execute("""
+                        INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """, (
+                        em,
+                        str(row.get("password", "")),
+                        str(row.get("status", "⏳ في انتظار التفعيل")),
+                        str(row.get("package", "الباقة الأساسية المبتدئة (29k)")),
+                        str(row.get("created_at", "")),
+                        str(row.get("phone", ""))
+                    ))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"⚠️ خطأ أثناء الجلب من السحابة: {e}")
+
+def push_local_db_to_gsheet():
+    ws = get_gsheet_worksheet()
+    if ws is None:
+        return
+    try:
+        conn = sqlite3.connect("saas_security_vault.db", timeout=15)
+        df = pd.read_sql("SELECT email, password, status, package, created_at, phone FROM saas_users_auth", conn)
+        conn.close()
+        df = df.fillna("")
+        headers = ["email", "password", "status", "package", "created_at", "phone"]
+        rows = [headers] + df.astype(str).values.tolist()
+        ws.clear()
+        ws.update(rows)
+    except Exception as e:
+        print(f"⚠️ خطأ أثناء الرفع إلى السحابة: {e}")
+
+# تغليف اتصال SQLite لتحديث Google Sheets تلقائياً عند أي عملية حفظ أو تعديل أو حذف
+_orig_sqlite_connect = sqlite3.connect
+
+class _CloudSyncConnectionWrapper:
+    def __init__(self, conn, is_auth_db):
+        self._conn = conn
+        self._is_auth_db = is_auth_db
+
+    def commit(self):
+        self._conn.commit()
+        if self._is_auth_db:
+            push_local_db_to_gsheet()
+
+    def __getattr__(self, name):
+        return getattr(self._conn, name)
+
+def _smart_sqlite_connect(database, *args, **kwargs):
+    conn = _orig_sqlite_connect(database, *args, **kwargs)
+    is_auth = "saas_security_vault.db" in str(database)
+    return _CloudSyncConnectionWrapper(conn, is_auth)
+
+# استعادة البيانات من Google Sheets قبل تفعيل المزامنة التلقائية
+sync_gsheet_to_local_db()
+sqlite3.connect = _smart_sqlite_connect
+# === نهاية كتلة الحقن السحابي الذكي ===
+
+
 
 # تهيئة الجدول الأساسي وضمان عدم ضياع بيانات التجار المسجلين أبداً
 def init_persistent_auth_db():
