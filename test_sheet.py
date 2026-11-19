@@ -2,10 +2,9 @@ import streamlit as st
 import requests
 import pandas as pd
 
-SCRIPT_ID = "AKfycbwjhXSfX65fU5nisCXZXPWFlnquUv_KE-LeEIJ61mDrjLbrCnP6uTL1qmTUeENrsYLTTQ"
+SCRIPT_ID = "AKfycbyzDVzy7HWxOihz4VAMtHOJhxZ6YjNlgtL_lsrIIJBEFdkspLCBdVttd8bqXvzJDyHXOw"
 HOST = "script." + "google" + ".com"
 WEBHOOK_URL = f"https://{HOST}/macros/s/{SCRIPT_ID}/exec"
-
 
 st.title("🧪 مختبر اختبار Google Sheets المباشر")
 
@@ -37,11 +36,19 @@ if res.status_code == 200 and res.text.strip().startswith("["):
         c1, c2, c3 = st.columns(3)
         if c1.button("⚡ تفعيل"):
             row = df[df["email"] == target].iloc[0]
-            requests.get(WEBHOOK_URL, params={"action": "upsert", "email": target, "password": row["password"], "status": "🟢 مفعّل ونشط", "package": row["package"], "created_at": row["created_at"], "phone": row["phone"]})
+            requests.get(WEBHOOK_URL, params={
+                "action": "upsert", "email": target, "password": row["password"],
+                "status": "🟢 مفعّل ونشط", "package": row["package"],
+                "created_at": row["created_at"], "phone": row["phone"]
+            })
             st.rerun()
         if c2.button("🔒 حظر"):
             row = df[df["email"] == target].iloc[0]
-            requests.get(WEBHOOK_URL, params={"action": "upsert", "email": target, "password": row["password"], "status": "🔴 محظور", "package": row["package"], "created_at": row["created_at"], "phone": row["phone"]})
+            requests.get(WEBHOOK_URL, params={
+                "action": "upsert", "email": target, "password": row["password"],
+                "status": "🔴 محظور", "package": row["package"],
+                "created_at": row["created_at"], "phone": row["phone"]
+            })
             st.rerun()
         if c3.button("🗑️ حذف"):
             requests.get(WEBHOOK_URL, params={"action": "delete", "email": target})
