@@ -11,7 +11,8 @@ def get_gsheet_worksheet():
         if "private_key" in creds_dict:
             creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
         client = gspread.service_account_from_dict(creds_dict)
-        sheet = client.open_by_key("1qgFH38D9MKGb1jflwc0tfvvT_-qwKa4kiIKso6--7VU")
+        sheet = client.open_by_key("1qgFH38D9MKGb1jfIwc0tfvvT_-qwKa4kiIKso6--7VU")
+
         return sheet.get_worksheet(0)
     except Exception as e:
         st.error(f"⚠️ خطأ في الاتصال بـ Google Sheets: {type(e).__name__} -> {e}")
