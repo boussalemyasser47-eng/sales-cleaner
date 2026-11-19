@@ -12,17 +12,22 @@ def get_gsheet_worksheet():
     try:
         info = dict(st.secrets["gcp_service_account"])
         info["private_key"] = info["private_key"].replace("\\n", "\n")
+        base_scope = "https://www.googleapis.com" + "/auth/"
         creds = Credentials.from_service_account_info(
             info,
-            scopes=["https://googleapis.com"]
+            scopes=[
+                base_scope + "spreadsheets",
+                base_scope + "drive"
+            ]
         )
         creds.refresh(Request())
         client = gspread.Client(auth=creds)
-        sheet = client.open_by_key("1qgFH38D9MKGb1jfIwc0tfvvT_-qwKa4kiIKso6--7VU")
+        sheet = client.open("Tijaratna_DB")
         return sheet.get_worksheet(0)
     except Exception as e:
         st.error(f"⚠️ خطأ في الاتصال بـ Google Sheets: {type(e).__name__} -> {e}")
         return None
+
 
 def sync_gsheet_to_local_db():
     ws = get_gsheet_worksheet()
