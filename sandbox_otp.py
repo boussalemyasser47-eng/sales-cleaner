@@ -48,8 +48,17 @@ def push_local_db_to_gsheet():
         conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
         df = pd.read_sql("SELECT email, password, status, package, created_at, phone FROM saas_users_auth", conn)
         conn.close()
-        records = df.fillna("").astype(str).to_dict(orient="records")
-        requests.post(GSHEET_WEBHOOK_URL, json=records, timeout=15)
+        df = df.fillna("")
+        df["phone"] = df["phone"].apply(lambda x: "" if str(x).lower() == "nan" else str(x))
+        records = df.astype(str).to_dict(orient="records")
+        import json
+        requests.post(
+            GSHEET_WEBHOOK_URL,
+            data=json.dumps(records),
+            headers={"Content-Type": "text/plain;charset=utf-8"},
+            allow_redirects=True,
+            timeout=15
+        )
     except Exception as e:
         st.error(f"⚠️ خطأ أثناء الحفظ في الجدول: {e}")
 
