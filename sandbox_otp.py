@@ -2,7 +2,7 @@
 # 🛡️ [كتلة الحقن السحابي الذكي - Google Sheets Direct Bridge]
 # 🛡️ [كتلة الحقن السحابي المباشر - Apps Script Webhook]
 # 🛡️ [كتلة الحقن السحابي فائق السرعة - Background Sync]
-# 🛡️ [كتلة الحقن السحابي الدائم - GitHub Private Repo Bridge]
+# 🛡️ [كتلة الحقن السحابي فائق السرعة - GitHub Instant Bridge]
 import streamlit as st
 import sqlite3
 import pandas as pd
@@ -10,6 +10,7 @@ import requests
 import base64
 import json
 import threading
+import time
 
 GH_TOKEN = st.secrets.get("GITHUB_TOKEN", "")
 GH_REPO = "boussalemyasser47-eng/tijaratna-dataDZ"
@@ -22,14 +23,14 @@ GH_HEADERS = {
 }
 _orig_sqlite_connect = sqlite3.connect
 
-def sync_github_to_local_db():
-    if not GH_TOKEN or st.session_state.get("gh_initial_synced", False):
-        return
+@st.cache_resource
+def _initial_cloud_restore_once():
+    if not GH_TOKEN:
+        return False
     try:
-        res = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=10)
+        res = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=8)
         if res.status_code == 200:
             data = res.json()
-            st.session_state["gh_file_sha"] = data.get("sha")
             raw_text = base64.b64decode(data.get("content", "")).decode("utf-8").strip()
             records = json.loads(raw_text) if raw_text else list()
             conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
@@ -60,28 +61,32 @@ def sync_github_to_local_db():
                         ))
             conn.commit()
             conn.close()
-            st.session_state["gh_initial_synced"] = True
+            return True
     except Exception:
         pass
+    return False
+
+_sync_lock = threading.Lock()
 
 def _bg_github_push(records):
     if not GH_TOKEN:
         return
-    try:
-        res_get = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=10)
-        sha = res_get.json().get("sha") if res_get.status_code == 200 else None
-        encoded = base64.b64encode(
-            json.dumps(records, ensure_ascii=False, indent=2).encode("utf-8")
-        ).decode("utf-8")
-        payload = {
-            "message": "Auto-sync Tijaratna merchants",
-            "content": encoded
-        }
-        if sha:
-            payload["sha"] = sha
-        requests.put(GH_API_URL, headers=GH_HEADERS, json=payload, timeout=15)
-    except Exception:
-        pass
+    with _sync_lock:
+        try:
+            res_get = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=8)
+            sha = res_get.json().get("sha") if res_get.status_code == 200 else None
+            encoded = base64.b64encode(
+                json.dumps(records, ensure_ascii=False, indent=2).encode("utf-8")
+            ).decode("utf-8")
+            payload = {
+                "message": "Fast sync merchants",
+                "content": encoded
+            }
+            if sha:
+                payload["sha"] = sha
+            requests.put(GH_API_URL, headers=GH_HEADERS, json=payload, timeout=10)
+        except Exception:
+            pass
 
 def push_local_db_to_github():
     try:
@@ -113,13 +118,12 @@ def _smart_sqlite_connect(database, *args, **kwargs):
     is_auth = "saas_security_vault.db" in str(database)
     return _CloudSyncConnectionWrapper(conn, is_auth)
 
-sync_github_to_local_db()
+_initial_cloud_restore_once()
 sqlite3.connect = _smart_sqlite_connect
 
 def get_persistent_db_connection():
     return sqlite3.connect("saas_security_vault.db", timeout=15)
-# === نهاية كتلة الحقن السحابي الدائم ===
-
+# === نهاية كتلة الحقن السحابي فائق السرعة ===
 
 
 
