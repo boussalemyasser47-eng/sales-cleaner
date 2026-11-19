@@ -19,7 +19,7 @@ def get_gsheet_worksheet():
         sheet = client.open_by_url(st.secrets["GSHEET_URL"])
         return sheet.get_worksheet(0)
     except Exception as e:
-        print(f"⚠️ تعذر الاتصال بـ Google Sheets: {e}")
+        st.error(f"⚠️ خطأ في الربط مع Google Sheets: {e}")
         return None
 
 def sync_gsheet_to_local_db():
@@ -28,7 +28,7 @@ def sync_gsheet_to_local_db():
         return
     try:
         records = ws.get_all_records()
-        conn = sqlite3.connect("saas_security_vault.db", timeout=15)
+        conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
         cursor = conn.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS saas_users_auth (
@@ -40,6 +40,7 @@ def sync_gsheet_to_local_db():
             for row in records:
                 em = str(row.get("email", "")).strip()
                 if em:
+                    ph = str(row.get("phone", "")).lstrip("'")
                     cursor.execute("""
                         INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone)
                         VALUES (?, ?, ?, ?, ?, ?)
@@ -49,30 +50,30 @@ def sync_gsheet_to_local_db():
                         str(row.get("status", "⏳ في انتظار التفعيل")),
                         str(row.get("package", "الباقة الأساسية المبتدئة (29k)")),
                         str(row.get("created_at", "")),
-                        str(row.get("phone", ""))
+                        ph
                     ))
         conn.commit()
         conn.close()
     except Exception as e:
-        print(f"⚠️ خطأ أثناء الجلب من السحابة: {e}")
+        st.error(f"⚠️ خطأ أثناء الجلب من السحابة: {e}")
 
 def push_local_db_to_gsheet():
     ws = get_gsheet_worksheet()
     if ws is None:
         return
     try:
-        conn = sqlite3.connect("saas_security_vault.db", timeout=15)
+        conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
         df = pd.read_sql("SELECT email, password, status, package, created_at, phone FROM saas_users_auth", conn)
         conn.close()
         df = df.fillna("")
+        df["phone"] = df["phone"].apply(lambda x: f"'{x}" if str(x).strip() and not str(x).startswith("'") else str(x))
         headers = ["email", "password", "status", "package", "created_at", "phone"]
         rows = [headers] + df.astype(str).values.tolist()
         ws.clear()
         ws.update(rows)
     except Exception as e:
-        print(f"⚠️ خطأ أثناء الرفع إلى السحابة: {e}")
+        st.error(f"⚠️ خطأ أثناء الرفع إلى السحابة: {e}")
 
-# تغليف اتصال SQLite لتحديث Google Sheets تلقائياً عند أي عملية حفظ أو تعديل أو حذف
 _orig_sqlite_connect = sqlite3.connect
 
 class _CloudSyncConnectionWrapper:
@@ -93,10 +94,14 @@ def _smart_sqlite_connect(database, *args, **kwargs):
     is_auth = "saas_security_vault.db" in str(database)
     return _CloudSyncConnectionWrapper(conn, is_auth)
 
-# استعادة البيانات من Google Sheets قبل تفعيل المزامنة التلقائية
 sync_gsheet_to_local_db()
 sqlite3.connect = _smart_sqlite_connect
+
+# تعويض الدالة المفقودة حتى لا يتوقف الكود الأصلي
+def get_persistent_db_connection():
+    return sqlite3.connect("saas_security_vault.db", timeout=15)
 # === نهاية كتلة الحقن السحابي الذكي ===
+
 
 
 
