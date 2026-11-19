@@ -2,25 +2,36 @@
 # 🛡️ [كتلة الحقن السحابي الذكي - Google Sheets Direct Bridge]
 # 🛡️ [كتلة الحقن السحابي المباشر - Apps Script Webhook]
 # 🛡️ [كتلة الحقن السحابي فائق السرعة - Background Sync]
+# 🛡️ [كتلة الحقن السحابي الدائم - GitHub Private Repo Bridge]
 import streamlit as st
 import sqlite3
 import pandas as pd
 import requests
+import base64
 import json
 import threading
 
-GSHEET_WEBHOOK_URL = "https://google.com"
+GH_TOKEN = st.secrets.get("GITHUB_TOKEN", "")
+GH_REPO = "boussalemyasser47-eng/tijaratna-dataDZ"
+GH_FILE = "merchants_data.json"
+GH_HOST = "api." + "github" + ".com"
+GH_API_URL = f"https://{GH_HOST}/repos/{GH_REPO}/contents/{GH_FILE}"
+GH_HEADERS = {
+    "Authorization": f"Bearer {GH_TOKEN}",
+    "Accept": "application/vnd.github+json"
+}
 _orig_sqlite_connect = sqlite3.connect
 
-def sync_gsheet_to_local_db():
-    # الجلب مرة واحدة فقط في الجلسة لمنع البطء عند الضغط على الأزرار
-    if st.session_state.get("gsheet_initial_synced", False):
+def sync_github_to_local_db():
+    if not GH_TOKEN or st.session_state.get("gh_initial_synced", False):
         return
     try:
-        res = requests.get(GSHEET_WEBHOOK_URL, timeout=10)
-        text_body = res.text.strip()
-        if res.status_code == 200 and text_body.startswith("["):
-            records = res.json()
+        res = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            st.session_state["gh_file_sha"] = data.get("sha")
+            raw_text = base64.b64decode(data.get("content", "")).decode("utf-8").strip()
+            records = json.loads(raw_text) if raw_text else list()
             conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
             cursor = conn.cursor()
             cursor.execute("""
@@ -34,7 +45,8 @@ def sync_gsheet_to_local_db():
                     em = str(row.get("email", "")).strip()
                     if em:
                         ph = str(row.get("phone", "")).lstrip("'")
-                        if ph.lower() == "nan": ph = ""
+                        if ph.lower() == "nan":
+                            ph = ""
                         cursor.execute("""
                             INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone)
                             VALUES (?, ?, ?, ?, ?, ?)
@@ -48,21 +60,30 @@ def sync_gsheet_to_local_db():
                         ))
             conn.commit()
             conn.close()
-            st.session_state["gsheet_initial_synced"] = True
+            st.session_state["gh_initial_synced"] = True
     except Exception:
         pass
 
-def _bg_upload_worker(records):
+def _bg_github_push(records):
+    if not GH_TOKEN:
+        return
     try:
-        requests.get(
-            GSHEET_WEBHOOK_URL,
-            params={"action": "save", "data": json.dumps(records, ensure_ascii=False)},
-            timeout=15
-        )
+        res_get = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=10)
+        sha = res_get.json().get("sha") if res_get.status_code == 200 else None
+        encoded = base64.b64encode(
+            json.dumps(records, ensure_ascii=False, indent=2).encode("utf-8")
+        ).decode("utf-8")
+        payload = {
+            "message": "Auto-sync Tijaratna merchants",
+            "content": encoded
+        }
+        if sha:
+            payload["sha"] = sha
+        requests.put(GH_API_URL, headers=GH_HEADERS, json=payload, timeout=15)
     except Exception:
         pass
 
-def push_local_db_to_gsheet():
+def push_local_db_to_github():
     try:
         conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
         df = pd.read_sql("SELECT email, password, status, package, created_at, phone FROM saas_users_auth", conn)
@@ -70,8 +91,7 @@ def push_local_db_to_gsheet():
         df = df.fillna("")
         df["phone"] = df["phone"].apply(lambda x: "" if str(x).lower() == "nan" else str(x))
         records = df.astype(str).to_dict(orient="records")
-        # إرسال في الخلفية حتى لا يتأخر أو يبطئ الموقع نهائياً
-        threading.Thread(target=_bg_upload_worker, args=(records,), daemon=True).start()
+        threading.Thread(target=_bg_github_push, args=(records,), daemon=True).start()
     except Exception:
         pass
 
@@ -83,7 +103,7 @@ class _CloudSyncConnectionWrapper:
     def commit(self):
         self._conn.commit()
         if self._is_auth_db:
-            push_local_db_to_gsheet()
+            push_local_db_to_github()
 
     def __getattr__(self, name):
         return getattr(self._conn, name)
@@ -93,12 +113,13 @@ def _smart_sqlite_connect(database, *args, **kwargs):
     is_auth = "saas_security_vault.db" in str(database)
     return _CloudSyncConnectionWrapper(conn, is_auth)
 
-sync_gsheet_to_local_db()
+sync_github_to_local_db()
 sqlite3.connect = _smart_sqlite_connect
 
 def get_persistent_db_connection():
     return sqlite3.connect("saas_security_vault.db", timeout=15)
-# === نهاية كتلة الحقن السحابي فائق السرعة ===
+# === نهاية كتلة الحقن السحابي الدائم ===
+
 
 
 
