@@ -1,36 +1,5 @@
 # ========================================================
-# 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
-# ========================================================
-import os
-
-# تحديد مسار ثابت وموثوق لقاعدة البيانات لمنع ضياعها في وضع السكون أو إعادة التشغيل
-DB_FILENAME = "saas_security_vault.db"
-
-def get_secure_db_connection():
-    """
-    إنشاء اتصال آمن مع مهلة زمنية دقيقة لضمان استقرار العمليات المتزامنة
-    """
-    conn = sqlite3.connect(DB_FILENAME, timeout=15)
-    return conn
-
-# تحسين دالة خزانة النسخ الاحتياطي التلقائي (.ZIP) لتشمل ملفات الـ DB بمسارها الثابت بدقة
-def create_robust_backup_vault():
-    import zipfile
-    zip_buffer = io.BytesIO()
-    try:
-        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-            if os.path.exists(DB_FILENAME):
-                with open(DB_FILENAME, "rb") as f:
-                    timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
-                    zip_file.writestr(f"backup_{timestamp_str}_{DB_FILENAME}", f.read())
-    except Exception as e:
-        print(f"⚠️ خطأ في إنشاء النسخة الاحتياطية: {e}")
-        
-    zip_buffer.seek(0)
-    return zip_buffer
-
-# === الإضافات والتعديلات الجديدة ===
-# تم تأمين مسار قاعدة البيانات وتفعيل استقرار الحفظ الدائم بنجاح.# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
+# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
 # ========================================================
 # ========================================================
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
@@ -165,9 +134,9 @@ except Exception:
 
 FONT_NAME = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
 
-def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar"):
+def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data):
     """
-    دالة توليد فاتورة مبيعات رسمية بحجم A4 مع دعم التبديل التلقائي بين العربية (RTL) والفرنسية (LTR)
+    دالة توليد فاتورة مبيعات رسمية بحجم A4 بالجدول الأزرق الاحترافي مع دعم QR Code رقمي موثق[cite: 1]
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -179,74 +148,70 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         bottomMargin=30
     )
     elements = []
+    
     styles = getSampleStyleSheet()
-    is_fr = (lang == "fr")
-    active_font = 'Helvetica' if is_fr else FONT_NAME
+    
+    # أنماط النصوص الاحترافية
+    title_style = ParagraphStyle(
+        'InvoiceTitle',
+        parent=styles['Heading1'],
+        fontName=FONT_NAME,
+        fontSize=22,
+        textColor=colors.HexColor('#003366'),
+        alignment=1,
+        spaceAfter=6
+    )
+    
+    sub_title_style = ParagraphStyle(
+        'InvoiceSubTitle',
+        parent=styles['Normal'],
+        fontName=FONT_NAME,
+        fontSize=12,
+        textColor=colors.HexColor('#555555'),
+        alignment=1,
+        spaceAfter=15
+    )
+    
+    cell_style_right = ParagraphStyle(
+        'CellRight',
+        parent=styles['Normal'],
+        fontName=FONT_NAME,
+        fontSize=10,
+        textColor=colors.HexColor('#222222'),
+        alignment=2
+    )
 
-    # إعداد النصوص حسب اللغة المختارة
-    if is_fr:
-        lbl_subtitle = "FACTURE DE VENTE ET BON DE COMMANDE"
-        lbl_shop = f"<b>Magasin :</b> {shop_name}"
-        lbl_cust = f"<b>Client :</b> {customer_name}"
-        lbl_addr = f"<b>Adresse :</b> {customer_address}"
-        lbl_phone = f"<b>Téléphone :</b> {customer_phone}"
-        h_prod, h_qty, h_price, h_tot = "Désignation", "Qté", "Prix Unitaire", "Total (DA)"
-        lbl_sub = "Sous-total Produit :"
-        lbl_ship = "Frais de Livraison :"
-        lbl_final = "NET À PAYER :"
-        lbl_qr_title = "Sceau de Vérification Numérique :"
-        lbl_qr_desc = "Document généré électroniquement et sécurisé par NEXUS CENTRAL GATE."
-    else:
-        lbl_subtitle = fix_arabic("فاتورة مبيعات وتأكيد طلبية رسمية وموثقة")
-        lbl_shop = fix_arabic(f"<b>اسم المتجر:</b> {shop_name}")
-        lbl_cust = fix_arabic(f"<b>اسم الزبون:</b> {customer_name}")
-        lbl_addr = fix_arabic(f"<b>عنوان التوصيل:</b> {customer_address}")
-        lbl_phone = fix_arabic(f"<b>رقم الهاتف:</b> {customer_phone}")
-        h_prod = fix_arabic("اسم المنتج")
-        h_qty = fix_arabic("الكمية")
-        h_price = fix_arabic("السعر الفردي")
-        h_tot = fix_arabic("الإجمالي (DA)")
-        lbl_sub = fix_arabic("المجموع الفرعي للمنتج:")
-        lbl_ship = fix_arabic("تكلفة الشحن والتوصيل:")
-        lbl_final = fix_arabic("الإجمالي النهائي المطلوب:")
-        lbl_qr_title = fix_arabic("ختم التحقق الرقمي الموثق:")
-        lbl_qr_desc = fix_arabic("هذه الفاتورة صادرة إلكترونياً ومؤمنة عبر نظام NEXUS CENTRAL GATE.")
+    cell_style_center = ParagraphStyle(
+        'CellCenter',
+        parent=styles['Normal'],
+        fontName=FONT_NAME,
+        fontSize=10,
+        textColor=colors.HexColor('#222222'),
+        alignment=1
+    )
 
-    # أنماط النصوص والاتجاهات (RTL للعربية / LTR للفرنسية)
-    title_style = ParagraphStyle('InvTitle', parent=styles['Heading1'], fontName=active_font, fontSize=22, textColor=colors.HexColor('#003366'), alignment=1, spaceAfter=6)
-    sub_style = ParagraphStyle('InvSub', parent=styles['Normal'], fontName=active_font, fontSize=11, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=15)
-    align_style = ParagraphStyle('AlignStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=0 if is_fr else 2)
-    center_style = ParagraphStyle('CenterStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=1)
-    header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.whitesmoke, alignment=1)
-
+    # إضافة اللوغو إن وجد
     if logo_data:
         try:
-            img = Image(io.BytesIO(logo_data), width=65, height=65)
+            logo_buffer = io.BytesIO(logo_data)
+            img = Image(logo_buffer, width=65, height=65)
             elements.append(img)
             elements.append(Spacer(1, 8))
         except Exception:
             pass
 
-    shop_display = shop_name if is_fr else fix_arabic(shop_name)
-    elements.append(Paragraph(f"<b>{shop_display}</b>", title_style))
-    elements.append(Paragraph(f"<b>{lbl_subtitle}</b>", sub_style))
+    elements.append(Paragraph(fix_arabic(f"<b>{shop_name}</b>"), title_style))
+    elements.append(Paragraph(fix_arabic("<b>فاتورة مبيعات وتأكيد طلبية رسمية وموثقة</b>"), sub_title_style))
     elements.append(Spacer(1, 10))
 
-    # 1. جدول بيانات المتجر والزبون (يعكس الترتيب تلقائياً حسب اللغة)
-    if is_fr:
-        info_data = [
-            [Paragraph(lbl_cust, align_style), Paragraph(lbl_shop, align_style)],
-            [Paragraph(lbl_phone, align_style), Paragraph(lbl_addr, align_style)]
-        ]
-    else:
-        info_data = [
-            [Paragraph(lbl_shop, align_style), Paragraph(lbl_cust, align_style)],
-            [Paragraph(lbl_addr, align_style), Paragraph(lbl_phone, align_style)]
-        ]
-
-    t_info = Table(info_data, colWidths=[260, 260])
+    # جدول بيانات المتجر والزبون (تصميم هندسي متناسق ومن اليمين لليسار)
+    t_info_formatted = [
+        [Paragraph(fix_arabic(f"<b>اسم المتجر:</b> {shop_name}"), cell_style_right), Paragraph(fix_arabic(f"<b>اسم الزبون:</b> {customer_name}"), cell_style_right)],
+        [Paragraph(fix_arabic(f"<b>عنوان التوصيل:</b> {customer_address}"), cell_style_right), Paragraph(fix_arabic(f"<b>رقم الهاتف:</b> {customer_phone}"), cell_style_right)]
+    ]
+    t_info = Table(t_info_formatted, colWidths=[260, 260])
     t_info.setStyle(TableStyle([
-        ('ALIGN', (0,0), (-1,-1), 'LEFT' if is_fr else 'RIGHT'),
+        ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('TOPPADDING', (0,0), (-1,-1), 8),
         ('BOTTOMPADDING', (0,0), (-1,-1), 8),
@@ -257,24 +222,25 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     elements.append(t_info)
     elements.append(Spacer(1, 15))
 
-    # 2. جدول المنتجات (ترتيب الأعمدة من اليسار لليمين للفرنسية، ومن اليمين لليسار للعربية)
-    prod_display = product_name if is_fr else fix_arabic(product_name)
-    if is_fr:
-        items_data = [
-            [Paragraph(f"<b>{h_prod}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_tot}</b>", header_style)],
-            [Paragraph(prod_display, align_style), Paragraph(str(quantity), center_style), Paragraph(f"{price:,.2f}", center_style), Paragraph(f"{product_total:,.2f}", center_style)]
+    # جدول تفاصيل المنتجات والأسعار (التصميم الأزرق الكلاسيكي Mفضل)
+    table_data = [
+        [
+            Paragraph(fix_arabic("<b>الإجمالي (DA)</b>"), ParagraphStyle('H1', parent=cell_style_center, fontName=FONT_NAME, textColor=colors.whitesmoke)),
+            Paragraph(fix_arabic("<b>السعر الفردي</b>"), ParagraphStyle('H2', parent=cell_style_center, fontName=FONT_NAME, textColor=colors.whitesmoke)),
+            Paragraph(fix_arabic("<b>الكمية</b>"), ParagraphStyle('H3', parent=cell_style_center, fontName=FONT_NAME, textColor=colors.whitesmoke)),
+            Paragraph(fix_arabic("<b>اسم المنتج</b>"), ParagraphStyle('H4', parent=cell_style_right, fontName=FONT_NAME, textColor=colors.whitesmoke))
+        ],
+        [
+            Paragraph(f"{product_total:,.2f}", cell_style_center),
+            Paragraph(f"{price:,.2f}", cell_style_center),
+            Paragraph(str(quantity), cell_style_center),
+            Paragraph(fix_arabic(product_name), cell_style_right)
         ]
-        col_widths_items = [240, 60, 110, 110]
-    else:
-        items_data = [
-            [Paragraph(f"<b>{h_tot}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_prod}</b>", header_style)],
-            [Paragraph(f"{product_total:,.2f}", center_style), Paragraph(f"{price:,.2f}", center_style), Paragraph(str(quantity), center_style), Paragraph(prod_display, align_style)]
-        ]
-        col_widths_items = [110, 110, 60, 240]
-
-    t_items = Table(items_data, colWidths=col_widths_items)
+    ]
+    t_items = Table(table_data, colWidths=[110, 110, 60, 240])
     t_items.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('BOTTOMPADDING', (0,0), (-1,-1), 9),
         ('TOPPADDING', (0,0), (-1,-1), 9),
@@ -284,25 +250,18 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     elements.append(t_items)
     elements.append(Spacer(1, 15))
 
-    # 3. جدول المجاميع النهائية
-    final_style = ParagraphStyle('FinalSt', parent=align_style, fontName=active_font, fontSize=11, textColor=colors.HexColor('#003366'))
-    if is_fr:
-        totals_data = [
-            [Paragraph(f"<b>{lbl_sub}</b>", align_style), Paragraph(f"<b>{product_total:,.2f} DA</b>", align_style)],
-            [Paragraph(f"<b>{lbl_ship}</b>", align_style), Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", align_style)],
-            [Paragraph(f"<b>{lbl_final}</b>", final_style), Paragraph(f"<b>{final_total:,.2f} DA</b>", final_style)]
+    # جدول المجاميع النهائية
+    totals_data = [
+        [Paragraph(f"<b>{product_total:,.2f} DA</b>", cell_style_right), Paragraph(fix_arabic("<b>المجموع الفرعي للمنتج:</b>"), cell_style_right)],
+        [Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", cell_style_right), Paragraph(fix_arabic("<b>تكلفة الشحن والتوصيل:</b>"), cell_style_right)],
+        [
+            Paragraph(f"<b>{final_total:,.2f} DA</b>", ParagraphStyle('FTotal', parent=cell_style_right, fontName=FONT_NAME, fontSize=11, textColor=colors.HexColor('#003366'))), 
+            Paragraph(fix_arabic("<b>الإجمالي النهائي المطلوب:</b>"), ParagraphStyle('FTotalLbl', parent=cell_style_right, fontName=FONT_NAME, fontSize=11, textColor=colors.HexColor('#003366')))
         ]
-        col_widths_tot = [190, 160]
-    else:
-        totals_data = [
-            [Paragraph(f"<b>{product_total:,.2f} DA</b>", align_style), Paragraph(f"<b>{lbl_sub}</b>", align_style)],
-            [Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", align_style), Paragraph(f"<b>{lbl_ship}</b>", align_style)],
-            [Paragraph(f"<b>{final_total:,.2f} DA</b>", final_style), Paragraph(f"<b>{lbl_final}</b>", final_style)]
-        ]
-        col_widths_tot = [160, 190]
-
-    t_totals = Table(totals_data, colWidths=col_widths_tot)
+    ]
+    t_totals = Table(totals_data, colWidths=[160, 190])
     t_totals.setStyle(TableStyle([
+        ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('BOTTOMPADDING', (0,0), (-1,-1), 7),
         ('TOPPADDING', (0,0), (-1,-1), 7),
@@ -311,22 +270,35 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     elements.append(t_totals)
     elements.append(Spacer(1, 20))
 
-    # 4. الختم الرقمي QR Code
-    qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Phone: {customer_phone} | Total: {final_total} DA | Lang: {lang}"
+    # === إضافة الختم الرقمي أو QR Code الديناميكي الموثق في أسفل الفاتورة ===
+    qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Phone: {customer_phone} | Product: {product_name} | Total: {final_total} DA | Status: Verified"
+    
     qr = QrCodeWidget(qr_data_string)
     qr.barWidth = 70
     qr.barHeight = 70
+    qr.qrVersion = 1
+    
     d = Drawing(70, 70)
     d.add(qr)
 
-    qr_text_style = ParagraphStyle('QrTxt', parent=styles['Normal'], fontName=active_font, fontSize=8.5, textColor=colors.HexColor('#444444'), alignment=0 if is_fr else 2)
-    qr_para = Paragraph(f"<b>{lbl_qr_title}</b><br/>{lbl_qr_desc}", qr_text_style)
+    verification_text_style = ParagraphStyle(
+        'VerifyText',
+        parent=styles['Normal'],
+        fontName=FONT_NAME,
+        fontSize=8.5,
+        textColor=colors.HexColor('#444444'),
+        alignment=2
+    )
 
-    qr_data = [[qr_para, d]] if not is_fr else [[d, qr_para]]
-    qr_widths = [380, 120] if not is_fr else [120, 380]
-
-    t_qr = Table(qr_data, colWidths=qr_widths)
+    qr_section_data = [
+        [
+            Paragraph(fix_arabic("<b>ختم التحقق الرقمي الموثق:</b><br/>هذه الفاتورة صادرة إلكترونياً ومؤمنة عبر نظام NEXUS CENTRAL GATE. يمنع تزويرها أو تعديل بياناتها وتخضع للسجل التجاري للمتجر."), verification_text_style),
+            d
+        ]
+    ]
+    t_qr = Table(qr_section_data, colWidths=[380, 120])
     t_qr.setStyle(TableStyle([
+        ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f1f5f9')),
         ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
@@ -335,11 +307,14 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         ('LEFTPADDING', (0,0), (-1,-1), 10),
         ('RIGHTPADDING', (0,0), (-1,-1), 10),
     ]))
+    
     elements.append(t_qr)
-
+    
     doc.build(elements)
     buffer.seek(0)
     return buffer.getvalue()
+
+
 def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date):
     """
     دالة توليد ملصق الشحن الحراري (4x4 بوصة) بشكل هندسي منظم، مع إطار خارجي وخط فاصل أنيق[cite: 1]
@@ -923,15 +898,11 @@ st.markdown("""
 # ========================================================
 
 # صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
-# ========================================================
-# [القسم الرابع]: إدارة ومزامنة جدول قاعدة بيانات الـ Auth وجدار الحماية الاستباقي للثغرات
-# ========================================================
-# صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
     CREATE TABLE IF NOT EXISTS saas_users_auth (
-        email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT, created_at TEXT, phone TEXT
+        email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT
     )
 """)
 db_conn.commit()
@@ -940,9 +911,8 @@ db_conn.commit()
 db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
 account_exists = db_cursor.fetchone()
 if account_exists[0] == 0 and "destroyed_flag" not in st.session_state:
-    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth (email, password, status, package) VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
+    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
     db_conn.commit()
-
 db_conn.close()
 
 # دالة التدمير الفوري لأي حساب في قاعدة البيانات دون إعطاب الاتصالات المفتوحة حياً
@@ -951,15 +921,10 @@ def delete_email_completely(email_to_delete):
         conn = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor = conn.cursor()
         cursor.execute("DELETE FROM saas_users_auth WHERE email = ?", (email_to_delete,))
-        conn.commit()
-        conn.close()
+        conn.commit(); conn.close()
         return True
     except Exception as e:
-        st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}")
-        return False
-
-# === الإضافات والتعديلات الجديدة ===
-# جاهز ومؤمن بالكامل هنا لاستقبال أي ميزات إضافية في المحادثات القادمة...
+        st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
 
 # === الإضافات والتعديلات الجديدة ===
 # جاهز ومؤمن بالكامل هنا لاستقبال أي ميزات إضافية في المحادثات القادمة...
@@ -2230,30 +2195,11 @@ if "choice" in locals() or "choice" in globals():
         col_left, col_right = st.columns(2)
         with col_left:
             st.subheader("🏪 معلومات المتجر والزبون")
-            # --- المفاتيح الأصلية المحمية (ممنوع تغييرها لضمان دقة الحفظ المحاسبي) ---
             shop_name = st.text_input("اسم متجرك الإلكتروني:", "DZ Cyber Store", key="invoice_shop_name_input")
             customer_name = st.text_input("اسم الزبون الكامل:", key="invoice_customer_name_input")
             customer_phone = st.text_input("رقم هاتف الزبون:", key="invoice_customer_phone_input")
             customer_address = st.text_input("عنوان التوصيل والولاية:", key="invoice_customer_address_input")
-
-            # --- مفتاح فريد وحصري لزر اختيار لغة الفاتورة (عربي / فرنسي) ---
-            st.markdown("🌐 **لغة طباعة الفاتورة (PDF):**")
-            selected_invoice_lang = st.radio(
-                label="اختر لغة الفاتورة:",
-                options=["🇩🇿 اللغة العربية (RTL)", "🇫🇷 اللغة الفرنسية (LTR)"],
-                horizontal=True,
-                label_visibility="collapsed",
-                key="sec4b_invoice_lang_selector_unique"
-            )
-            lang_code = "fr" if "الفرنسية" in selected_invoice_lang else "ar"
-            uploaded_logo = st.file_uploader(
-                "اختر لوغو متجرك (اختياري)", 
-                type=["png", "jpg", "jpeg"], 
-                key="sec4b_invoice_logo_uploader_unique"
-            )
-
-
-
+            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
@@ -2283,7 +2229,7 @@ if "choice" in locals() or "choice" in globals():
                     conne.commit()
                     
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang=lang_code)
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
                     st.session_state["last_active_customer"] = customer_name
                     st.session_state["last_active_phone"] = customer_phone
@@ -2334,57 +2280,10 @@ if "choice" in locals() or "choice" in globals():
         </div>
         """
         st.markdown(neon_card_html, unsafe_allow_html=True)
-# === إضافات نظام صانع الفواتير والملصقات الحرارية ===
-    # دالة حاسبة الأرباح الصافية وتقارير الأداء المالي (Net Profit & P&L Calculator)
-        st.markdown("---")
-        st.subheader("📊 حاسبة الأرباح الصافية وتقارير الأداء المالي (Net Profit & P&L)")
 
-        with st.expander("💡 افتح لوحة حاسبة الأرباح وتحليل الأداء المالي المتقدم", expanded=True):
-            p_col1, p_col2 = st.columns(2)
+
         
-            with p_col1:
-                calc_buy_price = st.number_input("سعر شراء السلعة (DA):", min_value=0.0, value=700.0, step=50.0, key="calc_buy_price_input")
-                calc_sell_price = st.number_input("سعر بيع السلعة للزبون (DA):", min_value=0.0, value=float(price) if 'price' in locals() else 1200.0, step=50.0, key="calc_sell_price_input")
-                calc_shipping_cost = st.number_input("تكلفة التوصيل الفعلية (DA):", min_value=0.0, value=float(shipping_cost) if 'shipping_cost' in locals() else 600.0, step=50.0, key="calc_shipping_cost_input")
-            
-            with p_col2:
-                calc_return_rate = st.slider("نسبة الإرجاع المتوقعة (Retour %):", min_value=0, max_value=50, value=10, step=1, key="calc_return_rate_slider")
-                calc_ads_cost = st.number_input("تلفة الإعلانات التقديرية للقطعة (DA):", min_value=0.0, value=150.0, step=10.0, key="calc_ads_cost_input")
-                calc_other_expenses = st.number_input("مصاريف تشغيلية أخرى (تغليف، تلف...) (DA):", min_value=0.0, value=50.0, step=10.0, key="calc_other_expenses_input")
-
-        # حسابات الأرباح الصافية مع أخذ نسبة الإرجاع بعين الاعتبار
-            effective_return_penalty = (calc_shipping_cost * 1.5) * (calc_return_rate / 100.0)
-            gross_profit = calc_sell_price - calc_buy_price
-            total_expenses = calc_shipping_cost + calc_ads_cost + calc_other_expenses + effective_return_penalty
-            net_profit_per_piece = gross_profit - total_expenses
-            profit_margin_percent = (net_profit_per_piece / calc_sell_price * 100) if calc_sell_price > 0 else 0
-
-        # عرض النتائج في كرت زجاجي نيوكي مشع متناسق مع واجهة المعاينة
-            net_card_color = "#00fff0" if net_profit_per_piece > 0 else "#ff4d4d"
         
-            net_profit_card_html = f"""
-            <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; border: 1px solid rgba(0, 255, 240, 0.2); box-shadow: 0 0 20px rgba(0, 255, 240, 0.08); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: right; direction: rtl; margin-top: 15px;">
-                <div style="font-size: 16px; font-weight: bold; color: #00fff0; border-bottom: 1px dashed rgba(0, 255, 240, 0.3); padding-bottom: 8px; margin-bottom: 12px;">
-                    🧮 تقرير تحليل الأداء المالي وصافي الربح للقطعة الواحدة
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #e0e0e0; font-size: 14px;">
-                    <span>إجمالي الربح الإسمي (قبل المصاريف):</span>
-                    <span style="color: #fff; font-weight: bold;">{gross_profit:,.2f} DA</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #e0e0e0; font-size: 14px;">
-                    <span>إجمالي التكاليف والمصاريف (شحن + إعلانات + نسبة الإرجاع):</span>
-                    <span style="color: #ff9999; font-weight: bold;">-{total_expenses:,.2f} DA</span>
-                </div>
-                <div style="background: rgba(0, 255, 240, 0.05); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0, 255, 240, 0.15); margin-top: 10px;">
-                    <span style="font-size: 15px; font-weight: bold; color: #fff;">💎 صافي الربح الحقيقي للقطعة:</span>
-                    <span style="font-size: 20px; font-weight: bold; color: {net_card_color}; text-shadow: 0 0 12px {net_card_color};">{net_profit_per_piece:,.2f} DA ({profit_margin_percent:.1f}%)</span>
-                </div>
-            </div>
-            """
-            st.markdown(net_profit_card_html, unsafe_allow_html=True)
-# === إضافات نظام صانع الفواتير والملصقات الحرارية ===
-# دالة حاسبة الأرباح الصافية وتقارير الأداء المالي (Net Profit & P&L Calculator)
-
 
 
  
