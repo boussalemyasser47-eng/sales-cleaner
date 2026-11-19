@@ -1,79 +1,54 @@
 # 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
 # 🛡️ [كتلة الحقن السحابي الذكي - Google Sheets Direct Bridge]
+# 🛡️ [كتلة الحقن السحابي المباشر - Apps Script Webhook]
 import streamlit as st
 import sqlite3
 import pandas as pd
-import gspread
+import requests
 
-from google.oauth2.service_account import Credentials
-from google.auth.transport.requests import Request
-
-def get_gsheet_worksheet():
-    try:
-        info = dict(st.secrets["gcp_service_account"])
-        info["private_key"] = info["private_key"].replace("\\n", "\n")
-        domain = "www." + "google" + "apis.com"
-        s1 = f"https://{domain}/auth/spreadsheets"
-        s2 = f"https://{domain}/auth/drive"
-        creds = Credentials.from_service_account_info(info, scopes=[s1, s2])
-        creds.refresh(Request())
-        client = gspread.Client(auth=creds)
-        sheet = client.open("Tijaratna_DB")
-        return sheet.get_worksheet(0)
-    except Exception as e:
-        st.error(f"⚠️ خطأ في الاتصال بـ Google Sheets: {type(e).__name__} -> {e}")
-        return None
-
+GSHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwjhXSfX65fU5nisCXZXPWFlnquUv_KE-LeEIJ61mDrjLbrCnP6uTL1qmTUeENrsYLTTQ/exec"
 
 def sync_gsheet_to_local_db():
-    ws = get_gsheet_worksheet()
-    if ws is None:
-        return
     try:
-        records = ws.get_all_records()
-        conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS saas_users_auth (
-                email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT, created_at TEXT, phone TEXT
-            )
-        """)
-        if records:
-            cursor.execute("DELETE FROM saas_users_auth")
-            for row in records:
-                em = str(row.get("email", "")).strip()
-                if em:
-                    ph = str(row.get("phone", "")).lstrip("'")
-                    cursor.execute("""
-                        INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone)
-                        VALUES (?, ?, ?, ?, ?, ?)
-                    """, (
-                        em,
-                        str(row.get("password", "")),
-                        str(row.get("status", "⏳ في انتظار التفعيل")),
-                        str(row.get("package", "الباقة الأساسية المبتدئة (29k)")),
-                        str(row.get("created_at", "")),
-                        ph
-                    ))
-        conn.commit()
-        conn.close()
+        res = requests.get(GSHEET_WEBHOOK_URL, timeout=15)
+        if res.status_code == 200:
+            records = res.json()
+            conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS saas_users_auth (
+                    email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT, created_at TEXT, phone TEXT
+                )
+            """)
+            if records:
+                cursor.execute("DELETE FROM saas_users_auth")
+                for row in records:
+                    em = str(row.get("email", "")).strip()
+                    if em:
+                        ph = str(row.get("phone", "")).lstrip("'")
+                        cursor.execute("""
+                            INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        """, (
+                            em,
+                            str(row.get("password", "")),
+                            str(row.get("status", "⏳ في انتظار التفعيل")),
+                            str(row.get("package", "الباقة الأساسية المبتدئة (29k)")),
+                            str(row.get("created_at", "")),
+                            ph
+                        ))
+            conn.commit()
+            conn.close()
     except Exception as e:
-        st.error(f"⚠️ خطأ أثناء القراءة من الجدول: {e}")
+        st.error(f"⚠️ خطأ أثناء الجلب من الجدول: {e}")
 
 def push_local_db_to_gsheet():
-    ws = get_gsheet_worksheet()
-    if ws is None:
-        return
     try:
         conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
         df = pd.read_sql("SELECT email, password, status, package, created_at, phone FROM saas_users_auth", conn)
         conn.close()
-        df = df.fillna("")
-        df["phone"] = df["phone"].apply(lambda x: f"'{x}" if str(x).strip() and not str(x).startswith("'") else str(x))
-        headers = ["email", "password", "status", "package", "created_at", "phone"]
-        rows = [headers] + df.astype(str).values.tolist()
-        ws.clear()
-        ws.update(rows)
+        records = df.fillna("").astype(str).to_dict(orient="records")
+        requests.post(GSHEET_WEBHOOK_URL, json=records, timeout=15)
     except Exception as e:
         st.error(f"⚠️ خطأ أثناء الحفظ في الجدول: {e}")
 
@@ -102,7 +77,7 @@ sqlite3.connect = _smart_sqlite_connect
 
 def get_persistent_db_connection():
     return sqlite3.connect("saas_security_vault.db", timeout=15)
-# === نهاية كتلة الحقن السحابي الذكي ===
+# === نهاية كتلة الحقن السحابي المباشر ===
 
 
 
