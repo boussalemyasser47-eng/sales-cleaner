@@ -10,7 +10,9 @@ import requests
 import base64
 import json
 import threading
-import time
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 GH_TOKEN = st.secrets.get("GITHUB_TOKEN", "")
 GH_REPO = "boussalemyasser47-eng/tijaratna-dataDZ"
@@ -23,12 +25,13 @@ GH_HEADERS = {
 }
 _orig_sqlite_connect = sqlite3.connect
 
-@st.cache_resource
-def _initial_cloud_restore_once():
+def sync_github_to_local_db(force=False):
     if not GH_TOKEN:
-        return False
+        return
+    if not force and st.session_state.get("gh_session_synced", False):
+        return
     try:
-        res = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=8)
+        res = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=6)
         if res.status_code == 200:
             data = res.json()
             raw_text = base64.b64decode(data.get("content", "")).decode("utf-8").strip()
@@ -61,10 +64,9 @@ def _initial_cloud_restore_once():
                         ))
             conn.commit()
             conn.close()
-            return True
+            st.session_state["gh_session_synced"] = True
     except Exception:
         pass
-    return False
 
 _sync_lock = threading.Lock()
 
@@ -73,7 +75,7 @@ def _bg_github_push(records):
         return
     with _sync_lock:
         try:
-            res_get = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=8)
+            res_get = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=6)
             sha = res_get.json().get("sha") if res_get.status_code == 200 else None
             encoded = base64.b64encode(
                 json.dumps(records, ensure_ascii=False, indent=2).encode("utf-8")
@@ -84,7 +86,7 @@ def _bg_github_push(records):
             }
             if sha:
                 payload["sha"] = sha
-            requests.put(GH_API_URL, headers=GH_HEADERS, json=payload, timeout=10)
+            requests.put(GH_API_URL, headers=GH_HEADERS, json=payload, timeout=8)
         except Exception:
             pass
 
@@ -118,7 +120,7 @@ def _smart_sqlite_connect(database, *args, **kwargs):
     is_auth = "saas_security_vault.db" in str(database)
     return _CloudSyncConnectionWrapper(conn, is_auth)
 
-_initial_cloud_restore_once()
+sync_github_to_local_db(force=False)
 sqlite3.connect = _smart_sqlite_connect
 
 def get_persistent_db_connection():
@@ -748,12 +750,18 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         message.attach(MIMEText(body_text, "plain", "utf-8"))
         message.attach(MIMEText(html_content, "html", "utf-8"))
 
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, target_email, message.as_string())
-        server.quit()
+        def _bg_mail(s_em, s_pw, t_em, msg_raw):
+            try:
+                srv = smtplib.SMTP("smtp.gmail.com", 587, timeout=8)
+                srv.starttls()
+                srv.login(s_em, s_pw)
+                srv.sendmail(s_em, t_em, msg_raw)
+                srv.quit()
+            except Exception:
+                pass
+        threading.Thread(target=_bg_mail, args=(sender_email, sender_password, target_email, message.as_string()), daemon=True).start()
         return True
+
     except Exception as e:
         st.error(f"⚠️ خطأ في إرسال البريد الإلكتروني: {e}")
         return False
@@ -1483,7 +1491,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         conn_login.close()
                         
                         if user_status_row:
-                            if "🟢 مفعّل ونشط" in user_status_row:
+                            if "🟢 مفعّل ونشط" in str(user_status_row):
+
                                 st.session_state["active_merchant_user"] = clean_email
                                 st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
                                 time.sleep(0.5); st.rerun()
