@@ -6,18 +6,18 @@ import pandas as pd
 import gspread
 
 from google.oauth2.service_account import Credentials
+from google.auth.transport.requests import Request
 
 def get_gsheet_worksheet():
     try:
-        creds_dict = dict(st.secrets["gcp_service_account"])
-        if "private_key" in creds_dict:
-            creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
-        scopes = [
-            "https://googleapis.com",
-            "https://googleapis.com"
-        ]
-        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-        client = gspread.authorize(creds)
+        info = dict(st.secrets["gcp_service_account"])
+        info["private_key"] = info["private_key"].replace("\\n", "\n")
+        creds = Credentials.from_service_account_info(
+            info,
+            scopes=["https://googleapis.com"]
+        )
+        creds.refresh(Request())
+        client = gspread.Client(auth=creds)
         sheet = client.open_by_key("1qgFH38D9MKGb1jfIwc0tfvvT_-qwKa4kiIKso6--7VU")
         return sheet.get_worksheet(0)
     except Exception as e:
