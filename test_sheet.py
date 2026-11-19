@@ -2,7 +2,9 @@ import streamlit as st
 import requests
 import pandas as pd
 
-WEBHOOK_URL = "https://google.com"
+SCRIPT_ID = "AKfycbwjhXSfX65fU5nisCXZXPWFlnquUv_KE-LeEIJ61mDrjLbrCnP6uTL1qmTUeENrsYLTTQ"
+WEBHOOK_URL = f"https://google.com{SCRIPT_ID}/exec"
+
 
 st.title("🧪 مختبر اختبار Google Sheets المباشر")
 
