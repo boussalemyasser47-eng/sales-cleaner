@@ -1,208 +1,33 @@
 # 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
-# 🛡️ [كتلة الحقن السحابي الذكي - Google Sheets Direct Bridge]
-# 🛡️ [كتلة الحقن السحابي المباشر - Apps Script Webhook]
-# 🛡️ [كتلة الحقن السحابي فائق السرعة - Background Sync]
-# 🛡️ [كتلة الحقن السحابي فائق السرعة - GitHub Instant Bridge]
-import streamlit as st
-import sqlite3
-import pandas as pd
-import requests
-import base64
-import json
-import threading
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+# ========================================================
+import os
 
-GH_TOKEN = st.secrets.get("GITHUB_TOKEN", "")
-GH_REPO = "boussalemyasser47-eng/tijaratna-dataDZ"
-GH_FILE = "merchants_data.json"
-GH_HOST = "api." + "github" + ".com"
-GH_API_URL = f"https://{GH_HOST}/repos/{GH_REPO}/contents/{GH_FILE}"
-GH_HEADERS = {
-    "Authorization": f"Bearer {GH_TOKEN}",
-    "Accept": "application/vnd.github+json"
-}
-_orig_sqlite_connect = sqlite3.connect
+# تحديد مسار ثابت وموثوق لقاعدة البيانات لمنع ضياعها في وضع السكون أو إعادة التشغيل
+DB_FILENAME = "saas_security_vault.db"
 
-def sync_github_to_local_db(force=False):
-    if not GH_TOKEN:
-        return
-    if not force and st.session_state.get("gh_session_synced", False):
-        return
+def get_secure_db_connection():
+    """
+    إنشاء اتصال آمن مع مهلة زمنية دقيقة لضمان استقرار العمليات المتزامنة
+    """
+    conn = sqlite3.connect(DB_FILENAME, timeout=15)
+    return conn
+
+# تحسين دالة خزانة النسخ الاحتياطي التلقائي (.ZIP) لتشمل ملفات الـ DB بمسارها الثابت بدقة
+def create_robust_backup_vault():
+    import zipfile
+    zip_buffer = io.BytesIO()
     try:
-        res = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=6)
-        if res.status_code == 200:
-            data = res.json()
-            raw_text = base64.b64decode(data.get("content", "")).decode("utf-8").strip()
-            records = json.loads(raw_text) if raw_text else list()
-            conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
-            cursor = conn.cursor()
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS saas_users_auth (
-                    email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT, created_at TEXT, phone TEXT
-                )
-            """)
-            if records:
-                cursor.execute("DELETE FROM saas_users_auth")
-                for row in records:
-                    em = str(row.get("email", "")).strip()
-                    if em:
-                        ph = str(row.get("phone", "")).lstrip("'")
-                        if ph.lower() == "nan":
-                            ph = ""
-                        cursor.execute("""
-                            INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                        """, (
-                            em,
-                            str(row.get("password", "")),
-                            str(row.get("status", "⏳ في انتظار التفعيل")),
-                            str(row.get("package", "الباقة الأساسية المبتدئة (29k)")),
-                            str(row.get("created_at", "")),
-                            ph
-                        ))
-            conn.commit()
-            conn.close()
-            st.session_state["gh_session_synced"] = True
-    except Exception:
-        pass
-
-_sync_lock = threading.Lock()
-
-def _bg_github_push(records):
-    if not GH_TOKEN:
-        return
-    with _sync_lock:
-        try:
-            res_get = requests.get(GH_API_URL, headers=GH_HEADERS, timeout=6)
-            sha = res_get.json().get("sha") if res_get.status_code == 200 else None
-            encoded = base64.b64encode(
-                json.dumps(records, ensure_ascii=False, indent=2).encode("utf-8")
-            ).decode("utf-8")
-            payload = {
-                "message": "Fast sync merchants",
-                "content": encoded
-            }
-            if sha:
-                payload["sha"] = sha
-            requests.put(GH_API_URL, headers=GH_HEADERS, json=payload, timeout=8)
-        except Exception:
-            pass
-
-def push_local_db_to_github():
-    try:
-        conn = _orig_sqlite_connect("saas_security_vault.db", timeout=15)
-        df = pd.read_sql("SELECT email, password, status, package, created_at, phone FROM saas_users_auth", conn)
-        conn.close()
-        df = df.fillna("")
-        df["phone"] = df["phone"].apply(lambda x: "" if str(x).lower() == "nan" else str(x))
-        records = df.astype(str).to_dict(orient="records")
-        threading.Thread(target=_bg_github_push, args=(records,), daemon=True).start()
-    except Exception:
-        pass
-
-class _CloudSyncConnectionWrapper:
-    def __init__(self, conn, is_auth_db):
-        self._conn = conn
-        self._is_auth_db = is_auth_db
-
-    def commit(self):
-        self._conn.commit()
-        if self._is_auth_db:
-            push_local_db_to_github()
-
-    def __getattr__(self, name):
-        return getattr(self._conn, name)
-
-def _smart_sqlite_connect(database, *args, **kwargs):
-    conn = _orig_sqlite_connect(database, *args, **kwargs)
-    is_auth = "saas_security_vault.db" in str(database)
-    return _CloudSyncConnectionWrapper(conn, is_auth)
-
-sync_github_to_local_db(force=False)
-sqlite3.connect = _smart_sqlite_connect
-
-def get_persistent_db_connection():
-    return sqlite3.connect("saas_security_vault.db", timeout=15)
-# === نهاية كتلة الحقن السحابي فائق السرعة ===
-
-
-
-# تهيئة الجدول الأساسي وضمان عدم ضياع بيانات التجار المسجلين أبداً
-def init_persistent_auth_db():
-    conn = get_persistent_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS saas_users_auth (
-            email TEXT PRIMARY KEY,
-            password TEXT,
-            status TEXT,
-            package TEXT,
-            created_at TEXT,
-            phone TEXT
-        )
-    """)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS admin_audit_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            action_time TEXT,
-            target_email TEXT,
-            action_type TEXT,
-            details TEXT
-        )
-    """)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS email_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sent_time TEXT,
-            recipient_email TEXT,
-            subject TEXT,
-            status TEXT,
-            error_message TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
-
-# تشغيل التهيئة فور بدء تشغيل التطبيق لضمان تثبيت الجداول
-init_persistent_auth_db()
-
-# دالة حفظ وتثبيت بيانات التاجر الجديد بصفة دائمة (تمنع الاختفاء وتحفظ رقم الهاتف والحالة)
-def save_new_merchant_permanently(email, password, phone, package="الباقة الأساسية المبتدئة (29k)", status="⏳ في انتظار التفعيل"):
-    try:
-        conn = get_persistent_db_connection()
-        cursor = conn.cursor()
-        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
-        # استخدام INSERT OR REPLACE لضمان تحديث بيانات التاجر الحالية أو إضافتها إذا كانت جديدة كلياً
-        cursor.execute("""
-            INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone)
-            VALUES (?, ?, ?, ?, COALESCE((SELECT created_at FROM saas_users_auth WHERE email = ?), ?), ?)
-        """, (email, password, status, package, email, current_time, phone))
-        
-        conn.commit()
-        conn.close()
-        return True
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            if os.path.exists(DB_FILENAME):
+                with open(DB_FILENAME, "rb") as f:
+                    timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    zip_file.writestr(f"backup_{timestamp_str}_{DB_FILENAME}", f.read())
     except Exception as e:
-        print(f"⚠️ خطأ في الحفظ الدائم للتاجر: {e}")
-        return False
+        print(f"⚠️ خطأ في إنشاء النسخة الاحتياطية: {e}")
+        
+    zip_buffer.seek(0)
+    return zip_buffer
 
-# دالة التحقق الدائم من تسجيل الدخول (تجلب حالة وحساب التاجر بدقة من الملف الثابت)
-def verify_merchant_login_permanently(email, password):
-    try:
-        conn = get_persistent_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT status, package, phone FROM saas_users_auth WHERE email = ? AND password = ?",
-            (email, password)
-        )
-        user_row = cursor.fetchone()
-        conn.close()
-        return user_row  # يعود ببيانات التاجر كاملة ولن تختفي أبداً
-    except Exception as e:
-        print(f"⚠️ خطأ في التحقق من تسجيل الدخول: {e}")
-        return None
 # === الإضافات والتعديلات الجديدة ===
 # تم تأمين مسار قاعدة البيانات وتفعيل استقرار الحفظ الدائم بنجاح.# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
 # ========================================================
@@ -693,7 +518,45 @@ if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
+def init_advanced_db():
+    conn = sqlite3.connect("saas_security_vault.db")
+    cursor = conn.cursor()
+    
+    # 🛡️ جدول المصادقة والتجار مع ضمان وجود عمود التاريخ والتنسيق الثابت
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS saas_users_auth (
+            email TEXT PRIMARY KEY,
+            password TEXT,
+            status TEXT,
+            package TEXT,
+            created_at TEXT,
+            phone TEXT
+        )
+    """)
+    
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS admin_audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action_time TEXT,
+            target_email TEXT,
+            action_type TEXT,
+            details TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS email_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sent_time TEXT,
+            recipient_email TEXT,
+            subject TEXT,
+            status TEXT,
+            error_message TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
 
+init_advanced_db()
 
 # ========================================================
 # 🚀 الدالة الموحدة والوحيدة لإرسال البريد (HTML + Plain Text + تتبع السجل)
@@ -750,18 +613,12 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         message.attach(MIMEText(body_text, "plain", "utf-8"))
         message.attach(MIMEText(html_content, "html", "utf-8"))
 
-        def _bg_mail(s_em, s_pw, t_em, msg_raw):
-            try:
-                srv = smtplib.SMTP("smtp.gmail.com", 587, timeout=8)
-                srv.starttls()
-                srv.login(s_em, s_pw)
-                srv.sendmail(s_em, t_em, msg_raw)
-                srv.quit()
-            except Exception:
-                pass
-        threading.Thread(target=_bg_mail, args=(sender_email, sender_password, target_email, message.as_string()), daemon=True).start()
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, target_email, message.as_string())
+        server.quit()
         return True
-
     except Exception as e:
         st.error(f"⚠️ خطأ في إرسال البريد الإلكتروني: {e}")
         return False
@@ -824,6 +681,38 @@ import urllib.parse
 import datetime
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
+def init_advanced_db():
+    conn = sqlite3.connect("saas_security_vault.db")
+    cursor = conn.cursor()
+    
+    # جدول سجل النشاطات والحركات (Audit Log)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS admin_audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action_time TEXT,
+            target_email TEXT,
+            action_type TEXT,
+            details TEXT
+        )
+    """)
+    
+    # جدول سجل حالة البريد الإلكتروني (Email Delivery Log)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS email_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sent_time TEXT,
+            recipient_email TEXT,
+            subject TEXT,
+            status TEXT,
+            error_message TEXT
+        )
+    """)
+    
+    conn.commit()
+    conn.close()
+
+# تشغيل التهيئة فوراً
+init_advanced_db()
 
 # 2. دالة تسجيل الحركات في قاعدة البيانات
 def log_admin_action(target_email, action_type, details=""):
@@ -1491,8 +1380,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         conn_login.close()
                         
                         if user_status_row:
-                            if "🟢 مفعّل ونشط" in str(user_status_row):
-
+                            if "🟢 مفعّل ونشط" in user_status_row:
                                 st.session_state["active_merchant_user"] = clean_email
                                 st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
                                 time.sleep(0.5); st.rerun()
