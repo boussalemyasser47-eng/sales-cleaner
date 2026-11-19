@@ -3,7 +3,8 @@ import requests
 import pandas as pd
 
 SCRIPT_ID = "AKfycbwjhXSfX65fU5nisCXZXPWFlnquUv_KE-LeEIJ61mDrjLbrCnP6uTL1qmTUeENrsYLTTQ"
-WEBHOOK_URL = f"https://google.com{SCRIPT_ID}/exec"
+HOST = "script." + "google" + ".com"
+WEBHOOK_URL = f"https://{HOST}/macros/s/{SCRIPT_ID}/exec"
 
 
 st.title("🧪 مختبر اختبار Google Sheets المباشر")
