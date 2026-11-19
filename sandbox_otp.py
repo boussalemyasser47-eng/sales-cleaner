@@ -1,3 +1,4 @@
+# ========================================================
 # 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
 # ========================================================
 import os
@@ -136,17 +137,9 @@ try:
 except ImportError:
     ARABIC_TEXT_PROCESSING = False
 
-# استيراد أدوات إصلاح وعكس النصوص العربية لتظهر متصلة وباتجاه صحيح (RTL)
-try:
-    import arabic_reshaper
-    from bidi.algorithm import get_display
-    ARABIC_TEXT_PROCESSING = True
-except ImportError:
-    ARABIC_TEXT_PROCESSING = False
-
 def fix_arabic(text):
     """
-    دالة مساعدة لمعالجة النصوص العربية لضمان اتصالها واتجاهها الصحيح (RTL) وتفادي أي انعكاس أو مستطيلات
+    دالة مساعدة لمعالجة النصوص العربية لضمان اتصالها واتجاهها الصحيح (RTL) وتفادي أي انعكاس
     """
     if not text or not isinstance(text, str):
         return str(text)
@@ -158,26 +151,19 @@ def fix_arabic(text):
         except Exception:
             return text
     return text
+
 # === تسجيل الخط العربي لدعم اللغة العربية ومنع ظهور المربعات ===
-# === تحميل وتسجيل الخط العربي تلقائياً (ضمان عدم ظهور المستطيلات) ===
-import urllib.request
-import os
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-
-FONT_FILE = "Amiri-Regular.ttf"
-FONT_URL = "https://raw.githubusercontent.com/google/fonts/main/ofl/amiri/Amiri-Regular.ttf"
-
 try:
-    if not os.path.exists(FONT_FILE) or os.path.getsize(FONT_FILE) < 10000:
-        urllib.request.urlretrieve(FONT_URL, FONT_FILE)
-    
-    pdfmetrics.registerFont(TTFont('CustomArabic', FONT_FILE))
-    FONT_NAME = 'CustomArabic'
-    print("✅ تم تحميل وتسجيل خط Amiri بنجاح تام!")
-except Exception as e:
-    print(f"⚠️ فشل تحميل الخط، سيتم استخدام البديل: {e}")
-    FONT_NAME = 'Helvetica'
+    pdfmetrics.registerFont(TTFont('ArabicFont', 'Cairo.ttf'))
+    ARABIC_FONT_AVAILABLE = True
+except Exception:
+    try:
+        pdfmetrics.registerFont(TTFont('ArabicFont', 'Amiri-Regular.ttf'))
+        ARABIC_FONT_AVAILABLE = True
+    except Exception:
+        ARABIC_FONT_AVAILABLE = False
+
+FONT_NAME = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
 
 def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar"):
     """
@@ -212,10 +198,10 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         lbl_qr_desc = "Document généré électroniquement et sécurisé par NEXUS CENTRAL GATE."
     else:
         lbl_subtitle = fix_arabic("فاتورة مبيعات وتأكيد طلبية رسمية وموثقة")
-        lbl_shop = f"<b>{fix_arabic('اسم المتجر')} :</b> {fix_arabic(shop_name)}"
-        lbl_cust = f"<b>{fix_arabic('اسم الزبون')} :</b> {fix_arabic(customer_name)}"
-        lbl_addr = f"<b>{fix_arabic('عنوان التوصيل')} :</b> {fix_arabic(customer_address)}"
-        lbl_phone = f"<b>{fix_arabic('رقم الهاتف')} :</b> {fix_arabic(customer_phone)}"
+        lbl_shop = fix_arabic(f"<b>اسم المتجر:</b> {shop_name}")
+        lbl_cust = fix_arabic(f"<b>اسم الزبون:</b> {customer_name}")
+        lbl_addr = fix_arabic(f"<b>عنوان التوصيل:</b> {customer_address}")
+        lbl_phone = fix_arabic(f"<b>رقم الهاتف:</b> {customer_phone}")
         h_prod = fix_arabic("اسم المنتج")
         h_qty = fix_arabic("الكمية")
         h_price = fix_arabic("السعر الفردي")
@@ -401,11 +387,10 @@ def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, custome
     inner_elements = []
     
     # اسم المتجر والعنوان الفرعي
-# اسم المتجر والعنوان الفرعي
     inner_elements.append(Paragraph(fix_arabic(shop_name), label_title))
     inner_elements.append(Paragraph(fix_arabic("--- ملصق شحن وتوصيل حراري ---"), ParagraphStyle('SubLbl', parent=label_normal, alignment=1, fontSize=8, textColor=colors.HexColor('#555555'))))
     
-    # خط فاصل أنيق
+    # خط فاصل أنيق تحت اسم المتجر والعنوان الفرعي
     inner_elements.append(Spacer(1, 2))
     divider_table = Table([[""]], colWidths=[250], rowHeights=[1])
     divider_table.setStyle(TableStyle([
@@ -416,16 +401,17 @@ def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, custome
     inner_elements.append(divider_table)
     inner_elements.append(Spacer(1, 6))
     
-    # بيانات الشحن والزبون (عربي مفصول عن التاريخ والأرقام لتفادي المستطيلات)
-    inner_elements.append(Paragraph(f"{fix_arabic('التاريخ')} : {current_date}", label_normal))
-    inner_elements.append(Paragraph(f"{fix_arabic('الزبون')} : {customer_name}", label_normal))
-    inner_elements.append(Paragraph(f"{fix_arabic('الهاتف')} : {customer_phone}", label_normal))
-    inner_elements.append(Paragraph(f"{fix_arabic('العنوان')} : {customer_address}", label_normal))
-    inner_elements.append(Paragraph(f"{fix_arabic('المنتج')} : {product_name}", label_normal))
+    # بيانات الشحن والزبون منظمة من اليمين لليسار
+    inner_elements.append(Paragraph(f"{current_date} : {fix_arabic('التاريخ')}", label_normal))
+    inner_elements.append(Paragraph(f"{customer_name} : {fix_arabic('الزبون')}", label_normal))
+    inner_elements.append(Paragraph(f"{customer_phone} : {fix_arabic('الهاتف')}", label_normal))
+    inner_elements.append(Paragraph(f"{customer_address} : {fix_arabic('العنوان')}", label_normal))
+    inner_elements.append(Paragraph(f"{product_name} : {fix_arabic('المنتج')}", label_normal))
     
     inner_elements.append(Spacer(1, 4))
     price_str = f"{final_total:,.2f} DA"
-    inner_elements.append(Paragraph(f"{fix_arabic('المبلغ الواجب تحصيله')} : {price_str}", label_price))
+    inner_elements.append(Paragraph(f"{price_str} : {fix_arabic('المبلغ الواجب تحصيله')}", label_price))
+
     # وضع العناصر داخل جدول يحيط به إطار خارجي (Border) واضح للطباعة
     outer_table = Table([[inner_elements]], colWidths=[260])
     outer_table.setStyle(TableStyle([
@@ -2265,99 +2251,7 @@ if "choice" in locals() or "choice" in globals():
                 type=["png", "jpg", "jpeg"], 
                 key="sec4b_invoice_logo_uploader_unique"
             )
-# ==========================================================
-            # === بداية الكتلة الجديدة: قائمة منبثقة نيونية لاختيار القوالب ===
-            # ==========================================================
-            st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
-            
-            # استخدام expander كممر تفاعلي منبثق لإخفاء أو إظهار تفاصيل القوالب والمعاينة
-            with st.expander("🎨 تخصيص وتغيير قالب الفاتورة (اضغط للإظهار / الإخفاء)", expanded=False):
-                st.markdown("<span style='font-size: 12px; color: #a5b4fc;'>اختر التصميم الذي يناسب هوية متجرك بدقة:</span>", unsafe_allow_html=True)
-                st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
 
-                # شفرة تفاعلية لالتقاط الاختيار عبر st.radio المدمج داخل القائمة
-                selected_template_option = st.radio(
-                    label="اختر قالب الفاتورة:",
-                    options=[
-                        "🏛️ القالب الرسمي الموثق (جداول زرقاء + QR Code)",
-                        "⚡ القالب الاقتصادي البسيط (خفيف وسريع للطباعة)",
-                        "✨ القالب التجاري الحديث (عصري ومبرز للمجاميع)"
-                    ],
-                    horizontal=False,
-                    label_visibility="collapsed",
-                    key="sec4b_holo_expandable_template_selector_unique"
-                )
-
-                # تحديد القالب البرمجي وتأثيرات الإضاءة النيونية بناءً على اختيار التاجر
-                if "الاقتصادي" in selected_template_option:
-                    invoice_template = "simple"
-                    active_glow_formal = "rgba(0, 51, 102, 0.04);"
-                    active_border_formal = "1px solid rgba(0, 51, 102, 0.2);"
-                    active_glow_simple = "rgba(0, 255, 240, 0.15);"
-                    active_border_simple = "2px solid #00fff0; box-shadow: 0 0 12px rgba(0, 255, 240, 0.25);"
-                    active_glow_modern = "rgba(15, 118, 110, 0.04);"
-                    active_border_modern = "1px solid rgba(15, 118, 110, 0.2);"
-                elif "الحديث" in selected_template_option:
-                    invoice_template = "modern"
-                    active_glow_formal = "rgba(0, 51, 102, 0.04);"
-                    active_border_formal = "1px solid rgba(0, 51, 102, 0.2);"
-                    active_glow_simple = "rgba(51, 51, 51, 0.02);"
-                    active_border_simple = "1px solid rgba(102, 102, 102, 0.2);"
-                    active_glow_modern = "rgba(0, 255, 240, 0.15);"
-                    active_border_modern = "2px solid #00fff0; box-shadow: 0 0 12px rgba(0, 255, 240, 0.25);"
-                else:
-                    invoice_template = "formal"
-                    active_glow_formal = "rgba(0, 255, 240, 0.15);"
-                    active_border_formal = "2px solid #00fff0; box-shadow: 0 0 12px rgba(0, 255, 240, 0.25);"
-                    active_glow_simple = "rgba(51, 51, 51, 0.02);"
-                    active_border_simple = "1px solid rgba(102, 102, 102, 0.2);"
-                    active_glow_modern = "rgba(15, 118, 110, 0.04);"
-                    active_border_modern = "1px solid rgba(15, 118, 110, 0.2);"
-
-                st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
-                
-                # عرض البطاقات الهولوغرافية الثلاث بشكل مصغر داخل القائمة المنبثقة
-                holo_col1, holo_col2, holo_col3 = st.columns(3)
-
-                with holo_col1:
-                    st.markdown(f"""
-                    <div style="background: {active_glow_formal}; backdrop-filter: blur(8px); border-radius: 10px; padding: 10px; border: {active_border_formal}; text-align: right; direction: rtl; min-height: 110px;">
-                        <div style="font-weight: bold; color: #00fff0; font-size: 12px; margin-bottom: 4px;">🏛️ الرسمي الموثق</div>
-                        <div style="font-size: 10.5px; color: #cbd5e1; line-height: 1.3;">
-                            • جدول أزرق هندسي<br>
-                            • ختم QR Code للتحقق
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                with holo_col2:
-                    st.markdown(f"""
-                    <div style="background: {active_glow_simple}; backdrop-filter: blur(8px); border-radius: 10px; padding: 10px; border: {active_border_simple}; text-align: right; direction: rtl; min-height: 110px;">
-                        <div style="font-weight: bold; color: #00fff0; font-size: 12px; margin-bottom: 4px;">⚡ الاقتصادي البسيط</div>
-                        <div style="font-size: 10.5px; color: #cbd5e1; line-height: 1.3;">
-                            • تصميم نصي خفيف<br>
-                            • سريع للطباعة المباشرة
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                with holo_col3:
-                    st.markdown(f"""
-                    <div style="background: {active_glow_modern}; backdrop-filter: blur(8px); border-radius: 10px; padding: 10px; border: {active_border_modern}; text-align: right; direction: rtl; min-height: 110px;">
-                        <div style="font-weight: bold; color: #00fff0; font-size: 12px; margin-bottom: 4px;">✨ التجاري الحديث</div>
-                        <div style="font-size: 10.5px; color: #cbd5e1; line-height: 1.3;">
-                            • ألوان تيل عصرية<br>
-                            • إبراز دقيق للمجاميع
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-            # قيمة افتراضية في حال كانت القائمة مغلقة (القالب الرسمي الموثق كافتراضي)
-            if 'invoice_template' not in locals():
-                invoice_template = "formal"
-
-            st.markdown("<div style='margin-top: 12px;'></div>", unsafe_allow_html=True)
-            # ==========================================================
 
 
         with col_right:
