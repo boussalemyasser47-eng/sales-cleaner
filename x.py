@@ -5,7 +5,6 @@ import threading
 import requests
 
 def save_to_github_fast():
-    # قراءة الأسرار قبل الدخول للخيط الخلفي لتجنب أخطاء Streamlit
     token = st.secrets.get("GITHUB_TOKEN")
     repo = st.secrets.get("GITHUB_REPO")
     if not token or not repo:
@@ -37,7 +36,6 @@ def save_to_github_fast():
             print("GitHub Exception:", e)
 
     threading.Thread(target=_task, args=(token, repo), daemon=True).start()
-
 
 # استرجاع البيانات مرة واحدة عند تشغيل الموقع
 if "db_loaded" not in st.session_state:
