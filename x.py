@@ -1,3 +1,42 @@
+import base64
+import threading
+import requests
+
+def save_to_github_fast():
+    def _task():
+        try:
+            token = st.secrets.get("GITHUB_TOKEN")
+            repo = st.secrets.get("GITHUB_REPO")
+            if not token or not repo or not os.path.exists("saas_security_vault.db"):
+                return
+            with open("saas_security_vault.db", "rb") as f:
+                content = base64.b64encode(f.read()).decode("utf-8")
+            url = f"https://github.com{repo}/contents/saas_security_vault.db"
+            headers = {"Authorization": f"Bearer {token}"}
+            res = requests.get(url, headers=headers)
+            sha = res.json().get("sha") if res.status_code == 200 else None
+            data = {"message": "Update DB", "content": content}
+            if sha:
+                data["sha"] = sha
+            requests.put(url, json=data, headers=headers)
+        except Exception:
+            pass
+    threading.Thread(target=_task, daemon=True).start()
+
+# استرجاع البيانات مرة واحدة عند تشغيل الموقع
+if "db_loaded" not in st.session_state:
+    try:
+        token = st.secrets.get("GITHUB_TOKEN")
+        repo = st.secrets.get("GITHUB_REPO")
+        if token and repo:
+            url = f"https://github.com{repo}/contents/saas_security_vault.db"
+            res = requests.get(url, headers={"Authorization": f"Bearer {token}"})
+            if res.status_code == 200:
+                with open("saas_security_vault.db", "wb") as f:
+                    f.write(base64.b64decode(res.json()["content"]))
+    except Exception:
+        pass
+    st.session_state["db_loaded"] = True
 
 import os
 
@@ -1347,6 +1386,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                     (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
                                 )
                                 conn_reg.commit()
+                                save_to_github_fast()
+
                                 conn_reg.close()
                                 
                                 st.session_state["otp_pending_verification"] = False
