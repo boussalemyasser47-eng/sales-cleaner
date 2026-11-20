@@ -28,7 +28,7 @@ def save_to_github_fast():
             if sha:
                 data["sha"] = sha
             put_res = requests.put(url, json=data, headers=headers)
-            if put_res.status_code not in:
+            elif put_res.status_code not in:
                 print("GitHub Upload Error:", put_res.status_code, put_res.text)
             else:
                 print("✅ GitHub Upload Success!")
