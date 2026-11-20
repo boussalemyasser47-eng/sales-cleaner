@@ -18,7 +18,7 @@ def save_to_github_fast():
             with open("saas_security_vault.db", "rb") as f:
                 content = base64.b64encode(f.read()).decode("utf-8")
             url = f"https://api.github.com/repos/{rp}/contents/saas_security_vault.db"
-             headers = {
+            headers = {
                 "Authorization": f"Bearer {tk}",
                 "Accept": "application/vnd.github.v3+json"
             }
