@@ -5,25 +5,39 @@ import threading
 import requests
 
 def save_to_github_fast():
-    def _task():
+    # قراءة الأسرار قبل الدخول للخيط الخلفي لتجنب أخطاء Streamlit
+    token = st.secrets.get("GITHUB_TOKEN")
+    repo = st.secrets.get("GITHUB_REPO")
+    if not token or not repo:
+        st.toast("⚠️ مفاتيح GitHub غير مقروءة في Secrets")
+        return
+
+    def _task(tk, rp):
         try:
-            token = st.secrets.get("GITHUB_TOKEN")
-            repo = st.secrets.get("GITHUB_REPO")
-            if not token or not repo or not os.path.exists("saas_security_vault.db"):
+            if not os.path.exists("saas_security_vault.db"):
                 return
             with open("saas_security_vault.db", "rb") as f:
                 content = base64.b64encode(f.read()).decode("utf-8")
-            url = f"https://github.com{repo}/contents/saas_security_vault.db"
-            headers = {"Authorization": f"Bearer {token}"}
+            url = f"https://github.com{rp}/contents/saas_security_vault.db"
+            headers = {
+                "Authorization": f"Bearer {tk}",
+                "Accept": "application/vnd.github.v3+json"
+            }
             res = requests.get(url, headers=headers)
             sha = res.json().get("sha") if res.status_code == 200 else None
             data = {"message": "Update DB", "content": content}
             if sha:
                 data["sha"] = sha
-            requests.put(url, json=data, headers=headers)
-        except Exception:
-            pass
-    threading.Thread(target=_task, daemon=True).start()
+            put_res = requests.put(url, json=data, headers=headers)
+            if put_res.status_code not in:
+                print("GitHub Upload Error:", put_res.status_code, put_res.text)
+            else:
+                print("✅ GitHub Upload Success!")
+        except Exception as e:
+            print("GitHub Exception:", e)
+
+    threading.Thread(target=_task, args=(token, repo), daemon=True).start()
+
 
 # استرجاع البيانات مرة واحدة عند تشغيل الموقع
 if "db_loaded" not in st.session_state:
@@ -1388,9 +1402,10 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                     (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
                                 )
                                 conn_reg.commit()
+                                conn_reg.close()
                                 save_to_github_fast()
 
-                                conn_reg.close()
+                                
                                 
                                 st.session_state["otp_pending_verification"] = False
                                 st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
@@ -1722,7 +1737,8 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-        
+                        save_to_github_fast()
+
                         # 📧 إرسال الإيميل مع إظهار شاشة انتظار لضمان عدم قطع الاتصال
                         with st.spinner("جاري إرسال البريد الإلكتروني..."):
                             welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
