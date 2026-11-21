@@ -9,7 +9,6 @@ def save_to_github_fast(filename="saas_security_vault.db", folder=""):
     repo = st.secrets.get("GITHUB_REPO")
     if not token or not repo:
         return
-
     def _task(tk, rp, fname, fldr):
         try:
             if not os.path.exists(fname):
@@ -18,7 +17,8 @@ def save_to_github_fast(filename="saas_security_vault.db", folder=""):
                 content = base64.b64encode(f.read()).decode("utf-8")
             
             github_path = f"{fldr}/{fname}" if fldr else fname
-            url = f"https://github.com{rp}/contents/{github_path}"
+            api_base = "https://" + "://github.com"
+            url = f"{api_base}/{rp}/contents/{github_path}"
             headers = {
                 "Authorization": f"Bearer {tk}",
                 "Accept": "application/vnd.github.v3+json"
@@ -31,7 +31,6 @@ def save_to_github_fast(filename="saas_security_vault.db", folder=""):
             requests.put(url, json=data, headers=headers)
         except Exception as e:
             print("GitHub Exception:", e)
-
     threading.Thread(target=_task, args=(token, repo, filename, folder), daemon=True).start()
 
 # استرجاع البيانات مرة واحدة عند تشغيل الموقع
@@ -1941,13 +1940,15 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
     
     # استرجاع فواتير ومخزون التاجر من المستودع عند الدخول
+    # استرجاع فواتير ومخزون التاجر من المستودع عند الدخول
     restore_flag = f"restored_{merchant_db_name}"
     if restore_flag not in st.session_state:
         try:
             tk = st.secrets.get("GITHUB_TOKEN")
             rp = st.secrets.get("GITHUB_REPO")
             if tk and rp:
-                url_m = f"https://github.com{rp}/contents/merchants/{merchant_db_name}"
+                api_base = "https://" + "://github.com"
+                url_m = f"{api_base}/{rp}/contents/merchants/{merchant_db_name}"
                 res_m = requests.get(url_m, headers={"Authorization": f"Bearer {tk}"})
                 if res_m.status_code == 200:
                     with open(merchant_db_name, "wb") as f:
@@ -1955,6 +1956,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         except Exception:
             pass
         st.session_state[restore_flag] = True
+
 
     if "merchant_db_conn" not in st.session_state:
         st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
@@ -2661,8 +2663,12 @@ if "choice" in locals() or "choice" in globals():
                 delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
                 if st.button("❌ محو السلعة المحددة"):
                     cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
-                    conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
+                    conne.commit()
                     save_to_github_fast(merchant_db_name, "merchants")
+                    st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!")
+                    time.sleep(0.5)
+                    st.rerun()
+
 
                 low_stock = stock_df[stock_df['available_qty'] <= 5]
                 if not low_stock.empty:
