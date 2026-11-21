@@ -2647,7 +2647,6 @@ if "choice" in locals() or "choice" in globals():
        # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
     if choice == "📜 سجل الفواتير والطلبيات":
-    
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📜 سجل الفواتير السابقة ومتابعة الطلبيات</h1>", unsafe_allow_html=True)
         
         invoices_df = pd.read_sql("SELECT * FROM v4_customer_invoices ORDER BY invoice_id DESC", conne)
@@ -2675,52 +2674,56 @@ if "choice" in locals() or "choice" in globals():
                     invoices_df['customer_phone'].str.contains(search_inv, case=False, na=False)
                 ]
             
-            # 3. عرض الجدول الكامل
-            display_df = invoices_df[['invoice_id', 'customer_name', 'customer_phone', 'product_name', 'final_total', 'order_status', 'date_created']]
-            display_df.columns = ['رقم الفاتورة', 'الزبون', 'الهاتف', 'المنتج', 'الإجمالي (DA)', 'حالة الطلبية', 'التاريخ']
-            st.dataframe(display_df, use_container_width=True)
-            
-            st.markdown("---")
-            
-            # 4. تحديث حالة الطلبية أو إعادة تحميل الفاتورة PDF
-            st.subheader("⚙️ إدارة طلبية محددة:")
-            inv_ids = invoices_df['invoice_id'].tolist()
-            selected_inv_id = st.selectbox("اختر رقم الفاتورة للتعديل أو إعادة التحميل:", inv_ids, format_func=lambda x: f"فاتورة رقم #{x} - {invoices_df[invoices_df['invoice_id']==x]['customer_name'].values[0]}")
-            
-            sel_row = invoices_df[invoices_df['invoice_id'] == selected_inv_id].iloc[0]
-            
-            col_act1, col_act2, col_act3 = st.columns(3)
-            with col_act1:
-                if st.button("✅ تأكيد الاستلام (Livré)", key="mark_delivered_btn"):
-                    cursor.execute("UPDATE v4_customer_invoices SET order_status = '✅ تم الاستلام' WHERE invoice_id = ?", (int(selected_inv_id),))
-                    conne.commit()
-                    save_to_github_fast(merchant_db_name, "merchants")
-                    st.success("تم تحديث الحالة إلى (تم الاستلام)!")
-                    time.sleep(0.5); st.rerun()
-                    
-            with col_act2:
-                if st.button("🔄 تسجيل كمرتجع (Retour)", key="mark_return_btn"):
-                    cursor.execute("UPDATE v4_customer_invoices SET order_status = '🔄 مرتجع (Retour)' WHERE invoice_id = ?", (int(selected_inv_id),))
-                    conne.commit()
-                    save_to_github_fast(merchant_db_name, "merchants")
-                    st.warning("تم تسجيل الطلبية كمرتجع!")
-                    time.sleep(0.5); st.rerun()
-                    
-            with col_act3:
-                # إعادة توليد الفاتورة PDF للتحميل الفوري
-                reprint_pdf = generate_invoice_pdf(
-                    sel_row['shop_name'], sel_row['customer_name'], sel_row['customer_phone'], 
-                    sel_row.get('customer_address', 'الجزائر'), sel_row['product_name'], 
-                    sel_row['final_total'], 1, sel_row['final_total'], 0, sel_row['final_total'], 
-                    None, lang="bi", template="formal"
-                )
-                st.download_button(
-                    label="📥 إعادة تحميل الفاتورة PDF",
-                    data=reprint_pdf,
-                    file_name=f"invoice_{selected_inv_id}_{sel_row['customer_name']}.pdf",
-                    mime="application/pdf",
-                    key="reprint_old_inv_btn"
-                )
+            # 🛡️ حماية البحث الفارغ لمنع أي خطأ عند عدم وجود نتائج مطابقة
+            if invoices_df.empty:
+                st.warning("🔍 لا توجد فواتير مطابقة لبحثك. جرّب اسماً أو رقماً آخر.")
+            else:
+                # 3. عرض الجدول الكامل
+                display_df = invoices_df[['invoice_id', 'customer_name', 'customer_phone', 'product_name', 'final_total', 'order_status', 'date_created']]
+                display_df.columns = ['رقم الفاتورة', 'الزبون', 'الهاتف', 'المنتج', 'الإجمالي (DA)', 'حالة الطلبية', 'التاريخ']
+                st.dataframe(display_df, use_container_width=True)
+                
+                st.markdown("---")
+                
+                # 4. تحديث حالة الطلبية أو إعادة تحميل الفاتورة PDF
+                st.subheader("⚙️ إدارة طلبية محددة:")
+                inv_ids = invoices_df['invoice_id'].tolist()
+                selected_inv_id = st.selectbox("اختر رقم الفاتورة للتعديل أو إعادة التحميل:", inv_ids, format_func=lambda x: f"فاتورة رقم #{x} - {invoices_df[invoices_df['invoice_id']==x]['customer_name'].values}")
+                
+                sel_row = invoices_df[invoices_df['invoice_id'] == selected_inv_id].iloc
+                
+                col_act1, col_act2, col_act3 = st.columns(3)
+                with col_act1:
+                    if st.button("✅ تأكيد الاستلام (Livré)", key="mark_delivered_btn"):
+                        cursor.execute("UPDATE v4_customer_invoices SET order_status = '✅ تم الاستلام' WHERE invoice_id = ?", (int(selected_inv_id),))
+                        conne.commit()
+                        save_to_github_fast(merchant_db_name, "merchants")
+                        st.success("تم تحديث الحالة إلى (تم الاستلام)!")
+                        time.sleep(0.5); st.rerun()
+                        
+                with col_act2:
+                    if st.button("🔄 تسجيل كمرتجع (Retour)", key="mark_return_btn"):
+                        cursor.execute("UPDATE v4_customer_invoices SET order_status = '🔄 مرتجع (Retour)' WHERE invoice_id = ?", (int(selected_inv_id),))
+                        conne.commit()
+                        save_to_github_fast(merchant_db_name, "merchants")
+                        st.warning("تم تسجيل الطلبية كمرتجع!")
+                        time.sleep(0.5); st.rerun()
+                        
+                with col_act3:
+                    # إعادة توليد الفاتورة PDF للتحميل الفوري
+                    reprint_pdf = generate_invoice_pdf(
+                        sel_row['shop_name'], sel_row['customer_name'], sel_row['customer_phone'], 
+                        sel_row.get('customer_address', 'الجزائر'), sel_row['product_name'], 
+                        sel_row['final_total'], 1, sel_row['final_total'], 0, sel_row['final_total'], 
+                        None, lang="bi", template="formal"
+                    )
+                    st.download_button(
+                        label="📥 إعادة تحميل الفاتورة PDF",
+                        data=reprint_pdf,
+                        file_name=f"invoice_{selected_inv_id}_{sel_row['customer_name']}.pdf",
+                        mime="application/pdf",
+                        key="reprint_old_inv_btn"
+                    )
 
 
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
