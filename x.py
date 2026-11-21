@@ -233,27 +233,36 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
     elements = []
     styles = getSampleStyleSheet()
+    
     is_fr = (lang == "fr")
+    is_bi = (lang == "bi")
     active_font = 'Helvetica' if is_fr else FONT_NAME
 
-    # 🎨 ضبط الألوان والستايل حسب القالب المختار
+    # ضبط الألوان حسب القالب المختار
     if template == "simple":
-        # ⚡ القالب الاقتصادي البسيط (أبيض وأسود لتوفير الحبر وسرعة الطباعة)
-        primary_hex = '#111111'
-        bg_light_hex = '#ffffff'
-        border_hex = '#444444'
+        primary_hex, bg_light_hex, border_hex = '#111111', '#ffffff', '#444444'
     elif template == "modern":
-        # ✨ القالب التجاري الحديث (ألوان تيل عصرية)
-        primary_hex = '#0f766e'
-        bg_light_hex = '#f0fdfa'
-        border_hex = '#5eead4'
+        primary_hex, bg_light_hex, border_hex = '#0f766e', '#f0fdfa', '#5eead4'
     else:
-        # 🏛️ القالب الرسمي الموثق (أزرق هندسي)
-        primary_hex = '#003366'
-        bg_light_hex = '#f8f9fa'
-        border_hex = '#cbd5e1'
+        primary_hex, bg_light_hex, border_hex = '#003366', '#f8f9fa', '#cbd5e1'
 
-    if is_fr:
+    # إعداد النصوص (عربي / فرنسي / مزدوج)
+    if is_bi:
+        lbl_subtitle = f"FACTURE DE VENTE / {fix_arabic('فاتورة مبيعات وتأكيد طلبية')}"
+        lbl_shop = f"<b>Magasin / {fix_arabic('المتجر')} :</b> {fix_arabic(shop_name)}"
+        lbl_cust = f"<b>Client / {fix_arabic('الزبون')} :</b> {fix_arabic(customer_name)}"
+        lbl_addr = f"<b>Adresse / {fix_arabic('العنوان')} :</b> {fix_arabic(customer_address)}"
+        lbl_phone = f"<b>Tél / {fix_arabic('الهاتف')} :</b> {customer_phone}"
+        h_prod = f"Désignation / {fix_arabic('المنتج')}"
+        h_qty = f"Qté / {fix_arabic('الكمية')}"
+        h_price = f"Prix U. / {fix_arabic('السعر')}"
+        h_tot = f"Total / {fix_arabic('الإجمالي')}"
+        lbl_sub = f"Sous-total / {fix_arabic('المجموع الفرعي')} :"
+        lbl_ship = f"Livraison / {fix_arabic('تكلفة الشحن')} :"
+        lbl_final = f"NET À PAYER / {fix_arabic('الإجمالي النهائي')} :"
+        lbl_qr_title = f"Sceau Numérique / {fix_arabic('ختم التحقق الرقمي')} :"
+        lbl_qr_desc = f"Document sécurisé par NEXUS GATE / {fix_arabic('وثيقة مؤمنة إلكترونياً')}"
+    elif is_fr:
         lbl_subtitle = "FACTURE DE VENTE ET BON DE COMMANDE"
         lbl_shop = f"<b>Magasin :</b> {shop_name}"
         lbl_cust = f"<b>Client :</b> {customer_name}"
@@ -281,12 +290,12 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         lbl_qr_title = fix_arabic("ختم التحقق الرقمي الموثق:")
         lbl_qr_desc = fix_arabic("هذه الفاتورة صادرة إلكترونياً ومؤمنة عبر نظام NEXUS CENTRAL GATE.")
 
+    ltr_mode = (is_fr or is_bi)
     title_style = ParagraphStyle('InvTitle', parent=styles['Heading1'], fontName=active_font, fontSize=22, textColor=colors.HexColor(primary_hex), alignment=1, spaceAfter=6)
     sub_style = ParagraphStyle('InvSub', parent=styles['Normal'], fontName=active_font, fontSize=11, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=15)
-    align_style = ParagraphStyle('AlignStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=0 if is_fr else 2)
+    align_style = ParagraphStyle('AlignStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=0 if ltr_mode else 2)
     center_style = ParagraphStyle('CenterStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=1)
-    header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.whitesmoke, alignment=1)
-
+    header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontName=active_font, fontSize=9.5, textColor=colors.whitesmoke, alignment=1)
     if logo_data and template != "simple":
         try:
             img = Image(io.BytesIO(logo_data), width=65, height=65)
@@ -301,14 +310,14 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     elements.append(Spacer(1, 10))
 
     # 1. جدول بيانات المتجر والزبون
-    if is_fr:
+    if ltr_mode:
         info_data = [[Paragraph(lbl_cust, align_style), Paragraph(lbl_shop, align_style)], [Paragraph(lbl_phone, align_style), Paragraph(lbl_addr, align_style)]]
     else:
         info_data = [[Paragraph(lbl_shop, align_style), Paragraph(lbl_cust, align_style)], [Paragraph(lbl_addr, align_style), Paragraph(lbl_phone, align_style)]]
 
-    t_info = Table(info_data, colWidths=[260, 260])
+    t_info = Table(info_data, colWidths=(260, 260))
     t_info.setStyle(TableStyle([
-        ('ALIGN', (0,0), (-1,-1), 'LEFT' if is_fr else 'RIGHT'),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT' if ltr_mode else 'RIGHT'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('TOPPADDING', (0,0), (-1,-1), 8),
         ('BOTTOMPADDING', (0,0), (-1,-1), 8),
@@ -321,18 +330,18 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
 
     # 2. جدول المنتجات
     prod_display = product_name if is_fr else fix_arabic(product_name)
-    if is_fr:
+    if ltr_mode:
         items_data = [
             [Paragraph(f"<b>{h_prod}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_tot}</b>", header_style)],
             [Paragraph(prod_display, align_style), Paragraph(str(quantity), center_style), Paragraph(f"{price:,.2f}", center_style), Paragraph(f"{product_total:,.2f}", center_style)]
         ]
-        col_widths_items = [240, 60, 110, 110]
+        col_widths_items = (230, 65, 110, 115)
     else:
         items_data = [
             [Paragraph(f"<b>{h_tot}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_prod}</b>", header_style)],
             [Paragraph(f"{product_total:,.2f}", center_style), Paragraph(f"{price:,.2f}", center_style), Paragraph(str(quantity), center_style), Paragraph(prod_display, align_style)]
         ]
-        col_widths_items = [110, 110, 60, 240]
+        col_widths_items = (115, 110, 65, 230)
 
     t_items = Table(items_data, colWidths=col_widths_items)
     t_items.setStyle(TableStyle([
@@ -347,21 +356,21 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     elements.append(Spacer(1, 15))
 
     # 3. جدول المجاميع النهائية
-    final_style = ParagraphStyle('FinalSt', parent=align_style, fontName=active_font, fontSize=12 if template == "modern" else 11, textColor=colors.HexColor(primary_hex))
-    if is_fr:
+    final_style = ParagraphStyle('FinalSt', parent=align_style, fontName=active_font, fontSize=11.5 if template == "modern" else 10.5, textColor=colors.HexColor(primary_hex))
+    if ltr_mode:
         totals_data = [
             [Paragraph(f"<b>{lbl_sub}</b>", align_style), Paragraph(f"<b>{product_total:,.2f} DA</b>", align_style)],
             [Paragraph(f"<b>{lbl_ship}</b>", align_style), Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", align_style)],
             [Paragraph(f"<b>{lbl_final}</b>", final_style), Paragraph(f"<b>{final_total:,.2f} DA</b>", final_style)]
         ]
-        col_widths_tot = [190, 160]
+        col_widths_tot = (220, 150)
     else:
         totals_data = [
             [Paragraph(f"<b>{product_total:,.2f} DA</b>", align_style), Paragraph(f"<b>{lbl_sub}</b>", align_style)],
             [Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", align_style), Paragraph(f"<b>{lbl_ship}</b>", align_style)],
             [Paragraph(f"<b>{final_total:,.2f} DA</b>", final_style), Paragraph(f"<b>{lbl_final}</b>", final_style)]
         ]
-        col_widths_tot = [160, 190]
+        col_widths_tot = (150, 220)
 
     totals_style = [
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
@@ -376,21 +385,21 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     t_totals.setStyle(TableStyle(totals_style))
     elements.append(t_totals)
 
-    # 4. الختم الرقمي QR Code (يُعرض في الرسمي والحديث ويُحذف في الاقتصادي لتوفير الحبر)
+    # 4. الختم الرقمي QR Code
     if template != "simple":
         elements.append(Spacer(1, 20))
-        qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Phone: {customer_phone} | Total: {final_total} DA | Template: {template}"
+        qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Phone: {customer_phone} | Total: {final_total} DA | Lang: {lang}"
         qr = QrCodeWidget(qr_data_string)
         qr.barWidth = 70
         qr.barHeight = 70
         d = Drawing(70, 70)
         d.add(qr)
 
-        qr_text_style = ParagraphStyle('QrTxt', parent=styles['Normal'], fontName=active_font, fontSize=8.5, textColor=colors.HexColor('#444444'), alignment=0 if is_fr else 2)
+        qr_text_style = ParagraphStyle('QrTxt', parent=styles['Normal'], fontName=active_font, fontSize=8.5, textColor=colors.HexColor('#444444'), alignment=0 if ltr_mode else 2)
         qr_para = Paragraph(f"<b>{lbl_qr_title}</b><br/>{lbl_qr_desc}", qr_text_style)
 
-        qr_data = [[qr_para, d]] if not is_fr else [[d, qr_para]]
-        qr_widths = [380, 120] if not is_fr else [120, 380]
+        qr_data = [[qr_para, d]] if not ltr_mode else [[d, qr_para]]
+        qr_widths = (380, 120) if not ltr_mode else (120, 380)
 
         t_qr = Table(qr_data, colWidths=qr_widths)
         t_qr.setStyle(TableStyle([
@@ -407,6 +416,7 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     doc.build(elements)
     buffer.seek(0)
     return buffer.getvalue()
+
 
 def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date):
     """
@@ -2333,15 +2343,24 @@ if "choice" in locals() or "choice" in globals():
             customer_address = st.text_input("عنوان التوصيل والولاية:", key="invoice_customer_address_input")
 
             # --- مفتاح فريد وحصري لزر اختيار لغة الفاتورة (عربي / فرنسي) ---
-            st.markdown("🌐 **لغة طباعة الفاتورة (PDF):**")
             selected_invoice_lang = st.radio(
                 label="اختر لغة الفاتورة:",
-                options=["🇩🇿 اللغة العربية (RTL)", "🇫🇷 اللغة الفرنسية (LTR)"],
+                options=[
+                    "🇩🇿 اللغة العربية (RTL)", 
+                    "🇫🇷 اللغة الفرنسية (LTR)", 
+                    "🌐 مزدوج (عربي + فرنسي)"
+                ],
                 horizontal=True,
                 label_visibility="collapsed",
                 key="sec4b_invoice_lang_selector_unique"
             )
-            lang_code = "fr" if "الفرنسية" in selected_invoice_lang else "ar"
+            if "الفرنسية" in selected_invoice_lang:
+                lang_code = "fr"
+            elif "مزدوج" in selected_invoice_lang:
+                lang_code = "bi"
+            else:
+                lang_code = "ar"
+
             uploaded_logo = st.file_uploader(
                 "اختر لوغو متجرك (اختياري)", 
                 type=["png", "jpg", "jpeg"], 
