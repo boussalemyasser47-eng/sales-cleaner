@@ -2647,6 +2647,7 @@ if "choice" in locals() or "choice" in globals():
        # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
     if choice == "📜 سجل الفواتير والطلبيات":
+    
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📜 سجل الفواتير السابقة ومتابعة الطلبيات</h1>", unsafe_allow_html=True)
         
         invoices_df = pd.read_sql("SELECT * FROM v4_customer_invoices ORDER BY invoice_id DESC", conne)
@@ -2684,14 +2685,9 @@ if "choice" in locals() or "choice" in globals():
             # 4. تحديث حالة الطلبية أو إعادة تحميل الفاتورة PDF
             st.subheader("⚙️ إدارة طلبية محددة:")
             inv_ids = invoices_df['invoice_id'].tolist()
-            selected_inv_id = st.selectbox(
-                "اختر رقم الفاتورة للتعديل أو إعادة التحميل:", 
-                inv_ids, 
-                format_func=lambda x: f"فاتورة رقم #{x} - {invoices_df[invoices_df['invoice_id']==x]['customer_name'].values}"
-            )
+            selected_inv_id = st.selectbox("اختر رقم الفاتورة للتعديل أو إعادة التحميل:", inv_ids, format_func=lambda x: f"فاتورة رقم #{x} - {invoices_df[invoices_df['invoice_id']==x]['customer_name'].values[0]}")
             
-            sel_row = invoices_df[invoices_df['invoice_id'] == selected_inv_id].iloc
-
+            sel_row = invoices_df[invoices_df['invoice_id'] == selected_inv_id].iloc[0]
             
             col_act1, col_act2, col_act3 = st.columns(3)
             with col_act1:
