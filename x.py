@@ -17,7 +17,8 @@ def save_to_github_fast(filename="saas_security_vault.db", folder=""):
                 content = base64.b64encode(f.read()).decode("utf-8")
             
             github_path = f"{fldr}/{fname}" if fldr else fname
-            api_base = "https://" + "://github.com"
+            api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
+
             url = f"{api_base}/{rp}/contents/{github_path}"
             headers = {
                 "Authorization": f"Bearer {tk}",
@@ -1947,7 +1948,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             tk = st.secrets.get("GITHUB_TOKEN")
             rp = st.secrets.get("GITHUB_REPO")
             if tk and rp:
-                api_base = "https://" + "://github.com"
+                api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
+
                 url_m = f"{api_base}/{rp}/contents/merchants/{merchant_db_name}"
                 res_m = requests.get(url_m, headers={"Authorization": f"Bearer {tk}"})
                 if res_m.status_code == 200:
