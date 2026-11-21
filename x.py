@@ -2000,6 +2000,16 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             customer_phone TEXT, product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT
         )
     ''')
+    # إضافة عمود العنوان وحالة الطلبية تلقائياً دون مسح الفواتير القديمة
+    try:
+        cursor.execute("ALTER TABLE v4_customer_invoices ADD COLUMN customer_address TEXT DEFAULT 'الجزائر'")
+    except Exception:
+        pass
+    try:
+        cursor.execute("ALTER TABLE v4_customer_invoices ADD COLUMN order_status TEXT DEFAULT '⏳ قيد التوصيل'")
+    except Exception:
+        pass
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS store_stock (
             product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER
@@ -2009,7 +2019,14 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     save_to_github_fast(merchant_db_name, "merchants")
 
     # 🌐 جدار حجب الأدوات التلقائي بناءً على فئة باقة التاجر الحالية
-    available_tools = ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي", "🚀 ممر العبور السحابي للشحن"]
+    available_tools = [
+        "✨ صانع الفواتير الاحترافي (PDF)", 
+        "📜 سجل الفواتير والطلبيات", 
+        "📦 إدارة وتنبيهات المخزون السلعي", 
+        "🚀 ممر العبور السحابي للشحن"
+    ]
+
+
     if "45k" in user_package:
         available_tools.append("🧼 مطهر ملفات المبيعات وإحصائيات الولايات")
     elif "65k" in user_package:
