@@ -1940,9 +1940,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     # 🏪 [جدار العزل الفردي الأسطوري]: قفل البيانات وعزل فواتير ومخزون كل تاجر باسم إيميله المشفر
     merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
     
-    if "merchant_db_conn" not in st.session_state:
-        # استرجاع فواتير ومخزون التاجر من المستودع عند الدخول
-            # استرجاع فواتير ومخزون التاجر من المستودع عند الدخول
+    # استرجاع فواتير ومخزون التاجر من المستودع عند الدخول
     restore_flag = f"restored_{merchant_db_name}"
     if restore_flag not in st.session_state:
         try:
@@ -1957,6 +1955,9 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         except Exception:
             pass
         st.session_state[restore_flag] = True
+
+    if "merchant_db_conn" not in st.session_state:
+        st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
 
 
         st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
