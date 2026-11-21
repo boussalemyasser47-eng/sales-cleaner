@@ -228,25 +228,31 @@ except Exception as e:
     print(f"⚠️ فشل تحميل الخط، سيتم استخدام البديل: {e}")
     FONT_NAME = 'Helvetica'
 
-def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar"):
-    """
-    دالة توليد فاتورة مبيعات رسمية بحجم A4 مع دعم التبديل التلقائي بين العربية (RTL) والفرنسية (LTR)
-    """
+def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar", template="formal"):
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(
-        buffer, 
-        pagesize=A4, 
-        rightMargin=30, 
-        leftMargin=30, 
-        topMargin=30, 
-        bottomMargin=30
-    )
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
     elements = []
     styles = getSampleStyleSheet()
     is_fr = (lang == "fr")
     active_font = 'Helvetica' if is_fr else FONT_NAME
 
-    # إعداد النصوص حسب اللغة المختارة
+    # 🎨 ضبط الألوان والستايل حسب القالب المختار
+    if template == "simple":
+        # ⚡ القالب الاقتصادي البسيط (أبيض وأسود لتوفير الحبر وسرعة الطباعة)
+        primary_hex = '#111111'
+        bg_light_hex = '#ffffff'
+        border_hex = '#444444'
+    elif template == "modern":
+        # ✨ القالب التجاري الحديث (ألوان تيل عصرية)
+        primary_hex = '#0f766e'
+        bg_light_hex = '#f0fdfa'
+        border_hex = '#5eead4'
+    else:
+        # 🏛️ القالب الرسمي الموثق (أزرق هندسي)
+        primary_hex = '#003366'
+        bg_light_hex = '#f8f9fa'
+        border_hex = '#cbd5e1'
+
     if is_fr:
         lbl_subtitle = "FACTURE DE VENTE ET BON DE COMMANDE"
         lbl_shop = f"<b>Magasin :</b> {shop_name}"
@@ -275,14 +281,13 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         lbl_qr_title = fix_arabic("ختم التحقق الرقمي الموثق:")
         lbl_qr_desc = fix_arabic("هذه الفاتورة صادرة إلكترونياً ومؤمنة عبر نظام NEXUS CENTRAL GATE.")
 
-    # أنماط النصوص والاتجاهات (RTL للعربية / LTR للفرنسية)
-    title_style = ParagraphStyle('InvTitle', parent=styles['Heading1'], fontName=active_font, fontSize=22, textColor=colors.HexColor('#003366'), alignment=1, spaceAfter=6)
+    title_style = ParagraphStyle('InvTitle', parent=styles['Heading1'], fontName=active_font, fontSize=22, textColor=colors.HexColor(primary_hex), alignment=1, spaceAfter=6)
     sub_style = ParagraphStyle('InvSub', parent=styles['Normal'], fontName=active_font, fontSize=11, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=15)
     align_style = ParagraphStyle('AlignStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=0 if is_fr else 2)
     center_style = ParagraphStyle('CenterStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=1)
     header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.whitesmoke, alignment=1)
 
-    if logo_data:
+    if logo_data and template != "simple":
         try:
             img = Image(io.BytesIO(logo_data), width=65, height=65)
             elements.append(img)
@@ -295,17 +300,11 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     elements.append(Paragraph(f"<b>{lbl_subtitle}</b>", sub_style))
     elements.append(Spacer(1, 10))
 
-    # 1. جدول بيانات المتجر والزبون (يعكس الترتيب تلقائياً حسب اللغة)
+    # 1. جدول بيانات المتجر والزبون
     if is_fr:
-        info_data = [
-            [Paragraph(lbl_cust, align_style), Paragraph(lbl_shop, align_style)],
-            [Paragraph(lbl_phone, align_style), Paragraph(lbl_addr, align_style)]
-        ]
+        info_data = [[Paragraph(lbl_cust, align_style), Paragraph(lbl_shop, align_style)], [Paragraph(lbl_phone, align_style), Paragraph(lbl_addr, align_style)]]
     else:
-        info_data = [
-            [Paragraph(lbl_shop, align_style), Paragraph(lbl_cust, align_style)],
-            [Paragraph(lbl_addr, align_style), Paragraph(lbl_phone, align_style)]
-        ]
+        info_data = [[Paragraph(lbl_shop, align_style), Paragraph(lbl_cust, align_style)], [Paragraph(lbl_addr, align_style), Paragraph(lbl_phone, align_style)]]
 
     t_info = Table(info_data, colWidths=[260, 260])
     t_info.setStyle(TableStyle([
@@ -313,14 +312,14 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('TOPPADDING', (0,0), (-1,-1), 8),
         ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8f9fa')),
-        ('BOX', (0,0), (-1,-1), 0.7, colors.HexColor('#cbd5e1')),
-        ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e2e8f0')),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor(bg_light_hex)),
+        ('BOX', (0,0), (-1,-1), 0.7, colors.HexColor(border_hex)),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor(border_hex)),
     ]))
     elements.append(t_info)
     elements.append(Spacer(1, 15))
 
-    # 2. جدول المنتجات (ترتيب الأعمدة من اليسار لليمين للفرنسية، ومن اليمين لليسار للعربية)
+    # 2. جدول المنتجات
     prod_display = product_name if is_fr else fix_arabic(product_name)
     if is_fr:
         items_data = [
@@ -337,18 +336,18 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
 
     t_items = Table(items_data, colWidths=col_widths_items)
     t_items.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')),
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor(primary_hex)),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('BOTTOMPADDING', (0,0), (-1,-1), 9),
         ('TOPPADDING', (0,0), (-1,-1), 9),
         ('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#ffffff')),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor(border_hex)),
     ]))
     elements.append(t_items)
     elements.append(Spacer(1, 15))
 
     # 3. جدول المجاميع النهائية
-    final_style = ParagraphStyle('FinalSt', parent=align_style, fontName=active_font, fontSize=11, textColor=colors.HexColor('#003366'))
+    final_style = ParagraphStyle('FinalSt', parent=align_style, fontName=active_font, fontSize=12 if template == "modern" else 11, textColor=colors.HexColor(primary_hex))
     if is_fr:
         totals_data = [
             [Paragraph(f"<b>{lbl_sub}</b>", align_style), Paragraph(f"<b>{product_total:,.2f} DA</b>", align_style)],
@@ -364,45 +363,51 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         ]
         col_widths_tot = [160, 190]
 
-    t_totals = Table(totals_data, colWidths=col_widths_tot)
-    t_totals.setStyle(TableStyle([
+    totals_style = [
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('BOTTOMPADDING', (0,0), (-1,-1), 7),
         ('TOPPADDING', (0,0), (-1,-1), 7),
-        ('LINEABOVE', (0,2), (-1,2), 1, colors.HexColor('#003366')),
-    ]))
+        ('LINEABOVE', (0,2), (-1,2), 1.5, colors.HexColor(primary_hex)),
+    ]
+    if template == "modern":
+        totals_style.append(('BACKGROUND', (0,2), (-1,2), colors.HexColor(bg_light_hex)))
+
+    t_totals = Table(totals_data, colWidths=col_widths_tot)
+    t_totals.setStyle(TableStyle(totals_style))
     elements.append(t_totals)
-    elements.append(Spacer(1, 20))
 
-    # 4. الختم الرقمي QR Code
-    qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Phone: {customer_phone} | Total: {final_total} DA | Lang: {lang}"
-    qr = QrCodeWidget(qr_data_string)
-    qr.barWidth = 70
-    qr.barHeight = 70
-    d = Drawing(70, 70)
-    d.add(qr)
+    # 4. الختم الرقمي QR Code (يُعرض في الرسمي والحديث ويُحذف في الاقتصادي لتوفير الحبر)
+    if template != "simple":
+        elements.append(Spacer(1, 20))
+        qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Phone: {customer_phone} | Total: {final_total} DA | Template: {template}"
+        qr = QrCodeWidget(qr_data_string)
+        qr.barWidth = 70
+        qr.barHeight = 70
+        d = Drawing(70, 70)
+        d.add(qr)
 
-    qr_text_style = ParagraphStyle('QrTxt', parent=styles['Normal'], fontName=active_font, fontSize=8.5, textColor=colors.HexColor('#444444'), alignment=0 if is_fr else 2)
-    qr_para = Paragraph(f"<b>{lbl_qr_title}</b><br/>{lbl_qr_desc}", qr_text_style)
+        qr_text_style = ParagraphStyle('QrTxt', parent=styles['Normal'], fontName=active_font, fontSize=8.5, textColor=colors.HexColor('#444444'), alignment=0 if is_fr else 2)
+        qr_para = Paragraph(f"<b>{lbl_qr_title}</b><br/>{lbl_qr_desc}", qr_text_style)
 
-    qr_data = [[qr_para, d]] if not is_fr else [[d, qr_para]]
-    qr_widths = [380, 120] if not is_fr else [120, 380]
+        qr_data = [[qr_para, d]] if not is_fr else [[d, qr_para]]
+        qr_widths = [380, 120] if not is_fr else [120, 380]
 
-    t_qr = Table(qr_data, colWidths=qr_widths)
-    t_qr.setStyle(TableStyle([
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f1f5f9')),
-        ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
-        ('TOPPADDING', (0,0), (-1,-1), 8),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-        ('LEFTPADDING', (0,0), (-1,-1), 10),
-        ('RIGHTPADDING', (0,0), (-1,-1), 10),
-    ]))
-    elements.append(t_qr)
+        t_qr = Table(qr_data, colWidths=qr_widths)
+        t_qr.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor(bg_light_hex)),
+            ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor(border_hex)),
+            ('TOPPADDING', (0,0), (-1,-1), 8),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+            ('LEFTPADDING', (0,0), (-1,-1), 10),
+            ('RIGHTPADDING', (0,0), (-1,-1), 10),
+        ]))
+        elements.append(t_qr)
 
     doc.build(elements)
     buffer.seek(0)
     return buffer.getvalue()
+
 def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date):
     """
     دالة توليد ملصق الشحن الحراري (4x4 بوصة) بشكل هندسي منظم، مع إطار خارجي وخط فاصل أنيق[cite: 1]
@@ -2467,7 +2472,11 @@ if "choice" in locals() or "choice" in globals():
                     save_to_github_fast(merchant_db_name, "merchants")
 
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang=lang_code)
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost,  final_total, logo_data, lang=lang_code, template=invoice_template)
+
+
+
+
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
                     st.session_state["last_active_customer"] = customer_name
                     st.session_state["last_active_phone"] = customer_phone
