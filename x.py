@@ -2684,9 +2684,14 @@ if "choice" in locals() or "choice" in globals():
             # 4. تحديث حالة الطلبية أو إعادة تحميل الفاتورة PDF
             st.subheader("⚙️ إدارة طلبية محددة:")
             inv_ids = invoices_df['invoice_id'].tolist()
-            selected_inv_id = st.selectbox("اختر رقم الفاتورة للتعديل أو إعادة التحميل:", inv_ids, format_func=lambda x: f"فاتورة رقم #{x} - {invoices_df[invoices_df['invoice_id']==x]['customer_name'].values[0]}")
+            selected_inv_id = st.selectbox(
+                "اختر رقم الفاتورة للتعديل أو إعادة التحميل:", 
+                inv_ids, 
+                format_func=lambda x: f"فاتورة رقم #{x} - {invoices_df[invoices_df['invoice_id']==x]['customer_name'].values}"
+            )
             
-            sel_row = invoices_df[invoices_df['invoice_id'] == selected_inv_id].iloc[0]
+            sel_row = invoices_df[invoices_df['invoice_id'] == selected_inv_id].iloc
+
             
             col_act1, col_act2, col_act3 = st.columns(3)
             with col_act1:
