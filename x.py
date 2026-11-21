@@ -2646,7 +2646,7 @@ if "choice" in locals() or "choice" in globals():
  
        # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
-        elif choice == "📜 سجل الفواتير والطلبيات":
+    if choice == "📜 سجل الفواتير والطلبيات":
         st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📜 سجل الفواتير السابقة ومتابعة الطلبيات</h1>", unsafe_allow_html=True)
         
         invoices_df = pd.read_sql("SELECT * FROM v4_customer_invoices ORDER BY invoice_id DESC", conne)
@@ -2720,6 +2720,7 @@ if "choice" in locals() or "choice" in globals():
                     mime="application/pdf",
                     key="reprint_old_inv_btn"
                 )
+
 
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
