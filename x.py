@@ -2504,29 +2504,52 @@ if "choice" in locals() or "choice" in globals():
             with send_col2: 
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
         # === إضافة صندوق المعاينة الحية للفاتورة النيونية ===
+        # === إضافة صندوق المعاينة الحية للفاتورة النيونية المتفاعلة مع القالب ===
         st.markdown("---")
         st.subheader("👁️ معاينة حية فورية قبل الحفظ:")
         
         preview_customer = customer_name if customer_name else "<i>لم يتم الإدخال بعد</i>"
         preview_phone = customer_phone if customer_phone else "<i>لم يتم الإدخال بعد</i>"
         preview_product = product_name if product_name else "<i>لم يتم الاختيار بعد</i>"
-        
+
+        # 🎨 ضبط ألوان وشارة المعاينة الحية حسب القالب المختار
+        if invoice_template == "simple":
+            prev_accent = "#e2e8f0"
+            prev_border = "rgba(226, 232, 240, 0.35)"
+            prev_bg = "rgba(255, 255, 255, 0.02)"
+            prev_shadow = "rgba(255, 255, 255, 0.05)"
+            prev_badge = "⚡ القالب الاقتصادي البسيط (خفيف وبدون QR)"
+        elif invoice_template == "modern":
+            prev_accent = "#2dd4bf"
+            prev_border = "rgba(45, 212, 191, 0.45)"
+            prev_bg = "rgba(15, 118, 110, 0.12)"
+            prev_shadow = "rgba(45, 212, 191, 0.2)"
+            prev_badge = "✨ القالب التجاري الحديث (ألوان تيل عصرية)"
+        else:
+            prev_accent = "#00fff0"
+            prev_border = "rgba(0, 255, 240, 0.35)"
+            prev_bg = "rgba(0, 51, 102, 0.15)"
+            prev_shadow = "rgba(0, 255, 240, 0.15)"
+            prev_badge = "🏛️ القالب الرسمي الموثق (أزرق + ختم QR)"
+
         neon_card_html = f"""
-        <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border-radius: 12px; padding: 25px; border: 1px solid rgba(0, 255, 240, 0.2); box-shadow: 0 0 20px rgba(0, 255, 240, 0.1), inset 0 0 15px rgba(0, 255, 240, 0.05); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: right; direction: rtl;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(0, 255, 240, 0.3); padding-bottom: 12px; margin-bottom: 15px;">
-                <span style="font-size: 18px; font-weight: bold; color: #00fff0; text-shadow: 0 0 10px rgba(0, 255, 240, 0.5);">🏪 {shop_name}</span>
-                <span style="font-size: 12px; color: #888;">📅 {current_date}</span>
+        <div style="background: {prev_bg}; backdrop-filter: blur(10px); border-radius: 12px; padding: 25px; border: 1.5px solid {prev_border}; box-shadow: 0 0 20px {prev_shadow}; font-family: 'Cairo', 'Segoe UI', sans-serif; text-align: right; direction: rtl; transition: all 0.3s ease;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed {prev_border}; padding-bottom: 12px; margin-bottom: 15px;">
+                <span style="font-size: 18px; font-weight: bold; color: {prev_accent}; text-shadow: 0 0 10px {prev_shadow};">🏪 {shop_name}</span>
+                <span style="font-size: 11px; font-weight: bold; color: {prev_accent}; border: 1px solid {prev_border}; padding: 3px 10px; border-radius: 20px;">{prev_badge}</span>
             </div>
             <div style="margin-bottom: 10px; color: #e0e0e0; font-size: 14px;"><strong>👤 العميل:</strong> <span style="color: #fff;">{preview_customer}</span></div>
             <div style="margin-bottom: 10px; color: #e0e0e0; font-size: 14px;"><strong>📞 الهاتف:</strong> <span style="color: #fff; direction: ltr; display: inline-block;">{preview_phone}</span></div>
-            <div style="margin-bottom: 15px; color: #e0e0e0; font-size: 14px;"><strong>📦 المنتج المطلوب:</strong> <span style="color: #00fff0;">{preview_product} (×{quantity})</span></div>
-            <div style="background: rgba(0, 255, 240, 0.05); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0, 255, 240, 0.15);">
+            <div style="margin-bottom: 15px; color: #e0e0e0; font-size: 14px;"><strong>📦 المنتج المطلوب:</strong> <span style="color: {prev_accent};">{preview_product} (×{quantity})</span></div>
+            <div style="background: rgba(0, 0, 0, 0.25); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid {prev_border};">
                 <span style="font-size: 15px; font-weight: bold; color: #fff;">💰 الصافي الإجمالي (شامل الشحن):</span>
-                <span style="font-size: 20px; font-weight: bold; color: #00fff0; text-shadow: 0 0 12px #00fff0;">{final_total:,.2f} DA</span>
+                <span style="font-size: 20px; font-weight: bold; color: {prev_accent}; text-shadow: 0 0 12px {prev_shadow};">{final_total:,.2f} DA</span>
             </div>
+            <div style="text-align: left; font-size: 11px; color: #888; margin-top: 8px;">📅 {current_date}</div>
         </div>
         """
         st.markdown(neon_card_html, unsafe_allow_html=True)
+
 # === إضافات نظام صانع الفواتير والملصقات الحرارية ===
     # دالة حاسبة الأرباح الصافية وتقارير الأداء المالي (Net Profit & P&L Calculator)
         st.markdown("---")
