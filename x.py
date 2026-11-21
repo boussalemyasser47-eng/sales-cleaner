@@ -236,7 +236,8 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     
     is_fr = (lang == "fr")
     is_bi = (lang == "bi")
-    active_font = 'Helvetica' if is_fr else FONT_NAME
+    active_font = FONT_NAME
+
 
     # ضبط الألوان حسب القالب المختار
     if template == "simple":
@@ -264,10 +265,11 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         lbl_qr_desc = f"Document sécurisé par NEXUS GATE / {fix_arabic('وثيقة مؤمنة إلكترونياً')}"
     elif is_fr:
         lbl_subtitle = "FACTURE DE VENTE ET BON DE COMMANDE"
-        lbl_shop = f"<b>Magasin :</b> {shop_name}"
-        lbl_cust = f"<b>Client :</b> {customer_name}"
-        lbl_addr = f"<b>Adresse :</b> {customer_address}"
+        lbl_shop = f"<b>Magasin :</b> {fix_arabic(shop_name)}"
+        lbl_cust = f"<b>Client :</b> {fix_arabic(customer_name)}"
+        lbl_addr = f"<b>Adresse :</b> {fix_arabic(customer_address)}"
         lbl_phone = f"<b>Téléphone :</b> {customer_phone}"
+
         h_prod, h_qty, h_price, h_tot = "Désignation", "Qté", "Prix Unitaire", "Total (DA)"
         lbl_sub = "Sous-total Produit :"
         lbl_ship = "Frais de Livraison :"
@@ -304,7 +306,8 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
         except Exception:
             pass
 
-    shop_display = shop_name if is_fr else fix_arabic(shop_name)
+    shop_display = fix_arabic(shop_name)
+
     elements.append(Paragraph(f"<b>{shop_display}</b>", title_style))
     elements.append(Paragraph(f"<b>{lbl_subtitle}</b>", sub_style))
     elements.append(Spacer(1, 10))
@@ -329,7 +332,8 @@ def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_addr
     elements.append(Spacer(1, 15))
 
     # 2. جدول المنتجات
-    prod_display = product_name if is_fr else fix_arabic(product_name)
+    prod_display = fix_arabic(product_name)
+
     if ltr_mode:
         items_data = [
             [Paragraph(f"<b>{h_prod}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_tot}</b>", header_style)],
