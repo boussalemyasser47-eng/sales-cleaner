@@ -1,5 +1,58 @@
-# 🛡️ [إضافة جديدة - كتلة الحقن الآمن]: تثبيت مسار قاعدة البيانات وتحسين خزانة النسخ الاحتياطي الذكي
-# ========================================================
+import streamlit as st
+import os
+import base64
+import threading
+import requests
+
+def save_to_github_fast():
+    token = st.secrets.get("GITHUB_TOKEN")
+    repo = st.secrets.get("GITHUB_REPO")
+    if not token or not repo:
+        st.toast("⚠️ مفاتيح GitHub غير مقروءة في Secrets")
+        return
+
+    def _task(tk, rp):
+        try:
+            if not os.path.exists("saas_security_vault.db"):
+                return
+            with open("saas_security_vault.db", "rb") as f:
+                content = base64.b64encode(f.read()).decode("utf-8")
+            url = f"https://api.github.com/repos/{rp}/contents/saas_security_vault.db"
+            headers = {
+                "Authorization": f"Bearer {tk}",
+                "Accept": "application/vnd.github.v3+json"
+            }
+            res = requests.get(url, headers=headers)
+            sha = res.json().get("sha") if res.status_code == 200 else None
+            data = {"message": "Update DB", "content": content}
+            if sha:
+                data["sha"] = sha
+            put_res = requests.put(url, json=data, headers=headers)
+            if put_res.status_code != 200 and put_res.status_code != 201:
+                print("GitHub Upload Error:", put_res.status_code, put_res.text)
+            else:
+                print("✅ GitHub Upload Success!")
+
+        except Exception as e:
+            print("GitHub Exception:", e)
+
+    threading.Thread(target=_task, args=(token, repo), daemon=True).start()
+
+# استرجاع البيانات مرة واحدة عند تشغيل الموقع
+if "db_loaded" not in st.session_state:
+    try:
+        token = st.secrets.get("GITHUB_TOKEN")
+        repo = st.secrets.get("GITHUB_REPO")
+        if token and repo:
+            url = f"https://api.github.com/repos/{repo}/contents/saas_security_vault.db"
+            res = requests.get(url, headers={"Authorization": f"Bearer {token}"})
+            if res.status_code == 200:
+                with open("saas_security_vault.db", "wb") as f:
+                    f.write(base64.b64decode(res.json()["content"]))
+    except Exception:
+        pass
+    st.session_state["db_loaded"] = True
+
 import os
 
 # تحديد مسار ثابت وموثوق لقاعدة البيانات لمنع ضياعها في وضع السكون أو إعادة التشغيل
@@ -1349,6 +1402,9 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 )
                                 conn_reg.commit()
                                 conn_reg.close()
+                                save_to_github_fast()
+
+                                
                                 
                                 st.session_state["otp_pending_verification"] = False
                                 st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
@@ -1680,7 +1736,8 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-        
+                        save_to_github_fast()
+
                         # 📧 إرسال الإيميل مع إظهار شاشة انتظار لضمان عدم قطع الاتصال
                         with st.spinner("جاري إرسال البريد الإلكتروني..."):
                             welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
@@ -1696,7 +1753,7 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-                        
+                        save_to_github_fast()
                         # 📧 إرسال إيميل تمديد المهلة
                         ext_subject = "⏳ تم تمديد الفترة التجريبية لمتجرك"
                         ext_body = f"مرحباً بك يا تاجرنا العزيز,\n\nنود إعلامك بأنه تم تمديد الفترة التجريبية لمتجرك لمدة 7 أيام إضافية بنجاح.\nيمكنك الآن مواصلة تجربة كافة ميزات المنصة.\n\nنتمنى لك مبيعات موفقة!"
@@ -1715,7 +1772,7 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-                        
+                        save_to_github_fast()
                         # 📧 إرسال إيميل ترقية الباقة
                         upg_subject = "🚀 مبروك! تم ترقية باقة متجرك إلى الباقة الخارقة"
                         upg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم ترقية باقة حسابك رسمياً إلى (الباقة السيبرانية الخارقة 65k)!\nتم فتح كافة أدوات الأتمتة المتقدمة والذكاء الاصطناعي لمتجرك.\n\nبالتوفيق والنجاح!"
@@ -1728,7 +1785,7 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-                        
+                        save_to_github_fast()
                         # 📧 إرسال إيميل الحظر وقفل الحساب
                         lck_subject = "⚠️ تنبيه: تم تجميد حساب متجرك مؤقتاً"
                         lck_body = f"مرحباً,\n\nنحيطك علماً بأنه تم قفل ومصادرة صلاحيات الوصول إلى حسابك مؤقتاً من قبل الإدارة.\nإذا كنت تعتقد أن هذا حدث عن طريق الخطأ، يرجى التواصل مع فريق الدعم الفني للإدارة.\n\nتحياتنا."
@@ -1758,7 +1815,7 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE email = ?", (selected_opt, current_email))
                         conn.commit(); conn.close()
-                        
+                        save_to_github_fast()
                         # 📧 إرسال إيميل تحديث فئة الاشتراك المخصصة
                         pkg_subject = "🏷️ تحديث فئة اشتراك متجرك"
                         pkg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nتم تحديث باقة متجرك رسمياً إلى: {selected_opt}.\nيمكنك الآن استغلال كافة الميزات المتاحة في باقتك الجديدة من خلال لوحة التحكم.\n\nنتمنى لك كل التوفيق والنجاح!"
