@@ -4,39 +4,35 @@ import base64
 import threading
 import requests
 
-def save_to_github_fast():
+def save_to_github_fast(filename="saas_security_vault.db", folder=""):
     token = st.secrets.get("GITHUB_TOKEN")
     repo = st.secrets.get("GITHUB_REPO")
     if not token or not repo:
-        st.toast("⚠️ مفاتيح GitHub غير مقروءة في Secrets")
         return
 
-    def _task(tk, rp):
+    def _task(tk, rp, fname, fldr):
         try:
-            if not os.path.exists("saas_security_vault.db"):
+            if not os.path.exists(fname):
                 return
-            with open("saas_security_vault.db", "rb") as f:
+            with open(fname, "rb") as f:
                 content = base64.b64encode(f.read()).decode("utf-8")
-            url = f"https://api.github.com/repos/{rp}/contents/saas_security_vault.db"
+            
+            github_path = f"{fldr}/{fname}" if fldr else fname
+            url = f"https://github.com{rp}/contents/{github_path}"
             headers = {
                 "Authorization": f"Bearer {tk}",
                 "Accept": "application/vnd.github.v3+json"
             }
             res = requests.get(url, headers=headers)
             sha = res.json().get("sha") if res.status_code == 200 else None
-            data = {"message": "Update DB", "content": content}
+            data = {"message": f"Update {github_path}", "content": content}
             if sha:
                 data["sha"] = sha
-            put_res = requests.put(url, json=data, headers=headers)
-            if put_res.status_code != 200 and put_res.status_code != 201:
-                print("GitHub Upload Error:", put_res.status_code, put_res.text)
-            else:
-                print("✅ GitHub Upload Success!")
-
+            requests.put(url, json=data, headers=headers)
         except Exception as e:
             print("GitHub Exception:", e)
 
-    threading.Thread(target=_task, args=(token, repo), daemon=True).start()
+    threading.Thread(target=_task, args=(token, repo, filename, folder), daemon=True).start()
 
 # استرجاع البيانات مرة واحدة عند تشغيل الموقع
 if "db_loaded" not in st.session_state:
@@ -1945,6 +1941,22 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
     
     if "merchant_db_conn" not in st.session_state:
+        # استرجاع فواتير ومخزون التاجر من المستودع عند الدخول
+    restore_flag = f"restored_{merchant_db_name}"
+    if restore_flag not in st.session_state:
+        try:
+            tk = st.secrets.get("GITHUB_TOKEN")
+            rp = st.secrets.get("GITHUB_REPO")
+            if tk and rp:
+                url_m = f"https://github.com{rp}/contents/merchants/{merchant_db_name}"
+                res_m = requests.get(url_m, headers={"Authorization": f"Bearer {tk}"})
+                if res_m.status_code == 200:
+                    with open(merchant_db_name, "wb") as f:
+                        f.write(base64.b64decode(res_m.json()["content"]))
+        except Exception:
+            pass
+        st.session_state[restore_flag] = True
+
         st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
     else:
         try:
@@ -1968,7 +1980,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         )
     ''')
     conne.commit()
-    
+    save_to_github_fast(merchant_db_name, "merchants")
+
     # 🌐 جدار حجب الأدوات التلقائي بناءً على فئة باقة التاجر الحالية
     available_tools = ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي", "🚀 ممر العبور السحابي للشحن"]
     if "45k" in user_package:
@@ -2444,7 +2457,8 @@ if "choice" in locals() or "choice" in globals():
                     cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
                     cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
                     conne.commit()
-                    
+                    save_to_github_fast(merchant_db_name, "merchants")
+
                     logo_data = uploaded_logo.read() if uploaded_logo is not None else None
                     st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang=lang_code)
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
@@ -2565,6 +2579,8 @@ if "choice" in locals() or "choice" in globals():
                     try:
                         cursor.execute("INSERT INTO store_stock (product_name, available_qty) VALUES (?, ?)", (new_prod, new_qty))
                         conne.commit()
+                        save_to_github_fast(merchant_db_name, "merchants")
+
                         st.success(f"تم إضافة {new_prod} للمستودع!")
                         
                         # حساب تفاصيل الإعلان مسبقاً وتخزينها في ذاكرة الجلسة المستمرة لتفادي مسحها بالـ rerun
@@ -2643,7 +2659,8 @@ if "choice" in locals() or "choice" in globals():
                 if st.button("❌ محو السلعة المحددة"):
                     cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
                     conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
-                
+                    save_to_github_fast(merchant_db_name, "merchants")
+
                 low_stock = stock_df[stock_df['available_qty'] <= 5]
                 if not low_stock.empty:
                     st.markdown("---")
