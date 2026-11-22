@@ -2402,9 +2402,9 @@ if "choice" in locals() or "choice" in globals():
             else:
                 lang_code = "ar"
 
-         os.makedirs("logos", exist_ok=True)
-         logo_filename = f"logo_{urllib.parse.quote_plus(current_merchant)}.png"
-         logo_local_path = f"logos/{logo_filename}"
+            os.makedirs("logos", exist_ok=True)
+            logo_filename = f"logo_{urllib.parse.quote_plus(current_merchant)}.png"
+            logo_local_path = f"logos/{logo_filename}"
 
          if f"logo_loaded_{logo_filename}" not in st.session_state:
              try:
