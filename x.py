@@ -1385,10 +1385,36 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     elapsed_sec = int(time.time() - st.session_state.get("otp_sent_at", time.time()))
                     remaining_sec = max(0, 60 - elapsed_sec)
 
+                    elapsed_sec = int(time.time() - st.session_state.get("otp_sent_at", time.time()))
+                    remaining_sec = max(0, 60 - elapsed_sec)
+
                     if remaining_sec > 0:
-                        st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 14px; font-weight: bold; margin: 10px 0;'>⏳ يمكنك طلب رمز جديد بعد: {remaining_sec} ثانية</p>", unsafe_allow_html=True)
-                    else:
-                        if st.button("🔄 إعادة إرسال الرمز الجديد", key="resend_otp_btn"):
+                        # ⏱️ عداد JavaScript حي يعمل في متصفح الزبون دون أي ضغط على السيرفر
+                        st.components.v1.html(f"""
+                        <div style="text-align: center; font-family: 'Cairo', sans-serif; color: #ffaa00; font-size: 15px; font-weight: bold; direction: rtl; background: transparent;">
+                            ⏳ يمكنك طلب رمز جديد بعد: <span id="js_otp_timer" style="color: #00fff0; font-size: 17px;">{remaining_sec}</span> ثانية
+                        </div>
+                        <script>
+                            var timeLeft = {remaining_sec};
+                            var timerElem = document.getElementById("js_otp_timer");
+                            var countdown = setInterval(function() {{
+                                timeLeft--;
+                                if (timeLeft <= 0) {{
+                                    clearInterval(countdown);
+                                    timerElem.parentElement.innerHTML = "✅ انتهى الوقت! اضغط على زر التحديث أدناه لطلب رمز جديد.";
+                                    timerElem.parentElement.style.color = "#00ff66";
+                                }} else {{
+                                    timerElem.textContent = timeLeft;
+                                }}
+                            }}, 1000);
+                        </script>
+                        """, height=38)
+
+                    if st.button("🔄 طلب / إعادة إرسال رمز جديد", key="resend_otp_btn"):
+                        now_elapsed = int(time.time() - st.session_state.get("otp_sent_at", 0))
+                        if now_elapsed < 60:
+                            st.warning(f"⏳ يرجى الانتظار {60 - now_elapsed} ثانية قبل طلب رمز جديد.")
+                        else:
                             generated_otp = f"{random.randint(100000, 999999)}"
                             st.session_state["temp_reg_otp"] = generated_otp
                             st.session_state["otp_sent_at"] = time.time()
@@ -1399,6 +1425,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
                                 time.sleep(0.5)
                                 st.rerun()
+
 
                     st.markdown("<p style='text-align: center; color: #888899; font-size: 12px;'>💡 يمكنك نسخ الرمز من بريدك واللصق هنا مباشرة ليتم تعبئته تلقائياً.</p>", unsafe_allow_html=True)
 
@@ -2590,6 +2617,7 @@ if "choice" in locals() or "choice" in globals():
                 wa_num = str(st.session_state['last_active_phone']).strip()
                 wa_num = "213" + wa_num[1:] if wa_num.startswith("0") else wa_num
                 st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{wa_num}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
+
 
             with send_col2: 
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
