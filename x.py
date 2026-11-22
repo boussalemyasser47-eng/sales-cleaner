@@ -797,6 +797,7 @@ def log_admin_action(target_email, action_type, details=""):
     cursor.execute(
         """
         INSERT INTO admin_audit_logs (action_time, target_email, action_type, details)
+
         VALUES (?, ?, ?, ?)
     """,
         (now, target_email, action_type, details),
@@ -1313,8 +1314,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                 if not st.session_state["otp_pending_verification"]:
                     if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
-                        
-                        # 🛑 شرط إضافي صارم: التأكد من وجود رقم هاتف وعدم وجود خطأ في طوله
                         raw_phone = st.session_state.get("temp_reg_phone", "").replace("+", "").strip()
                         
                         if not input_phone:
@@ -1329,6 +1328,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 st.session_state["temp_reg_email"]  = clean_email
                                 st.session_state["temp_reg_pass"]   = clean_pass
                                 st.session_state["temp_reg_package"] = validated_package
+                                st.session_state["otp_sent_at"] = time.time()
                                 
                                 subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
                                 body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
@@ -1340,9 +1340,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                     st.rerun()
 
                 else:
-                    if "otp_countdown" not in st.session_state:
-                        st.session_state["otp_countdown"] = 60
-
                     st.markdown("""
                         <style>
                         .otp-modal-container {
@@ -1385,23 +1382,23 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         key="smart_otp_paste_input"
                     )
 
-                 elapsed_sec = int(time.time() - st.session_state.get("otp_sent_at", time.time()))
-                 remaining_sec = max(0, 60 - elapsed_sec)
+                    elapsed_sec = int(time.time() - st.session_state.get("otp_sent_at", time.time()))
+                    remaining_sec = max(0, 60 - elapsed_sec)
 
-                 if remaining_sec > 0:
-                     st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 14px; font-weight: bold; margin: 10px 0;'>⏳ يمكنك إعادة إرسال الرمز بعد: {remaining_sec} ثانية</p>", unsafe_allow_html=True)
-                 else:
-                     if st.button("🔄 إعادة إرسال الرمز الجديد", key="resend_otp_btn"):
-                         generated_otp = f"{random.randint(100000, 999999)}"
-                         st.session_state["temp_reg_otp"] = generated_otp
-                         st.session_state["otp_sent_at"] = time.time()
-
-                         subject = "رمز التحقق (OTP) الجديد لإنشاء حساب متجرك"
-                         body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
-                         if send_gmail_notification(target_mail, subject, body, action_type="OTP"):
-                             st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
-                             time.sleep(0.5)
-                             st.rerun()
+                    if remaining_sec > 0:
+                        st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 14px; font-weight: bold; margin: 10px 0;'>⏳ يمكنك طلب رمز جديد بعد: {remaining_sec} ثانية</p>", unsafe_allow_html=True)
+                    else:
+                        if st.button("🔄 إعادة إرسال الرمز الجديد", key="resend_otp_btn"):
+                            generated_otp = f"{random.randint(100000, 999999)}"
+                            st.session_state["temp_reg_otp"] = generated_otp
+                            st.session_state["otp_sent_at"] = time.time()
+                            
+                            subject = "رمز التحقق (OTP) الجديد لإنشاء حساب متجرك"
+                            body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
+                            if send_gmail_notification(target_mail, subject, body, action_type="OTP"):
+                                st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
+                                time.sleep(0.5)
+                                st.rerun()
 
                     st.markdown("<p style='text-align: center; color: #888899; font-size: 12px;'>💡 يمكنك نسخ الرمز من بريدك واللصق هنا مباشرة ليتم تعبئته تلقائياً.</p>", unsafe_allow_html=True)
 
@@ -1413,7 +1410,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 reg_pass = st.session_state["temp_reg_pass"]
                                 reg_pkg = st.session_state["temp_reg_package"]
                                 reg_phone = st.session_state.get("temp_reg_phone", "")
-                                reg_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 
                                 conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                                 cursor_reg = conn_reg.cursor()
@@ -1424,8 +1421,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 conn_reg.commit()
                                 conn_reg.close()
                                 save_to_github_fast()
-
-                                
                                 
                                 st.session_state["otp_pending_verification"] = False
                                 st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
@@ -1437,7 +1432,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     with col_cancel_btn:
                         if st.button("❌ إلغاء والعودة", key="cancel_otp_btn"):
                             st.session_state["otp_pending_verification"] = False
-                            st.session_state.pop("otp_countdown", None)
+                            st.session_state.pop("otp_sent_at", None)
                             st.rerun()
 
             else:
@@ -2552,6 +2547,7 @@ if "choice" in locals() or "choice" in globals():
                 st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
             else:
                 check_stock = pd.read_sql("SELECT available_qty FROM store_stock WHERE product_name = ?", conne, params=(product_name,))
+
 
                 if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
                     st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
