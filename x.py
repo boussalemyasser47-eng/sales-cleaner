@@ -2406,32 +2406,33 @@ if "choice" in locals() or "choice" in globals():
             logo_filename = f"logo_{urllib.parse.quote_plus(current_merchant)}.png"
             logo_local_path = f"logos/{logo_filename}"
 
-         if f"logo_loaded_{logo_filename}" not in st.session_state:
-             try:
-                 tk, rp = st.secrets.get("GITHUB_TOKEN"), st.secrets.get("GITHUB_REPO")
-                 if tk and rp:
-                     api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
-                     res_l = requests.get(f"{api_base}/{rp}/contents/{logo_local_path}", headers={"Authorization": f"Bearer {tk}"})
-                     if res_l.status_code == 200:
-                         with open(logo_local_path, "wb") as f:
-                             f.write(base64.b64decode(res_l.json()["content"]))
-             except Exception:
-                 pass
-             st.session_state[f"logo_loaded_{logo_filename}"] = True
+            if f"logo_loaded_{logo_filename}" not in st.session_state:
+                try:
+                    tk, rp = st.secrets.get("GITHUB_TOKEN"), st.secrets.get("GITHUB_REPO")
+                    if tk and rp:
+                        api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
+                        res_l = requests.get(f"{api_base}/{rp}/contents/{logo_local_path}", headers={"Authorization": f"Bearer {tk}"})
+                        if res_l.status_code == 200:
+                            with open(logo_local_path, "wb") as f:
+                                f.write(base64.b64decode(res_l.json()["content"]))
+                except Exception:
+                    pass
+                st.session_state[f"logo_loaded_{logo_filename}"] = True
 
-         uploaded_logo = st.file_uploader("اختر لوغو متجرك (يُحفظ تلقائياً للمرات القادمة):", type=["png", "jpg", "jpeg"], key="sec4b_invoice_logo_uploader_unique")
-         if uploaded_logo is not None:
-             saved_logo_bytes = uploaded_logo.read()
-             with open(logo_local_path, "wb") as f:
-                 f.write(saved_logo_bytes)
-             save_to_github_fast(logo_local_path, "")
-             st.success("✅ تم حفظ شعار متجرك في الخزنة السحابية تلقائياً!")
-         elif os.path.exists(logo_local_path):
-             with open(logo_local_path, "rb") as f:
-                 saved_logo_bytes = f.read()
-             st.info("🖼️ تم تحميل شعار متجرك المحفوظ مسبقاً تلقائياً.")
-         else:
-             saved_logo_bytes = None
+            uploaded_logo = st.file_uploader("اختر لوغو متجرك (يُحفظ تلقائياً للمرات القادمة):", type=["png", "jpg", "jpeg"], key="sec4b_invoice_logo_uploader_unique")
+            if uploaded_logo is not None:
+                saved_logo_bytes = uploaded_logo.read()
+                with open(logo_local_path, "wb") as f:
+                    f.write(saved_logo_bytes)
+                save_to_github_fast(logo_local_path, "")
+                st.success("✅ تم حفظ شعار متجرك في الخزنة السحابية تلقائياً!")
+            elif os.path.exists(logo_local_path):
+                with open(logo_local_path, "rb") as f:
+                    saved_logo_bytes = f.read()
+                st.info("🖼️ تم تحميل شعار متجرك المحفوظ مسبقاً تلقائياً.")
+            else:
+                saved_logo_bytes = None
+
 
 # ==========================================================
             # === بداية الكتلة الجديدة: قائمة منبثقة نيونية لاختيار القوالب ===
