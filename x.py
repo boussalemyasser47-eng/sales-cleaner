@@ -2017,7 +2017,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     ''')
     conne.commit()
     save_to_github_fast(merchant_db_name, "merchants")
-    for col_sql in [
+     for col_sql in [
      "ALTER TABLE v4_customer_invoices ADD COLUMN customer_address TEXT DEFAULT 'الجزائر'",
      "ALTER TABLE v4_customer_invoices ADD COLUMN order_status TEXT DEFAULT '⏳ قيد التوصيل'",
      "ALTER TABLE v4_customer_invoices ADD COLUMN qty INTEGER DEFAULT 1",
