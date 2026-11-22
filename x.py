@@ -4,34 +4,37 @@ import base64
 import threading
 import requests
 
+GITHUB_SYNC_LOCK = threading.Lock()
+
 def save_to_github_fast(filename="saas_security_vault.db", folder=""):
     token = st.secrets.get("GITHUB_TOKEN")
     repo = st.secrets.get("GITHUB_REPO")
     if not token or not repo:
         return
     def _task(tk, rp, fname, fldr):
-        try:
-            if not os.path.exists(fname):
-                return
-            with open(fname, "rb") as f:
-                content = base64.b64encode(f.read()).decode("utf-8")
-            
-            github_path = f"{fldr}/{fname}" if fldr else fname
-            api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
+        with GITHUB_SYNC_LOCK:
+            try:
+                if not os.path.exists(fname):
+                    return
+                with open(fname, "rb") as f:
+                    content = base64.b64encode(f.read()).decode("utf-8")
+                
+                github_path = f"{fldr}/{fname}" if fldr else fname
+                api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
 
-            url = f"{api_base}/{rp}/contents/{github_path}"
-            headers = {
-                "Authorization": f"Bearer {tk}",
-                "Accept": "application/vnd.github.v3+json"
-            }
-            res = requests.get(url, headers=headers)
-            sha = res.json().get("sha") if res.status_code == 200 else None
-            data = {"message": f"Update {github_path}", "content": content}
-            if sha:
-                data["sha"] = sha
-            requests.put(url, json=data, headers=headers)
-        except Exception as e:
-            print("GitHub Exception:", e)
+                url = f"{api_base}/{rp}/contents/{github_path}"
+                headers = {
+                    "Authorization": f"Bearer {tk}",
+                    "Accept": "application/vnd.github.v3+json"
+                }
+                res = requests.get(url, headers=headers)
+                sha = res.json().get("sha") if res.status_code == 200 else None
+                data = {"message": f"Update {github_path}", "content": content}
+                if sha:
+                    data["sha"] = sha
+                requests.put(url, json=data, headers=headers)
+            except Exception as e:
+                print("GitHub Exception:", e)
     threading.Thread(target=_task, args=(token, repo, filename, folder), daemon=True).start()
 
 # استرجاع البيانات مرة واحدة عند تشغيل الموقع
@@ -793,7 +796,7 @@ def log_admin_action(target_email, action_type, details=""):
     cursor = conn.cursor()
     cursor.execute(
         """
-        INSERT INTO admin_audit_logs (timestamp, target_email, action_type, details)
+        INSERT INTO admin_audit_logs (action_time, target_email, action_type, details)
         VALUES (?, ?, ?, ?)
     """,
         (now, target_email, action_type, details),
@@ -1382,20 +1385,23 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         key="smart_otp_paste_input"
                     )
 
-                    if st.session_state["otp_countdown"] > 0:
-                        st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 14px; font-weight: bold; margin: 10px 0;'>⏳ إعادة إرسال الرمز خلال: {st.session_state['otp_countdown']} ثانية</p>", unsafe_allow_html=True)
-                    else:
-                        if st.button("🔄 إعادة إرسال الرمز الجديد", key="resend_otp_btn"):
-                            generated_otp = f"{random.randint(100000, 999999)}"
-                            st.session_state["temp_reg_otp"] = generated_otp
-                            st.session_state["otp_countdown"] = 60
-                            
-                            subject = "رمز التحقق (OTP) الجديد لإنشاء حساب متجرك"
-                            body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
-                            if send_gmail_notification(target_mail, subject, body, action_type="OTP"):
-                                st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
-                                time.sleep(0.5)
-                                st.rerun()
+                 elapsed_sec = int(time.time() - st.session_state.get("otp_sent_at", time.time()))
+                 remaining_sec = max(0, 60 - elapsed_sec)
+
+                 if remaining_sec > 0:
+                     st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 14px; font-weight: bold; margin: 10px 0;'>⏳ يمكنك إعادة إرسال الرمز بعد: {remaining_sec} ثانية</p>", unsafe_allow_html=True)
+                 else:
+                     if st.button("🔄 إعادة إرسال الرمز الجديد", key="resend_otp_btn"):
+                         generated_otp = f"{random.randint(100000, 999999)}"
+                         st.session_state["temp_reg_otp"] = generated_otp
+                         st.session_state["otp_sent_at"] = time.time()
+
+                         subject = "رمز التحقق (OTP) الجديد لإنشاء حساب متجرك"
+                         body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
+                         if send_gmail_notification(target_mail, subject, body, action_type="OTP"):
+                             st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
+                             time.sleep(0.5)
+                             st.rerun()
 
                     st.markdown("<p style='text-align: center; color: #888899; font-size: 12px;'>💡 يمكنك نسخ الرمز من بريدك واللصق هنا مباشرة ليتم تعبئته تلقائياً.</p>", unsafe_allow_html=True)
 
@@ -1434,10 +1440,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.session_state.pop("otp_countdown", None)
                             st.rerun()
 
-                    if st.session_state.get("otp_countdown", 0) > 0:
-                        time.sleep(1)
-                        st.session_state["otp_countdown"] -= 1
-                        st.rerun()
             else:
                 st.markdown("</div>", unsafe_allow_html=True)
                 if st.button("🔑 تسجيل الدخول إلى المتجر"):
@@ -2549,7 +2551,8 @@ if "choice" in locals() or "choice" in globals():
             if not customer_name or not product_name: 
                 st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
             else:
-                check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
+                check_stock = pd.read_sql("SELECT available_qty FROM store_stock WHERE product_name = ?", conne, params=(product_name,))
+
                 if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
                     st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
                 else:
@@ -2588,7 +2591,10 @@ if "choice" in locals() or "choice" in globals():
             
             send_col1, send_col2 = st.columns(2)
             with send_col1: 
-                st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{st.session_state['last_active_phone']}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
+                wa_num = str(st.session_state['last_active_phone']).strip()
+                wa_num = "213" + wa_num[1:] if wa_num.startswith("0") else wa_num
+                st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{wa_num}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
+
             with send_col2: 
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
         # === إضافة صندوق المعاينة الحية للفاتورة النيونية ===
@@ -2771,12 +2777,17 @@ if "choice" in locals() or "choice" in globals():
                             st.info("هذه الطلبية مسجلة كمرتجع بالفعل.")
                         
                 with col_act3:
+                    q_old = max(1, int(sel_row.get('qty', 1)))
+                    ship_old = float(sel_row.get('shipping_cost', 0))
+                    sub_old = float(sel_row['final_total']) - ship_old
+                    unit_old = sub_old / q_old
                     reprint_pdf = generate_invoice_pdf(
                         sel_row['shop_name'], sel_row['customer_name'], sel_row['customer_phone'], 
                         sel_row.get('customer_address', 'الجزائر'), sel_row['product_name'], 
-                        sel_row['final_total'], int(sel_row.get('qty', 1)), sel_row['final_total'], 0, sel_row['final_total'], 
+                        unit_old, q_old, sub_old, ship_old, float(sel_row['final_total']), 
                         saved_logo_bytes if 'saved_logo_bytes' in locals() else None, lang="bi", template="formal"
                     )
+
                     st.download_button(
                         label="📥 إعادة تحميل الفاتورة PDF",
                         data=reprint_pdf,
