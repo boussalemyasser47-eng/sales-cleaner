@@ -2027,7 +2027,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
          cursor.execute(col_sql)
      except Exception:
          pass
-    conne.commit()
+ conne.commit()
 
 
     # 🌐 جدار حجب الأدوات التلقائي بناءً على فئة باقة التاجر الحالية
