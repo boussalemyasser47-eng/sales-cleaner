@@ -2017,14 +2017,22 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     ''')
     conne.commit()
     save_to_github_fast(merchant_db_name, "merchants")
+     for col_sql in [
+     "ALTER TABLE v4_customer_invoices ADD COLUMN customer_address TEXT DEFAULT 'الجزائر'",
+     "ALTER TABLE v4_customer_invoices ADD COLUMN order_status TEXT DEFAULT '⏳ قيد التوصيل'",
+     "ALTER TABLE v4_customer_invoices ADD COLUMN qty INTEGER DEFAULT 1",
+     "ALTER TABLE v4_customer_invoices ADD COLUMN shipping_cost REAL DEFAULT 600"
+ ]:
+     try:
+         cursor.execute(col_sql)
+     except Exception:
+         pass
+ conne.commit()
+
 
     # 🌐 جدار حجب الأدوات التلقائي بناءً على فئة باقة التاجر الحالية
-    available_tools = [
-        "✨ صانع الفواتير الاحترافي (PDF)", 
-        "📜 سجل الفواتير والطلبيات", 
-        "📦 إدارة وتنبيهات المخزون السلعي", 
-        "🚀 ممر العبور السحابي للشحن"
-    ]
+ available_tools = ["✨ صانع الفواتير الاحترافي (PDF)", "📜 سجل الفواتير والطلبيات", "📊 التقارير المالية والرسوم البيانية", "📦 إدارة وتنبيهات المخزون السلعي", "🚀 ممر العبور السحابي للشحن"]
+
 
 
     if "45k" in user_package:
@@ -2361,6 +2369,17 @@ if "choice" in locals() or "choice" in globals():
             shop_name = st.text_input("اسم متجرك الإلكتروني:", "DZ Cyber Store", key="invoice_shop_name_input")
             customer_name = st.text_input("اسم الزبون الكامل:", key="invoice_customer_name_input")
             customer_phone = st.text_input("رقم هاتف الزبون:", key="invoice_customer_phone_input")
+                        # 🚨 رادار القائمة السوداء للزبائن (Anti-Retour Blacklist Radar)
+            if customer_phone.strip():
+                clean_ph = customer_phone.strip()
+                ret_check = pd.read_sql(
+                    "SELECT COUNT(*) as cnt FROM v4_customer_invoices WHERE customer_phone = ? AND order_status LIKE '%مرتجع%'",
+                    conne, params=(clean_ph,)
+                )
+                ret_count = int(ret_check['cnt'].tolist().pop(0)) if not ret_check.empty else 0
+                if ret_count > 0:
+                    st.error(f"🚨 تنبيه القائمة السوداء: هذا الرقم ({clean_ph}) لديه ({ret_count}) مرتجعات سابقة! يُنصح بتأكيد الطلبية هاتفياً بدقة قبل الشحن.")
+
             customer_address = st.text_input("عنوان التوصيل والولاية:", key="invoice_customer_address_input")
 
             # --- مفتاح فريد وحصري لزر اختيار لغة الفاتورة (عربي / فرنسي) ---
@@ -2382,11 +2401,37 @@ if "choice" in locals() or "choice" in globals():
             else:
                 lang_code = "ar"
 
-            uploaded_logo = st.file_uploader(
-                "اختر لوغو متجرك (اختياري)", 
-                type=["png", "jpg", "jpeg"], 
-                key="sec4b_invoice_logo_uploader_unique"
-            )
+         os.makedirs("logos", exist_ok=True)
+         logo_filename = f"logo_{urllib.parse.quote_plus(current_merchant)}.png"
+         logo_local_path = f"logos/{logo_filename}"
+
+         if f"logo_loaded_{logo_filename}" not in st.session_state:
+             try:
+                 tk, rp = st.secrets.get("GITHUB_TOKEN"), st.secrets.get("GITHUB_REPO")
+                 if tk and rp:
+                     api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
+                     res_l = requests.get(f"{api_base}/{rp}/contents/{logo_local_path}", headers={"Authorization": f"Bearer {tk}"})
+                     if res_l.status_code == 200:
+                         with open(logo_local_path, "wb") as f:
+                             f.write(base64.b64decode(res_l.json()["content"]))
+             except Exception:
+                 pass
+             st.session_state[f"logo_loaded_{logo_filename}"] = True
+
+         uploaded_logo = st.file_uploader("اختر لوغو متجرك (يُحفظ تلقائياً للمرات القادمة):", type=["png", "jpg", "jpeg"], key="sec4b_invoice_logo_uploader_unique")
+         if uploaded_logo is not None:
+             saved_logo_bytes = uploaded_logo.read()
+             with open(logo_local_path, "wb") as f:
+                 f.write(saved_logo_bytes)
+             save_to_github_fast(logo_local_path, "")
+             st.success("✅ تم حفظ شعار متجرك في الخزنة السحابية تلقائياً!")
+         elif os.path.exists(logo_local_path):
+             with open(logo_local_path, "rb") as f:
+                 saved_logo_bytes = f.read()
+             st.info("🖼️ تم تحميل شعار متجرك المحفوظ مسبقاً تلقائياً.")
+         else:
+             saved_logo_bytes = None
+
 # ==========================================================
             # === بداية الكتلة الجديدة: قائمة منبثقة نيونية لاختيار القوالب ===
             # ==========================================================
@@ -2507,11 +2552,12 @@ if "choice" in locals() or "choice" in globals():
                     st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
                 else:
                     cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
-                    cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
+                    cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, customer_address, product_name, qty, shipping_cost, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, customer_address, product_name, quantity, shipping_cost, final_total, current_month, current_date))
                     conne.commit()
                     save_to_github_fast(merchant_db_name, "merchants")
+                    logo_data = saved_logo_bytes
 
-                    logo_data = uploaded_logo.read() if uploaded_logo is not None else None
+                    
                     st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost,  final_total, logo_data, lang=lang_code, template=invoice_template)
 
 
@@ -2654,15 +2700,19 @@ if "choice" in locals() or "choice" in globals():
         if invoices_df.empty:
             st.info("📭 لم تقم بإصدار أي فواتير بعد.")
         else:
-            # 1. بطاقات ملخص الطلبيات
-            delivered_count = len(invoices_df[invoices_df['order_status'].str.contains('تم الاستلام', na=False)])
-            returned_count = len(invoices_df[invoices_df['order_status'].str.contains('مرتجع', na=False)])
-            pending_count = len(invoices_df) - delivered_count - returned_count
+            # 1. بطاقات ملخص الطلبيات وصافي المداخيل بعد خصم الشحن الضائع للمرتجعات
+            delivered_df = invoices_df[invoices_df['order_status'].str.contains('تم الاستلام', na=False)]
+            returned_df = invoices_df[invoices_df['order_status'].str.contains('مرتجع', na=False)]
+            pending_count = len(invoices_df) - len(delivered_df) - len(returned_df)
             
-            c_s1, c_s2, c_s3 = st.columns(3)
+            lost_shipping = returned_df['shipping_cost'].fillna(600).sum() if 'shipping_cost' in returned_df.columns else 0
+            net_confirmed_revenue = delivered_df['final_total'].sum() - lost_shipping
+            
+            c_s1, c_s2, c_s3, c_s4 = st.columns(4)
             c_s1.metric("⏳ قيد التوصيل", f"{pending_count} طلبية")
-            c_s2.metric("✅ تم الاستلام (Livré)", f"{delivered_count} طلبية")
-            c_s3.metric("🔄 مرتجع (Retour)", f"{returned_count} طلبية")
+            c_s2.metric("✅ تم الاستلام (Livré)", f"{len(delivered_df)} طلبية")
+            c_s3.metric("🔄 مرتجع (Retour)", f"{len(returned_df)} طلبية", delta=f"-{lost_shipping:,.0f} DA شحن ضائع", delta_color="inverse")
+            c_s4.metric("💎 صافي المداخيل المؤكدة", f"{net_confirmed_revenue:,.2f} DA")
             
             st.markdown("---")
             
@@ -2674,13 +2724,12 @@ if "choice" in locals() or "choice" in globals():
                     invoices_df['customer_phone'].str.contains(search_inv, case=False, na=False)
                 ]
             
-            # 🛡️ حماية البحث الفارغ لمنع أي خطأ عند عدم وجود نتائج مطابقة
             if invoices_df.empty:
                 st.warning("🔍 لا توجد فواتير مطابقة لبحثك. جرّب اسماً أو رقماً آخر.")
             else:
                 # 3. عرض الجدول الكامل
-                display_df = invoices_df[['invoice_id', 'customer_name', 'customer_phone', 'product_name', 'final_total', 'order_status', 'date_created']]
-                display_df.columns = ['رقم الفاتورة', 'الزبون', 'الهاتف', 'المنتج', 'الإجمالي (DA)', 'حالة الطلبية', 'التاريخ']
+                display_df = invoices_df.loc[:, ('invoice_id', 'customer_name', 'customer_phone', 'product_name', 'final_total', 'order_status', 'date_created')]
+                display_df.columns = ('رقم الفاتورة', 'الزبون', 'الهاتف', 'المنتج', 'الإجمالي (DA)', 'حالة الطلبية', 'التاريخ')
                 st.dataframe(display_df, use_container_width=True)
                 
                 st.markdown("---")
@@ -2695,7 +2744,6 @@ if "choice" in locals() or "choice" in globals():
                 )
                 
                 sel_row = invoices_df[invoices_df['invoice_id'] == selected_inv_id].to_dict(orient="records").pop(0)
-
                 
                 col_act1, col_act2, col_act3 = st.columns(3)
                 with col_act1:
@@ -2708,19 +2756,24 @@ if "choice" in locals() or "choice" in globals():
                         
                 with col_act2:
                     if st.button("🔄 تسجيل كمرتجع (Retour)", key="mark_return_btn"):
-                        cursor.execute("UPDATE v4_customer_invoices SET order_status = '🔄 مرتجع (Retour)' WHERE invoice_id = ?", (int(selected_inv_id),))
-                        conne.commit()
-                        save_to_github_fast(merchant_db_name, "merchants")
-                        st.warning("تم تسجيل الطلبية كمرتجع!")
-                        time.sleep(0.5); st.rerun()
+                        if "مرتجع" not in str(sel_row.get('order_status', '')):
+                            ret_qty = int(sel_row.get('qty', 1))
+                            ret_prod = sel_row['product_name']
+                            cursor.execute("UPDATE store_stock SET available_qty = available_qty + ? WHERE product_name = ?", (ret_qty, ret_prod))
+                            cursor.execute("UPDATE v4_customer_invoices SET order_status = '🔄 مرتجع (Retour)' WHERE invoice_id = ?", (int(selected_inv_id),))
+                            conne.commit()
+                            save_to_github_fast(merchant_db_name, "merchants")
+                            st.warning(f"🔄 تم تسجيل المرتجع وإرجاع ({ret_qty}) قطعة من [{ret_prod}] إلى المخزون تلقائياً!")
+                            time.sleep(0.8); st.rerun()
+                        else:
+                            st.info("هذه الطلبية مسجلة كمرتجع بالفعل.")
                         
                 with col_act3:
-                    # إعادة توليد الفاتورة PDF للتحميل الفوري
                     reprint_pdf = generate_invoice_pdf(
                         sel_row['shop_name'], sel_row['customer_name'], sel_row['customer_phone'], 
                         sel_row.get('customer_address', 'الجزائر'), sel_row['product_name'], 
-                        sel_row['final_total'], 1, sel_row['final_total'], 0, sel_row['final_total'], 
-                        None, lang="bi", template="formal"
+                        sel_row['final_total'], int(sel_row.get('qty', 1)), sel_row['final_total'], 0, sel_row['final_total'], 
+                        saved_logo_bytes if 'saved_logo_bytes' in locals() else None, lang="bi", template="formal"
                     )
                     st.download_button(
                         label="📥 إعادة تحميل الفاتورة PDF",
@@ -2729,6 +2782,37 @@ if "choice" in locals() or "choice" in globals():
                         mime="application/pdf",
                         key="reprint_old_inv_btn"
                     )
+    if choice == "📊 التقارير المالية والرسوم البيانية":
+        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📊 التقارير المالية والتحليلات البيانية للمتجر</h1>", unsafe_allow_html=True)
+        
+        df_rep = pd.read_sql("SELECT * FROM v4_customer_invoices", conne)
+        if df_rep.empty:
+            st.info("📭 لا توجد مبيعات كافية لعرض الرسوم البيانية بعد.")
+        else:
+            col_chart1, col_chart2 = st.columns(2)
+            with col_chart1:
+                st.subheader("📈 المبيعات المستلمة مقابل المرتجعات")
+                status_summary = df_rep['order_status'].value_counts()
+                st.bar_chart(status_summary, color="#00fff0")
+                
+            with col_chart2:
+                st.subheader("🏆 أكثر 5 منتجات مبيعاً (بالدينار)")
+                top_prods = df_rep.groupby('product_name')['final_total'].sum().sort_values(ascending=False).head(5)
+                st.bar_chart(top_prods, color="#ff00ff")
+                
+            st.markdown("---")
+            excel_buffer = io.BytesIO()
+            with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                df_rep.to_excel(writer, index=False, sheet_name='سجل_المبيعات')
+            excel_buffer.seek(0)
+            
+            st.download_button(
+                label="📥 تصدير التقرير المحاسبي الشهري الشامل (Excel)",
+                data=excel_buffer,
+                file_name=f"Tijaratna_Financial_Report_{datetime.now().strftime('%Y_%m')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="export_merchant_excel_btn"
+            )
 
 
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
