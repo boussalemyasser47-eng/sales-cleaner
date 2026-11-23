@@ -1043,15 +1043,20 @@ db_conn.close()
 # دالة التدمير الفوري لأي حساب في قاعدة البيانات دون إعطاب الاتصالات المفتوحة حياً
 def delete_email_completely(email_to_delete):
     try:
+        clean_target = str(email_to_delete).strip().lower()
         conn = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM saas_users_auth WHERE email = ?", (email_to_delete,))
+        cursor.execute("DELETE FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (clean_target,))
         conn.commit()
         conn.close()
+        
+        # 🚀 رفع التحديث فوراً إلى GitHub لمسح الإيميل من المستودع نهائياً
+        save_to_github_fast()
         return True
     except Exception as e:
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}")
         return False
+
 
 # === الإضافات والتعديلات الجديدة ===
 # جاهز ومؤمن بالكامل هنا لاستقبال أي ميزات إضافية في المحادثات القادمة...
