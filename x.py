@@ -591,6 +591,7 @@ if "verify_email" in query_params and "code" in query_params and "magic_otp_done
     st.session_state["otp_sent_at"] = time.time()
     st.session_state["prefill_otp_code"] = query_params.get("code")
     st.session_state["magic_otp_done"] = True
+    st.session_state["auth_mode_radio"] = "📝 إنشاء حساب تاجر جديد فريش"
 
 
 is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
@@ -1296,8 +1297,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         with col_center_box:
             st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
             st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
-            
-            auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
+            key="auth_mode_radio"
+            auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"], key="auth_mode_radio")
             st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
             
             input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
@@ -1353,7 +1354,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 
                                 if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=magic_otp_link):
                                     # حفظ مبدئي للحساب لضمان عدم ضياع كلمة السر أو الباقة عند فتح الرابط من الإيميل
-                                    reg_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                    
 
                                     conn_pre = sqlite3.connect("saas_security_vault.db", timeout=10)
                                     conn_pre.cursor().execute(
@@ -1407,7 +1408,10 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     """, unsafe_allow_html=True)
 
                     entered_otp = st.text_input(
+                        
+                        
                         "أدخل الرمز المكون من 6 أرقام هنا:", 
+                        value=st.session_state.get("prefill_otp_code", ""),
                         max_chars=6, 
                         placeholder="------", 
                         key="smart_otp_paste_input"
@@ -2648,7 +2652,7 @@ if "choice" in locals() or "choice" in globals():
             with send_col1: 
                 wa_num = str(st.session_state['last_active_phone']).strip()
                 wa_num = "213" + wa_num[1:] if wa_num.startswith("0") else wa_num
-                st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{wa_num}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
+                st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me/{wa_num}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
 
 
             with send_col2: 
