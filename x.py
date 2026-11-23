@@ -1353,7 +1353,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 st.session_state["temp_reg_package"] = validated_package
                                 st.session_state["otp_sent_at"] = time.time()
                                 
-                                subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
+                                subject = f"🔐 رمز التحقق ({generated_otp}) لتفعيل متجرك الجديد"
                                 body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
                                 
                                 base_app_url = "https://" + "tijaratna-data-juzl8awsg5r2qxtbbuifbt" + "." + "streamlit" + "." + "app/"
@@ -1460,7 +1460,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             generated_otp = f"{random.randint(100000, 999999)}"
                             st.session_state["temp_reg_otp"] = generated_otp
                             st.session_state["otp_sent_at"] = time.time()
-                            subject = "رمز التحقق (OTP) الجديد لإنشاء حساب متجرك"
+                            subject = f"🔄 رمز التحقق الجديد ({generated_otp}) لتفعيل متجرك"
+
                             body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
                             base_app_url = "https://" + "tijaratna-data-juzl8awsg5r2qxtbbuifbt" + "." + "streamlit" + "." + "app/"
                             magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(target_mail)}&code={generated_otp}"
