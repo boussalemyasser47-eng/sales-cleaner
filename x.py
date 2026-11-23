@@ -664,6 +664,7 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         logo_url = "https://img.icons8.com/isometric-folders/100/00fff0/cyber-security.png"
         formatted_body = body_text.replace("\n", "<br>")
 
+        unique_stamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         html_content = f"""
         <!DOCTYPE html>
         <html lang="ar" dir="rtl">
@@ -680,12 +681,13 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
                     <a href="{btn_link}" style="background: {theme['primary']}; color: #000000; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;" target="_blank">{theme['btn_text']}</a>
                 </div>
                 <div style="text-align: center; font-size: 11px; color: #777; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-                    © 2026 NEXUS SAAS PLATFORM — جميع الحقوق محفوظة.
+                    © 2026 NEXUS SAAS PLATFORM — جميع الحقوق محفوظة. | مرجع: {unique_stamp}
                 </div>
             </div>
         </body>
         </html>
         """
+
 
         message = MIMEMultipart("alternative")
         message["Subject"] = subject
