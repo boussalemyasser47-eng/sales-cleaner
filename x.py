@@ -1194,40 +1194,38 @@ def render_premium_neon_packages():
     return chosen_package
 
 def validate_and_process_registration(email, password):
-    """
-    ممر الأمان الذكي المكون من 3 طبقات فحص صارمة لمنع حقن البيانات العشوائية وحظر الحسابات المتكررة.
-    """
-    if email == "" or password == "":
+    clean_em = str(email).strip().lower()
+    if clean_em == "" or password == "":
         st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
         return None
         
-    # 1. جدار التحقق من صيغة البريد (Email Format Guard)
     email_pattern = r'^[a-zA-Z0-9._%+-]+@gmail\.com$'
-    if not re.match(email_pattern, email):
+    if not re.match(email_pattern, clean_em):
         st.warning("⚠️ يرجى كتابة بريد إلكتروني منطقي وصحيح ينتهي بـ @gmail.com")
         return None
         
-    # 2. قوة كلمة المرور (Password Strength Check)
     if len(password) < 6:
         st.warning("⚠️ يجب أن تحتوي كلمة السر على 6 حروف أو أكثر لحماية متجرك")
         return None
         
-    # 3. منع تكرار الحسابات (Unique Email Guard)
     try:
         conn_check = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor_check = conn_check.cursor()
-        cursor_check.execute("SELECT email FROM saas_users_auth WHERE email = ?", (email,))
+        cursor_check.execute("SELECT status FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (clean_em,))
         existing_user = cursor_check.fetchone()
         conn_check.close()
         
         if existing_user:
-            st.error("❌ هذا البريد الإلكتروني مسجل مسبقاً في رادار المنصة السحابية!")
-            return None
+            # السماح بإعادة التسجيل فقط إذا لم يكمل التاجر تأكيد بريده (OTP) سابقاً
+            if "تأكيد البريد" not in str(existing_user[0]):
+                st.error("❌ هذا البريد الإلكتروني مسجل مسبقاً في رادار المنصة السحابية!")
+                return None
     except Exception as e:
         st.error(f"❌ خطأ في فحص جدار الأمان: {str(e)}")
         return None
         
     return st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
+
 # ========================================================
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
 # ========================================================
