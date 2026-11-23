@@ -657,7 +657,9 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         }
         
         theme = theme_colors.get(action_type, theme_colors["DEFAULT"])
-        btn_link = action_url if action_url else "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
+        default_site = "https://" + "tijaratna-data-juzl8awsg5r2qxtbbuifbt" + "." + "streamlit" + "." + "app/"
+        btn_link = action_url if action_url else default_site
+
         logo_url = "https://img.icons8.com/isometric-folders/100/00fff0/cyber-security.png"
         formatted_body = body_text.replace("\n", "<br>")
 
@@ -1345,9 +1347,10 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
                                 body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
                                 
-                                base_app_url = "https://" + "sales-cleaner-qqzrjsdzslrysgsyagohnq" + "." + "streamlit" + "." + "app/"
+                                base_app_url = "https://" + "tijaratna-data-juzl8awsg5r2qxtbbuifbt" + "." + "streamlit" + "." + "app/"
                                 magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(clean_email)}&code={generated_otp}"
 
+                                
                                 if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=magic_otp_link):
                                     # حفظ مبدئي للحساب لضمان عدم ضياع كلمة السر أو الباقة عند فتح الرابط من الإيميل
                                     reg_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
