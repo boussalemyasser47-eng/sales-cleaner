@@ -1350,7 +1350,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                                 if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=magic_otp_link):
                                     # حفظ مبدئي للحساب لضمان عدم ضياع كلمة السر أو الباقة عند فتح الرابط من الإيميل
-                                    reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                    reg_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
                                     conn_pre = sqlite3.connect("saas_security_vault.db", timeout=10)
                                     conn_pre.cursor().execute(
                                         "INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)",
