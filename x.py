@@ -584,6 +584,15 @@ def render_otp_popup(target_email):
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
 query_params = st.query_params
+if "verify_email" in query_params and "code" in query_params and "magic_otp_done" not in st.session_state:
+    st.session_state["otp_pending_verification"] = True
+    st.session_state["temp_reg_email"] = query_params.get("verify_email")
+    st.session_state["temp_reg_otp"] = query_params.get("code")
+    st.session_state["otp_sent_at"] = time.time()
+    st.session_state["prefill_otp_code"] = query_params.get("code")
+    st.session_state["magic_otp_done"] = True
+
+
 is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
 if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
@@ -1333,11 +1342,26 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
                                 body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
                                 
-                                if send_gmail_notification(clean_email, subject, body):
+                                base_app_url = "https://" + "sales-cleaner-qqzrjsdzslrysgsyagohnq" + "." + "streamlit" + "." + "app/"
+                                magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(clean_email)}&code={generated_otp}"
+
+                                if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=magic_otp_link):
+                                    # حفظ مبدئي للحساب لضمان عدم ضياع كلمة السر أو الباقة عند فتح الرابط من الإيميل
+                                    reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                    conn_pre = sqlite3.connect("saas_security_vault.db", timeout=10)
+                                    conn_pre.cursor().execute(
+                                        "INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)",
+                                        (clean_email, clean_pass, '📧 في انتظار تأكيد البريد', validated_package, reg_time, input_phone)
+                                    )
+                                    conn_pre.commit()
+                                    conn_pre.close()
+                                    save_to_github_fast()
+
                                     st.session_state["otp_pending_verification"] = True
                                     st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
                                     time.sleep(0.5)
                                     st.rerun()
+
 
                 else:
                     st.markdown("""
@@ -1442,12 +1466,13 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                                 cursor_reg = conn_reg.cursor()
                                 cursor_reg.execute(
-                                    "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)", 
-                                    (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
+                                    "UPDATE saas_users_auth SET status = '⏳ في انتظار التفعيل' WHERE email = ?",
+                                    (reg_email,)
                                 )
                                 conn_reg.commit()
                                 conn_reg.close()
                                 save_to_github_fast()
+
                                 
                                 st.session_state["otp_pending_verification"] = False
                                 st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
