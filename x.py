@@ -1467,29 +1467,26 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     with col_verify_btn:
                         if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة", key="verify_otp_submit_btn"):
                             if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
-                                reg_email = st.session_state["temp_reg_email"]
-                                reg_pass = st.session_state["temp_reg_pass"]
-                                reg_pkg = st.session_state["temp_reg_package"]
-                                reg_phone = st.session_state.get("temp_reg_phone", "")
-                                reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                reg_email = st.session_state.get("temp_reg_email", "").strip()
                                 
                                 conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                                 cursor_reg = conn_reg.cursor()
                                 cursor_reg.execute(
-                                    "UPDATE saas_users_auth SET status = '⏳ في انتظار التفعيل' WHERE email = ?",
-                                    (reg_email,)
+                                    "UPDATE saas_users_auth SET status = '⏳ في انتظار التفعيل' WHERE LOWER(TRIM(email)) = ?",
+                                    (reg_email.lower(),)
                                 )
                                 conn_reg.commit()
                                 conn_reg.close()
                                 save_to_github_fast()
-
                                 
                                 st.session_state["otp_pending_verification"] = False
+                                st.session_state.pop("prefill_otp_code", None)
                                 st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
                                 time.sleep(1)
                                 st.rerun()
                             else:
                                 st.error("❌ الرمز غير صحيح، تأكد من إدخال الأرقام الستة بدقة.")
+
                                 
                     with col_cancel_btn:
                         if st.button("❌ إلغاء والعودة", key="cancel_otp_btn"):
