@@ -1410,6 +1410,108 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 if st.button("تسجيل الدخول إلى متجرك", key="hero_go_login_btn"):
                     st.session_state["landing_step"] = "login"
                     st.rerun()
+            st.markdown("""
+                <style>
+                .corp-features-section {
+                    max-width: 1050px;
+                    margin: 45px auto 20px auto;
+                    direction: rtl;
+                    text-align: right;
+                }
+                .corp-sec-header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                }
+                .corp-sec-title {
+                    color: #F8FAFC !important;
+                    font-size: 24px !important;
+                    font-weight: 700 !important;
+                    margin-bottom: 8px !important;
+                }
+                .corp-sec-sub {
+                    color: #94A3B8 !important;
+                    font-size: 14.5px !important;
+                }
+                .corp-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 18px;
+                }
+                .corp-feat-card {
+                    background: rgba(15, 23, 42, 0.72) !important;
+                    border: 1px solid #1E293B !important;
+                    border-radius: 16px !important;
+                    padding: 24px !important;
+                    transition: all 0.25s ease !important;
+                }
+                .corp-feat-card:hover {
+                    border-color: rgba(16, 185, 129, 0.5) !important;
+                    transform: translateY(-4px) !important;
+                    background: rgba(15, 23, 42, 0.92) !important;
+                }
+                .corp-feat-badge {
+                    display: inline-block;
+                    background: rgba(16, 185, 129, 0.12);
+                    color: #10B981 !important;
+                    padding: 4px 10px;
+                    border-radius: 8px;
+                    font-size: 12px;
+                    font-weight: 700;
+                    margin-bottom: 12px;
+                }
+                .corp-feat-name {
+                    color: #F1F5F9 !important;
+                    font-size: 16.5px !important;
+                    font-weight: 700 !important;
+                    margin-bottom: 8px !important;
+                }
+                .corp-feat-info {
+                    color: #94A3B8 !important;
+                    font-size: 13.5px !important;
+                    line-height: 1.65 !important;
+                }
+                </style>
+
+                <div class="corp-features-section">
+                    <div class="corp-sec-header">
+                        <div class="corp-sec-title">كل ما يحتاجه التاجر الجزائري في نظام سحابي واحد</div>
+                        <div class="corp-sec-sub">أدوات ذكية مصممة لتقليل المرتجعات، تسريع الشحن، وحساب أرباحك بدقة متناهية</div>
+                    </div>
+                    <div class="corp-grid">
+                        <div class="corp-feat-card">
+                            <span class="corp-feat-badge">حماية المبيعات</span>
+                            <div class="corp-feat-name">رادار القائمة السوداء (Anti-Retour)</div>
+                            <div class="corp-feat-info">تنبيه فوري قبل الشحن عند إدخال رقم هاتف لديه سجل مرتجعات سابقة لتفادي خسائر التوصيل.</div>
+                        </div>
+                        <div class="corp-feat-card">
+                            <span class="corp-feat-badge">فوترة احترافية</span>
+                            <div class="corp-feat-name">فواتير مزدوجة وملصقات 4x4</div>
+                            <div class="corp-feat-info">إصدار فواتير PDF بالعربية والفرنسية معاً مع ختم QR Code وشعار متجرك المحفوظ سحابياً.</div>
+                        </div>
+                        <div class="corp-feat-card">
+                            <span class="corp-feat-badge">إدارة المخزون</span>
+                            <div class="corp-feat-name">أتمتة المخزون والأرباح الصافية</div>
+                            <div class="corp-feat-info">خصم تلقائي عند البيع وإرجاع فوري للقطع عند المرتجع مع حساب صافي الربح بعد مصاريف الشحن.</div>
+                        </div>
+                        <div class="corp-feat-card">
+                            <span class="corp-feat-badge">ربط التوصيل</span>
+                            <div class="corp-feat-name">ممر العبور السحابي للشحن</div>
+                            <div class="corp-feat-info">تمرير سريع لبيانات الطلبيات إلى شركات التوصيل (ياليدين، زريكس) وإرسال تأكيد واتساب بضغطة زر.</div>
+                        </div>
+                        <div class="corp-feat-card">
+                            <span class="corp-feat-badge">تحليل البيانات</span>
+                            <div class="corp-feat-name">تقارير مالية وتطهير ملفات Excel</div>
+                            <div class="corp-feat-info">رسوم بيانية حية لأكثر المنتجات مبيعاً وتنظيف ملفات المبيعات من التكرارات مع تصدير تقارير محاسبية.</div>
+                        </div>
+                        <div class="corp-feat-card">
+                            <span class="corp-feat-badge">ذكاء اصطناعي</span>
+                            <div class="corp-feat-name">مولّد الحملات والمساعد التجاري</div>
+                            <div class="corp-feat-info">صياغة نصوص إعلانية بالدارجة الجزائرية وسيناريوهات فيديو جاهزة لرفع مبيعات متجرك.</div>
+                        </div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+
 
             st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
             _, col_supp, _ = st.columns([2, 1.2, 2])
