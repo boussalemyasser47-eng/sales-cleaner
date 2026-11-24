@@ -1821,22 +1821,24 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.session_state["otp_pending_verification"] = False
 
                 if not st.session_state["otp_pending_verification"]:
-                    input_email = st.text_input("البريد الإلكتروني (Gmail)", placeholder="store@gmail.com", key="merchant_em")
-                    input_password = st.text_input("كلمة المرور (6 أحرف على الأقل)", type="password", placeholder="••••••••", key="merchant_pw")
-                    input_phone = st.text_input("رقم الهاتف المهني", placeholder="0655xxxxxxxx", key="merchant_phone").strip()
+                    _, col_inputs_mid, _ = st.columns([0.75, 1.5, 0.75])
+                    with col_inputs_mid:
+                        input_email = st.text_input("البريد الإلكتروني (Gmail)", placeholder="store@gmail.com", key="merchant_em")
+                        input_password = st.text_input("كلمة المرور (6 أحرف على الأقل)", type="password", placeholder="••••••••", key="merchant_pw")
+                        input_phone = st.text_input("رقم الهاتف المهني", placeholder="0655xxxxxxxx", key="merchant_phone").strip()
 
-                    if input_phone:
-                        check_phone = input_phone.replace("+", "").strip()
-                        if not check_phone.isdigit():
-                            st.error("يرجى إدخال أرقام صحيحة فقط في حقل الهاتف.")
-                        elif len(check_phone) < 9:
-                            st.warning("رقم الهاتف غير مكتمل.")
-                        else:
-                            st.session_state["temp_reg_phone"] = input_phone
+                        if input_phone:
+                            check_phone = input_phone.replace("+", "").strip()
+                            if not check_phone.isdigit():
+                                st.error("يرجى إدخال أرقام صحيحة فقط في حقل الهاتف.")
+                            elif len(check_phone) < 9:
+                                st.warning("رقم الهاتف غير مكتمل.")
+                            else:
+                                st.session_state["temp_reg_phone"] = input_phone
 
-                    clean_email = input_email.strip()
-                    clean_pass = input_password.strip()
-                    st.session_state["temp_reg_phone"] = input_phone
+                        clean_email = input_email.strip()
+                        clean_pass = input_password.strip()
+                        st.session_state["temp_reg_phone"] = input_phone
 
                     user_package_choice = render_premium_neon_packages()
 
