@@ -864,6 +864,45 @@ st.markdown("""
      font-size: 14.5px !important;
      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15) !important;
  }
+     /* 🌐 تعميم الدائرة المزدوجة الاحترافية على كل عمليات الموقع تلقائياً دون أي بطء */
+    [data-testid="stStatusWidget"] {
+        position: fixed !important;
+        top: 16px !important;
+        right: 20px !important;
+        z-index: 9999999 !important;
+        background: rgba(11, 17, 32, 0.9) !important;
+        border: 1px solid rgba(16, 185, 129, 0.45) !important;
+        border-radius: 12px !important;
+        padding: 8px 14px !important;
+        backdrop-filter: blur(10px) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+    }
+    [data-testid="stStatusWidget"] svg,
+    [data-testid="stStatusWidget"] img,
+    [data-testid="stStatusWidget"] button {
+        display: none !important;
+    }
+    [data-testid="stStatusWidget"]::before {
+        content: "";
+        display: inline-block;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        border-top-color: #10B981;
+        border-right-color: #38BDF8;
+        animation: spinClockwise 0.8s linear infinite;
+        margin-left: 8px;
+        vertical-align: middle;
+    }
+    [data-testid="stStatusWidget"] label,
+    [data-testid="stStatusWidget"] span {
+        color: #F8FAFC !important;
+        font-family: 'Cairo', sans-serif !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+    }
+
  .corp-dual-spinner {
      position: relative;
      width: 28px;
