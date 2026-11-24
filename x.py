@@ -1722,20 +1722,70 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     else:
                         conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
                         cursor_login = conn_login.cursor()
-                        cursor_login.execute("SELECT status FROM saas_users_auth WHERE LOWER(TRIM(email)) = ? AND password = ?", (clean_email.lower(), clean_pass))
-                        user_status_row = cursor_login.fetchone()
-                        conn_login.close()
+                        cursor_login.execute("SELECT status, created_at, package FROM saas_users_auth WHERE LOWER(TRIM(email)) = ? AND password = ?", (clean_email.lower(), clean_pass))
+                        user_row = cursor_login.fetchone()
 
-                        if user_status_row:
-                            if "مفعّل" in str(user_status_row[0]):
+                        if user_row:
+                            u_status, u_created, u_pkg = str(user_row[0]), str(user_row[1] or ""), str(user_row[2] or "29k")
+                            # فحص انتهاء مدة التجربة المجانية (3 أيام = 72 ساعة)
+                            trial_expired = False
+                            if "تجربة مجانية" in u_status and u_created:
+                                try:
+                                    start_dt = datetime.strptime(u_created.split(".")[0], "%Y-%m-%d %H:%M:%S")
+                                    if (datetime.now() - start_dt).total_seconds() > 3 * 86400:
+                                        trial_expired = True
+                                        cursor_login.execute("UPDATE saas_users_auth SET status = '⏳ انتهت التجربة المجانية - بانتظار الدفع' WHERE LOWER(TRIM(email)) = ?", (clean_email.lower(),))
+                                        conn_login.commit()
+                                        save_to_github_fast()
+                                except Exception:
+                                    pass
+                            conn_login.close()
+
+                            if "مفعّل" in u_status and not trial_expired:
                                 st.session_state["active_merchant_user"] = clean_email
                                 st.success("تم التحقق بنجاح. جاري فتح لوحة التحكم...")
                                 time.sleep(0.5)
                                 st.rerun()
                             else:
-                                st.warning(f"حالة الحساب الحالية: {user_status_row[0]}")
+                                st.session_state["expired_trial_email"] = clean_email
+                                st.session_state["expired_trial_pkg"] = u_pkg
+                                st.warning("⚠️ انتهت فترة التجربة المجانية (3 أيام) أو حسابك بانتظار التفعيل السنوي. أكمل الدفع أدناه للتفعيل الفوري.")
                         else:
+                            conn_login.close()
                             st.error("بيانات الدخول غير صحيحة، يرجى التحقق والمحاولة مرة أخرى.")
+
+                # 💳 صندوق الدفع الآمن وضمان الثقة (يظهر تلقائياً عند انتهاء التجربة أو في أي وقت للتجديد)
+                if st.session_state.get("expired_trial_email"):
+                    exp_mail = st.session_state["expired_trial_email"]
+                    exp_pkg = st.session_state.get("expired_trial_pkg", "29k")
+                    rip_val = st.secrets.get("MY_RIP", "تواصل مع الإدارة عبر واتساب")
+                    ccp_val = st.secrets.get("MY_CCP", "تواصل مع الإدارة عبر واتساب")
+                    wa_admin = st.secrets.get("SUPPORT_WHATSAPP", "213655000000")
+
+                    st.markdown(f"""
+                        <div style="background: #0F172A; border: 1px solid #10B981; border-radius: 14px; padding: 18px; margin-top: 15px; direction: rtl; text-align: right;">
+                            <div style="color: #10B981; font-weight: 800; font-size: 16px; margin-bottom: 8px;">🛡️ بوابة التفعيل السنوي الآمن ({exp_pkg})</div>
+                            <p style="color: #E2E8F0; font-size: 13px; margin: 4px 0;">• <b>رقم RIP (BaridiMob):</b> <span style="color: #38BDF8;">{rip_val}</span></p>
+                            <p style="color: #E2E8F0; font-size: 13px; margin: 4px 0;">• <b>حساب CCP:</b> <span style="color: #38BDF8;">{ccp_val}</span></p>
+                            <div style="background: rgba(16, 185, 129, 0.1); border-right: 3px solid #10B981; padding: 10px; margin-top: 10px; border-radius: 6px; font-size: 12px; color: #CBD5E1;">
+                                <b>ضمان الثقة 100%:</b> التفعيل يتم خلال أقل من 15 دقيقة من رفع وصل الدفع، مع ضمان استرجاع كامل المبلغ في حال عدم الرضا خلال 7 أيام.
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                    wa_txt = urllib.parse.quote(f"مرحباً إدارة Tijaratna DataDZ، أريد تفعيل اشتراكي السنوي للحساب: {exp_mail} ({exp_pkg})")
+                    st.link_button("💬 تواصل مباشر مع الإدارة عبر WhatsApp", f"https://wa.me{wa_admin}?text={wa_txt}")
+
+                    receipt_file = st.file_uploader("📤 ارفع صورة وصل الدفع (BaridiMob / CCP):", type=["png", "jpg", "jpeg"], key="upload_payment_receipt")
+                    if receipt_file is not None and st.button("✅ إرسال وصل الدفع وطلب التفعيل الفوري", key="submit_receipt_btn"):
+                        os.makedirs("receipts", exist_ok=True)
+                        rec_path = f"receipts/receipt_{urllib.parse.quote_plus(exp_mail)}.png"
+                        with open(rec_path, "wb") as f:
+                            f.write(receipt_file.read())
+                        save_to_github_fast(rec_path, "")
+                        send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", ""), f"💰 وصل دفع جديد من: {exp_mail}", f"التاجر {exp_mail} رفع وصل دفع الباقة {exp_pkg} ويطلب التفعيل السنوي.", action_type="ACTIVATE")
+                        st.success("🎉 تم استلام وصل الدفع بنجاح! سيتم تفعيل حسابك السنوي خلال دقائق.")
+
 
                 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
                 col_nav1, col_nav2 = st.columns(2)
@@ -1861,10 +1911,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         if st.button("تأكيد وإتمام التسجيل", key="verify_otp_submit_btn"):
                             if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
                                 reg_email = st.session_state.get("temp_reg_email", "").strip()
+                                trial_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
                                 conn_reg.cursor().execute(
-                                    "UPDATE saas_users_auth SET status = '⏳ في انتظار التفعيل' WHERE LOWER(TRIM(email)) = ?",
-                                    (reg_email.lower(),)
+                                    "UPDATE saas_users_auth SET status = '🟢 مفعّل (تجربة مجانية 3 أيام)', created_at = ? WHERE LOWER(TRIM(email)) = ?",
+                                    (trial_start, reg_email.lower())
                                 )
                                 conn_reg.commit()
                                 conn_reg.close()
@@ -1872,11 +1923,13 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                                 st.session_state["otp_pending_verification"] = False
                                 st.session_state.pop("prefill_otp_code", None)
-                                st.success("تم تأكيد حسابك وإرساله للإدارة للتفعيل.")
-                                time.sleep(1)
+                                st.success("🎉 تم تفعيل تجربتك المجانية لمدة 3 أيام! يمكنك الآن تسجيل الدخول فوراً.")
+                                time.sleep(1.5)
+                                st.session_state["landing_step"] = "login"
                                 st.rerun()
                             else:
                                 st.error("رمز التحقق غير صحيح.")
+
 
                     with col_v2:
                         if st.button("إعادة إرسال الرمز", key="resend_otp_btn"):
