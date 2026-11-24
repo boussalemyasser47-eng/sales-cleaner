@@ -1391,6 +1391,14 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         """, unsafe_allow_html=True)
 
         if st.session_state["landing_step"] == "home":
+            nav_col_brand, _, nav_col_support = st.columns([2, 3, 1.2])
+            with nav_col_brand:
+                st.markdown("<div style='color: #F8FAFC; font-weight: 800; font-size: 20px; padding-top: 8px; direction: rtl; text-align: right;'>Tijaratna <span style='color: #10B981;'>DataDZ</span></div>", unsafe_allow_html=True)
+            with nav_col_support:
+                if st.button("الدعم الفني والشكاوى", key="top_navbar_support_btn"):
+                    st.session_state["current_view"] = "complaint_page"
+                    st.rerun()
+
 
 
             st.markdown("""
