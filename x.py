@@ -1292,74 +1292,257 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         st.markdown("</div>", unsafe_allow_html=True)
 
     # 🔑 (2) صفحة التسجيل والدخول الأصلية (تظهر وحدها ولا تظهر الشكاوى معها)
+    # 🔑 (2) صفحة التسجيل والدخول الاحترافية بنمط الشركات (Enterprise Split-Screen)
     else:
-        st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
-        
-        col_side_left, col_center_box, col_side_right = st.columns(3)
-        with col_center_box:
-            st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
-            st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
+        st.markdown("""
+            <style>
+            @import url('https://googleapis.com');
             
+            .stApp {
+                background: #090D16 !important;
+                animation: none !important;
+                font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+            }
+            
+            /* إلغاء التوهج المبالغ فيه وتوحيد الخط الرسمي */
+            p, span, label, h1, h2, h3, h4, div {
+                font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+                text-shadow: none !important;
+            }
+
+            /* بطاقة الهوية والثقة (الجانب التعريفي) */
+            .enterprise-brand-box {
+                background: linear-gradient(145deg, #0F172A 0%, #090D16 100%) !important;
+                border: 1px solid #1E293B !important;
+                border-radius: 16px !important;
+                padding: 36px 32px !important;
+                direction: rtl;
+                text-align: right;
+                height: 100%;
+            }
+            .brand-badge {
+                display: inline-block;
+                background: rgba(16, 185, 129, 0.12);
+                color: #10B981 !important;
+                border: 1px solid rgba(16, 185, 129, 0.3);
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+                margin-bottom: 16px;
+            }
+            .brand-title {
+                color: #F8FAFC !important;
+                font-size: 28px !important;
+                font-weight: 700 !important;
+                line-height: 1.4 !important;
+                margin-bottom: 12px !important;
+            }
+            .brand-subtitle {
+                color: #94A3B8 !important;
+                font-size: 15px !important;
+                line-height: 1.7 !important;
+                margin-bottom: 28px !important;
+            }
+            .feature-row {
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+                margin-bottom: 18px;
+                background: rgba(30, 41, 59, 0.4) !important;
+                border: 1px solid #1E293B !important;
+                padding: 14px 16px !important;
+                border-radius: 10px !important;
+            }
+            .feature-icon {
+                color: #10B981 !important;
+                font-size: 18px;
+                font-weight: bold;
+            }
+            .feature-text-title {
+                color: #F1F5F9 !important;
+                font-weight: 600;
+                font-size: 14px;
+                margin-bottom: 2px;
+            }
+            .feature-text-desc {
+                color: #94A3B8 !important;
+                font-size: 12.5px;
+            }
+
+            /* بطاقة النموذج (الجانب التفاعلي) */
+            .enterprise-form-header {
+                background: #111827 !important;
+                border: 1px solid #1F2937 !important;
+                border-radius: 14px !important;
+                padding: 20px 24px !important;
+                margin-bottom: 16px !important;
+                direction: rtl;
+                text-align: right;
+            }
+
+            /* تنسيق حقول الإدخال الاحترافية */
+            div[data-testid="stTextInput"] input {
+                background-color: #0B0F19 !important;
+                border: 1px solid #334155 !important;
+                border-radius: 8px !important;
+                color: #F8FAFC !important;
+                padding: 10px 14px !important;
+                font-size: 14px !important;
+                box-shadow: none !important;
+            }
+            div[data-testid="stTextInput"] input:focus {
+                border-color: #10B981 !important;
+                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+            }
+
+            /* تنسيق الأزرار بنمط الشركات */
+            div.stButton button, .stButton > button {
+                background: #10B981 !important;
+                color: #022C22 !important;
+                border: none !important;
+                border-radius: 8px !important;
+                font-weight: 700 !important;
+                font-size: 14.5px !important;
+                min-height: 44px !important;
+                box-shadow: none !important;
+            }
+            div.stButton button:hover {
+                background: #059669 !important;
+                color: #FFFFFF !important;
+                transform: none !important;
+                box-shadow: none !important;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<div style='height: 25px;'></div>", unsafe_allow_html=True)
+        col_brand, col_form = st.columns([1.05, 1], gap="large")
+
+        with col_brand:
+            st.markdown("""
+                <div class="enterprise-brand-box">
+                    <span class="brand-badge">Tijaratna DataDZ • منصة التجارة السحابية</span>
+                    <div class="brand-title">أدِر متجرك الإلكتروني في الجزائر بدقة واحترافية عالية</div>
+                    <div class="brand-subtitle">
+                        منصة متكاملة لإصدار الفواتير الموثقة، حماية متجرك من المرتجعات، ومزامنة مخزونك سحابياً في الوقت الفعلي.
+                    </div>
+                    <div class="feature-row">
+                        <div class="feature-icon">✓</div>
+                        <div>
+                            <div class="feature-text-title">رادار الحماية من المرتجعات (Anti-Retour)</div>
+                            <div class="feature-text-desc">تنبيه فوري قبل الشحن لأرقام الهواتف ذات السجل السلبي وإرجاع تلقائي للمخزون.</div>
+                        </div>
+                    </div>
+                    <div class="feature-row">
+                        <div class="feature-icon">✓</div>
+                        <div>
+                            <div class="feature-text-title">فواتير مزدوجة اللغة وملصقات شحن 4x4</div>
+                            <div class="feature-text-desc">توليد فوري للفواتير باللغتين العربية والفرنسية مع ختم QR Code وشعار متجرك.</div>
+                        </div>
+                    </div>
+                    <div class="feature-row">
+                        <div class="feature-icon">✓</div>
+                        <div>
+                            <div class="feature-text-title">بنية سحابية معزولة ومؤمّنة بالكامل</div>
+                            <div class="feature-text-desc">قاعدة بيانات مستقلة ونسخ احتياطي تلقائي مستمر لضمان عدم فقدان أي معاملة.</div>
+                        </div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+        with col_form:
+            st.markdown("""
+                <div class="enterprise-form-header">
+                    <h3 style="color: #F8FAFC !important; margin: 0 0 4px 0; font-size: 20px; font-weight: 700;">بوابة الوصول إلى المنصة</h3>
+                    <p style="color: #94A3B8 !important; margin: 0; font-size: 13px;">سجّل الدخول إلى لوحة تحكم متجرك أو أنشئ حساباً تجارياً جديداً.</p>
+                </div>
+            """, unsafe_allow_html=True)
+
             default_auth_idx = 1 if st.session_state.get("otp_pending_verification", False) else 0
             auth_mode = st.radio(
-                "اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", 
-                ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"], 
+                "نوع العملية:",
+                ["تسجيل الدخول", "إنشاء حساب جديد"],
                 index=default_auth_idx,
-                
+                horizontal=True,
+                label_visibility="collapsed",
+                key="auth_mode_radio"
             )
-            st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
-            
-            input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
-            input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
-            input_phone = st.text_input("📱 أدخل رقم الهاتف الخاص بك:", placeholder="مثال: 0655xxxxxxxx", key="merchant_phone").strip()
-            
-            # 🛑 التحقق من صحة رقم الهاتف (منع الحروف والتأكد من الطول)
-            if input_phone:
-                check_phone = input_phone.replace("+", "").strip()
-            
-                if not check_phone.isdigit():
-                    st.error("❌ خطأ: يرجى إدخال أرقام صحيحة فقط في حقل الهاتف (بدون أحرف أو رموز خاصة).")
-                elif len(check_phone) < 9:
-                    st.warning("⚠️ تنبيه: رقم الهاتف قصير جداً، تأكد من إدخال الرقم كاملاً.")
-                else:
-                    st.session_state["temp_reg_phone"] = input_phone
-            
-            clean_email = input_email.strip()
-            clean_pass = input_password.strip()
-            st.session_state["temp_reg_phone"] = input_phone
-            
-            if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-                user_package_choice = render_premium_neon_packages()
-                st.markdown("</div>", unsafe_allow_html=True)
-                
+
+            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+
+            if auth_mode == "تسجيل الدخول":
+                input_email = st.text_input("البريد الإلكتروني", placeholder="name@gmail.com", key="merchant_em")
+                input_password = st.text_input("كلمة المرور", type="password", placeholder="••••••••", key="merchant_pw")
+                clean_email = input_email.strip()
+                clean_pass = input_password.strip()
+
+                st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                if st.button("تسجيل الدخول إلى لوحة التحكم", key="login_submit_enterprise"):
+                    if clean_email == "" or clean_pass == "":
+                        st.error("يرجى إدخال البريد الإلكتروني وكلمة المرور.")
+                    else:
+                        conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
+                        cursor_login = conn_login.cursor()
+                        cursor_login.execute("SELECT status FROM saas_users_auth WHERE LOWER(TRIM(email)) = ? AND password = ?", (clean_email.lower(), clean_pass))
+                        user_status_row = cursor_login.fetchone()
+                        conn_login.close()
+
+                        if user_status_row:
+                            if "مفعّل" in str(user_status_row[0]):
+                                st.session_state["active_merchant_user"] = clean_email
+                                st.success("تم التحقق بنجاح. جاري تحويلك إلى لوحة التحكم...")
+                                time.sleep(0.5)
+                                st.rerun()
+                            else:
+                                st.warning(f"حالة الحساب الحالية: {user_status_row[0]}")
+                        else:
+                            st.error("بيانات الدخول غير صحيحة، يرجى التحقق والمحاولة مرة أخرى.")
+
+            else:
                 if "otp_pending_verification" not in st.session_state:
                     st.session_state["otp_pending_verification"] = False
 
                 if not st.session_state["otp_pending_verification"]:
-                    if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
+                    input_email = st.text_input("البريد الإلكتروني (Gmail)", placeholder="store@gmail.com", key="merchant_em")
+                    input_password = st.text_input("كلمة المرور (6 أحرف على الأقل)", type="password", placeholder="••••••••", key="merchant_pw")
+                    input_phone = st.text_input("رقم الهاتف المهني", placeholder="0655xxxxxxxx", key="merchant_phone").strip()
+
+                    if input_phone:
+                        check_phone = input_phone.replace("+", "").strip()
+                        if not check_phone.isdigit():
+                            st.error("يرجى إدخال أرقام صحيحة فقط في حقل الهاتف.")
+                        elif len(check_phone) < 9:
+                            st.warning("رقم الهاتف غير مكتمل.")
+                        else:
+                            st.session_state["temp_reg_phone"] = input_phone
+
+                    clean_email = input_email.strip()
+                    clean_pass = input_password.strip()
+                    st.session_state["temp_reg_phone"] = input_phone
+
+                    user_package_choice = render_premium_neon_packages()
+
+                    if st.button("متابعة وإرسال رمز التحقق", key="send_otp_enterprise"):
                         raw_phone = st.session_state.get("temp_reg_phone", "").replace("+", "").strip()
-                        
                         if not input_phone:
-                            st.error("⚠️ يرجى إدخال رقم الهاتف أولاً!")
+                            st.error("يرجى إدخال رقم الهاتف أولاً.")
                         elif not raw_phone.isdigit() or len(raw_phone) < 9:
-                            st.error("❌ لا يمكن إرسال الرمز: رقم الهاتف المدخل قصير أو غير صحيح. يرجى تصحيحه أولاً.")
+                            st.error("يرجى إدخال رقم هاتف صحيح مكون من 9 أرقام على الأقل.")
                         else:
                             validated_package = validate_and_process_registration(clean_email, clean_pass)
                             if validated_package:
                                 generated_otp = f"{random.randint(100000, 999999)}"
                                 st.session_state["temp_reg_otp"] = generated_otp
-                                st.session_state["temp_reg_email"]  = clean_email
-                                st.session_state["temp_reg_pass"]   = clean_pass
+                                st.session_state["temp_reg_email"] = clean_email
+                                st.session_state["temp_reg_pass"] = clean_pass
                                 st.session_state["temp_reg_package"] = validated_package
                                 st.session_state["otp_sent_at"] = time.time()
-                                
-                                subject = f"🔐 رمز التحقق ({generated_otp}) لتفعيل متجرك الجديد"
-                                body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
-                                
-                                base_app_url = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
+
+                                subject = f"رمز التحقق ({generated_otp}) لتفعيل حسابك في Tijaratna"
+                                body = f"مرحباً بك،\n\nرمز التحقق الخاص بتفعيل حسابك هو: {generated_otp}\n\nيرجى إدخاله في المنصة لإتمام التسجيل."
+                                base_app_url = "https://" + "tijaratna-data-juzl8awsg5r2qxtbbuifbt" + "." + "streamlit" + "." + "app/"
                                 magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(clean_email)}&code={generated_otp}"
 
-                                
                                 if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=magic_otp_link):
                                     reg_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                     conn_pre = sqlite3.connect("saas_security_vault.db", timeout=10)
@@ -1367,74 +1550,33 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                         "INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)",
                                         (clean_email, clean_pass, '📧 في انتظار تأكيد البريد', validated_package, reg_time, input_phone)
                                     )
-
                                     conn_pre.commit()
                                     conn_pre.close()
                                     save_to_github_fast()
 
                                     st.session_state["otp_pending_verification"] = True
-                                    st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
+                                    st.success(f"تم إرسال رمز التحقق إلى {clean_email}")
                                     time.sleep(0.5)
                                     st.rerun()
-
-
                 else:
-                    st.markdown("""
-                        <style>
-                        .otp-modal-container {
-                            max-width: 500px;
-                            margin: 20px auto;
-                            background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%);
-                            border: 2px solid #00fff0;
-                            border-radius: 20px;
-                            padding: 30px;
-                            box-shadow: 0 0 40px rgba(0, 255, 240, 0.4);
-                            direction: rtl;
-                            text-align: right;
-                        }
-                        div[data-testid="stTextInput"] input {
-                            text-align: center !important;
-                            font-size: 28px !important;
-                            letter-spacing: 15px !important;
-                            font-weight: 900 !important;
-                            color: #00fff0 !important;
-                        }
-                        </style>
-                    """, unsafe_allow_html=True)
-
-                    target_mail = st.session_state.get('temp_reg_email', 'البريد الإلكتروني')
-
-                    st.markdown(f"""
-                        <div class="otp-modal-container">
-                            <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
-                            <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 15px;">
-                                تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني:<br>
-                                <span style="color: #ff00ff; font-weight: bold;">{target_mail}</span>
-                            </p>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    target_mail = st.session_state.get('temp_reg_email', '')
+                    st.info(f"تم إرسال رمز مكون من 6 أرقام إلى: **{target_mail}**")
 
                     entered_otp = st.text_input(
-                        
-                        
-                        "أدخل الرمز المكون من 6 أرقام هنا:", 
+                        "رمز التحقق (6 أرقام)",
                         value=st.session_state.get("prefill_otp_code", ""),
-                        max_chars=6, 
-                        placeholder="------", 
+                        max_chars=6,
+                        placeholder="000000",
                         key="smart_otp_paste_input"
                     )
 
                     elapsed_sec = int(time.time() - st.session_state.get("otp_sent_at", time.time()))
                     remaining_sec = max(0, 60 - elapsed_sec)
 
-                    elapsed_sec = int(time.time() - st.session_state.get("otp_sent_at", time.time()))
-                    remaining_sec = max(0, 60 - elapsed_sec)
-
                     if remaining_sec > 0:
-                        # ⏱️ عداد JavaScript حي يعمل في متصفح الزبون دون أي ضغط على السيرفر
                         st.components.v1.html(f"""
-                        <div style="text-align: center; font-family: 'Cairo', sans-serif; color: #ffaa00; font-size: 15px; font-weight: bold; direction: rtl; background: transparent;">
-                            ⏳ يمكنك طلب رمز جديد بعد: <span id="js_otp_timer" style="color: #00fff0; font-size: 17px;">{remaining_sec}</span> ثانية
+                        <div style="text-align: right; font-family: 'IBM Plex Sans Arabic', sans-serif; color: #94A3B8; font-size: 13px; direction: rtl;">
+                            يمكنك طلب رمز جديد بعد <span id="js_otp_timer" style="color: #10B981; font-weight: bold;">{remaining_sec}</span> ثانية
                         </div>
                         <script>
                             var timeLeft = {remaining_sec};
@@ -1443,98 +1585,64 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 timeLeft--;
                                 if (timeLeft <= 0) {{
                                     clearInterval(countdown);
-                                    timerElem.parentElement.innerHTML = "✅ انتهى الوقت! اضغط على زر التحديث أدناه لطلب رمز جديد.";
-                                    timerElem.parentElement.style.color = "#00ff66";
+                                    timerElem.parentElement.innerHTML = "يمكنك الآن طلب رمز تحقق جديد.";
                                 }} else {{
                                     timerElem.textContent = timeLeft;
                                 }}
                             }}, 1000);
                         </script>
-                        """, height=38)
+                        """, height=30)
 
-                    if st.button("🔄 طلب / إعادة إرسال رمز جديد", key="resend_otp_btn"):
-                        now_elapsed = int(time.time() - st.session_state.get("otp_sent_at", 0))
-                        if now_elapsed < 60:
-                            st.warning(f"⏳ يرجى الانتظار {60 - now_elapsed} ثانية قبل طلب رمز جديد.")
-                        else:
-                            generated_otp = f"{random.randint(100000, 999999)}"
-                            st.session_state["temp_reg_otp"] = generated_otp
-                            st.session_state["otp_sent_at"] = time.time()
-                            subject = f"🔄 رمز التحقق الجديد ({generated_otp}) لتفعيل متجرك"
-
-                            body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
-                            base_app_url = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
-                            magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(target_mail)}&code={generated_otp}"
-                            if send_gmail_notification(target_mail, subject, body, action_type="OTP", action_url=magic_otp_link):
-                                st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
-
-                               
-                                time.sleep(0.5)
-                                st.rerun()
-
-
-                    st.markdown("<p style='text-align: center; color: #888899; font-size: 12px;'>💡 يمكنك نسخ الرمز من بريدك واللصق هنا مباشرة ليتم تعبئته تلقائياً.</p>", unsafe_allow_html=True)
-
-                    col_verify_btn, col_cancel_btn = st.columns(2)
-                    with col_verify_btn:
-                        if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة", key="verify_otp_submit_btn"):
+                    col_v1, col_v2 = st.columns(2)
+                    with col_v1:
+                        if st.button("تأكيد وإتمام التسجيل", key="verify_otp_submit_btn"):
                             if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
                                 reg_email = st.session_state.get("temp_reg_email", "").strip()
-                                
                                 conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
-                                cursor_reg = conn_reg.cursor()
-                                cursor_reg.execute(
+                                conn_reg.cursor().execute(
                                     "UPDATE saas_users_auth SET status = '⏳ في انتظار التفعيل' WHERE LOWER(TRIM(email)) = ?",
                                     (reg_email.lower(),)
                                 )
                                 conn_reg.commit()
                                 conn_reg.close()
                                 save_to_github_fast()
-                                
+
                                 st.session_state["otp_pending_verification"] = False
                                 st.session_state.pop("prefill_otp_code", None)
-                                st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
+                                st.success("تم تأكيد حسابك وإرساله للإدارة للتفعيل.")
                                 time.sleep(1)
                                 st.rerun()
                             else:
-                                st.error("❌ الرمز غير صحيح، تأكد من إدخال الأرقام الستة بدقة.")
+                                st.error("رمز التحقق غير صحيح.")
 
-                                
-                    with col_cancel_btn:
-                        if st.button("❌ إلغاء والعودة", key="cancel_otp_btn"):
-                            st.session_state["otp_pending_verification"] = False
-                            st.session_state.pop("otp_sent_at", None)
-                            st.rerun()
-
-            else:
-                st.markdown("</div>", unsafe_allow_html=True)
-                if st.button("🔑 تسجيل الدخول إلى المتجر"):
-                    if clean_email == "" or clean_pass == "": 
-                        st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
-                    else:
-                        conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        cursor_login = conn_login.cursor()
-                        cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
-                        user_status_row = cursor_login.fetchone()
-                        conn_login.close()
-                        
-                        if user_status_row:
-                            if "🟢 مفعّل ونشط" in user_status_row:
-                                st.session_state["active_merchant_user"] = clean_email
-                                st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
-                                time.sleep(0.5); st.rerun()
+                    with col_v2:
+                        if st.button("إعادة إرسال الرمز", key="resend_otp_btn"):
+                            now_elapsed = int(time.time() - st.session_state.get("otp_sent_at", 0))
+                            if now_elapsed < 60:
+                                st.warning(f"يرجى الانتظار {60 - now_elapsed} ثانية.")
                             else:
-                                st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
-                        else:
-                            st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
-            
-            # 📢 زر الانتقال إلى صفحة الشكاوى المستقلة (موضع آمن في أسفل الصندوق الأوسط)
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("📢 تسجيل شكوى أو بلاغ جديد", key="go_to_complaint_page_btn"):
+                                generated_otp = f"{random.randint(100000, 999999)}"
+                                st.session_state["temp_reg_otp"] = generated_otp
+                                st.session_state["otp_sent_at"] = time.time()
+                                subject = f"رمز التحقق الجديد ({generated_otp}) لتفعيل حسابك"
+                                body = f"رمز التحقق الجديد الخاص بك هو: {generated_otp}"
+                                base_app_url = "https://" + "tijaratna-data-juzl8awsg5r2qxtbbuifbt" + "." + "streamlit" + "." + "app/"
+                                magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(target_mail)}&code={generated_otp}"
+                                if send_gmail_notification(target_mail, subject, body, action_type="OTP", action_url=magic_otp_link):
+                                    st.success("تم إرسال رمز جديد.")
+                                    time.sleep(0.5)
+                                    st.rerun()
+
+                    if st.button("تغيير البريد الإلكتروني أو الإلغاء", key="cancel_otp_btn"):
+                        st.session_state["otp_pending_verification"] = False
+                        st.session_state.pop("otp_sent_at", None)
+                        st.rerun()
+
+            st.markdown("<hr style='border-color: #1E293B; margin: 20px 0;'>", unsafe_allow_html=True)
+            if st.button("مركز الدعم الفني والشكاوى", key="go_to_complaint_page_btn"):
                 st.session_state["current_view"] = "complaint_page"
                 st.rerun()
-                
-            st.markdown("</div>", unsafe_allow_html=True)
+
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
 # ========================================================
