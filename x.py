@@ -1416,6 +1416,51 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 font-family: 'IBM Plex Sans Arabic', sans-serif !important;
                 text-shadow: none !important;
             }
+            /* 🌟 شريط التحميل الضوئي العلوي */
+            [data-testid="stStatusWidget"] {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 4px !important;
+                z-index: 9999999 !important;
+                background: linear-gradient(90deg, #10B981, #00fff0, #3B82F6, #10B981) !important;
+                background-size: 200% 100% !important;
+                animation: topLaserMove 1s linear infinite !important;
+            }
+            [data-testid="stStatusWidget"] * {
+                display: none !important;
+            }
+            @keyframes topLaserMove {
+                0% { background-position: 200% 0; }
+                100% { background-position: 0% 0; }
+            }
+
+            /* ✨ بطاقة الانتظار المتموجة */
+            .enterprise-shimmer-box {
+                position: relative;
+                overflow: hidden;
+                background: #111827 !important;
+                border: 1px solid rgba(16, 185, 129, 0.4) !important;
+                border-radius: 12px !important;
+                padding: 16px 20px !important;
+                margin: 12px 0 !important;
+                text-align: center;
+                color: #10B981 !important;
+                font-weight: 700;
+                font-size: 14px;
+            }
+            .enterprise-shimmer-box::after {
+                content: "";
+                position: absolute;
+                top: 0; left: -100%;
+                width: 100%; height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.22), transparent);
+                animation: shimmerSweep 1.5s infinite;
+            }
+            @keyframes shimmerSweep {
+                100% { left: 100%; }
+            }
 
             .hero-landing-container {
                 max-width: 820px;
