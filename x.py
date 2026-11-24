@@ -1194,14 +1194,26 @@ import re
 # ====================================================================
 
 def render_premium_neon_packages():
+    has_selected = "selected_neon_package" in st.session_state
     current_choice = st.session_state.get("selected_neon_package", "الباقة الاحترافية المتوسطة (45k)")
 
-    cls_b = "price-card active-glow" if "الأساسية" in current_choice else "price-card"
-    cls_p = "price-card active-glow" if "الاحترافية" in current_choice else "price-card"
-    cls_c = "price-card active-glow" if "السيبرانية" in current_choice else "price-card"
+    if not has_selected:
+        cls_b = cls_p = cls_c = "price-card"
+    else:
+        cls_b = "price-card active-glow" if "الأساسية" in current_choice else "price-card dimmed"
+        cls_p = "price-card active-glow" if "الاحترافية" in current_choice else "price-card dimmed"
+        cls_c = "price-card active-glow" if "السيبرانية" in current_choice else "price-card dimmed"
 
     st.markdown("""
 <style>
+@keyframes gentleFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-7px); }
+}
+@keyframes activeGlowPulse {
+    0%, 100% { box-shadow: 0 15px 35px -5px rgba(16, 185, 129, 0.35), 0 0 16px rgba(16, 185, 129, 0.25); }
+    50% { box-shadow: 0 22px 48px -5px rgba(16, 185, 129, 0.65), 0 0 28px rgba(16, 185, 129, 0.45); }
+}
 .pricing-grid-3 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1215,19 +1227,21 @@ def render_premium_neon_packages():
     border: 1.5px solid #1E293B !important;
     border-radius: 18px !important;
     padding: 22px 18px !important;
-    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-    opacity: 0.78;
+    transition: all 0.35s ease !important;
+    animation: gentleFloat 4s ease-in-out infinite;
 }
-.price-card:hover {
-    transform: translateY(-5px) !important;
-    border-color: #334155 !important;
-    opacity: 0.95;
+.price-card:nth-child(2) { animation-delay: 0.6s; }
+.price-card:nth-child(3) { animation-delay: 1.2s; }
+
+.price-card.dimmed {
+    animation: none !important;
+    opacity: 0.65 !important;
+    transform: translateY(0px) !important;
 }
 .price-card.active-glow {
     background: linear-gradient(145deg, #0F2924 0%, #0B1120 100%) !important;
     border: 2px solid #10B981 !important;
-    transform: translateY(-10px) scale(1.02) !important;
-    box-shadow: 0 15px 35px -5px rgba(16, 185, 129, 0.38), 0 0 18px rgba(16, 185, 129, 0.25) !important;
+    animation: gentleFloat 3s ease-in-out infinite, activeGlowPulse 2.5s ease-in-out infinite !important;
     opacity: 1 !important;
 }
 .popular-ribbon {
