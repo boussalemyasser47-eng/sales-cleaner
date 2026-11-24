@@ -594,7 +594,7 @@ if "verify_email" in query_params and "code" in query_params and "magic_otp_done
     st.session_state["auth_mode_radio"] = "📝 إنشاء حساب تاجر جديد فريش"
 
 
-is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
+is_boss_link = query_params.get("role") == "mohmed" if "role" in query_params else False
 if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 
@@ -1892,8 +1892,9 @@ def render_neon_license_ring(email, days_left):
 # ========================================================
 if is_boss_link:
     # تأمين وحقن الهوية علوياً لمنع خطأ NameError
-    ADMIN_USERNAME = "admin_master_v4"
-    ADMIN_PASSWORD = "SaasPassword2026"
+    ADMIN_USERNAME = st.secrets.get("ADMIN_USER", "admin_master_v4")
+    ADMIN_PASSWORD = st.secrets.get("ADMIN_PASS", "SaasPassword2026")
+
     
     # 🔒 [المستوى الأول]: إذا لم يسجل المالك دخوله، تظهر لوحة الحماية فقط وتُحجب العدادات كلياً
     if not st.session_state.get("admin_master_logged", False):
@@ -1907,14 +1908,20 @@ if is_boss_link:
         
         st.markdown("<br>", unsafe_allow_html=True)
         
-        if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="submit_boss_login_btn"):
+        if st.session_state.get("boss_failed_attempts", 0) >= 3:
+            st.error("🔒 تم قفل بوابة الإدارة مؤقتاً لتجاوز الحد المسموح من المحاولات الخاطئة.")
+        elif st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="submit_boss_login_btn"):
             if boss_user == ADMIN_USERNAME and boss_pass == ADMIN_PASSWORD:
+                st.session_state["boss_failed_attempts"] = 0
                 st.session_state["admin_master_logged"] = True
                 st.toast("👑 مرحباً بك يا قائد! تم تفعيل لوحة السيادة والموافقات.", icon="🔓")
                 time.sleep(0.5)
                 st.rerun()
             else:
-                st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من مفاتيح الأمان السحابية.")
+                st.session_state["boss_failed_attempts"] = st.session_state.get("boss_failed_attempts", 0) + 1
+                rem = 3 - st.session_state["boss_failed_attempts"]
+                st.error(f"❌ بيانات خاطئة! المحاولات المتبقية قبل القفل: {rem}")
+
         st.markdown("</div>", unsafe_allow_html=True)
         
     # 👑 [المستوى الثاني مقفل ومحمي]: تنبثق العدادات والرادار هنا حصرياً وفقط بعد نجاح تسجيل الدخول
