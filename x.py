@@ -846,7 +846,53 @@ st.markdown("""
         color: #ffffff !important;
         font-family: 'Cairo', sans-serif !important;
     }
-    
+   /* 🌟 1. شريط التحميل الضوئي التلقائي في أعلى الشاشة عند أي عملية (مثل YouTube / Linear) */
+div[data-testid="stStatusWidget"] {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 4px !important;
+    z-index: 999999 !important;
+    background: linear-gradient(90deg, #10B981, #00fff0, #3B82F6, #10B981) !important;
+    background-size: 200% 100% !important;
+    animation: topLaserMove 1.2s linear infinite !important;
+    overflow: hidden !important;
+}
+div[data-testid="stStatusWidget"] * {
+    display: none !important; /* إخفاء أيقونة الرجل الجاري الافتراضية واستبدالها بالخط الاحترافي */
+}
+@keyframes topLaserMove {
+    0% { background-position: 200% 0; }
+    100% { background-position: 0% 0; }
+}
+
+/* ✨ 2. بطاقة الانتظار المتموجة الاحترافية (Enterprise Shimmer Box) */
+.enterprise-shimmer-box {
+    position: relative;
+    overflow: hidden;
+    background: #111827 !important;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+    border-radius: 12px !important;
+    padding: 16px 20px !important;
+    margin: 12px 0 !important;
+    text-align: center;
+    color: #10B981 !important;
+    font-weight: 700;
+    font-size: 14px;
+}
+.enterprise-shimmer-box::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.18), transparent);
+    animation: shimmerSweep 1.5s infinite;
+}
+@keyframes shimmerSweep {
+    100% { left: 100%; }
+}
+ 
     /* 💎 صبغ العدادات الثلاثية والمقاييس المستقلة بالبلور الزجاجي والنيون الفاخر المشع */
     div[data-testid="stMetricBlock"], div[data-testid="metric-container"], .premium-card-cyan, .premium-card-pink {
         background: linear-gradient(135deg, rgba(15, 2, 20, 0.85) 0%, rgba(5, 5, 12, 0.98) 100%) !important;
@@ -1628,9 +1674,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 body = f"مرحباً بك،\n\nرمز التحقق الخاص بتفعيل حسابك هو: {generated_otp}\n\nيرجى إدخاله في المنصة لإتمام التسجيل."
                                 base_app_url = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
                                 magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(clean_email)}&code={generated_otp}"
-
+                                loader_slot = st.empty()
+                                loader_slot.markdown("<div class='enterprise-shimmer-box'>⏳ جاري إرسال رمز التحقق وتأمين بياناتك سحابياً...</div>", unsafe_allow_html=True)
                                 if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=magic_otp_link):
-                                    reg_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                    loader_slot.empty()
+                                    reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                     conn_pre = sqlite3.connect("saas_security_vault.db", timeout=10)
                                     conn_pre.cursor().execute(
                                         "INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)",
@@ -1644,6 +1692,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                     st.success(f"تم إرسال رمز التحقق إلى {clean_email}")
                                     time.sleep(0.5)
                                     st.rerun()
+                                loader_slot.empty()
+
                 else:
                     target_mail = st.session_state.get('temp_reg_email', '')
                     st.info(f"تم إرسال رمز مكون من 6 أرقام إلى: **{target_mail}**")
