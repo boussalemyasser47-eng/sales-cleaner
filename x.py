@@ -2248,6 +2248,25 @@ if is_boss_link:
                 </div>
                 """, unsafe_allow_html=True)
                 
+                # 🖼️ عرض صورة وصل الدفع (BaridiMob / CCP) إذا قام التاجر برفعها
+                rec_filename = f"receipt_{urllib.parse.quote_plus(current_email)}.png"
+                rec_local_path = f"receipts/{rec_filename}"
+                os.makedirs("receipts", exist_ok=True)
+                if not os.path.exists(rec_local_path):
+                    try:
+                        tk_r, rp_r = st.secrets.get("GITHUB_TOKEN"), st.secrets.get("GITHUB_REPO")
+                        if tk_r and rp_r:
+                            api_base_r = "https://" + "api" + "." + "github" + "." + "com/repos"
+                            res_rec = requests.get(f"{api_base_r}/{rp_r}/contents/{rec_local_path}", headers={"Authorization": f"Bearer {tk_r}"})
+                            if res_rec.status_code == 200:
+                                with open(rec_local_path, "wb") as f_rec:
+                                    f_rec.write(base64.b64decode(res_rec.json()["content"]))
+                    except Exception:
+                        pass
+
+                if os.path.exists(rec_local_path):
+                    with st.expander(f"💰 وصل دفع مرفق من التاجر ({current_email}) — اضغط للمعاينة"):
+                        st.image(rec_local_path, caption="إيصال التحويل البنكي / البريدي", width=350)
 
 
                 col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
@@ -2458,12 +2477,37 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     user_actual_status = str(chk_row[0]) if chk_row and chk_row[0] is not None else ""
     user_package = str(chk_row[1]).strip() if chk_row and len(chk_row) > 1 and chk_row[1] is not None else "29k"
     
-    if not chk_row or "مفعّل" not in user_actual_status:
-        st.warning("🔒 انتهت أو سُحبت تراخيص الحساب السحابي.")
-        if st.button("🔄 العودة لبوابة الدخول الرئيسية", key="back_gate_refresh_btn"): 
-            st.session_state.pop("active_merchant_user")
+    conn_t_chk = sqlite3.connect("saas_security_vault.db", timeout=10)
+    t_row = conn_t_chk.cursor().execute("SELECT created_at FROM saas_users_auth WHERE email = ?", (current_merchant,)).fetchone()
+    conn_t_chk.close()
+
+    is_trial_account = "تجربة مجانية" in user_actual_status
+    trial_over = False
+    hours_left = 72
+
+    if is_trial_account and t_row and t_row[0]:
+        try:
+            st_dt = datetime.strptime(str(t_row[0]).split(".")[0], "%Y-%m-%d %H:%M:%S")
+            elapsed_hrs = (datetime.now() - st_dt).total_seconds() / 3600.0
+            hours_left = max(0, int(72 - elapsed_hrs))
+            if elapsed_hrs > 72:
+                trial_over = True
+        except Exception:
+            pass
+
+    if not chk_row or "مفعّل" not in user_actual_status or trial_over:
+        st.warning("🔒 انتهت فترة التجربة المجانية (3 أيام) أو سُحبت تراخيص الحساب السحابي.")
+        if st.button("💳 الانتقال لتفعيل الاشتراك السنوي", key="back_gate_refresh_btn"): 
+            st.session_state["expired_trial_email"] = current_merchant
+            st.session_state["expired_trial_pkg"] = user_package
+            st.session_state["landing_step"] = "login"
+            st.session_state.pop("active_merchant_user", None)
             st.rerun()
         st.stop()
+
+    if is_trial_account:
+        st.info(f"🎁 أنت تستخدم حالياً **التجربة المجانية (3 أيام)** — المتبقي: **{hours_left} ساعة**. يمكنك تفعيل اشتراكك السنوي في أي لحظة من صفحة الدخول.")
+
         
     # 🏪 [جدار العزل الفردي الأسطوري]: قفل البيانات وعزل فواتير ومخزون كل تاجر باسم إيميله المشفر
     merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
