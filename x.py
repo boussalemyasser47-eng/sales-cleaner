@@ -1774,7 +1774,10 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     """, unsafe_allow_html=True)
 
                     wa_txt = urllib.parse.quote(f"مرحباً إدارة Tijaratna DataDZ، أريد تفعيل اشتراكي السنوي للحساب: {exp_mail} ({exp_pkg})")
-                    st.link_button("💬 تواصل مباشر مع الإدارة عبر WhatsApp", f"https://wa.me{wa_admin}?text={wa_txt}")
+                    clean_wa_admin = str(wa_admin).replace("+", "").strip()
+                    wa_direct_url = "https://wa.me" + "/" + clean_wa_admin + "?text=" + wa_txt
+                    st.link_button("💬 تواصل مباشر مع الإدارة عبر WhatsApp", wa_direct_url)
+
 
                     receipt_file = st.file_uploader("📤 ارفع صورة وصل الدفع (BaridiMob / CCP):", type=["png", "jpg", "jpeg"], key="upload_payment_receipt")
                     if receipt_file is not None and st.button("✅ إرسال وصل الدفع وطلب التفعيل الفوري", key="submit_receipt_btn"):
