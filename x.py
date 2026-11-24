@@ -1196,26 +1196,41 @@ import re
 def render_premium_neon_packages():
     current_choice = st.session_state.get("selected_neon_package", "الباقة الاحترافية المتوسطة (45k)")
 
-    sel_b = "border: 2px solid #10B981 !important; background: rgba(16, 185, 129, 0.08) !important;" if "الأساسية" in current_choice else "border: 1px solid #1E293B !important; background: #0F172A !important;"
-    sel_p = "border: 2px solid #10B981 !important; background: rgba(16, 185, 129, 0.1) !important;" if "الاحترافية" in current_choice else "border: 1px solid #334155 !important; background: #0F172A !important;"
-    sel_c = "border: 2px solid #10B981 !important; background: rgba(16, 185, 129, 0.08) !important;" if "السيبرانية" in current_choice else "border: 1px solid #1E293B !important; background: #0F172A !important;"
+    cls_b = "price-card active-glow" if "الأساسية" in current_choice else "price-card"
+    cls_p = "price-card active-glow" if "الاحترافية" in current_choice else "price-card"
+    cls_c = "price-card active-glow" if "السيبرانية" in current_choice else "price-card"
 
-    html_cards = f"""
+    st.markdown("""
 <style>
-.pricing-grid-3 {{
+.pricing-grid-3 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 14px;
-    margin: 14px 0 18px 0;
+    gap: 18px;
+    margin: 18px 0 22px 0;
     direction: rtl;
     text-align: right;
-}}
-.price-card {{
-    border-radius: 16px;
-    padding: 20px 16px;
-    transition: all 0.25s ease;
-}}
-.popular-ribbon {{
+}
+.price-card {
+    background: #0B1120 !important;
+    border: 1.5px solid #1E293B !important;
+    border-radius: 18px !important;
+    padding: 22px 18px !important;
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    opacity: 0.78;
+}
+.price-card:hover {
+    transform: translateY(-5px) !important;
+    border-color: #334155 !important;
+    opacity: 0.95;
+}
+.price-card.active-glow {
+    background: linear-gradient(145deg, #0F2924 0%, #0B1120 100%) !important;
+    border: 2px solid #10B981 !important;
+    transform: translateY(-10px) scale(1.02) !important;
+    box-shadow: 0 15px 35px -5px rgba(16, 185, 129, 0.38), 0 0 18px rgba(16, 185, 129, 0.25) !important;
+    opacity: 1 !important;
+}
+.popular-ribbon {
     display: inline-block;
     background: #10B981;
     color: #022C22 !important;
@@ -1224,15 +1239,18 @@ def render_premium_neon_packages():
     padding: 3px 10px;
     border-radius: 999px;
     margin-bottom: 8px;
-}}
-.p-name {{ color: #F8FAFC !important; font-size: 16px; font-weight: 700; margin-bottom: 4px; }}
-.p-cost {{ color: #10B981 !important; font-size: 21px; font-weight: 800; }}
-.p-daily {{ color: #94A3B8 !important; font-size: 11.5px; margin-bottom: 12px; border-bottom: 1px solid #1E293B; padding-bottom: 8px; }}
-.p-item {{ color: #CBD5E1 !important; font-size: 12.5px; margin: 6px 0; line-height: 1.45; }}
-.p-no {{ color: #64748B !important; font-size: 12px; margin: 6px 0; text-decoration: line-through; }}
+}
+.p-name { color: #F8FAFC !important; font-size: 16.5px; font-weight: 700; margin-bottom: 4px; }
+.p-cost { color: #10B981 !important; font-size: 21px; font-weight: 800; }
+.p-daily { color: #94A3B8 !important; font-size: 11.5px; margin-bottom: 12px; border-bottom: 1px solid #1E293B; padding-bottom: 8px; }
+.p-item { color: #E2E8F0 !important; font-size: 12.5px; margin: 6px 0; line-height: 1.5; }
+.p-no { color: #64748B !important; font-size: 12px; margin: 6px 0; text-decoration: line-through; }
 </style>
+""", unsafe_allow_html=True)
+
+    html_cards = f"""
 <div class="pricing-grid-3">
-<div class="price-card" style="{sel_b}">
+<div class="{cls_b}">
 <div class="p-name">🌱 الباقة الأساسية</div>
 <div class="p-cost">29,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
 <div class="p-daily">تعادل 79 دج فقط يومياً</div>
@@ -1242,7 +1260,7 @@ def render_premium_neon_packages():
 <div class="p-no">✕ مطهر ملفات Excel والولايات</div>
 <div class="p-no">✕ مولّد الإعلانات الذكي AI</div>
 </div>
-<div class="price-card" style="{sel_p}">
+<div class="{cls_p}">
 <span class="popular-ribbon">⭐ الأكثر طلباً من التجار</span>
 <div class="p-name">💎 الباقة الاحترافية</div>
 <div class="p-cost">45,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
@@ -1253,7 +1271,7 @@ def render_premium_neon_packages():
 <div class="p-item">✓ مساعد تجاري لحلول الشحن</div>
 <div class="p-no">✕ مولّد الإعلانات وسيناريو الفيديو AI</div>
 </div>
-<div class="price-card" style="{sel_c}">
+<div class="{cls_c}">
 <div class="p-name">⚡ الباقة السيبرانية</div>
 <div class="p-cost">65,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
 <div class="p-daily">تعادل 178 دج فقط يومياً</div>
