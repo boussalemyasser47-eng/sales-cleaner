@@ -2176,8 +2176,7 @@ if is_boss_link:
                         loader_slot.empty()
                         time.sleep(1.0)
 
-                           إعطاء مهلة كافية لسيرفر جوجل لإنهاء الإرسال
-            
+                         
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
                         st.toast("🎯 تم التفعيل وإرسال البريد بنجاح!")
                         st.rerun()
