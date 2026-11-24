@@ -664,7 +664,8 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         logo_url = "https://img.icons8.com/isometric-folders/100/00fff0/cyber-security.png"
         formatted_body = body_text.replace("\n", "<br>")
 
-        unique_stamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        unique_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         html_content = f"""
         <!DOCTYPE html>
         <html lang="ar" dir="rtl">
