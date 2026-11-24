@@ -1343,19 +1343,57 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             }
 
             /* ✨ بطاقة الانتظار المتموجة */
+            /* ✨ بطاقة الانتظار الأسطورية بحلقة الشركات الدوارة (Enterprise Dual-Ring Spinner) */
             .enterprise-shimmer-box {
                 position: relative;
                 overflow: hidden;
-                background: #111827 !important;
-                border: 1px solid rgba(16, 185, 129, 0.4) !important;
-                border-radius: 12px !important;
-                padding: 16px 20px !important;
-                margin: 12px 0 !important;
-                text-align: center;
-                color: #10B981 !important;
-                font-weight: 700;
-                font-size: 14px;
+                background: #0B1120 !important;
+                border: 1px solid rgba(16, 185, 129, 0.45) !important;
+                border-radius: 14px !important;
+                padding: 20px !important;
+                margin: 14px 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 14px !important;
+                color: #F8FAFC !important;
+                font-weight: 700 !important;
+                font-size: 14.5px !important;
+                box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15) !important;
             }
+            .corp-dual-spinner {
+                position: relative;
+                width: 28px;
+                height: 28px;
+                flex-shrink: 0;
+            }
+            .corp-dual-spinner::before,
+            .corp-dual-spinner::after {
+                content: "";
+                position: absolute;
+                border-radius: 50%;
+                inset: 0;
+            }
+            .corp-dual-spinner::before {
+                border: 3px solid transparent;
+                border-top-color: #10B981;
+                border-right-color: #10B981;
+                animation: spinClockwise 0.85s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+            }
+            .corp-dual-spinner::after {
+                inset: 5px;
+                border: 2.5px solid transparent;
+                border-bottom-color: #38BDF8;
+                border-left-color: #38BDF8;
+                animation: spinCounter 0.65s linear infinite;
+            }
+            @keyframes spinClockwise {
+                to { transform: rotate(360deg); }
+            }
+            @keyframes spinCounter {
+                to { transform: rotate(-360deg); }
+            }
+
             .enterprise-shimmer-box::after {
                 content: "";
                 position: absolute;
@@ -1674,9 +1712,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 base_app_url = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
                                 magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(clean_email)}&code={generated_otp}"
 
+                                loader_slot = st.empty()
+                                loader_slot.markdown("<div class='enterprise-shimmer-box'><div class='corp-dual-spinner'></div><span>جاري تأمين البيانات وإرسال رمز التحقق...</span></div>", unsafe_allow_html=True)
                                 if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=magic_otp_link):
+                                    loader_slot.empty()
                                     reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
                                     conn_pre = sqlite3.connect("saas_security_vault.db", timeout=10)
                                     conn_pre.cursor().execute(
                                         "INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)",
@@ -1685,6 +1725,13 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                     conn_pre.commit()
                                     conn_pre.close()
                                     save_to_github_fast()
+
+                                    st.session_state["otp_pending_verification"] = True
+                                    st.success(f"تم إرسال رمز التحقق إلى {clean_email}")
+                                    time.sleep(0.5)
+                                    st.rerun()
+                                loader_slot.empty()
+
 
                                     st.session_state["otp_pending_verification"] = True
                                     st.success(f"تم إرسال رمز التحقق إلى {clean_email}")
