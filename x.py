@@ -764,7 +764,7 @@ import time
 from datetime import datetime
 import io
 import urllib.parse
-import datetime
+from datetime import datetime
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
 def init_advanced_db():
