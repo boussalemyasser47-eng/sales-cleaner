@@ -658,7 +658,7 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         }
         
         theme = theme_colors.get(action_type, theme_colors["DEFAULT"])
-        default_site = "https://" + "tijaratna-data-juzl8awsg5r2qxtbbuifbt" + "." + "streamlit" + "." + "app/"
+        default_site = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
         btn_link = action_url if action_url else default_site
 
         logo_url = "https://img.icons8.com/isometric-folders/100/00fff0/cyber-security.png"
@@ -1356,7 +1356,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 subject = f"🔐 رمز التحقق ({generated_otp}) لتفعيل متجرك الجديد"
                                 body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
                                 
-                                base_app_url = "https://" + "tijaratna-data-juzl8awsg5r2qxtbbuifbt" + "." + "streamlit" + "." + "app/"
+                                base_app_url = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
                                 magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(clean_email)}&code={generated_otp}"
 
                                 
@@ -1463,7 +1463,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             subject = f"🔄 رمز التحقق الجديد ({generated_otp}) لتفعيل متجرك"
 
                             body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
-                            base_app_url = "https://" + "tijaratna-data-juzl8awsg5r2qxtbbuifbt" + "." + "streamlit" + "." + "app/"
+                            base_app_url = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
                             magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(target_mail)}&code={generated_otp}"
                             if send_gmail_notification(target_mail, subject, body, action_type="OTP", action_url=magic_otp_link):
                                 st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
