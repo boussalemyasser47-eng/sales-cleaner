@@ -1145,7 +1145,6 @@ def delete_email_completely(email_to_delete):
         conn.commit()
         conn.close()
 
-        # 🗑️ حذف صورة وصل الدفع محلياً ومن مستودع GitHub نهائياً
         rec_name = f"receipt_{urllib.parse.quote_plus(clean_target)}.png"
         rec_path = f"receipts/{rec_name}"
         if os.path.exists(rec_path):
@@ -1157,25 +1156,23 @@ def delete_email_completely(email_to_delete):
         token = st.secrets.get("GITHUB_TOKEN")
         repo = st.secrets.get("GITHUB_REPO")
         if token and repo:
-            def _del_receipt_github(tk, rp, rpath):
-                try:
-                    api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
-                    url = f"{api_base}/{rp}/contents/{rpath}"
-                    headers = {"Authorization": f"Bearer {tk}", "Accept": "application/vnd.github.v3+json"}
-                    res = requests.get(url, headers=headers)
-                    if res.status_code == 200:
-                        sha = res.json().get("sha")
-                        requests.delete(url, json={"message": f"Delete {rpath}", "sha": sha}, headers=headers)
-                except Exception:
-                    pass
-            threading.Thread(target=_del_receipt_github, args=(token, repo, rec_path), daemon=True).start()
+            try:
+                api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
+                url = f"{api_base}/{repo}/contents/{rec_path}"
+                headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github.v3+json"}
+                res = requests.get(url, headers=headers)
+                if res.status_code == 200:
+                    sha = res.json().get("sha")
+                    requests.delete(url, json={"message": f"Delete {rec_path}", "sha": sha}, headers=headers)
+            except Exception:
+                pass
 
-        # 🚀 رفع تحديث قاعدة البيانات فوراً إلى GitHub
         save_to_github_fast()
         return True
     except Exception as e:
-        st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}")
+        st.error(f"⚠️ خطأ أثناء الحذف: {e}")
         return False
+
 
 # === الإضافات والتعديلات الجديدة ===
 # جاهز ومؤمن بالكامل هنا لاستقبال أي ميزات إضافية في المحادثات القادمة...
