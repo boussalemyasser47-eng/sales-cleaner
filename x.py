@@ -1144,14 +1144,38 @@ def delete_email_completely(email_to_delete):
         cursor.execute("DELETE FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (clean_target,))
         conn.commit()
         conn.close()
-        
-        # 🚀 رفع التحديث فوراً إلى GitHub لمسح الإيميل من المستودع نهائياً
+
+        # 🗑️ حذف صورة وصل الدفع محلياً ومن مستودع GitHub نهائياً
+        rec_name = f"receipt_{urllib.parse.quote_plus(clean_target)}.png"
+        rec_path = f"receipts/{rec_name}"
+        if os.path.exists(rec_path):
+            try:
+                os.remove(rec_path)
+            except Exception:
+                pass
+
+        token = st.secrets.get("GITHUB_TOKEN")
+        repo = st.secrets.get("GITHUB_REPO")
+        if token and repo:
+            def _del_receipt_github(tk, rp, rpath):
+                try:
+                    api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
+                    url = f"{api_base}/{rp}/contents/{rpath}"
+                    headers = {"Authorization": f"Bearer {tk}", "Accept": "application/vnd.github.v3+json"}
+                    res = requests.get(url, headers=headers)
+                    if res.status_code == 200:
+                        sha = res.json().get("sha")
+                        requests.delete(url, json={"message": f"Delete {rpath}", "sha": sha}, headers=headers)
+                except Exception:
+                    pass
+            threading.Thread(target=_del_receipt_github, args=(token, repo, rec_path), daemon=True).start()
+
+        # 🚀 رفع تحديث قاعدة البيانات فوراً إلى GitHub
         save_to_github_fast()
         return True
     except Exception as e:
         st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}")
         return False
-
 
 # === الإضافات والتعديلات الجديدة ===
 # جاهز ومؤمن بالكامل هنا لاستقبال أي ميزات إضافية في المحادثات القادمة...
@@ -1911,7 +1935,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                     col_v1, col_v2 = st.columns(2)
                     with col_v1:
-                        if st.button("تأكيد وإتمام التسجيل", key="verify_otp_submit_btn"):
+                        if st.button("تأكيد والدخول إلى متجرك الآن", key="verify_otp_submit_btn"):
                             if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
                                 reg_email = st.session_state.get("temp_reg_email", "").strip()
                                 trial_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -1926,12 +1950,13 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                                 st.session_state["otp_pending_verification"] = False
                                 st.session_state.pop("prefill_otp_code", None)
-                                st.success("🎉 تم تفعيل تجربتك المجانية لمدة 3 أيام! يمكنك الآن تسجيل الدخول فوراً.")
-                                time.sleep(1.5)
-                                st.session_state["landing_step"] = "login"
+                                st.session_state["active_merchant_user"] = reg_email
+                                st.success("🎉 تم تأكيد حسابك وتفعيل تجربتك المجانية (3 أيام)! جاري فتح متجرك...")
+                                time.sleep(0.8)
                                 st.rerun()
                             else:
                                 st.error("رمز التحقق غير صحيح.")
+
 
 
                     with col_v2:
