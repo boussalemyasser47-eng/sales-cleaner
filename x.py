@@ -1293,191 +1293,147 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
     # 🔑 (2) صفحة التسجيل والدخول الأصلية (تظهر وحدها ولا تظهر الشكاوى معها)
     # 🔑 (2) صفحة التسجيل والدخول الاحترافية بنمط الشركات (Enterprise Split-Screen)
+    # 🌐 (2) واجهة الهبوط السينمائية ذات الخلفيات المتغيرة زمنياً + صفحة الدخول/التسجيل المعزولة
     else:
+        if "landing_step" not in st.session_state:
+            st.session_state["landing_step"] = "home"
+
+        if st.session_state.get("otp_pending_verification", False):
+            st.session_state["landing_step"] = "register"
+
         st.markdown("""
             <style>
             @import url('https://googleapis.com');
-            
+
+            @keyframes corporateBgCycle {
+                0%   { background: radial-gradient(circle at 20% 20%, #0F292E 0%, #090D16 60%, #05070C 100%); }
+                33%  { background: radial-gradient(circle at 80% 30%, #111E38 0%, #090D16 60%, #05070C 100%); }
+                66%  { background: radial-gradient(circle at 50% 80%, #0D2B26 0%, #090D16 60%, #05070C 100%); }
+                100% { background: radial-gradient(circle at 20% 20%, #0F292E 0%, #090D16 60%, #05070C 100%); }
+            }
+
             .stApp {
-                background: #090D16 !important;
-                animation: none !important;
+                animation: corporateBgCycle 14s ease-in-out infinite !important;
                 font-family: 'IBM Plex Sans Arabic', sans-serif !important;
             }
-            
-            /* إلغاء التوهج المبالغ فيه وتوحيد الخط الرسمي */
+
             p, span, label, h1, h2, h3, h4, div {
                 font-family: 'IBM Plex Sans Arabic', sans-serif !important;
                 text-shadow: none !important;
             }
 
-            /* بطاقة الهوية والثقة (الجانب التعريفي) */
-            .enterprise-brand-box {
-                background: linear-gradient(145deg, #0F172A 0%, #090D16 100%) !important;
-                border: 1px solid #1E293B !important;
-                border-radius: 16px !important;
-                padding: 36px 32px !important;
+            .hero-landing-container {
+                max-width: 820px;
+                margin: 55px auto 25px auto;
+                padding: 50px 40px;
+                background: rgba(15, 23, 42, 0.65) !important;
+                backdrop-filter: blur(18px) !important;
+                border: 1px solid rgba(148, 163, 184, 0.18) !important;
+                border-radius: 24px !important;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+                text-align: center;
                 direction: rtl;
-                text-align: right;
-                height: 100%;
             }
-            .brand-badge {
+            .hero-pill {
                 display: inline-block;
                 background: rgba(16, 185, 129, 0.12);
-                color: #10B981 !important;
-                border: 1px solid rgba(16, 185, 129, 0.3);
-                padding: 4px 12px;
-                border-radius: 20px;
-                font-size: 12px;
+                border: 1px solid rgba(16, 185, 129, 0.35);
+                color: #34D399 !important;
+                padding: 6px 18px;
+                border-radius: 999px;
+                font-size: 13px;
                 font-weight: 600;
-                margin-bottom: 16px;
+                margin-bottom: 20px;
             }
-            .brand-title {
+            .hero-main-title {
                 color: #F8FAFC !important;
-                font-size: 28px !important;
-                font-weight: 700 !important;
-                line-height: 1.4 !important;
-                margin-bottom: 12px !important;
-            }
-            .brand-subtitle {
-                color: #94A3B8 !important;
-                font-size: 15px !important;
-                line-height: 1.7 !important;
-                margin-bottom: 28px !important;
-            }
-            .feature-row {
-                display: flex;
-                align-items: flex-start;
-                gap: 12px;
-                margin-bottom: 18px;
-                background: rgba(30, 41, 59, 0.4) !important;
-                border: 1px solid #1E293B !important;
-                padding: 14px 16px !important;
-                border-radius: 10px !important;
-            }
-            .feature-icon {
-                color: #10B981 !important;
-                font-size: 18px;
-                font-weight: bold;
-            }
-            .feature-text-title {
-                color: #F1F5F9 !important;
-                font-weight: 600;
-                font-size: 14px;
-                margin-bottom: 2px;
-            }
-            .feature-text-desc {
-                color: #94A3B8 !important;
-                font-size: 12.5px;
-            }
-
-            /* بطاقة النموذج (الجانب التفاعلي) */
-            .enterprise-form-header {
-                background: #111827 !important;
-                border: 1px solid #1F2937 !important;
-                border-radius: 14px !important;
-                padding: 20px 24px !important;
+                font-size: 40px !important;
+                font-weight: 800 !important;
+                line-height: 1.3 !important;
                 margin-bottom: 16px !important;
-                direction: rtl;
-                text-align: right;
             }
-
-            /* تنسيق حقول الإدخال الاحترافية */
+            .hero-sub-desc {
+                color: #94A3B8 !important;
+                font-size: 17px !important;
+                line-height: 1.7 !important;
+                max-width: 620px;
+                margin: 0 auto 10px auto !important;
+            }
             div[data-testid="stTextInput"] input {
                 background-color: #0B0F19 !important;
                 border: 1px solid #334155 !important;
-                border-radius: 8px !important;
+                border-radius: 10px !important;
                 color: #F8FAFC !important;
-                padding: 10px 14px !important;
+                padding: 12px 14px !important;
                 font-size: 14px !important;
                 box-shadow: none !important;
             }
             div[data-testid="stTextInput"] input:focus {
                 border-color: #10B981 !important;
-                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
             }
-
-            /* تنسيق الأزرار بنمط الشركات */
             div.stButton button, .stButton > button {
                 background: #10B981 !important;
                 color: #022C22 !important;
                 border: none !important;
-                border-radius: 8px !important;
+                border-radius: 10px !important;
                 font-weight: 700 !important;
-                font-size: 14.5px !important;
-                min-height: 44px !important;
-                box-shadow: none !important;
+                font-size: 15.5px !important;
+                min-height: 50px !important;
+                box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
             }
             div.stButton button:hover {
                 background: #059669 !important;
                 color: #FFFFFF !important;
-                transform: none !important;
-                box-shadow: none !important;
+                transform: translateY(-2px) !important;
             }
             </style>
         """, unsafe_allow_html=True)
 
-        st.markdown("<div style='height: 25px;'></div>", unsafe_allow_html=True)
-        col_brand, col_form = st.columns([1.05, 1], gap="large")
-
-        with col_brand:
+        if st.session_state["landing_step"] == "home":
             st.markdown("""
-                <div class="enterprise-brand-box">
-                    <span class="brand-badge">Tijaratna DataDZ • منصة التجارة السحابية</span>
-                    <div class="brand-title">أدِر متجرك الإلكتروني في الجزائر بدقة واحترافية عالية</div>
-                    <div class="brand-subtitle">
-                        منصة متكاملة لإصدار الفواتير الموثقة، حماية متجرك من المرتجعات، ومزامنة مخزونك سحابياً في الوقت الفعلي.
-                    </div>
-                    <div class="feature-row">
-                        <div class="feature-icon">✓</div>
-                        <div>
-                            <div class="feature-text-title">رادار الحماية من المرتجعات (Anti-Retour)</div>
-                            <div class="feature-text-desc">تنبيه فوري قبل الشحن لأرقام الهواتف ذات السجل السلبي وإرجاع تلقائي للمخزون.</div>
-                        </div>
-                    </div>
-                    <div class="feature-row">
-                        <div class="feature-icon">✓</div>
-                        <div>
-                            <div class="feature-text-title">فواتير مزدوجة اللغة وملصقات شحن 4x4</div>
-                            <div class="feature-text-desc">توليد فوري للفواتير باللغتين العربية والفرنسية مع ختم QR Code وشعار متجرك.</div>
-                        </div>
-                    </div>
-                    <div class="feature-row">
-                        <div class="feature-icon">✓</div>
-                        <div>
-                            <div class="feature-text-title">بنية سحابية معزولة ومؤمّنة بالكامل</div>
-                            <div class="feature-text-desc">قاعدة بيانات مستقلة ونسخ احتياطي تلقائي مستمر لضمان عدم فقدان أي معاملة.</div>
-                        </div>
+                <div class="hero-landing-container">
+                    <span class="hero-pill">Tijaratna DataDZ • الجيل الجديد لإدارة التجارة الإلكترونية</span>
+                    <div class="hero-main-title">تحكّم في مبيعاتك، مخزونك، وفواتيرك من مكان واحد</div>
+                    <div class="hero-sub-desc">
+                        نظام سحابي متكامل مصمم للتجار في الجزائر لإصدار الفواتير المزدوجة، كشف الزبائن الوهميين، ومضاعفة أرباحك الصافية بدقة.
                     </div>
                 </div>
             """, unsafe_allow_html=True)
-        with col_form:
-            st.markdown("""
-                <div class="enterprise-form-header">
-                    <h3 style="color: #F8FAFC !important; margin: 0 0 4px 0; font-size: 20px; font-weight: 700;">بوابة الوصول إلى المنصة</h3>
-                    <p style="color: #94A3B8 !important; margin: 0; font-size: 13px;">سجّل الدخول إلى لوحة تحكم متجرك أو أنشئ حساباً تجارياً جديداً.</p>
-                </div>
-            """, unsafe_allow_html=True)
 
-            default_auth_idx = 1 if st.session_state.get("otp_pending_verification", False) else 0
-            auth_mode = st.radio(
-                "نوع العملية:",
-                ["تسجيل الدخول", "إنشاء حساب جديد"],
-                index=default_auth_idx,
-                horizontal=True,
-                label_visibility="collapsed",
-                key="auth_mode_radio"
-            )
+            _, col_cta1, col_cta2, _ = st.columns([1.2, 1.3, 1.3, 1.2], gap="medium")
+            with col_cta1:
+                if st.button("إنشاء حساب تاجر جديد", key="hero_go_register_btn"):
+                    st.session_state["landing_step"] = "register"
+                    st.rerun()
+            with col_cta2:
+                if st.button("تسجيل الدخول إلى متجرك", key="hero_go_login_btn"):
+                    st.session_state["landing_step"] = "login"
+                    st.rerun()
 
-            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
+            _, col_supp, _ = st.columns([2, 1.2, 2])
+            with col_supp:
+                if st.button("مركز الدعم الفني والشكاوى", key="go_to_complaint_page_btn"):
+                    st.session_state["current_view"] = "complaint_page"
+                    st.rerun()
+        elif st.session_state["landing_step"] == "login":
+            _, col_login_box, _ = st.columns([1.1, 1.4, 1.1])
+            with col_login_box:
+                st.markdown("""
+                    <div style="background: #111827; border: 1px solid #1F2937; border-radius: 16px; padding: 24px; margin-top: 30px; margin-bottom: 18px; direction: rtl; text-align: right;">
+                        <h2 style="color: #F8FAFC !important; margin: 0 0 6px 0; font-size: 22px; font-weight: 700;">تسجيل الدخول إلى المتجر</h2>
+                        <p style="color: #94A3B8 !important; margin: 0; font-size: 13.5px;">أدخل بيانات حسابك للوصول إلى لوحة التحكم الخاصة بك.</p>
+                    </div>
+                """, unsafe_allow_html=True)
 
-            if auth_mode == "تسجيل الدخول":
                 input_email = st.text_input("البريد الإلكتروني", placeholder="name@gmail.com", key="merchant_em")
                 input_password = st.text_input("كلمة المرور", type="password", placeholder="••••••••", key="merchant_pw")
                 clean_email = input_email.strip()
                 clean_pass = input_password.strip()
 
                 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
-                if st.button("تسجيل الدخول إلى لوحة التحكم", key="login_submit_enterprise"):
+                if st.button("دخول إلى لوحة التحكم", key="login_submit_enterprise"):
                     if clean_email == "" or clean_pass == "":
                         st.error("يرجى إدخال البريد الإلكتروني وكلمة المرور.")
                     else:
@@ -1490,7 +1446,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         if user_status_row:
                             if "مفعّل" in str(user_status_row[0]):
                                 st.session_state["active_merchant_user"] = clean_email
-                                st.success("تم التحقق بنجاح. جاري تحويلك إلى لوحة التحكم...")
+                                st.success("تم التحقق بنجاح. جاري فتح لوحة التحكم...")
                                 time.sleep(0.5)
                                 st.rerun()
                             else:
@@ -1498,7 +1454,26 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         else:
                             st.error("بيانات الدخول غير صحيحة، يرجى التحقق والمحاولة مرة أخرى.")
 
-            else:
+                st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+                col_nav1, col_nav2 = st.columns(2)
+                with col_nav1:
+                    if st.button("إنشاء حساب جديد", key="switch_to_reg_btn"):
+                        st.session_state["landing_step"] = "register"
+                        st.rerun()
+                with col_nav2:
+                    if st.button("العودة للرئيسية", key="back_home_from_login"):
+                        st.session_state["landing_step"] = "home"
+                        st.rerun()
+        elif st.session_state["landing_step"] == "register":
+            _, col_reg_box, _ = st.columns([0.9, 1.8, 0.9])
+            with col_reg_box:
+                st.markdown("""
+                    <div style="background: #111827; border: 1px solid #1F2937; border-radius: 16px; padding: 24px; margin-top: 20px; margin-bottom: 18px; direction: rtl; text-align: right;">
+                        <h2 style="color: #F8FAFC !important; margin: 0 0 6px 0; font-size: 22px; font-weight: 700;">إنشاء حساب تاجر جديد</h2>
+                        <p style="color: #94A3B8 !important; margin: 0; font-size: 13.5px;">اختر الباقة المناسبة لحجم مبيعاتك وابدأ في تنظيم متجرك فوراً.</p>
+                    </div>
+                """, unsafe_allow_html=True)
+
                 if "otp_pending_verification" not in st.session_state:
                     st.session_state["otp_pending_verification"] = False
 
@@ -1540,7 +1515,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                                 subject = f"رمز التحقق ({generated_otp}) لتفعيل حسابك في Tijaratna"
                                 body = f"مرحباً بك،\n\nرمز التحقق الخاص بتفعيل حسابك هو: {generated_otp}\n\nيرجى إدخاله في المنصة لإتمام التسجيل."
-                                base_app_url = "https://" + "tijaratna-data-juzl8awsg5r2qxtbbuifbt" + "." + "streamlit" + "." + "app/"
+                                base_app_url = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
                                 magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(clean_email)}&code={generated_otp}"
 
                                 if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=magic_otp_link):
@@ -1626,7 +1601,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 st.session_state["otp_sent_at"] = time.time()
                                 subject = f"رمز التحقق الجديد ({generated_otp}) لتفعيل حسابك"
                                 body = f"رمز التحقق الجديد الخاص بك هو: {generated_otp}"
-                                base_app_url = "https://" + "tijaratna-data-juzl8awsg5r2qxtbbuifbt" + "." + "streamlit" + "." + "app/"
+                                base_app_url = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
                                 magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(target_mail)}&code={generated_otp}"
                                 if send_gmail_notification(target_mail, subject, body, action_type="OTP", action_url=magic_otp_link):
                                     st.success("تم إرسال رمز جديد.")
@@ -1638,10 +1613,16 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         st.session_state.pop("otp_sent_at", None)
                         st.rerun()
 
-            st.markdown("<hr style='border-color: #1E293B; margin: 20px 0;'>", unsafe_allow_html=True)
-            if st.button("مركز الدعم الفني والشكاوى", key="go_to_complaint_page_btn"):
-                st.session_state["current_view"] = "complaint_page"
-                st.rerun()
+                st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+                col_nav_r1, col_nav_r2 = st.columns(2)
+                with col_nav_r1:
+                    if st.button("لدي حساب بالفعل (تسجيل الدخول)", key="switch_to_login_btn"):
+                        st.session_state["landing_step"] = "login"
+                        st.rerun()
+                with col_nav_r2:
+                    if st.button("العودة للرئيسية", key="back_home_from_reg"):
+                        st.session_state["landing_step"] = "home"
+                        st.rerun()
 
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
