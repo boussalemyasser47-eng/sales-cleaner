@@ -2168,13 +2168,13 @@ if is_boss_link:
 
                         # 📧 إرسال الإيميل مع إظهار شاشة انتظار لضمان عدم قطع الاتصال
                      # 📧 إرسال الإيميل مع إظهار بطاقة الانتظار الاحترافية
-                     loader_slot = st.empty()
-                     loader_slot.markdown("<div class='enterprise-shimmer-box'><div class='corp-dual-spinner'></div><span>جاري تفعيل الحساب وإرسال البريد الإلكتروني...</span></div>", unsafe_allow_html=True)
-                     welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
-                     welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك."
-                     send_gmail_notification_with_log(current_email, welcome_subject, welcome_body, action_type="ACTIVATE")
-                     loader_slot.empty()
-                     time.sleep(1.0)
+                        loader_slot = st.empty()
+                        loader_slot.markdown("<div class='enterprise-shimmer-box'><div class='corp-dual-spinner'></div><span>جاري تفعيل الحساب وإرسال البريد الإلكتروني...</span></div>", unsafe_allow_html=True)
+                        welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
+                        welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك."
+                        send_gmail_notification_with_log(current_email, welcome_subject, welcome_body, action_type="ACTIVATE")
+                        loader_slot.empty()
+                        time.sleep(1.0)
 
                            إعطاء مهلة كافية لسيرفر جوجل لإنهاء الإرسال
             
