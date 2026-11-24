@@ -1732,11 +1732,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                     st.rerun()
                                 loader_slot.empty()
 
-
-                                    st.session_state["otp_pending_verification"] = True
-                                    st.success(f"تم إرسال رمز التحقق إلى {clean_email}")
-                                    time.sleep(0.5)
-                                    st.rerun()
                 else:
                     target_mail = st.session_state.get('temp_reg_email', '')
                     st.info(f"تم إرسال رمز مكون من 6 أرقام إلى: **{target_mail}**")
