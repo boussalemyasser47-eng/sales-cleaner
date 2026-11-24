@@ -915,32 +915,7 @@ div[data-testid="stStatusWidget"] * {
     100% { background-position: 0% 0; }
 }
 
-/* ✨ 2. بطاقة الانتظار المتموجة الاحترافية (Enterprise Shimmer Box) */
-.enterprise-shimmer-box {
-    position: relative;
-    overflow: hidden;
-    background: #111827 !important;
-    border: 1px solid rgba(16, 185, 129, 0.4) !important;
-    border-radius: 12px !important;
-    padding: 16px 20px !important;
-    margin: 12px 0 !important;
-    text-align: center;
-    color: #10B981 !important;
-    font-weight: 700;
-    font-size: 14px;
-}
-.enterprise-shimmer-box::after {
-    content: "";
-    position: absolute;
-    top: 0; left: -100%;
-    width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.18), transparent);
-    animation: shimmerSweep 1.5s infinite;
-}
-@keyframes shimmerSweep {
-    100% { left: 100%; }
-}
- 
+
     /* 💎 صبغ العدادات الثلاثية والمقاييس المستقلة بالبلور الزجاجي والنيون الفاخر المشع */
     div[data-testid="stMetricBlock"], div[data-testid="metric-container"], .premium-card-cyan, .premium-card-pink {
         background: linear-gradient(135deg, rgba(15, 2, 20, 0.85) 0%, rgba(5, 5, 12, 0.98) 100%) !important;
