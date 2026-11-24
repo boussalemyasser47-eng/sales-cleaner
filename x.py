@@ -846,6 +846,54 @@ st.markdown("""
         color: #ffffff !important;
         font-family: 'Cairo', sans-serif !important;
     }
+
+    /* 🌟 شريط التحميل الضوئي التلقائي في أعلى الشاشة عند أي عملية */
+    div[data-testid="stStatusWidget"] {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 4px !important;
+        z-index: 999999 !important;
+        background: linear-gradient(90deg, #10B981, #00fff0, #3B82F6, #10B981) !important;
+        background-size: 200% 100% !important;
+        animation: topLaserMove 1.2s linear infinite !important;
+        overflow: hidden !important;
+    }
+    div[data-testid="stStatusWidget"] * {
+        display: none !important;
+    }
+    @keyframes topLaserMove {
+        0% { background-position: 200% 0; }
+        100% { background-position: 0% 0; }
+    }
+
+    /* ✨ بطاقة الانتظار المتموجة الاحترافية (Enterprise Shimmer Box) */
+    .enterprise-shimmer-box {
+        position: relative;
+        overflow: hidden;
+        background: #111827 !important;
+        border: 1px solid rgba(16, 185, 129, 0.4) !important;
+        border-radius: 12px !important;
+        padding: 16px 20px !important;
+        margin: 12px 0 !important;
+        text-align: center;
+        color: #10B981 !important;
+        font-weight: 700;
+        font-size: 14px;
+    }
+    .enterprise-shimmer-box::after {
+        content: "";
+        position: absolute;
+        top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.18), transparent);
+        animation: shimmerSweep 1.5s infinite;
+    }
+    @keyframes shimmerSweep {
+        100% { left: 100%; }
+    }
+
    /* 🌟 1. شريط التحميل الضوئي التلقائي في أعلى الشاشة عند أي عملية (مثل YouTube / Linear) */
 div[data-testid="stStatusWidget"] {
     position: fixed !important;
