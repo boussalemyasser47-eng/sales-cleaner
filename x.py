@@ -1200,77 +1200,71 @@ def render_premium_neon_packages():
     sel_p = "border: 2px solid #10B981 !important; background: rgba(16, 185, 129, 0.1) !important;" if "الاحترافية" in current_choice else "border: 1px solid #334155 !important; background: #0F172A !important;"
     sel_c = "border: 2px solid #10B981 !important; background: rgba(16, 185, 129, 0.08) !important;" if "السيبرانية" in current_choice else "border: 1px solid #1E293B !important; background: #0F172A !important;"
 
-    st.markdown(f"""
-        <style>
-        .pricing-grid-3 {{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: 14px;
-            margin: 14px 0 18px 0;
-            direction: rtl;
-            text-align: right;
-        }}
-        .price-card {{
-            border-radius: 16px;
-            padding: 20px 16px;
-            transition: all 0.25s ease;
-            position: relative;
-        }}
-        .popular-ribbon {{
-            display: inline-block;
-            background: #10B981;
-            color: #022C22 !important;
-            font-size: 11px;
-            font-weight: 800;
-            padding: 3px 10px;
-            border-radius: 999px;
-            margin-bottom: 8px;
-        }}
-        .p-name {{ color: #F8FAFC !important; font-size: 16px; font-weight: 700; margin-bottom: 4px; }}
-        .p-cost {{ color: #10B981 !important; font-size: 21px; font-weight: 800; }}
-        .p-daily {{ color: #94A3B8 !important; font-size: 11.5px; margin-bottom: 12px; border-bottom: 1px solid #1E293B; padding-bottom: 8px; }}
-        .p-item {{ color: #CBD5E1 !important; font-size: 12.5px; margin: 6px 0; line-height: 1.45; }}
-        .p-no {{ color: #64748B !important; font-size: 12px; margin: 6px 0; text-decoration: line-through; }}
-        </style>
-
-        <div class="pricing-grid-3">
-            <!-- الباقة 1 -->
-            <div class="price-card" style="{sel_b}">
-                <div class="p-name">🌱 الباقة الأساسية</div>
-                <div class="p-cost">29,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
-                <div class="p-daily">تعادل 79 دج فقط يومياً</div>
-                <div class="p-item">✓ فواتير PDF وملصقات حرارية 4x4</div>
-                <div class="p-item">✓ إدارة المخزون ورادار القائمة السوداء</div>
-                <div class="p-item">✓ إرسال الطلبات عبر WhatsApp</div>
-                <div class="p-no">✕ مطهر ملفات Excel والولايات</div>
-                <div class="p-no">✕ مولّد الإعلانات الذكي AI</div>
-            </div>
-
-            <!-- الباقة 2 (الأكثر طلباً) -->
-            <div class="price-card" style="{sel_p}">
-                <span class="popular-ribbon">⭐ الأكثر طلباً من التجار</span>
-                <div class="p-name">💎 الباقة الاحترافية</div>
-                <div class="p-cost">45,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
-                <div class="p-daily">تعادل 123 دج فقط يومياً</div>
-                <div class="p-item">✓ <b>كل مميزات الباقة الأساسية</b></div>
-                <div class="p-item">✓ مطهر ملفات Excel والبيانات</div>
-                <div class="p-item">✓ رادار الولايات الأكثر مبيعاً</div>
-                <div class="p-item">✓ مساعد تجاري لحلول الشحن</div>
-                <div class="p-no">✕ مولّد الإعلانات وسيناريو الفيديو AI</div>
-            </div>
-
-            <!-- الباقة 3 -->
-            <div class="price-card" style="{sel_c}">
-                <div class="p-name">⚡ الباقة السيبرانية</div>
-                <div class="p-cost">65,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
-                <div class="p-daily">تعادل 178 دج فقط يومياً</div>
-                <div class="p-item">✓ <b>كل مميزات الباقتين السابقتين</b></div>
-                <div class="p-item">✓ صياغة إعلانات بالدارجة الجزائرية AI</div>
-                <div class="p-item">✓ سيناريو فيديو TikTok و Reels</div>
-                <div class="p-item">✓ عداد قوة الإعلان وحاسبة ROI</div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    html_cards = f"""
+<style>
+.pricing-grid-3 {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin: 14px 0 18px 0;
+    direction: rtl;
+    text-align: right;
+}}
+.price-card {{
+    border-radius: 16px;
+    padding: 20px 16px;
+    transition: all 0.25s ease;
+}}
+.popular-ribbon {{
+    display: inline-block;
+    background: #10B981;
+    color: #022C22 !important;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+}}
+.p-name {{ color: #F8FAFC !important; font-size: 16px; font-weight: 700; margin-bottom: 4px; }}
+.p-cost {{ color: #10B981 !important; font-size: 21px; font-weight: 800; }}
+.p-daily {{ color: #94A3B8 !important; font-size: 11.5px; margin-bottom: 12px; border-bottom: 1px solid #1E293B; padding-bottom: 8px; }}
+.p-item {{ color: #CBD5E1 !important; font-size: 12.5px; margin: 6px 0; line-height: 1.45; }}
+.p-no {{ color: #64748B !important; font-size: 12px; margin: 6px 0; text-decoration: line-through; }}
+</style>
+<div class="pricing-grid-3">
+<div class="price-card" style="{sel_b}">
+<div class="p-name">🌱 الباقة الأساسية</div>
+<div class="p-cost">29,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
+<div class="p-daily">تعادل 79 دج فقط يومياً</div>
+<div class="p-item">✓ فواتير PDF وملصقات حرارية 4x4</div>
+<div class="p-item">✓ إدارة المخزون ورادار القائمة السوداء</div>
+<div class="p-item">✓ إرسال الطلبات عبر WhatsApp</div>
+<div class="p-no">✕ مطهر ملفات Excel والولايات</div>
+<div class="p-no">✕ مولّد الإعلانات الذكي AI</div>
+</div>
+<div class="price-card" style="{sel_p}">
+<span class="popular-ribbon">⭐ الأكثر طلباً من التجار</span>
+<div class="p-name">💎 الباقة الاحترافية</div>
+<div class="p-cost">45,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
+<div class="p-daily">تعادل 123 دج فقط يومياً</div>
+<div class="p-item">✓ <b>كل مميزات الباقة الأساسية</b></div>
+<div class="p-item">✓ مطهر ملفات Excel والبيانات</div>
+<div class="p-item">✓ رادار الولايات الأكثر مبيعاً</div>
+<div class="p-item">✓ مساعد تجاري لحلول الشحن</div>
+<div class="p-no">✕ مولّد الإعلانات وسيناريو الفيديو AI</div>
+</div>
+<div class="price-card" style="{sel_c}">
+<div class="p-name">⚡ الباقة السيبرانية</div>
+<div class="p-cost">65,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
+<div class="p-daily">تعادل 178 دج فقط يومياً</div>
+<div class="p-item">✓ <b>كل مميزات الباقتين السابقتين</b></div>
+<div class="p-item">✓ صياغة إعلانات بالدارجة الجزائرية AI</div>
+<div class="p-item">✓ سيناريو فيديو TikTok و Reels</div>
+<div class="p-item">✓ عداد قوة الإعلان وحاسبة ROI</div>
+</div>
+</div>
+"""
+    st.markdown(html_cards, unsafe_allow_html=True)
 
     chosen_package = st.radio(
         "حدد الباقة التي تناسب متجرك (تبدأ بـ 3 أيام تجربة مجانية):",
@@ -1280,6 +1274,7 @@ def render_premium_neon_packages():
         key="selected_neon_package"
     )
     return chosen_package
+
 
 
 def validate_and_process_registration(email, password):
