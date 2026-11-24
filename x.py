@@ -1391,6 +1391,14 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         """, unsafe_allow_html=True)
 
         if st.session_state["landing_step"] == "home":
+         nav_col_brand, _, nav_col_support = st.columns([2, 3, 1.2])
+         with nav_col_brand:
+             st.markdown("<div style='color: #F8FAFC; font-weight: 800; font-size: 20px; padding-top: 8px; direction: rtl; text-align: right;'>Tijaratna <span style='color: #10B981;'>DataDZ</span></div>", unsafe_allow_html=True)
+         with nav_col_support:
+             if st.button("الدعم الفني والشكاوى", key="top_navbar_support_btn"):
+                 st.session_state["current_view"] = "complaint_page"
+                 st.rerun()
+
             st.markdown("""
                 <div class="hero-landing-container">
                     <span class="hero-pill">Tijaratna DataDZ • الجيل الجديد لإدارة التجارة الإلكترونية</span>
@@ -1515,10 +1523,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
             st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
             _, col_supp, _ = st.columns([2, 1.2, 2])
-            with col_supp:
-                if st.button("مركز الدعم الفني والشكاوى", key="go_to_complaint_page_btn"):
-                    st.session_state["current_view"] = "complaint_page"
-                    st.rerun()
+ 
         elif st.session_state["landing_step"] == "login":
             _, col_login_box, _ = st.columns([1.1, 1.4, 1.1])
             with col_login_box:
