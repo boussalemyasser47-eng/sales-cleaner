@@ -2183,7 +2183,33 @@ if is_boss_link:
     # 👑 [المستوى الثاني مقفل ومحمي]: تنبثق العدادات والرادار هنا حصرياً وفقط بعد نجاح تسجيل الدخول
     else:
         st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900; text-shadow: 0 0 25px #00fff0;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
-        
+        # 📡 رادار التحديث الصامت التلقائي (يفحص وجود تغييرات كل 10 ثوانٍ دون إبطاء الموقع)
+        @st.fragment(run_every="10s")
+        def auto_watch_github_changes():
+            try:
+                tk_w = st.secrets.get("GITHUB_TOKEN")
+                rp_w = st.secrets.get("GITHUB_REPO")
+                if tk_w and rp_w:
+                    api_w = "https://" + "api" + "." + "github" + "." + "com/repos"
+                    url_w = f"{api_w}/{rp_w}/contents/saas_security_vault.db"
+                    headers_w = {"Authorization": f"Bearer {tk_w}", "Accept": "application/vnd.github.v3+json"}
+                    res_w = requests.get(url_w, headers=headers_w, timeout=5)
+                    if res_w.status_code == 200:
+                        data_w = res_w.json()
+                        remote_sha = data_w.get("sha")
+                        if remote_sha and st.session_state.get("last_known_db_sha") != remote_sha:
+                            with open("saas_security_vault.db", "wb") as f_w:
+                                f_w.write(base64.b64decode(data_w["content"]))
+                            first_run = "last_known_db_sha" not in st.session_state
+                            st.session_state["last_known_db_sha"] = remote_sha
+                            if not first_run:
+                                st.toast("🔔 وصل تحديث جديد! جاري عرض أحدث الحسابات...")
+                                st.rerun()
+            except Exception:
+                pass
+
+        auto_watch_github_changes()
+
         # 1️⃣ قراءة بيانات قاعدة البيانات بالكامل
         conn_hud = sqlite3.connect("saas_security_vault.db", timeout=10)
         try:
