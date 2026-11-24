@@ -1,4 +1,4 @@
-import streamlit as st
+
 import os
 import base64
 import threading
@@ -846,7 +846,56 @@ st.markdown("""
         color: #ffffff !important;
         font-family: 'Cairo', sans-serif !important;
     }
-    
+ .enterprise-shimmer-box {
+     position: relative;
+     overflow: hidden;
+     background: #0B1120 !important;
+     border: 1px solid rgba(16, 185, 129, 0.45) !important;
+     border-radius: 14px !important;
+     padding: 20px !important;
+     margin: 14px 0 !important;
+     display: flex !important;
+     align-items: center !important;
+     justify-content: center !important;
+     gap: 14px !important;
+     color: #F8FAFC !important;
+     font-weight: 700 !important;
+     font-size: 14.5px !important;
+     box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15) !important;
+ }
+ .corp-dual-spinner {
+     position: relative;
+     width: 28px;
+     height: 28px;
+     flex-shrink: 0;
+ }
+ .corp-dual-spinner::before,
+ .corp-dual-spinner::after {
+     content: "";
+     position: absolute;
+     border-radius: 50%;
+     inset: 0;
+ }
+ .corp-dual-spinner::before {
+     border: 3px solid transparent;
+     border-top-color: #10B981;
+     border-right-color: #10B981;
+     animation: spinClockwise 0.85s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+ }
+ .corp-dual-spinner::after {
+     inset: 5px;
+     border: 2.5px solid transparent;
+     border-bottom-color: #38BDF8;
+     border-left-color: #38BDF8;
+     animation: spinCounter 0.65s linear infinite;
+ }
+ @keyframes spinClockwise {
+     to { transform: rotate(360deg); }
+ }
+ @keyframes spinCounter {
+     to { transform: rotate(-360deg); }
+ }
+
     /* 💎 صبغ العدادات الثلاثية والمقاييس المستقلة بالبلور الزجاجي والنيون الفاخر المشع */
     div[data-testid="stMetricBlock"], div[data-testid="metric-container"], .premium-card-cyan, .premium-card-pink {
         background: linear-gradient(135deg, rgba(15, 2, 20, 0.85) 0%, rgba(5, 5, 12, 0.98) 100%) !important;
@@ -2118,9 +2167,13 @@ if is_boss_link:
 
                         # 📧 إرسال الإيميل مع إظهار شاشة انتظار لضمان عدم قطع الاتصال
                         with st.spinner("جاري إرسال البريد الإلكتروني..."):
+                            loader_slot = st.empty()
+                            loader_slot.markdown("<div class='enterprise-shimmer-box'><div class='corp-dual-spinner'></div><span>جاري تفعيل الحساب وإرسال البريد الإلكتروني...</span></div>", unsafe_allow_html=True)
                             welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
                             welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك."
-                            send_gmail_notification_with_log(current_email, welcome_subject, welcome_body, action_type="ACTIVATE")                        
+                            send_gmail_notification_with_log(current_email, welcome_subject, welcome_body, action_type="ACTIVATE")
+                            loader_slot.empty()
+                      
                             time.sleep(1.5) # إعطاء مهلة كافية لسيرفر جوجل لإنهاء الإرسال
             
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
