@@ -1755,6 +1755,20 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 html, body, div, section {{
                     scroll-behavior: smooth !important;
                 }}
+                @keyframes revealOnScroll {{
+                    0%, 8% {{
+                        opacity: 0;
+                        visibility: hidden;
+                        transform: translateY(18px) scale(0.85);
+                        pointer-events: none;
+                    }}
+                    15%, 100% {{
+                        opacity: 1;
+                        visibility: visible;
+                        transform: translateY(0) scale(1);
+                        pointer-events: auto;
+                    }}
+                }}
                 .scroll-top-btn {{
                     position: fixed;
                     bottom: 24px;
@@ -1773,13 +1787,15 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     text-decoration: none !important;
                     box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
                     z-index: 9999999;
-                    transition: all 0.3s ease;
+                    animation: revealOnScroll linear both;
+                    animation-timeline: scroll(root block);
+                    animation-range: 0px 300px;
                 }}
                 .scroll-top-btn:hover {{
                     background: #059669 !important;
                     color: #FFFFFF !important;
-                    transform: translateY(-3px);
                 }}
+
                 </style>
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
