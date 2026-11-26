@@ -2901,6 +2901,38 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 if st.button("✅ فهمت", key=f"ack_upd_btn_{upd_id}"):
                     st.session_state[dismiss_key] = True
                     st.rerun()
+    # 🔔 جرس إشعارات التحديثات في الزاوية العلوية (مثل منصات SaaS الحديثة)
+    conn_chk_upd = sqlite3.connect("saas_security_vault.db", timeout=10)
+    try:
+        latest_upd = conn_chk_upd.cursor().execute(
+            "SELECT id, created_at, target_group, title, message FROM platform_updates ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+    except Exception:
+        latest_upd = None
+    conn_chk_upd.close()
+
+    if latest_upd:
+        upd_id, upd_date, upd_grp, upd_title, upd_msg = latest_upd
+        dismiss_key = f"dismissed_upd_{current_merchant}_{upd_id}"
+        show_to_user = (
+            upd_grp == "جميع التجار"
+            or (upd_grp == "التجار النشطون (مفعّل)" and "مفعّل" in user_actual_status)
+            or (upd_grp == "التجار في الفترة التجريبية" and is_trial_account)
+        )
+        if show_to_user and not st.session_state.get(dismiss_key, False):
+            col_bell_corner, _ = st.columns([1.3, 4.5])
+            with col_bell_corner:
+                with st.popover(f"🔔 تحديث جديد (1)"):
+                    st.markdown(f"""
+                        <div style="direction: rtl; text-align: right; min-width: 260px;">
+                            <div style="color: #10B981; font-weight: 800; font-size: 14px; margin-bottom: 6px;">🚀 {upd_title}</div>
+                            <div style="color: #94A3B8; font-size: 11px; margin-bottom: 8px;">📅 {upd_date}</div>
+                            <div style="color: #E2E8F0; font-size: 13px; line-height: 1.6; margin-bottom: 12px;">{upd_msg}</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    if st.button("✅ تم الاطلاع (إخفاء)", key=f"ack_upd_btn_{upd_id}"):
+                        st.session_state[dismiss_key] = True
+                        st.rerun()
 
     if is_trial_account:
         col_tr_msg, col_tr_btn = st.columns([4, 1.2])
