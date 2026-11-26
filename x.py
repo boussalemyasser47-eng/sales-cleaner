@@ -2949,6 +2949,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         available_tools.append("🧼 مطهر ملفات المبيعات وإحصائيات الولايات")
         available_tools.append("🚀 مولّد الحملات والتخطيط التسويقي (AI)")
         
+    available_tools.append("⚙️ إعدادات الحساب والأمان")
     st.sidebar.markdown(f"<p style='color: #00fff0; font-weight: bold; text-align:center;'>👤 التاجر النشط:<br>{current_merchant}<br><span style='color:#ffaa00;'>باقة: {user_package}</span></p>", unsafe_allow_html=True)
     st.sidebar.markdown("<h2 style='color: #00ffcc; text-align: center; font-size: 24px;'>🛠️ التحكم</h2>", unsafe_allow_html=True)
     choice = st.sidebar.radio("اختر الأداة التي تريد استخدامها:", available_tools, key="merchant_navigation_radio")
@@ -3991,4 +3992,62 @@ if "choice" in locals() or "choice" in globals():
         render_marketing_hub_cyber_edition()
         
     # قفل فوري لقناة الاتصال بالـ DB مع نهاية المتجر لتجنب حدوث Lock حماية للـ RAM
+    elif choice == "⚙️ إعدادات الحساب والأمان":
+        st.write("<h1 style='font-size: 30px; color: #10B981;'>⚙️ إعدادات الحساب والأمان الشخصي</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #94A3B8; font-size: 14px;'>يمكنك هنا تحديث رقم هاتفك المهني أو تغيير كلمة المرور الخاصة بمتجرك في أي وقت.</p>", unsafe_allow_html=True)
+
+        conn_acc = sqlite3.connect("saas_security_vault.db", timeout=10)
+        acc_row = conn_acc.cursor().execute(
+            "SELECT password, phone, package, status FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?",
+            (current_merchant.lower(),)
+        ).fetchone()
+        conn_acc.close()
+
+        curr_db_pass = str(acc_row[0]) if acc_row and acc_row[0] else ""
+        curr_db_phone = str(acc_row[1]) if acc_row and acc_row[1] else ""
+        curr_db_pkg = str(acc_row[2]) if acc_row and acc_row[2] else user_package
+
+        col_acc1, col_acc2 = st.columns(2)
+        with col_acc1:
+            st.subheader("📱 تحديث رقم الهاتف المهني")
+            st.text_input("البريد الإلكتروني (غير قابل للتغيير):", value=current_merchant, disabled=True, key="acc_readonly_email")
+            new_self_phone = st.text_input("رقم الهاتف الحالي / الجديد:", value=curr_db_phone, placeholder="0655xxxxxxxx", key="acc_self_phone_in").strip()
+
+            if st.button("💾 حفظ رقم الهاتف الجديد", key="save_self_phone_btn"):
+                clean_p = new_self_phone.replace("+", "").strip()
+                if not clean_p.isdigit() or len(clean_p) < 9:
+                    st.error("⚠️ يرجى إدخال رقم هاتف صحيح مكون من 9 أرقام على الأقل.")
+                else:
+                    conn_u1 = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    conn_u1.cursor().execute("UPDATE saas_users_auth SET phone = ? WHERE LOWER(TRIM(email)) = ?", (new_self_phone, current_merchant.lower()))
+                    conn_u1.commit()
+                    conn_u1.close()
+                    save_to_github_fast()
+                    st.success("✅ تم تحديث رقم هاتفك بنجاح وحفظه سحابياً!")
+                    time.sleep(0.6)
+                    st.rerun()
+
+        with col_acc2:
+            st.subheader("🔑 تغيير كلمة المرور")
+            old_pass_check = st.text_input("كلمة المرور الحالية:", type="password", placeholder="أدخل كلمة المرور الحالية للتأكيد", key="acc_old_pw_in").strip()
+            new_pass_1 = st.text_input("كلمة المرور الجديدة (6 أحرف على الأقل):", type="password", placeholder="••••••••", key="acc_new_pw1_in").strip()
+            new_pass_2 = st.text_input("تأكيد كلمة المرور الجديدة:", type="password", placeholder="••••••••", key="acc_new_pw2_in").strip()
+
+            if st.button("🔒 تحديث كلمة المرور الآن", key="save_self_pw_btn"):
+                if old_pass_check != curr_db_pass:
+                    st.error("❌ كلمة المرور الحالية غير صحيحة!")
+                elif len(new_pass_1) < 6:
+                    st.warning("⚠️ يجب أن تتكون كلمة المرور الجديدة من 6 أحرف أو أرقام على الأقل.")
+                elif new_pass_1 != new_pass_2:
+                    st.error("⚠️ كلمتا المرور الجديدتان غير متطابقتين!")
+                else:
+                    conn_u2 = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    conn_u2.cursor().execute("UPDATE saas_users_auth SET password = ? WHERE LOWER(TRIM(email)) = ?", (new_pass_1, current_merchant.lower()))
+                    conn_u2.commit()
+                    conn_u2.close()
+                    save_to_github_fast()
+                    st.success("🎉 تم تغيير كلمة المرور بنجاح! استخدمها في تسجيل الدخول القادم.")
+                    time.sleep(0.8)
+                    st.rerun()
+
     conne.close()
