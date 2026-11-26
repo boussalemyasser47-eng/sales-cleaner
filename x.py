@@ -2571,7 +2571,10 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             animation: none !important;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25) !important;
         }
+        
         div[data-testid="stMetricValue"] { color: #10B981 !important; font-weight: 800 !important; }
+        div[data-testid="stMetricValue"] > div { font-size: 22px !important; }
+
 
         div.stButton button, .stButton > button,
         div[data-testid="stHorizontalBlock"] > div div.stButton button {
