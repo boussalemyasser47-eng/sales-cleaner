@@ -1750,100 +1750,82 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     z-index: 999999;
                     transition: transform 0.25s ease;
                 }}
+                .floating-wa-btn {{
+                    position: fixed;
+                    bottom: 88px;
+                    left: 24px;
+                    width: 52px;
+                    height: 52px;
+                    background: #25D366;
+                    color: #FFFFFF !important;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 26px;
+                    text-decoration: none !important;
+                    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
+                    z-index: 9999999;
+                    transition: transform 0.25s ease;
+                }}
                 .floating-wa-btn:hover {{ transform: scale(1.1); }}
                 .scroll-top-btn {{
                     position: fixed;
-                    bottom: 85px;
-                    right: 24px;
-                    width: 48px;
-                    height: 48px;
-                    background: #0F172A;
-                    border: 2px solid #10B981;
-                    color: #10B981 !important;
+                    bottom: 24px;
+                    left: 24px;
+                    width: 52px;
+                    height: 52px;
+                    background: #10B981;
+                    border: none;
+                    color: #022C22 !important;
                     border-radius: 50%;
-                    display: flex;
+                    display: none;
                     align-items: center;
                     justify-content: center;
                     font-size: 22px;
                     font-weight: 900;
                     cursor: pointer;
-                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.65);
+                    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
                     z-index: 9999999;
-                    opacity: 0;
-                    visibility: hidden;
-                    transform: translateY(15px);
-                    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
-                }}
-                .scroll-top-btn.visible {{
-                    opacity: 1 !important;
-                    visibility: visible !important;
-                    transform: translateY(0) !important;
+                    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
                 }}
                 .scroll-top-btn:hover {{
-                    background: #10B981 !important;
-                    color: #022C22 !important;
-                    transform: translateY(-3px) !important;
+                    background: #059669 !important;
+                    color: #FFFFFF !important;
+                    transform: translateY(-3px);
                 }}
                 </style>
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
                 <button id="smartScrollTopBtn" class="scroll-top-btn" title="العودة للأعلى">↑</button>
+                <img src="x" style="display:none;" onerror="
+                    (function() {
+                        const btn = document.getElementById('smartScrollTopBtn');
+                        if (!btn) return;
+                        function getMaxScroll() {
+                            let s = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                            document.querySelectorAll('div, section').forEach(el => {
+                                if (el.scrollTop > s) s = el.scrollTop;
+                            });
+                            return s;
+                        }
+                        setInterval(function() {
+                            btn.style.display = (getMaxScroll() > 140) ? 'flex' : 'none';
+                        }, 150);
+                        btn.onclick = function() {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+                            document.body.scrollTo({ top: 0, behavior: 'smooth' });
+                            document.querySelectorAll('div, section').forEach(el => {
+                                if (el.scrollTop > 0 && el.scrollTo) {
+                                    el.scrollTo({ top: 0, behavior: 'smooth' });
+                                }
+                            });
+                        };
+                    })();
+                ">
             """, unsafe_allow_html=True)
 
-            st.components.v1.html("""
-                <script>
-                (function() {
-                    const pDoc = window.parent.document;
-                    const pWin = window.parent;
-
-                    function getScrollPos() {
-                        const candidates = [
-                            pDoc.querySelector('[data-testid="stAppViewContainer"]'),
-                            pDoc.querySelector('section.main'),
-                            pDoc.querySelector('.main'),
-                            pDoc.documentElement,
-                            pDoc.body
-                        ];
-                        let maxScroll = pWin.scrollY || pWin.pageYOffset || 0;
-                        for (const el of candidates) {
-                            if (el && el.scrollTop > maxScroll) {
-                                maxScroll = el.scrollTop;
-                            }
-                        }
-                        return maxScroll;
-                    }
-
-                    setInterval(function() {
-                        const btn = pDoc.getElementById('smartScrollTopBtn');
-                        if (!btn) return;
-                        if (getScrollPos() > 160) {
-                            btn.classList.add('visible');
-                        } else {
-                            btn.classList.remove('visible');
-                        }
-
-                        if (!btn.dataset.bound) {
-                            btn.dataset.bound = "true";
-                            btn.addEventListener('click', function() {
-                                const targets = [
-                                    pDoc.querySelector('[data-testid="stAppViewContainer"]'),
-                                    pDoc.querySelector('section.main'),
-                                    pDoc.querySelector('.main'),
-                                    pDoc.documentElement,
-                                    pDoc.body
-                                ];
-                                for (const t of targets) {
-                                    if (t && t.scrollTo) {
-                                        t.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }
-                                }
-                                pWin.scrollTo({ top: 0, behavior: 'smooth' });
-                            });
-                        }
-                    }, 200);
-                })();
-                </script>
-            """, height=0)
 
 
 
