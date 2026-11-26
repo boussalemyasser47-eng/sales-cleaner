@@ -832,28 +832,45 @@ def log_admin_action(target_email, action_type, details=""):
 # [القسم الثاني]: الحقن السيبراني وتصميم واجهات النيون الزجاجي للأزرار والعدادات
 # ========================================================
 st.markdown("""
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com" rel="stylesheet">
+    
     <style>
-    @import url('https://googleapis.com');
-
+    @keyframes pulseBackground {
+        0% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }
+        50% { background: radial-gradient(circle at 50% 45%, #08081a 0%, #010103 100%) !important; }
+        100% { background: radial-gradient(circle at 50% 40%, #0f0f2d 0%, #030307 100%) !important; }
+    }
     .stApp {
-        background: radial-gradient(circle at 20% 20%, #0F292E 0%, #090D16 60%, #05070C 100%) !important;
-        color: #F8FAFC !important;
-        font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+        animation: pulseBackground 8s ease-in-out infinite !important;
+        color: #ffffff !important;
+        font-family: 'Cairo', sans-serif !important;
     }
-
-    p, span, label, h1, h2, h3, h4 {
-        font-family: 'IBM Plex Sans Arabic', sans-serif !important;
-        color: #F8FAFC !important;
-        text-shadow: none !important;
-    }
-
-    /* 🌐 الدائرة المزدوجة الاحترافية في أعلى اليمين */
+ .enterprise-shimmer-box {
+     position: relative;
+     overflow: hidden;
+     background: #0B1120 !important;
+     border: 1px solid rgba(16, 185, 129, 0.45) !important;
+     border-radius: 14px !important;
+     padding: 20px !important;
+     margin: 14px 0 !important;
+     display: flex !important;
+     align-items: center !important;
+     justify-content: center !important;
+     gap: 14px !important;
+     color: #F8FAFC !important;
+     font-weight: 700 !important;
+     font-size: 14.5px !important;
+     box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15) !important;
+ }
+     /* 🌐 تعميم الدائرة المزدوجة الاحترافية على كل عمليات الموقع تلقائياً دون أي بطء */
     [data-testid="stStatusWidget"] {
         position: fixed !important;
         top: 16px !important;
         right: 20px !important;
         z-index: 9999999 !important;
-        background: rgba(11, 17, 32, 0.92) !important;
+        background: rgba(11, 17, 32, 0.9) !important;
         border: 1px solid rgba(16, 185, 129, 0.45) !important;
         border-radius: 12px !important;
         padding: 8px 14px !important;
@@ -878,67 +895,219 @@ st.markdown("""
         margin-left: 8px;
         vertical-align: middle;
     }
-    @keyframes spinClockwise { to { transform: rotate(360deg); } }
-    @keyframes spinCounter { to { transform: rotate(-360deg); } }
-
-    /* 💳 بطاقات الإحصائيات (Metrics) بنمط الشركات الحديثة */
-    div[data-testid="stMetricBlock"], div[data-testid="metric-container"] {
-        background: #0F172A !important;
-        border: 1px solid #1E293B !important;
-        border-radius: 14px !important;
-        padding: 16px !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25) !important;
-    }
-    div[data-testid="stMetricValue"] {
-        color: #10B981 !important;
-        font-weight: 800 !important;
-    }
-
-    /* 🔘 الأزرار الأساسية بنمط Enterprise */
-    div.stButton button, .stButton > button {
-        width: 100% !important;
-        min-height: 46px !important;
-        font-family: 'IBM Plex Sans Arabic', sans-serif !important;
-        font-size: 14.5px !important;
-        font-weight: 700 !important;
-        border-radius: 10px !important;
-        background: #10B981 !important;
-        color: #022C22 !important;
-        border: none !important;
-        box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2) !important;
-        transition: all 0.2s ease !important;
-    }
-    div.stButton button:hover {
-        background: #059669 !important;
-        color: #FFFFFF !important;
-        transform: translateY(-1px) !important;
-    }
-
-    /* ✍️ حقول الإدخال الأنيقة بدون حدود وردية صارخة */
-    div[data-testid="stTextInput"] input,
-    div[data-testid="stNumberInput"] input,
-    div[data-testid="stTextArea"] textarea {
-        background-color: #0B0F19 !important;
-        border: 1px solid #334155 !important;
+    [data-testid="stStatusWidget"] label,
+    [data-testid="stStatusWidget"] span {
         color: #F8FAFC !important;
-        border-radius: 10px !important;
-        font-weight: 500 !important;
-    }
-    div[data-testid="stTextInput"] input:focus,
-    div[data-testid="stNumberInput"] input:focus,
-    div[data-testid="stTextArea"] textarea:focus {
-        border-color: #10B981 !important;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
+        font-family: 'Cairo', sans-serif !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
     }
 
-    /* 🧭 القائمة الجانبية للمتجر */
-    section[data-testid="stSidebar"] {
-        background-color: #0B0F19 !important;
-        border-left: 1px solid #1E293B !important;
+ .corp-dual-spinner {
+     position: relative;
+     width: 28px;
+     height: 28px;
+     flex-shrink: 0;
+ }
+ .corp-dual-spinner::before,
+ .corp-dual-spinner::after {
+     content: "";
+     position: absolute;
+     border-radius: 50%;
+     inset: 0;
+ }
+ .corp-dual-spinner::before {
+     border: 3px solid transparent;
+     border-top-color: #10B981;
+     border-right-color: #10B981;
+     animation: spinClockwise 0.85s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+ }
+ .corp-dual-spinner::after {
+     inset: 5px;
+     border: 2.5px solid transparent;
+     border-bottom-color: #38BDF8;
+     border-left-color: #38BDF8;
+     animation: spinCounter 0.65s linear infinite;
+ }
+ @keyframes spinClockwise {
+     to { transform: rotate(360deg); }
+ }
+ @keyframes spinCounter {
+     to { transform: rotate(-360deg); }
+ }
+
+    /* 💎 صبغ العدادات الثلاثية والمقاييس المستقلة بالبلور الزجاجي والنيون الفاخر المشع */
+    div[data-testid="stMetricBlock"], div[data-testid="metric-container"], .premium-card-cyan, .premium-card-pink {
+        background: linear-gradient(135deg, rgba(15, 2, 20, 0.85) 0%, rgba(5, 5, 12, 0.98) 100%) !important;
+        border: 2px solid #00fff0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0px 0px 30px rgba(0, 255, 240, 0.35) !important;
+        backdrop-filter: blur(15px) !important;
+    }
+    
+    /* صبغ وتلوين البطاقات النيونية المحيطة ببيانات التجار بشكل مرن وديناميكي */
+    div[data-testid="stMarkdownContainer"] > div {
+        background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%) !important;
+        border: 2px solid var(--custom-border-color, #00fff0);
+        border-radius: 15px !important;
+        box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.2) !important;
+    }
+    
+    /* إجبار الأزرار الخماسية التفاعلية على التوهج الكامل بالألوان السيبرانية الموضحة بالصورة */
+    div.stButton button, .stButton > button {
+        width: 100% !important; min-height: 48px !important;
+        font-family: 'Cairo', sans-serif !important; font-size: 14px !important; font-weight: 900 !important; border-radius: 12px !important;
+        background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%) !important; color: #00fff0 !important;
+        border: 2px solid #00fff0 !important; box-shadow: 0px 0px 15px rgba(0, 255, 240, 0.3) !important;
+    }
+    div.stButton button:hover { 
+        background: linear-gradient(135deg, #00fff0 0%, #00bfff 100%) !important; color: #000000 !important;
+        box-shadow: 0px 0px 30px #00fff0 !important; transform: translateY(-2px) !important;
+    }
+    
+    /* تنظيف وتلوين حقول النصوص لمنع التداخل البصري */
+    div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input {
+        border: 2px solid #ff00ff !important; background-color: #06060d !important; color: #ffffff !important;
+        border-radius: 12px !important; font-weight: 700 !important;
+    }
+    div[data-testid="stTextInput"] input:focus, div[data-testid="stNumberInput"] input:focus {
+        border-color: #00fff0 !important; box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.5) !important;
+    }
+    
+    /* إلغاء القائمة الجانبية المكررة لمنع تداخل شاشات المالك */
+    [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] { display: none !important; }
+    
+    .stWidgetFormLabel, p, span, label, h1, h2, h3, h4 { 
+        font-family: 'Cairo', sans-serif !important; color: #ffffff !important;
+        text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.15) !important;
+    }
+    /* 🟢 🔴 🟡 تلوين الأزرار الخماسية المتتالية بالترتيب العددي للأعمدة لمنع التشفير العشوائي */
+    
+    /* 1. الزر الأول (العمود الأول): أخضر نيوني */
+    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button {
+        color: #00ff66 !important; border: 2px solid #00ff66 !important; box-shadow: 0px 0px 15px rgba(0, 255, 102, 0.2) !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div.stButton button:active {
+        background: linear-gradient(135deg, #00ff66 0%, #00ea11 100%) !important; color: #000000 !important;
+        box-shadow: 0px 0px 30px #00ff66 !important; border-color: #00ff66 !important;
+    }
+    /* 2. الزر الثاني (العمود الثاني): أصفر نيوني */
+    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button {
+        color: #ffaa00 !important; border: 2px solid #ffaa00 !important; box-shadow: 0px 0px 15px rgba(255, 170, 0, 0.2) !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton button:active {
+        background: linear-gradient(135deg, #ffaa00 0%, #ff8800 100%) !important; color: #000000 !important;
+        box-shadow: 0px 0px 30px #ffaa00 !important; border-color: #ffaa00 !important;
+    }
+    /* 3. الزر الثالث (العمود الثالث): أحمر نيوني */
+    div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button {
+        color: #ff0055 !important; border: 2px solid #ff0055 !important; box-shadow: 0px 0px 15px rgba(255, 0, 85, 0.2) !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton button:active {
+        background: linear-gradient(135deg, #ff0055 0%, #ff0000 100%) !important; color: #ffffff !important;
+        box-shadow: 0px 0px 30px #ff0055 !important; border-color: #ff0055 !important;
+    }
+    /* 4. الزر الرابع (العمود الرابع): بنفسجي نيوني */
+    div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button {
+        color: #ff00ff !important; border: 2px solid #ff00ff !important; box-shadow: 0px 0px 15px rgba(255, 0, 255, 0.2) !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton button:active {
+        background: linear-gradient(135deg, #ff00ff 0%, #cc00cc 100%) !important; color: #ffffff !important;
+        box-shadow: 0px 0px 30px #ff00ff !important; border-color: #ff00ff !important;
+    }
+    /* 5. الزر الخامس (العمود الخامس): برتقالي ناري */
+    div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button {
+        color: #ff4500 !important; border: 2px solid #ff4500 !important; box-shadow: 0px 0px 15px rgba(255, 69, 0, 0.2) !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button:hover,
+    div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton button:active {
+        background: linear-gradient(135deg, #ff4500 0%, #ff2200 100%) !important; color: #ffffff !important;
+        box-shadow: 0px 0px 30px #ff4500 !important; border-color: #ff4500 !important;
+    }
+    /* # === تأثيرات التوهج والأنيميشن لعدادات المالك === */
+    @keyframes hudPulse {
+        0% { box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); border-color: #00fff0; }
+        50% { box-shadow: 0px 0px 35px rgba(0, 255, 240, 0.55); border-color: #00ffaa; }
+        100% { box-shadow: 0px 0px 20px rgba(0, 255, 240, 0.25); border-color: #00fff0; }
+    }
+    @keyframes hudIntro {
+        0% { opacity: 0; transform: scale(0.96); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+    div[data-testid="stMetricBlock"], div[data-testid="metric-container"], .premium-card-cyan, .premium-card-pink {
+        animation: hudIntro 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards, hudPulse 4s ease-in-out infinite alternate !important;
+    }
+    div[data-testid="stMetricBlock"] [data-testid="stMetricValue"], div[data-testid="metric-container"] .stMetricValue {
+        text-shadow: 0px 0px 15px rgba(0, 255, 240, 0.6) !important;
+        font-weight: 900 !important;
+    }
+    /* ========================================================
+       [القسم الثالث]: # === جدار الأنيميشن الموحد والانبثاق الميكانيكي لكافة عناصر المنصة ===
+       ======================================================== */
+    
+    /* 1. جدار الانسياب الشامل لكافة العناصر الحية بالموقع */
+    button, input, select, textarea, div.stDataFrame, table, .stSelectbox, [data-testid="stSidebar"] {
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    }
+
+    /* 2. بناء التمدد والانجذاب السينمائي المرن عند الولادة */
+    @keyframes elasticPop {
+        0% {
+            opacity: 0;
+            transform: translateY(12px) scale(0.95);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    @keyframes alertPulseRed {
+        0% { box-shadow: 0px 0px 12px rgba(255, 0, 85, 0.25); border-color: #ff0055; }
+        50% { box-shadow: 0px 0px 25px rgba(255, 0, 85, 0.6); border-color: #ff3377; }
+        100% { box-shadow: 0px 0px 12px rgba(255, 0, 85, 0.25); border-color: #ff0055; }
+    }
+    @keyframes alertPulseGold {
+        0% { box-shadow: 0px 0px 12px rgba(255, 170, 0, 0.25); border-color: #ffaa00; }
+        50% { box-shadow: 0px 0px 25px rgba(255, 170, 0, 0.6); border-color: #ffcc33; }
+        100% { box-shadow: 0px 0px 12px rgba(255, 170, 0, 0.25); border-color: #ffaa00; }
+    }
+    @keyframes alertPulseGreen {
+        0% { box-shadow: 0px 0px 12px rgba(0, 255, 102, 0.25); border-color: #00ff66; }
+        50% { box-shadow: 0px 0px 25px rgba(0, 255, 102, 0.6); border-color: #33ff99; }
+        100% { box-shadow: 0px 0px 12px rgba(0, 255, 102, 0.25); border-color: #00ff66; }
+    }
+
+    /* استهداف جدار الـ DOM بالكامل لفرض انبثاق مرن للأزرار وحقول الإدخال ورسائل التنبيه والتحذيرات */
+    div[data-testid="stNotification"], div[data-testid="stAlert"], div.element-container:has(div[data-testid="stNotification"]), div.stAlert, div.stButton, div[data-testid="stTextInput"] {
+        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+    }
+
+    /* صناديق الأخطاء والتوثيق الفاشل st.error بالتوهج النبضي الأحمر النيوني */
+    div[data-testid="stAlert"]:has(div[data-baseinstance="error"]), div.stAlert:has([aria-label="Error"]) {
+        border: 2px solid #ff0055 !important;
+        background: linear-gradient(135deg, rgba(20, 2, 10, 0.92) 0%, rgba(5, 1, 3, 0.99) 100%) !important;
+        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, alertPulseRed 3s ease-in-out infinite alternate !important;
+    }
+
+    /* صناديق التحذيرات st.warning بالتوهج النبضي الذهبي الدافئ للسرية التامة */
+    div[data-testid="stAlert"]:has(div[data-baseinstance="warning"]), div.stAlert:has([aria-label="Warning"]) {
+        border: 2px solid #ffaa00 !important;
+        background: linear-gradient(135deg, rgba(20, 12, 2, 0.92) 0%, rgba(5, 3, 1, 0.99) 100%) !important;
+        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, alertPulseGold 3s ease-in-out infinite alternate !important;
+    }
+
+    /* صناديق التوثيق الناجح st.success بالتوهج النبضي الأخضر السيبراني الرائع */
+    div[data-testid="stAlert"]:has(div[data-baseinstance="success"]), div.stAlert:has([aria-label="Success"]) {
+        border: 2px solid #00ff66 !important;
+        background: linear-gradient(135deg, rgba(2, 20, 10, 0.92) 0%, rgba(1, 5, 2, 0.99) 100%) !important;
+        animation: elasticPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, alertPulseGreen 3s ease-in-out infinite alternate !important;
     }
     </style>
 """, unsafe_allow_html=True)
-
 # ========================================================
 # [القسم الرابع]: إدارة ومزامنة جدول قاعدة بيانات الـ Auth وجدار الحماية الاستباقي للثغرات
 # ========================================================
@@ -1025,120 +1194,120 @@ import re
 # ====================================================================
 
 def render_premium_neon_packages():
-    has_selected = "selected_neon_package" in st.session_state
-    current_choice = st.session_state.get("selected_neon_package", "الباقة الاحترافية المتوسطة (45k)")
+    """
+    تقوم هذه الدالة بتنفيذ ميكانيكية الهولوغرام الفاخرة (Holographic Phase-In Effect)،
+    حيث تعكس بدقة التحديث الشامل لمستويات الباقات السلوية ومميزاتها الفنية،
+    لتنبثق الباقة المختارة وحدها من العدم بناءً على رادار اختيار التاجر الحي.
+    """
+    # 1. قراءة الاختيار الحي من عنصر الراديو المعتمد تلقائياً
+    current_choice = st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
 
-    if not has_selected:
-        cls_b = cls_p = cls_c = "price-card"
-    else:
-        cls_b = "price-card active-glow" if "الأساسية" in current_choice else "price-card dimmed"
-        cls_p = "price-card active-glow" if "الاحترافية" in current_choice else "price-card dimmed"
-        cls_c = "price-card active-glow" if "السيبرانية" in current_choice else "price-card dimmed"
+    # 2. توليد فئات الحالة الهولوغرامية الديناميكية للباقات الثلاث
+    phase_cyber = "hologram-visible" if "السيبرانية" in current_choice else "hologram-hidden"
+    phase_pro = "hologram-visible" if "الاحترافية" in current_choice else "hologram-hidden"
+    phase_basic = "hologram-visible" if "الأساسية" in current_choice else "hologram-hidden"
 
-    st.markdown("""
-<style>
-@keyframes gentleFloat {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-7px); }
-}
-@keyframes activeGlowPulse {
-    0%, 100% { box-shadow: 0 15px 35px -5px rgba(16, 185, 129, 0.35), 0 0 16px rgba(16, 185, 129, 0.25); }
-    50% { box-shadow: 0 22px 48px -5px rgba(16, 185, 129, 0.65), 0 0 28px rgba(16, 185, 129, 0.45); }
-}
-.pricing-grid-3 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 18px;
-    margin: 18px 0 22px 0;
-    direction: rtl;
-    text-align: right;
-}
-.price-card {
-    background: #0B1120 !important;
-    border: 1.5px solid #1E293B !important;
-    border-radius: 18px !important;
-    padding: 22px 18px !important;
-    transition: all 0.35s ease !important;
-    animation: gentleFloat 4s ease-in-out infinite;
-}
-.price-card:nth-child(2) { animation-delay: 0.6s; }
-.price-card:nth-child(3) { animation-delay: 1.2s; }
-
-.price-card.dimmed {
-    animation: none !important;
-    opacity: 0.65 !important;
-    transform: translateY(0px) !important;
-}
-.price-card.active-glow {
-    background: linear-gradient(145deg, #0F2924 0%, #0B1120 100%) !important;
-    border: 2px solid #10B981 !important;
-    animation: gentleFloat 3s ease-in-out infinite, activeGlowPulse 2.5s ease-in-out infinite !important;
-    opacity: 1 !important;
-}
-.popular-ribbon {
-    display: inline-block;
-    background: #10B981;
-    color: #022C22 !important;
-    font-size: 11px;
-    font-weight: 800;
-    padding: 3px 10px;
-    border-radius: 999px;
-    margin-bottom: 8px;
-}
-.p-name { color: #F8FAFC !important; font-size: 16.5px; font-weight: 700; margin-bottom: 4px; }
-.p-cost { color: #10B981 !important; font-size: 21px; font-weight: 800; }
-.p-daily { color: #94A3B8 !important; font-size: 11.5px; margin-bottom: 12px; border-bottom: 1px solid #1E293B; padding-bottom: 8px; }
-.p-item { color: #E2E8F0 !important; font-size: 12.5px; margin: 6px 0; line-height: 1.5; }
-.p-no { color: #64748B !important; font-size: 12px; margin: 6px 0; text-decoration: line-through; }
-</style>
-""", unsafe_allow_html=True)
-
-    html_cards = f"""
-<div class="pricing-grid-3">
-<div class="{cls_b}">
-<div class="p-name">🌱 الباقة الأساسية</div>
-<div class="p-cost">29,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
-<div class="p-daily">تعادل 79 دج فقط يومياً</div>
-<div class="p-item">✓ فواتير PDF وملصقات حرارية 4x4</div>
-<div class="p-item">✓ إدارة المخزون ورادار القائمة السوداء</div>
-<div class="p-item">✓ إرسال الطلبات عبر WhatsApp</div>
-<div class="p-no">✕ مطهر ملفات Excel والولايات</div>
-<div class="p-no">✕ مولّد الإعلانات الذكي AI</div>
-</div>
-<div class="{cls_p}">
-<span class="popular-ribbon">⭐ الأكثر طلباً من التجار</span>
-<div class="p-name">💎 الباقة الاحترافية</div>
-<div class="p-cost">45,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
-<div class="p-daily">تعادل 123 دج فقط يومياً</div>
-<div class="p-item">✓ <b>كل مميزات الباقة الأساسية</b></div>
-<div class="p-item">✓ مطهر ملفات Excel والبيانات</div>
-<div class="p-item">✓ رادار الولايات الأكثر مبيعاً</div>
-<div class="p-item">✓ مساعد تجاري لحلول الشحن</div>
-<div class="p-no">✕ مولّد الإعلانات وسيناريو الفيديو AI</div>
-</div>
-<div class="{cls_c}">
-<div class="p-name">⚡ الباقة السيبرانية</div>
-<div class="p-cost">65,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
-<div class="p-daily">تعادل 178 دج فقط يومياً</div>
-<div class="p-item">✓ <b>كل مميزات الباقتين السابقتين</b></div>
-<div class="p-item">✓ صياغة إعلانات بالدارجة الجزائرية AI</div>
-<div class="p-item">✓ سيناريو فيديو TikTok و Reels</div>
-<div class="p-item">✓ عداد قوة الإعلان وحاسبة ROI</div>
-</div>
-</div>
-"""
-    st.markdown(html_cards, unsafe_allow_html=True)
-
+    # 3. حقن قواعد الهندسة الحركية والـ CSS السينمائي والميزات المحدثة للشركات
+    st.markdown(f"""
+        <style>
+        .hologram-card {{
+            transform: translateY(20px);
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                        border 0.5s ease-in-out,
+                        box-shadow 0.5s ease-in-out;
+            overflow: hidden;
+            border-radius: 14px;
+        }}
+        
+        .hologram-hidden {{
+            max-height: 0px !important;
+            opacity: 0 !important;
+            transform: translateY(20px) scale(0.95);
+            padding: 0px !important;
+            margin: 0px !important;
+            border: 1px solid transparent !important;
+            box-shadow: none !important;
+            pointer-events: none;
+        }}
+        
+        .hologram-visible {{
+            max-height: 800px !important; /* ارتفاع متسع لانسكاب الخدمات المحدثة بالكامل */
+            opacity: 1 !important;
+            transform: translateY(0px) scale(1);
+            background: rgba(0, 255, 240, 0.05);
+            border: 1px solid rgba(0, 255, 240, 0.6);
+            padding: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 25px rgba(0, 255, 240, 0.2);
+        }}
+        
+        .holo-title {{
+            color: #00fff0;
+            font-weight: 900;
+            font-size: 17px;
+            margin-bottom: 6px;
+            text-shadow: 0 0 15px rgba(0, 255, 240, 0.5);
+        }}
+        .holo-price {{
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 255, 240, 0.2);
+            padding-bottom: 6px;
+        }}
+        .holo-feat {{
+            color: #e0e0e0;
+            font-size: 13px;
+            margin: 5px 0;
+            padding-right: 5px;
+            line-height: 1.5;
+        }}
+        </style>
+        
+        <!-- باقة 1: الأساسية المبتدئة -->
+        <div class='hologram-card {phase_basic}'>
+            <div class='holo-title'>🌱 الباقة الأساسية المبتدئة (29k)</div>
+            <div class='holo-price'>💰 السعر السنوي: 29,000 DA</div>
+            <div class='holo-feat'>✓ إصدار فواتير الزبائن الكبيرة (A4) والملصقات الحرارية اللحظية.</div>
+            <div class='holo-feat'>✓ إرسال سريع للفاتورة وتفاصيل الطلب عبر WhatsApp للزبائن يدويًا.</div>
+            <div class='holo-feat'>✓ مستودع سلع مبسط لإضافة المنتجات ومراقبة الكميات المتوفرة.</div>
+            <div class='holo-feat'>✓ 🔒 قفل المساعد الجانبي الذكي (يفتح الردود العامة فقط ويحظر ميزات الـ AI المتقدمة).</div>
+        </div>
+        
+        <!-- باقة 2: الاحترافية المتوسطة -->
+        <div class='hologram-card {phase_pro}'>
+            <div class='holo-title'>💎 الباقة الاحترافية المتوسطة (45k)</div>
+            <div class='holo-price'>💰 السعر السنوي: 45,000 DA</div>
+            <div class='holo-feat'><b>✓ تشمل كافة ميزات الباقة الأساسية المبتدئة بالكامل.</b></div>
+            <div class='holo-feat'>✓ 🔥 مؤشر المخزون الناري الذكي: تنبيهات بصرية متحركة عند نفاذ السلع (أقل من 5 قطع).</div>
+            <div class='holo-feat'>✓ 🧼 مطهر ملفات المبيعات: رفع وتطهير ملفات Excel من التكرارات والأسعار السالبة.</div>
+            <div class='holo-feat'>✓ 🗺️ رادار المبيعات الجغرافي: مخطط بياني حي لفرز الولايات الجزائرية الأكثر مبيعاً لشحن آمن.</div>
+            <div class='holo-feat'>✓ 🤖 فتح ذكاء المساعد الجانبي المتوسط: تقديم نصائح وحلول لمشاكل الشحن والـ Retour وتثبيت الكليون.</div>
+        </div>
+        
+        <!-- باقة 3: السيبرانية الخارقة -->
+        <div class='hologram-card {phase_cyber}'>
+            <div class='holo-title'>⚡ الباقة السيبرانية الخارقة (65k)</div>
+            <div class='holo-price'>💰 السعر السنوي: 65,000 DA</div>
+            <div class='holo-feat'><b>✓ تشمل كافة ميزات الباقتين السابقتين بالكامل (العقل الشامل للمنصة).</b></div>
+            <div class='holo-feat'>✓ 🚀 منصة الأتمتة الإعلانية الكاملة (AI Hub): صياغة الإعلانات التلقائية بـ 3 لهجات مختلفة فوراً.</div>
+            <div class='holo-feat'>✓ 🎬 صانع سيناريوهات الفيديو بالثواني: خطة إنتاج كاملة لتصوير فيديوهات TikTok و Reels للسلع.</div>
+            <div class='holo-feat'>✓ 📊 عداد تقييم قوة الإعلان الفوري (AI Ad Score Meter) لتحليل جاذبية المنشور قبل إطلاقه.</div>
+            <div class='holo-feat'>✓ 💰 حاسبة الـ ROI وميزانية الفحص الموازية بالدولار وما يقابلها بالدينار الجزائري (Square).</div>
+            <div class='holo-feat'>✓ 🧠 العقل الخارق للمساعد الجانبي: إجابات استخباراتية فورية عن استهدافات فيسبوك وهاشتاغات تيك توك وحصانة ضد الخربشة.</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # أزرار الراديو النقية لمزامنة الميكانيكية الحركية وتمرير الاختيار بدقة
     chosen_package = st.radio(
-        "حدد الباقة التي تناسب متجرك (تبدأ بـ 3 أيام تجربة مجانية):",
+        "اختر فئة الباقة السنوية لمتجرك لتفعيل عرض مميزاتها فوراً:",
         ["الباقة الأساسية المبتدئة (29k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة السيبرانية الخارقة (65k)"],
-        index=1,
-        horizontal=True,
         key="selected_neon_package"
     )
     return chosen_package
-
-
 
 def validate_and_process_registration(email, password):
     clean_em = str(email).strip().lower()
@@ -1653,7 +1822,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         st.session_state["landing_step"] = "home"
                         st.rerun()
         elif st.session_state["landing_step"] == "register":
-            _, col_reg_box, _ = st.columns([0.25, 3.0, 0.25])
+            _, col_reg_box, _ = st.columns([0.9, 1.8, 0.9])
             with col_reg_box:
                 st.markdown("""
                     <div style="background: #111827; border: 1px solid #1F2937; border-radius: 16px; padding: 24px; margin-top: 20px; margin-bottom: 18px; direction: rtl; text-align: right;">
@@ -1666,24 +1835,22 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.session_state["otp_pending_verification"] = False
 
                 if not st.session_state["otp_pending_verification"]:
-                    _, col_inputs_mid, _ = st.columns([0.75, 1.5, 0.75])
-                    with col_inputs_mid:
-                        input_email = st.text_input("البريد الإلكتروني (Gmail)", placeholder="store@gmail.com", key="merchant_em")
-                        input_password = st.text_input("كلمة المرور (6 أحرف على الأقل)", type="password", placeholder="••••••••", key="merchant_pw")
-                        input_phone = st.text_input("رقم الهاتف المهني", placeholder="0655xxxxxxxx", key="merchant_phone").strip()
+                    input_email = st.text_input("البريد الإلكتروني (Gmail)", placeholder="store@gmail.com", key="merchant_em")
+                    input_password = st.text_input("كلمة المرور (6 أحرف على الأقل)", type="password", placeholder="••••••••", key="merchant_pw")
+                    input_phone = st.text_input("رقم الهاتف المهني", placeholder="0655xxxxxxxx", key="merchant_phone").strip()
 
-                        if input_phone:
-                            check_phone = input_phone.replace("+", "").strip()
-                            if not check_phone.isdigit():
-                                st.error("يرجى إدخال أرقام صحيحة فقط في حقل الهاتف.")
-                            elif len(check_phone) < 9:
-                                st.warning("رقم الهاتف غير مكتمل.")
-                            else:
-                                st.session_state["temp_reg_phone"] = input_phone
+                    if input_phone:
+                        check_phone = input_phone.replace("+", "").strip()
+                        if not check_phone.isdigit():
+                            st.error("يرجى إدخال أرقام صحيحة فقط في حقل الهاتف.")
+                        elif len(check_phone) < 9:
+                            st.warning("رقم الهاتف غير مكتمل.")
+                        else:
+                            st.session_state["temp_reg_phone"] = input_phone
 
-                        clean_email = input_email.strip()
-                        clean_pass = input_password.strip()
-                        st.session_state["temp_reg_phone"] = input_phone
+                    clean_email = input_email.strip()
+                    clean_pass = input_password.strip()
+                    st.session_state["temp_reg_phone"] = input_phone
 
                     user_package_choice = render_premium_neon_packages()
 
