@@ -1799,32 +1799,33 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
                 <button id="smartScrollTopBtn" class="scroll-top-btn" title="العودة للأعلى">↑</button>
                 <img src="x" style="display:none;" onerror="
-                    (function() {
+                    (function() {{
                         const btn = document.getElementById('smartScrollTopBtn');
                         if (!btn) return;
-                        function getMaxScroll() {
+                        function getMaxScroll() {{
                             let s = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-                            document.querySelectorAll('div, section').forEach(el => {
+                            document.querySelectorAll('div, section').forEach(el => {{
                                 if (el.scrollTop > s) s = el.scrollTop;
-                            });
+                            }});
                             return s;
-                        }
-                        setInterval(function() {
+                        }}
+                        setInterval(function() {{
                             btn.style.display = (getMaxScroll() > 140) ? 'flex' : 'none';
-                        }, 150);
-                        btn.onclick = function() {
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                            document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
-                            document.body.scrollTo({ top: 0, behavior: 'smooth' });
-                            document.querySelectorAll('div, section').forEach(el => {
-                                if (el.scrollTop > 0 && el.scrollTo) {
-                                    el.scrollTo({ top: 0, behavior: 'smooth' });
-                                }
-                            });
-                        };
-                    })();
+                        }}, 150);
+                        btn.onclick = function() {{
+                            window.scrollTo({{ top: 0, behavior: 'smooth' }});
+                            document.documentElement.scrollTo({{ top: 0, behavior: 'smooth' }});
+                            document.body.scrollTo({{ top: 0, behavior: 'smooth' }});
+                            document.querySelectorAll('div, section').forEach(el => {{
+                                if (el.scrollTop > 0 && el.scrollTo) {{
+                                    el.scrollTo({{ top: 0, behavior: 'smooth' }});
+                                }}
+                            }});
+                        }};
+                    }})();
                 ">
             """, unsafe_allow_html=True)
+
 
 
 
