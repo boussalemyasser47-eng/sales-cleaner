@@ -635,6 +635,16 @@ def init_advanced_db():
             error_message TEXT
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS platform_updates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            created_at TEXT,
+            target_group TEXT,
+            title TEXT,
+            message TEXT
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -2621,24 +2631,38 @@ if is_boss_link:
             b_target = st.selectbox("اختر الفئة المستهدفة:", ["جميع التجار", "التجار النشطون (مفعّل)", "التجار في الفترة التجريبية"], key="bcast_target_sel")
             b_subj = st.text_input("عنوان الرسالة:", placeholder="مثال: 🚀 تحديث جديد في منصة Tijaratna DataDZ!", key="bcast_subj_in")
             b_body = st.text_area("نص الرسالة:", placeholder="اكتب رسالتك هنا لتصل إلى بريد التجار...", key="bcast_body_in")
-            if st.button("🚀 إرسال البريد الجماعي الآن", key="send_bcast_now_btn"):
+            
+            if st.button("🚀 إرسال البريد ونشر التحديث داخل المتاجر الآن", key="send_bcast_now_btn"):
                 if not b_subj.strip() or not b_body.strip():
-                    st.error("⚠️ يرجى كتابة عنوان ونص الرسالة أولاً.")
-                elif total_merchants_query.empty:
-                    st.warning("لا يوجد تجار مسجلون حالياً.")
+                    st.error("⚠️ يرجى كتابة عنوان ونص التحديث أولاً.")
                 else:
-                    target_df = total_merchants_query.copy()
-                    if b_target == "التجار النشطون (مفعّل)":
-                        target_df = target_df[target_df['status'].str.contains('مفعّل', na=False)]
-                    elif b_target == "التجار في الفترة التجريبية":
-                        target_df = target_df[target_df['status'].str.contains('تجربة مجانية', na=False)]
-                    
+                    # 1. حفظ التحديث في قاعدة البيانات ليظهر داخل لوحة تحكم التجار
+                    now_upd = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    conn_upd = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    conn_upd.cursor().execute(
+                        "INSERT INTO platform_updates (created_at, target_group, title, message) VALUES (?, ?, ?, ?)",
+                        (now_upd, b_target, b_subj.strip(), b_body.strip())
+                    )
+                    conn_upd.commit()
+                    conn_upd.close()
+                    save_to_github_fast()
+
+                    # 2. إرسال التحديث عبر البريد الإلكتروني للتجار المستهدفين
                     sent_cnt = 0
-                    for r_mail in target_df['email'].dropna().unique():
-                        if send_gmail_notification_with_log(str(r_mail).strip(), b_subj.strip(), b_body.strip(), action_type="DEFAULT"):
-                            sent_cnt += 1
-                    log_admin_action("ALL_MERCHANTS", "BROADCAST", f"إرسال رسالة جماعية ({b_subj}) إلى {sent_cnt} تاجر")
-                    st.success(f"✅ تم إرسال الإشعار بنجاح إلى ({sent_cnt}) تاجر!")
+                    if not total_merchants_query.empty:
+                        target_df = total_merchants_query.copy()
+                        if b_target == "التجار النشطون (مفعّل)":
+                            target_df = target_df[target_df['status'].str.contains('مفعّل', na=False)]
+                        elif b_target == "التجار في الفترة التجريبية":
+                            target_df = target_df[target_df['status'].str.contains('تجربة مجانية', na=False)]
+                        
+                        for r_mail in target_df['email'].dropna().unique():
+                            if send_gmail_notification_with_log(str(r_mail).strip(), b_subj.strip(), b_body.strip(), action_type="UPGRADE"):
+                                sent_cnt += 1
+
+                    log_admin_action("ALL_MERCHANTS", "UPDATE_BROADCAST", f"نشر تحديث ({b_subj}) في المتاجر وإرساله إلى {sent_cnt} إيميل")
+                    st.success(f"🎉 تم نشر التحديث داخل متاجر التجار وإرساله عبر البريد إلى ({sent_cnt}) تاجر بنجاح!")
+
 
         with tab_emails:
             conn_lg1 = sqlite3.connect("saas_security_vault.db", timeout=10)
@@ -2845,6 +2869,38 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             st.session_state.pop("active_merchant_user", None)
             st.rerun()
         st.stop()
+    # 🔔 عرض آخر تحديث أو إعلان من إدارة المنصة داخل متجر التاجر
+    conn_chk_upd = sqlite3.connect("saas_security_vault.db", timeout=10)
+    try:
+        latest_upd = conn_chk_upd.cursor().execute(
+            "SELECT id, created_at, target_group, title, message FROM platform_updates ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+    except Exception:
+        latest_upd = None
+    conn_chk_upd.close()
+
+    if latest_upd:
+        upd_id, upd_date, upd_grp, upd_title, upd_msg = latest_upd
+        dismiss_key = f"dismissed_upd_{current_merchant}_{upd_id}"
+        show_to_user = (
+            upd_grp == "جميع التجار"
+            or (upd_grp == "التجار النشطون (مفعّل)" and "مفعّل" in user_actual_status)
+            or (upd_grp == "التجار في الفترة التجريبية" and is_trial_account)
+        )
+        if show_to_user and not st.session_state.get(dismiss_key, False):
+            col_u_box, col_u_btn = st.columns([4.5, 1])
+            with col_u_box:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(56, 189, 248, 0.1)); border: 1px solid #10B981; border-radius: 12px; padding: 14px 18px; margin-bottom: 10px; direction: rtl; text-align: right;">
+                        <div style="color: #10B981; font-weight: 800; font-size: 15px; margin-bottom: 4px;">🔔 تحديث جديد من الإدارة: {upd_title} <span style="font-size: 11px; color: #94A3B8; font-weight: normal;">({upd_date})</span></div>
+                        <div style="color: #F8FAFC; font-size: 13.5px; line-height: 1.6;">{upd_msg}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col_u_btn:
+                st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
+                if st.button("✅ فهمت", key=f"ack_upd_btn_{upd_id}"):
+                    st.session_state[dismiss_key] = True
+                    st.rerun()
 
     if is_trial_account:
         col_tr_msg, col_tr_btn = st.columns([4, 1.2])
