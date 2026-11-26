@@ -1797,6 +1797,22 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     </div>
                 </div>
             """, unsafe_allow_html=True)
+
+
+        elif st.session_state["landing_step"] == "login":
+            _, col_login_mid, _ = st.columns([1.0, 1.4, 1.0])
+            with col_login_mid:
+                st.markdown("""
+                    <div style="background: #111827; border: 1px solid #1F2937; border-radius: 16px; padding: 24px; margin-top: 25px; margin-bottom: 18px; direction: rtl; text-align: right;">
+                        <h2 style="color: #F8FAFC !important; margin: 0 0 6px 0; font-size: 22px; font-weight: 700;">تسجيل الدخول إلى المتجر</h2>
+                        <p style="color: #94A3B8 !important; margin: 0; font-size: 13.5px;">أدخل بيانات حسابك للوصول إلى لوحة التحكم الخاصة بك.</p>
+                    </div>
+                """, unsafe_allow_html=True)
+
+                input_email = st.text_input("البريد الإلكتروني", placeholder="name@gmail.com", key="merchant_em")
+                input_password = st.text_input("كلمة المرور", type="password", placeholder="••••••••", key="merchant_pw")
+                clean_email = input_email.strip()
+                clean_pass = input_password.strip()
             # 🔑 استعادة كلمة المرور ذاتياً عبر رمز التحقق (OTP)
             _, col_fp_mid, _ = st.columns([1.0, 1.4, 1.0])
             with col_fp_mid:
@@ -1836,21 +1852,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 st.session_state.pop("fp_reset_code", None)
                                 st.session_state.pop("fp_reset_target", None)
                                 st.success("🎉 تم تحديث كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول بها أعلاه.")
-
-        elif st.session_state["landing_step"] == "login":
-            _, col_login_mid, _ = st.columns([1.0, 1.4, 1.0])
-            with col_login_mid:
-                st.markdown("""
-                    <div style="background: #111827; border: 1px solid #1F2937; border-radius: 16px; padding: 24px; margin-top: 25px; margin-bottom: 18px; direction: rtl; text-align: right;">
-                        <h2 style="color: #F8FAFC !important; margin: 0 0 6px 0; font-size: 22px; font-weight: 700;">تسجيل الدخول إلى المتجر</h2>
-                        <p style="color: #94A3B8 !important; margin: 0; font-size: 13.5px;">أدخل بيانات حسابك للوصول إلى لوحة التحكم الخاصة بك.</p>
-                    </div>
-                """, unsafe_allow_html=True)
-
-                input_email = st.text_input("البريد الإلكتروني", placeholder="name@gmail.com", key="merchant_em")
-                input_password = st.text_input("كلمة المرور", type="password", placeholder="••••••••", key="merchant_pw")
-                clean_email = input_email.strip()
-                clean_pass = input_password.strip()
 
                 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
                 if st.button("دخول إلى لوحة التحكم", key="login_submit_enterprise"):
