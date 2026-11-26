@@ -2637,7 +2637,20 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         st.stop()
 
     if is_trial_account:
-        st.info(f"🎁 أنت تستخدم حالياً **التجربة المجانية (3 أيام)** — المتبقي: **{hours_left} ساعة**. يمكنك تفعيل اشتراكك السنوي في أي لحظة من صفحة الدخول.")
+        col_tr_msg, col_tr_btn = st.columns([4, 1.2])
+        with col_tr_msg:
+            st.markdown(f"""
+                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 10px; padding: 9px 16px; display: flex; align-items: center; justify-content: space-between; direction: rtl; font-size: 13px; color: #CBD5E1;">
+                    <span>✨ <b>الفترة التجريبية نشطة</b> — متبقي لديك <b style="color: #10B981;">{hours_left} ساعة</b> لتجربة كافة أدوات المنصة مجاناً.</span>
+                </div>
+            """, unsafe_allow_html=True)
+        with col_tr_btn:
+            if st.button("ترقية للاشتراك السنوي", key="slim_trial_upgrade_btn"):
+                st.session_state["expired_trial_email"] = current_merchant
+                st.session_state["expired_trial_pkg"] = user_package
+                st.session_state["landing_step"] = "login"
+                st.session_state.pop("active_merchant_user", None)
+                st.rerun()
 
         
     # 🏪 [جدار العزل الفردي الأسطوري]: قفل البيانات وعزل فواتير ومخزون كل تاجر باسم إيميله المشفر
