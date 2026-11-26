@@ -2903,10 +2903,10 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         85%  {{ opacity: 1; transform: translateY(0) scale(1); }}
                         100% {{ opacity: 0; transform: translateY(-20px) scale(0.95); visibility: hidden; pointer-events: none; }}
                     }}
-                    .auto-fade-corner-toast {{
+                    .auto-fade-corner-toast {
                         position: fixed;
-                        top: 68px;
-                        left: 24px;
+                        top: 72px;
+                        right: 24px;
                         z-index: 999999;
                         max-width: 340px;
                         background: rgba(11, 17, 32, 0.96) !important;
@@ -2917,7 +2917,8 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         direction: rtl;
                         text-align: right;
                         animation: cornerToastAutoHide 7.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-                    }}
+                    }
+
                     </style>
                     <div class="auto-fade-corner-toast">
                         <div style="color: #10B981; font-weight: 800; font-size: 13.5px; margin-bottom: 4px;">🔔 إشعار تحديث جديد: {upd_title}</div>
