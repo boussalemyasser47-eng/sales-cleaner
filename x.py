@@ -946,12 +946,7 @@ st.markdown("""
     }
     
     /* صبغ وتلوين البطاقات النيونية المحيطة ببيانات التجار بشكل مرن وديناميكي */
-    div[data-testid="stMarkdownContainer"] > div {
-        background: linear-gradient(135deg, rgba(10, 10, 26, 0.85) 0%, rgba(3, 3, 7, 0.98) 100%) !important;
-        border: 2px solid var(--custom-border-color, #00fff0);
-        border-radius: 15px !important;
-        box-shadow: 0px 0px 25px rgba(0, 255, 240, 0.2) !important;
-    }
+
     
     /* إجبار الأزرار الخماسية التفاعلية على التوهج الكامل بالألوان السيبرانية الموضحة بالصورة */
     div.stButton button, .stButton > button {
@@ -1515,11 +1510,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             @keyframes shimmerSweep {
                 100% { left: 100%; }
             }
-            div[data-testid="stMarkdownContainer"] > div:not(.hero-landing-container):not(.corp-feat-card) {
-                background: transparent !important;
-                border: none !important;
-                box-shadow: none !important;
-            }
+
 
             [data-testid="stFileUploaderDropzoneInstructions"] span {
                 display: none !important;
