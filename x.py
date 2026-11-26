@@ -1515,7 +1515,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             @keyframes shimmerSweep {
                 100% { left: 100%; }
             }
-            div[data-testid="stMarkdownContainer"] > div {
+            div[data-testid="stMarkdownContainer"] > div:not(.hero-landing-container):not(.corp-feat-card) {
                 background: transparent !important;
                 border: none !important;
                 box-shadow: none !important;
