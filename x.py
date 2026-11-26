@@ -593,6 +593,13 @@ if "verify_email" in query_params and "code" in query_params and "magic_otp_done
     st.session_state["prefill_otp_code"] = query_params.get("code")
     st.session_state["magic_otp_done"] = True
     st.session_state["auth_mode_radio"] = "📝 إنشاء حساب تاجر جديد فريش"
+if "reset_email" in query_params and "reset_code" in query_params and "magic_reset_done" not in st.session_state:
+    st.session_state["landing_step"] = "forgot_password"
+    st.session_state["fp_reset_target"] = query_params.get("reset_email")
+    st.session_state["fp_reset_code"] = query_params.get("reset_code")
+    st.session_state["prefill_fp_code"] = query_params.get("reset_code")
+    st.session_state["magic_reset_done"] = True
+
 
 
 is_boss_link = query_params.get("role") == "mohmed" if "role" in query_params else False
@@ -1994,12 +2001,15 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 fp_code = f"{random.randint(100000, 999999)}"
                                 st.session_state["fp_reset_code"] = fp_code
                                 st.session_state["fp_reset_target"] = fp_email
-                                if send_gmail_notification(fp_email, f"رمز التحقق ({fp_code}) لاسترداد حسابك", f"مرحباً،\n\nرمز التحقق لتعيين كلمة مرور جديدة هو: {fp_code}", action_type="OTP"):
+                                base_reset_url = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
+                                magic_reset_link = f"{base_reset_url}?reset_email={urllib.parse.quote(fp_email)}&reset_code={fp_code}"
+                                if send_gmail_notification(fp_email, f"رمز التحقق ({fp_code}) لاسترداد حسابك", f"مرحباً،\n\nرمز التحقق لتعيين كلمة مرور جديدة هو: {fp_code}\n\nاضغط على الزر بالأسفل للانتقال مباشرة وتعيين كلمة المرور الجديدة:", action_type="OTP", action_url=magic_reset_link):
                                     st.rerun()
                 else:
                     target_em = st.session_state["fp_reset_target"]
                     st.info(f"تم إرسال رمز تحقق مكون من 6 أرقام إلى **{target_em}**")
-                    fp_in_code = st.text_input("أدخل رمز التحقق (6 أرقام):", max_chars=6, placeholder="000000", key="fp_page_code_in").strip()
+                    fp_in_code = st.text_input("أدخل رمز التحقق (6 أرقام):", value=st.session_state.get("prefill_fp_code", ""), max_chars=6, placeholder="000000", key="fp_page_code_in").strip()
+
                     fp_new_pw = st.text_input("كلمة المرور الجديدة (6 أحرف على الأقل):", type="password", placeholder="••••••••", key="fp_page_newpw_in").strip()
 
                     if st.button("حفظ كلمة المرور وتسجيل الدخول", key="fp_page_save_btn"):
