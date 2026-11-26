@@ -2069,12 +2069,15 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 col_nav_r1, col_nav_r2 = st.columns(2)
                 with col_nav_r1:
                     if st.button("لدي حساب بالفعل (تسجيل الدخول)", key="switch_to_login_btn"):
+                        st.session_state["otp_pending_verification"] = False
                         st.session_state["landing_step"] = "login"
                         st.rerun()
                 with col_nav_r2:
                     if st.button("العودة للرئيسية", key="back_home_from_reg"):
+                        st.session_state["otp_pending_verification"] = False
                         st.session_state["landing_step"] = "home"
                         st.rerun()
+
 
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
