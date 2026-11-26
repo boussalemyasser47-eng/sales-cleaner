@@ -1664,34 +1664,31 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     background: #059669 !important;
                     color: #FFFFFF !important;
                 }}
-                div[class*="st-key-nav_login_top"] button,
-                div[class*="st-key-nav_supp_top"] button,
-                div[class*="st-key-hero_open_login"] button {{
-                    background: rgba(15, 23, 42, 0.85) !important;
+                /* زر ثانوٍ داكن بحدود أنيقة لتسجيل الدخول والدعم */
+                button[kind="secondary"] {
+                    background: rgba(15, 23, 42, 0.88) !important;
                     color: #F8FAFC !important;
                     border: 1px solid #334155 !important;
                     box-shadow: none !important;
-                }}
-                div[class*="st-key-nav_login_top"] button:hover,
-                div[class*="st-key-nav_supp_top"] button:hover,
-                div[class*="st-key-hero_open_login"] button:hover {{
+                }
+                button[kind="secondary"]:hover {
                     border-color: #10B981 !important;
                     color: #10B981 !important;
-                }}
-                .open-hero-wrap {{
-                    max-width: 920px;
-                    margin: 35px auto 20px auto;
-                    text-align: center;
-                    direction: rtl;
-                    padding: 10px 20px;
-                }}
-                .open-hero-title {{
-                    color: #F8FAFC !important;
-                    font-size: 42px !important;
-                    font-weight: 900 !important;
-                    line-height: 1.3 !important;
-                    margin-bottom: 26px !important;
-                }}
+                    background: rgba(16, 185, 129, 0.08) !important;
+                }
+                /* الزر الأساسي الأخضر البارز لإنشاء الحساب */
+                button[kind="primary"] {
+                    background: #10B981 !important;
+                    color: #022C22 !important;
+                    border: none !important;
+                    font-weight: 800 !important;
+                    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3) !important;
+                }
+                button[kind="primary"]:hover {
+                    background: #059669 !important;
+                    color: #FFFFFF !important;
+                }
+
                 .open-hero-title span {{ color: #10B981 !important; }}
                 .hero-checks-grid {{
                     display: grid;
@@ -1760,15 +1757,18 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             with nav_l1:
                 if st.button("الدعم والشكاوى", key="nav_supp_top"):
                     st.session_state["current_view"] = "complaint_page"
+                    type="secondary"
                     st.rerun()
             with nav_l2:
                 if st.button("تسجيل الدخول", key="nav_login_top"):
                     st.session_state["login_failed_show_fp"] = False
                     st.session_state["landing_step"] = "login"
+                    type="secondary"
                     st.rerun()
             with nav_l3:
                 if st.button("إنشاء حساب", key="nav_reg_top"):
                     st.session_state["landing_step"] = "register"
+                    type="primary"
                     st.rerun()
 
             # 🌟 واجهة Hero مفتوحة بنقاط القوة المزدوجة (بدون صندوق مقيد)
@@ -1791,11 +1791,13 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             with col_cta1:
                 if st.button("🚀 إنشاء حساب (0 DA مجاناً)", key="hero_go_register_btn"):
                     st.session_state["landing_step"] = "register"
+                    type="primary"
                     st.rerun()
             with col_cta2:
                 if st.button("تسجيل الدخول إلى متجرك", key="hero_open_login"):
                     st.session_state["login_failed_show_fp"] = False
                     st.session_state["landing_step"] = "login"
+                    type="secondary"
                     st.rerun()
             # 📦 شبكة المميزات الست المنظمة + التذييل الرسمي
             st.markdown("""
