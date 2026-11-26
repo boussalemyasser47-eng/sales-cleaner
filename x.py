@@ -1788,7 +1788,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
                 <button id="smartScrollTopBtn" class="scroll-top-btn" title="العودة للأعلى">↑</button>
-            """, unsafe_allow_html=True)
+          
 
             st.components.v1.html("""
                 <script>
