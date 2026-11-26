@@ -1239,6 +1239,17 @@ def render_premium_neon_packages():
     animation: gentleFloat 3s ease-in-out infinite, activeGlowPulse 2.5s ease-in-out infinite !important;
     opacity: 1 !important;
 }
+.trial-free-badge {
+    display: inline-block;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid #10B981;
+    color: #34D399 !important;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
 .popular-ribbon {
     display: inline-block;
     background: #10B981;
@@ -1248,10 +1259,11 @@ def render_premium_neon_packages():
     padding: 3px 10px;
     border-radius: 999px;
     margin-bottom: 8px;
+    margin-left: 6px;
 }
 .p-name { color: #F8FAFC !important; font-size: 16.5px; font-weight: 700; margin-bottom: 4px; }
-.p-cost { color: #10B981 !important; font-size: 21px; font-weight: 800; }
-.p-daily { color: #94A3B8 !important; font-size: 11.5px; margin-bottom: 12px; border-bottom: 1px solid #1E293B; padding-bottom: 8px; }
+.p-cost { color: #10B981 !important; font-size: 24px; font-weight: 900; }
+.p-daily { color: #CBD5E1 !important; font-size: 12px; margin-bottom: 12px; border-bottom: 1px solid #1E293B; padding-bottom: 8px; }
 .p-item { color: #E2E8F0 !important; font-size: 12.5px; margin: 6px 0; line-height: 1.5; }
 .p-no { color: #64748B !important; font-size: 12px; margin: 6px 0; text-decoration: line-through; }
 </style>
@@ -1260,9 +1272,10 @@ def render_premium_neon_packages():
     html_cards = f"""
 <div class="pricing-grid-3">
 <div class="{cls_b}">
+<span class="trial-free-badge">🎁 0 DA لمدة 3 أيام مجاناً</span>
 <div class="p-name">🌱 الباقة الأساسية</div>
-<div class="p-cost">29,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
-<div class="p-daily">تعادل 79 دج فقط يومياً</div>
+<div class="p-cost">0 DA <span style="font-size:13px; color:#34D399;">/ أول 3 أيام</span></div>
+<div class="p-daily">بعد التجربة: <b>29,000 DA / سنة</b> (79 دج/يوم)</div>
 <div class="p-item">✓ فواتير PDF وملصقات حرارية 4x4</div>
 <div class="p-item">✓ إدارة المخزون ورادار القائمة السوداء</div>
 <div class="p-item">✓ إرسال الطلبات عبر WhatsApp</div>
@@ -1270,10 +1283,11 @@ def render_premium_neon_packages():
 <div class="p-no">✕ مولّد الإعلانات الذكي AI</div>
 </div>
 <div class="{cls_p}">
-<span class="popular-ribbon">⭐ الأكثر طلباً من التجار</span>
+<span class="popular-ribbon">⭐ الأكثر طلباً</span>
+<span class="trial-free-badge">🎁 0 DA لمدة 3 أيام</span>
 <div class="p-name">💎 الباقة الاحترافية</div>
-<div class="p-cost">45,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
-<div class="p-daily">تعادل 123 دج فقط يومياً</div>
+<div class="p-cost">0 DA <span style="font-size:13px; color:#34D399;">/ أول 3 أيام</span></div>
+<div class="p-daily">بعد التجربة: <b>45,000 DA / سنة</b> (123 دج/يوم)</div>
 <div class="p-item">✓ <b>كل مميزات الباقة الأساسية</b></div>
 <div class="p-item">✓ مطهر ملفات Excel والبيانات</div>
 <div class="p-item">✓ رادار الولايات الأكثر مبيعاً</div>
@@ -1281,9 +1295,10 @@ def render_premium_neon_packages():
 <div class="p-no">✕ مولّد الإعلانات وسيناريو الفيديو AI</div>
 </div>
 <div class="{cls_c}">
+<span class="trial-free-badge">🎁 0 DA لمدة 3 أيام مجاناً</span>
 <div class="p-name">⚡ الباقة السيبرانية</div>
-<div class="p-cost">65,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
-<div class="p-daily">تعادل 178 دج فقط يومياً</div>
+<div class="p-cost">0 DA <span style="font-size:13px; color:#34D399;">/ أول 3 أيام</span></div>
+<div class="p-daily">بعد التجربة: <b>65,000 DA / سنة</b> (178 دج/يوم)</div>
 <div class="p-item">✓ <b>كل مميزات الباقتين السابقتين</b></div>
 <div class="p-item">✓ صياغة إعلانات بالدارجة الجزائرية AI</div>
 <div class="p-item">✓ سيناريو فيديو TikTok و Reels</div>
@@ -1294,13 +1309,14 @@ def render_premium_neon_packages():
     st.markdown(html_cards, unsafe_allow_html=True)
 
     chosen_package = st.radio(
-        "حدد الباقة التي تناسب متجرك (تبدأ بـ 3 أيام تجربة مجانية):",
+        "اختر باقتك للبدء فوراً بـ 0 DA لمدة 3 أيام مجاناً (بدون أي التزام):",
         ["الباقة الأساسية المبتدئة (29k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة السيبرانية الخارقة (65k)"],
         index=1,
         horizontal=True,
         key="selected_neon_package"
     )
     return chosen_package
+
 
 
 
@@ -1828,6 +1844,30 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         save_to_github_fast()
                         send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", ""), f"💰 وصل دفع جديد من: {exp_mail}", f"التاجر {exp_mail} اختار باقة: {chosen_upgrade_pkg} ({pkg_price_label}) ورفع وصل الدفع.", action_type="ACTIVATE")
                         st.success("🎉 تم استلام وصل الدفع وحفظ باقتك بنجاح! سيتم تفعيل حسابك السنوي خلال دقائق.")
+                    # ↩️ زر العودة للمتجر وإكمال الساعات المتبقية إذا لم تنتهِ التجربة المجانية بعد
+                    conn_rem = sqlite3.connect("saas_security_vault.db", timeout=10)
+                    rem_row = conn_rem.cursor().execute("SELECT status, created_at FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (exp_mail.lower(),)).fetchone()
+                    conn_rem.close()
+
+                    can_resume_trial = False
+                    rem_hrs_display = 0
+                    if rem_row and "تجربة مجانية" in str(rem_row[0]) and rem_row[1]:
+                        try:
+                            st_trial = datetime.strptime(str(rem_row[1]).split(".")[0], "%Y-%m-%d %H:%M:%S")
+                            elapsed_h = (datetime.now() - st_trial).total_seconds() / 3600.0
+                            if elapsed_h < 72:
+                                can_resume_trial = True
+                                rem_hrs_display = max(1, int(72 - elapsed_h))
+                        except Exception:
+                            pass
+
+                    if can_resume_trial:
+                        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+                        if st.button(f"↩️ لم أقرر الشراء بعد — العودة للمتجر وإكمال الساعات المتبقية ({rem_hrs_display} ساعة)", key="resume_trial_back_btn"):
+                            st.session_state["active_merchant_user"] = exp_mail
+                            st.session_state.pop("expired_trial_email", None)
+                            st.rerun()
+
 
             _, col_nav_mid, _ = st.columns([1.0, 1.4, 1.0])
             with col_nav_mid:
