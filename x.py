@@ -2519,6 +2519,56 @@ import time
 # ========================================================
 if "active_merchant_user" in st.session_state and not is_boss_link:
     current_merchant = st.session_state["active_merchant_user"]
+    st.markdown("""
+        <style>
+        @import url('https://googleapis.com');
+        .stApp {
+            background: radial-gradient(circle at 20% 20%, #0F292E 0%, #090D16 60%, #05070C 100%) !important;
+            color: #F8FAFC !important;
+            font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+        }
+        p, span, label, h1, h2, h3, h4 {
+            font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+            color: #F8FAFC !important;
+            text-shadow: none !important;
+        }
+        div[data-testid="stMetricBlock"], div[data-testid="metric-container"] {
+            background: #0F172A !important;
+            border: 1px solid #1E293B !important;
+            border-radius: 14px !important;
+            padding: 16px !important;
+            animation: none !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25) !important;
+        }
+        div[data-testid="stMetricValue"] { color: #10B981 !important; font-weight: 800 !important; }
+        div[data-testid="stMarkdownContainer"] > div {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        div.stButton button, .stButton > button,
+        div[data-testid="stHorizontalBlock"] > div div.stButton button {
+            width: 100% !important; min-height: 46px !important;
+            font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-size: 14.5px !important; font-weight: 700 !important;
+            border-radius: 10px !important; background: #10B981 !important; color: #022C22 !important;
+            border: none !important; box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2) !important;
+        }
+        div.stButton button:hover,
+        div[data-testid="stHorizontalBlock"] > div div.stButton button:hover {
+            background: #059669 !important; color: #FFFFFF !important;
+        }
+        div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input, div[data-testid="stTextArea"] textarea {
+            background-color: #0B0F19 !important; border: 1px solid #334155 !important; color: #F8FAFC !important; border-radius: 10px !important;
+        }
+        div[data-testid="stTextInput"] input:focus, div[data-testid="stNumberInput"] input:focus, div[data-testid="stTextArea"] textarea:focus {
+            border-color: #10B981 !important; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
+        }
+        section[data-testid="stSidebar"] { background-color: #0B0F19 !important; border-left: 1px solid #1E293B !important; }
+        /* إصلاح تداخل نص زر رفع الملفات */
+        [data-testid="stFileUploaderDropzoneInstructions"] span { display: none !important; }
+        </style>
+    """, unsafe_allow_html=True)
+
     
     # 🔒 الفحص السحابي الصارم وجلب حالة الحساب ونوع الباقة (package) لمتجرك الجديد
     conn_final_auth = sqlite3.connect("saas_security_vault.db", timeout=10)
