@@ -1751,11 +1751,26 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     transition: transform 0.25s ease;
                 }}
                 .floating-wa-btn:hover {{ transform: scale(1.1); }}
+                /* 📌 تثبيت الشريط العلوي ليتبع التاجر أينما نزل في الصفحة */
+                div[data-testid="stVerticalBlock"] > div:has(.sticky-nav-marker) + div[data-testid="stHorizontalBlock"] {{
+                    position: sticky !important;
+                    top: 12px !important;
+                    z-index: 99990 !important;
+                    background: rgba(9, 13, 22, 0.88) !important;
+                    backdrop-filter: blur(14px) !important;
+                    border: 1px solid #1E293B !important;
+                    border-radius: 14px !important;
+                    padding: 10px 16px !important;
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45) !important;
+                }}
+
                 </style>
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
             """, unsafe_allow_html=True)
-            # 🧭 الشريط العلوي المتكامل (الشعار في اليمين + الروابط في الوسط + الأزرار في اليسار)
+                        # 🧭 الشريط العلوي المتكامل (الشعار في اليمين + الروابط في الوسط + الأزرار في اليسار)
+            st.markdown('<div class="sticky-nav-marker" style="display:none;"></div>', unsafe_allow_html=True)
+
             nav_r, nav_mid, nav_l1, nav_l2, nav_l3 = st.columns([1.8, 2.6, 1.1, 1.1, 1.1])
             with nav_r:
                 st.markdown("<div style='direction:rtl; text-align:right; padding-top:6px;'><span style='color:#F8FAFC; font-weight:900; font-size:21px;'>Tijaratna <span style='color:#10B981;'>DataDZ</span></span><br><span style='color:#94A3B8; font-size:11px;'>منصة التجارة الإلكترونية الذكية 🇩🇿</span></div>", unsafe_allow_html=True)
