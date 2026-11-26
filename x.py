@@ -1820,47 +1820,87 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 input_password = st.text_input("كلمة المرور", type="password", placeholder="••••••••", key="merchant_pw")
                 clean_email = input_email.strip()
                 clean_pass = input_password.strip()
-            # 🔑 استعادة كلمة المرور ذاتياً عبر رمز التحقق (OTP)
-            _, col_fp_mid, _ = st.columns([1.0, 1.4, 1.0])
-            with col_fp_mid:
-             if st.session_state.get("login_failed_show_fp", False):
 
-                with st.expander("🔑 نسيت كلمة المرور؟ اضغط هنا لاستعادتها فوراً", expanded=st.session_state.get("login_failed_show_fp", False)):
-                    fp_email = st.text_input("أدخل بريدك الإلكتروني المسجل:", placeholder="name@gmail.com", key="fp_email_input").strip().lower()
-                    if st.button("📩 إرسال رمز استعادة كلمة المرور", key="fp_send_otp_btn"):
-                        if not fp_email:
-                            st.error("يرجى إدخال بريدك الإلكتروني أولاً.")
+                st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                if st.button("دخول إلى لوحة التحكم", key="login_submit_enterprise"):
+                    if clean_email == "" or clean_pass == "":
+                        st.error("يرجى إدخال البريد الإلكتروني وكلمة المرور.")
+                    else:
+                        conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
+                        cursor_login = conn_login.cursor()
+                        cursor_login.execute("SELECT status, created_at, package FROM saas_users_auth WHERE LOWER(TRIM(email)) = ? AND password = ?", (clean_email.lower(), clean_pass))
+                        user_row = cursor_login.fetchone()
+
+                        if user_row:
+                            u_status, u_created, u_pkg = str(user_row[0]), str(user_row[1] or ""), str(user_row[2] or "29k")
+                            trial_expired = False
+                            if "تجربة مجانية" in u_status and u_created:
+                                try:
+                                    start_dt = datetime.strptime(u_created.split(".")[0], "%Y-%m-%d %H:%M:%S")
+                                    if (datetime.now() - start_dt).total_seconds() > 3 * 86400:
+                                        trial_expired = True
+                                        cursor_login.execute("UPDATE saas_users_auth SET status = '⏳ انتهت التجربة المجانية - بانتظار الدفع' WHERE LOWER(TRIM(email)) = ?", (clean_email.lower(),))
+                                        conn_login.commit()
+                                        save_to_github_fast()
+                                except Exception:
+                                    pass
+                            conn_login.close()
+
+                            if "مفعّل" in u_status and not trial_expired:
+                                st.session_state["login_failed_show_fp"] = False
+                                st.session_state["active_merchant_user"] = clean_email
+                                st.success("تم التحقق بنجاح. جاري فتح لوحة التحكم...")
+                                time.sleep(0.5)
+                                st.rerun()
+                            else:
+                                st.session_state["expired_trial_email"] = clean_email
+                                st.session_state["expired_trial_pkg"] = u_pkg
+                                st.warning("⚠️ انتهت فترة التجربة المجانية (3 أيام) أو حسابك بانتظار التفعيل السنوي. أكمل الدفع أدناه للتفعيل الفوري.")
                         else:
-                            conn_fp = sqlite3.connect("saas_security_vault.db", timeout=10)
-                            fp_exists = conn_fp.cursor().execute("SELECT email FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (fp_email,)).fetchone()
-                            conn_fp.close()
-                            if not fp_exists:
-                                st.error("❌ هذا البريد الإلكتروني غير مسجل في المنصة.")
-                            else:
-                                fp_code = f"{random.randint(100000, 999999)}"
-                                st.session_state["fp_reset_code"] = fp_code
-                                st.session_state["fp_reset_target"] = fp_email
-                                if send_gmail_notification(fp_email, f"🔑 رمز استعادة كلمة المرور ({fp_code})", f"مرحباً،\n\nرمز التحقق الخاص بتعيين كلمة مرور جديدة لمتجرك هو: {fp_code}", action_type="OTP"):
-                                    st.success("✅ تم إرسال رمز الاستعادة إلى بريدك الإلكتروني!")
+                            conn_login.close()
+                            st.session_state["login_failed_show_fp"] = True
+                            st.error("❌ بيانات الدخول غير صحيحة. هل نسيت كلمة المرور؟ استعدها من الصندوق أدناه 👇")
 
-                    if st.session_state.get("fp_reset_target"):
-                        st.info(f"أدخل الرمز المرسل إلى: **{st.session_state['fp_reset_target']}**")
-                        fp_in_code = st.text_input("رمز التحقق (6 أرقام):", max_chars=6, key="fp_verify_code_in").strip()
-                        fp_new_pw = st.text_input("كلمة المرور الجديدة (6 أحرف على الأقل):", type="password", key="fp_new_pw_in").strip()
-                        if st.button("✅ تأكيد وتغيير كلمة المرور", key="fp_confirm_reset_btn"):
-                            if fp_in_code != st.session_state.get("fp_reset_code"):
-                                st.error("❌ رمز التحقق غير صحيح!")
-                            elif len(fp_new_pw) < 6:
-                                st.warning("⚠️ يجب أن تكون كلمة المرور 6 أحرف على الأقل.")
+                # 🔑 صندوق استعادة كلمة المرور (يظهر حصراً عند فشل تسجيل الدخول)
+                if st.session_state.get("login_failed_show_fp", False):
+                    with st.expander("🔑 نسيت كلمة المرور؟ اضغط هنا لاستعادتها فوراً", expanded=True):
+                        fp_email = st.text_input("أدخل بريدك الإلكتروني المسجل:", placeholder="name@gmail.com", key="fp_email_input").strip().lower()
+                        if st.button("📩 إرسال رمز استعادة كلمة المرور", key="fp_send_otp_btn"):
+                            if not fp_email:
+                                st.error("يرجى إدخال بريدك الإلكتروني أولاً.")
                             else:
-                                target_reset = st.session_state["fp_reset_target"]
-                                conn_fp2 = sqlite3.connect("saas_security_vault.db", timeout=10)
-                                conn_fp2.cursor().execute("UPDATE saas_users_auth SET password = ? WHERE LOWER(TRIM(email)) = ?", (fp_new_pw, target_reset))
-                                conn_fp2.commit(); conn_fp2.close()
-                                save_to_github_fast()
-                                st.session_state.pop("fp_reset_code", None)
-                                st.session_state.pop("fp_reset_target", None)
-                                st.success("🎉 تم تحديث كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول بها أعلاه.")
+                                conn_fp = sqlite3.connect("saas_security_vault.db", timeout=10)
+                                fp_exists = conn_fp.cursor().execute("SELECT email FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (fp_email,)).fetchone()
+                                conn_fp.close()
+                                if not fp_exists:
+                                    st.error("❌ هذا البريد الإلكتروني غير مسجل في المنصة.")
+                                else:
+                                    fp_code = f"{random.randint(100000, 999999)}"
+                                    st.session_state["fp_reset_code"] = fp_code
+                                    st.session_state["fp_reset_target"] = fp_email
+                                    if send_gmail_notification(fp_email, f"🔑 رمز استعادة كلمة المرور ({fp_code})", f"مرحباً،\n\nرمز التحقق الخاص بتعيين كلمة مرور جديدة لمتجرك هو: {fp_code}", action_type="OTP"):
+                                        st.success("✅ تم إرسال رمز الاستعادة إلى بريدك الإلكتروني!")
+
+                        if st.session_state.get("fp_reset_target"):
+                            st.info(f"أدخل الرمز المرسل إلى: **{st.session_state['fp_reset_target']}**")
+                            fp_in_code = st.text_input("رمز التحقق (6 أرقام):", max_chars=6, key="fp_verify_code_in").strip()
+                            fp_new_pw = st.text_input("كلمة المرور الجديدة (6 أحرف على الأقل):", type="password", key="fp_new_pw_in").strip()
+                            if st.button("✅ تأكيد وتغيير كلمة المرور", key="fp_confirm_reset_btn"):
+                                if fp_in_code != st.session_state.get("fp_reset_code"):
+                                    st.error("❌ رمز التحقق غير صحيح!")
+                                elif len(fp_new_pw) < 6:
+                                    st.warning("⚠️ يجب أن تكون كلمة المرور 6 أحرف على الأقل.")
+                                else:
+                                    target_reset = st.session_state["fp_reset_target"]
+                                    conn_fp2 = sqlite3.connect("saas_security_vault.db", timeout=10)
+                                    conn_fp2.cursor().execute("UPDATE saas_users_auth SET password = ? WHERE LOWER(TRIM(email)) = ?", (fp_new_pw, target_reset))
+                                    conn_fp2.commit(); conn_fp2.close()
+                                    save_to_github_fast()
+                                    st.session_state.pop("fp_reset_code", None)
+                                    st.session_state.pop("fp_reset_target", None)
+                                    st.session_state["login_failed_show_fp"] = False
+                                    st.success("🎉 تم تحديث كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول بها أعلاه.")
+
 
                 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
                 if st.button("دخول إلى لوحة التحكم", key="login_submit_enterprise"):
