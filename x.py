@@ -1810,6 +1810,26 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             _, col_login_mid, _ = st.columns([1.0, 1.4, 1.0])
             with col_login_mid:
                 st.markdown("""
+                    <style>
+                    /* تحويل زر نسيت كلمة المرور إلى رابط نصي أنيق مثل Google */
+                    div[class*="st-key-google_style_fp_link"] button {
+                        background: transparent !important;
+                        border: none !important;
+                        box-shadow: none !important;
+                        color: #38BDF8 !important;
+                        font-size: 13.5px !important;
+                        font-weight: 600 !important;
+                        min-height: 28px !important;
+                        padding: 0 !important;
+                        text-align: right !important;
+                        justify-content: flex-start !important;
+                    }
+                    div[class*="st-key-google_style_fp_link"] button:hover {
+                        color: #10B981 !important;
+                        text-decoration: underline !important;
+                        transform: none !important;
+                    }
+                    </style>
                     <div style="background: #111827; border: 1px solid #1F2937; border-radius: 16px; padding: 24px; margin-top: 25px; margin-bottom: 18px; direction: rtl; text-align: right;">
                         <h2 style="color: #F8FAFC !important; margin: 0 0 6px 0; font-size: 22px; font-weight: 700;">تسجيل الدخول إلى المتجر</h2>
                         <p style="color: #94A3B8 !important; margin: 0; font-size: 13.5px;">أدخل بيانات حسابك للوصول إلى لوحة التحكم الخاصة بك.</p>
@@ -1821,7 +1841,13 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 clean_email = input_email.strip()
                 clean_pass = input_password.strip()
 
-                st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                # 🔗 الرابط النصي الأنيق تحت كلمة المرور مباشرة (مثل Google)
+                if st.button("هل نسيت كلمة المرور؟", key="google_style_fp_link"):
+                    st.session_state["prefill_fp_email"] = clean_email
+                    st.session_state["landing_step"] = "forgot_password"
+                    st.rerun()
+
+                st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
                 if st.button("دخول إلى لوحة التحكم", key="login_submit_enterprise"):
                     if clean_email == "" or clean_pass == "":
                         st.error("يرجى إدخال البريد الإلكتروني وكلمة المرور.")
@@ -1832,11 +1858,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         user_row = cursor_login.fetchone()
 
                         if user_row:
-                            u_status, u_created, u_pkg = str(user_row[0]), str(user_row[1] or ""), str(user_row[2] or "29k")
+                            u_status, u_created, u_pkg = str(user_row), str(user_row or ""), str(user_row or "29k")
                             trial_expired = False
                             if "تجربة مجانية" in u_status and u_created:
                                 try:
-                                    start_dt = datetime.strptime(u_created.split(".")[0], "%Y-%m-%d %H:%M:%S")
+                                    start_dt = datetime.strptime(u_created.split("."), "%Y-%m-%d %H:%M:%S")
                                     if (datetime.now() - start_dt).total_seconds() > 3 * 86400:
                                         trial_expired = True
                                         cursor_login.execute("UPDATE saas_users_auth SET status = '⏳ انتهت التجربة المجانية - بانتظار الدفع' WHERE LOWER(TRIM(email)) = ?", (clean_email.lower(),))
@@ -1847,7 +1873,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             conn_login.close()
 
                             if "مفعّل" in u_status and not trial_expired:
-                                st.session_state["login_failed_show_fp"] = False
                                 st.session_state["active_merchant_user"] = clean_email
                                 st.success("تم التحقق بنجاح. جاري فتح لوحة التحكم...")
                                 time.sleep(0.5)
@@ -1858,53 +1883,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 st.warning("⚠️ انتهت فترة التجربة المجانية (3 أيام) أو حسابك بانتظار التفعيل السنوي. أكمل الدفع أدناه للتفعيل الفوري.")
                         else:
                             conn_login.close()
-                            st.session_state["login_failed_show_fp"] = True
-                            st.error("❌ بيانات الدخول غير صحيحة. هل نسيت كلمة المرور؟ استعدها من الصندوق أدناه 👇")
-
-                # 🔑 صندوق استعادة كلمة المرور (يظهر حصراً عند فشل تسجيل الدخول)
-                if st.session_state.get("login_failed_show_fp", False):
-                    with st.expander("🔑 نسيت كلمة المرور؟ اضغط هنا لاستعادتها فوراً", expanded=True):
-                        fp_email = st.text_input("أدخل بريدك الإلكتروني المسجل:", placeholder="name@gmail.com", key="fp_email_input").strip().lower()
-                        if st.button("📩 إرسال رمز استعادة كلمة المرور", key="fp_send_otp_btn"):
-                            if not fp_email:
-                                st.error("يرجى إدخال بريدك الإلكتروني أولاً.")
-                            else:
-                                conn_fp = sqlite3.connect("saas_security_vault.db", timeout=10)
-                                fp_exists = conn_fp.cursor().execute("SELECT email FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (fp_email,)).fetchone()
-                                conn_fp.close()
-                                if not fp_exists:
-                                    st.error("❌ هذا البريد الإلكتروني غير مسجل في المنصة.")
-                                else:
-                                    fp_code = f"{random.randint(100000, 999999)}"
-                                    st.session_state["fp_reset_code"] = fp_code
-                                    st.session_state["fp_reset_target"] = fp_email
-                                    if send_gmail_notification(fp_email, f"🔑 رمز استعادة كلمة المرور ({fp_code})", f"مرحباً،\n\nرمز التحقق الخاص بتعيين كلمة مرور جديدة لمتجرك هو: {fp_code}", action_type="OTP"):
-                                        st.success("✅ تم إرسال رمز الاستعادة إلى بريدك الإلكتروني!")
-
-                        if st.session_state.get("fp_reset_target"):
-                            st.info(f"أدخل الرمز المرسل إلى: **{st.session_state['fp_reset_target']}**")
-                            fp_in_code = st.text_input("رمز التحقق (6 أرقام):", max_chars=6, key="fp_verify_code_in").strip()
-                            fp_new_pw = st.text_input("كلمة المرور الجديدة (6 أحرف على الأقل):", type="password", key="fp_new_pw_in").strip()
-                            if st.button("✅ تأكيد وتغيير كلمة المرور", key="fp_confirm_reset_btn"):
-                                if fp_in_code != st.session_state.get("fp_reset_code"):
-                                    st.error("❌ رمز التحقق غير صحيح!")
-                                elif len(fp_new_pw) < 6:
-                                    st.warning("⚠️ يجب أن تكون كلمة المرور 6 أحرف على الأقل.")
-                                else:
-                                    target_reset = st.session_state["fp_reset_target"]
-                                    conn_fp2 = sqlite3.connect("saas_security_vault.db", timeout=10)
-                                    conn_fp2.cursor().execute("UPDATE saas_users_auth SET password = ? WHERE LOWER(TRIM(email)) = ?", (fp_new_pw, target_reset))
-                                    conn_fp2.commit(); conn_fp2.close()
-                                    save_to_github_fast()
-                                    st.session_state.pop("fp_reset_code", None)
-                                    st.session_state.pop("fp_reset_target", None)
-                                    st.session_state["login_failed_show_fp"] = False
-                                    st.success("🎉 تم تحديث كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول بها أعلاه.")
-
-
-                st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
-
-            # 💳 صندوق الدفع الآمن بعرض متناسق للباقات الثلاث في صف واحد
+                            st.error("❌ البريد الإلكتروني أو كلمة المرور غير صحيحة.")
+            # 💳 صندوق الدفع الآمن بعرض متناسق للباقات الثلاث
             if st.session_state.get("expired_trial_email"):
                 exp_mail = st.session_state["expired_trial_email"]
                 _, col_pkg_wide, _ = st.columns([0.15, 3.2, 0.15])
@@ -1945,23 +1925,22 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                         conn_up = sqlite3.connect("saas_security_vault.db", timeout=10)
                         conn_up.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE LOWER(TRIM(email)) = ?", (chosen_upgrade_pkg, exp_mail.lower()))
-                        conn_up.commit()
-                        conn_up.close()
+                        conn_up.commit(); conn_up.close()
 
                         save_to_github_fast(rec_path, "")
                         save_to_github_fast()
                         send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", ""), f"💰 وصل دفع جديد من: {exp_mail}", f"التاجر {exp_mail} اختار باقة: {chosen_upgrade_pkg} ({pkg_price_label}) ورفع وصل الدفع.", action_type="ACTIVATE")
                         st.success("🎉 تم استلام وصل الدفع وحفظ باقتك بنجاح! سيتم تفعيل حسابك السنوي خلال دقائق.")
-                    # ↩️ زر العودة للمتجر وإكمال الساعات المتبقية إذا لم تنتهِ التجربة المجانية بعد
+
                     conn_rem = sqlite3.connect("saas_security_vault.db", timeout=10)
                     rem_row = conn_rem.cursor().execute("SELECT status, created_at FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (exp_mail.lower(),)).fetchone()
                     conn_rem.close()
 
                     can_resume_trial = False
                     rem_hrs_display = 0
-                    if rem_row and "تجربة مجانية" in str(rem_row[0]) and rem_row[1]:
+                    if rem_row and "تجربة مجانية" in str(rem_row) and rem_row:
                         try:
-                            st_trial = datetime.strptime(str(rem_row[1]).split(".")[0], "%Y-%m-%d %H:%M:%S")
+                            st_trial = datetime.strptime(str(rem_row).split("."), "%Y-%m-%d %H:%M:%S")
                             elapsed_h = (datetime.now() - st_trial).total_seconds() / 3600.0
                             if elapsed_h < 72:
                                 can_resume_trial = True
@@ -1976,7 +1955,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                             st.session_state.pop("expired_trial_email", None)
                             st.rerun()
 
-
             _, col_nav_mid, _ = st.columns([1.0, 1.4, 1.0])
             with col_nav_mid:
                 st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
@@ -1987,10 +1965,67 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         st.rerun()
                 with col_nav2:
                     if st.button("العودة للرئيسية", key="back_home_from_login"):
-                        st.session_state["login_failed_show_fp"] = False
-
                         st.session_state["landing_step"] = "home"
                         st.rerun()
+        # 🔐 شاشة استعادة كلمة المرور المستقلة (نمط Google Account Recovery)
+        elif st.session_state["landing_step"] == "forgot_password":
+            _, col_fp_page, _ = st.columns([1.0, 1.4, 1.0])
+            with col_fp_page:
+                st.markdown("""
+                    <div style="background: #111827; border: 1px solid #1F2937; border-radius: 16px; padding: 26px; margin-top: 35px; margin-bottom: 18px; direction: rtl; text-align: right;">
+                        <div style="color: #10B981; font-weight: 800; font-size: 14px; margin-bottom: 6px;">Tijaratna DataDZ • استرداد الحساب</div>
+                        <h2 style="color: #F8FAFC !important; margin: 0 0 6px 0; font-size: 22px; font-weight: 700;">العثور على حسابك وتعيين كلمة مرور جديدة</h2>
+                        <p style="color: #94A3B8 !important; margin: 0; font-size: 13.5px;">أدخل البريد الإلكتروني المرتبط بمتجرك لنرسل لك رمز التحقق.</p>
+                    </div>
+                """, unsafe_allow_html=True)
+
+                if not st.session_state.get("fp_reset_target"):
+                    fp_email = st.text_input("البريد الإلكتروني (Gmail):", value=st.session_state.get("prefill_fp_email", ""), placeholder="name@gmail.com", key="fp_page_email_in").strip().lower()
+                    if st.button("التالي (إرسال رمز التحقق)", key="fp_page_send_btn"):
+                        if not fp_email:
+                            st.error("يرجى إدخال بريدك الإلكتروني.")
+                        else:
+                            conn_fp = sqlite3.connect("saas_security_vault.db", timeout=10)
+                            fp_exists = conn_fp.cursor().execute("SELECT email FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (fp_email,)).fetchone()
+                            conn_fp.close()
+                            if not fp_exists:
+                                st.error("تعذّر العثور على حساب مرتبط بهذا البريد الإلكتروني.")
+                            else:
+                                fp_code = f"{random.randint(100000, 999999)}"
+                                st.session_state["fp_reset_code"] = fp_code
+                                st.session_state["fp_reset_target"] = fp_email
+                                if send_gmail_notification(fp_email, f"رمز التحقق ({fp_code}) لاسترداد حسابك", f"مرحباً،\n\nرمز التحقق لتعيين كلمة مرور جديدة هو: {fp_code}", action_type="OTP"):
+                                    st.rerun()
+                else:
+                    target_em = st.session_state["fp_reset_target"]
+                    st.info(f"تم إرسال رمز تحقق مكون من 6 أرقام إلى **{target_em}**")
+                    fp_in_code = st.text_input("أدخل رمز التحقق (6 أرقام):", max_chars=6, placeholder="000000", key="fp_page_code_in").strip()
+                    fp_new_pw = st.text_input("كلمة المرور الجديدة (6 أحرف على الأقل):", type="password", placeholder="••••••••", key="fp_page_newpw_in").strip()
+
+                    if st.button("حفظ كلمة المرور وتسجيل الدخول", key="fp_page_save_btn"):
+                        if fp_in_code != st.session_state.get("fp_reset_code"):
+                            st.error("الرمز الذي أدخلته غير صحيح. حاول مرة أخرى.")
+                        elif len(fp_new_pw) < 6:
+                            st.warning("يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.")
+                        else:
+                            conn_fp2 = sqlite3.connect("saas_security_vault.db", timeout=10)
+                            conn_fp2.cursor().execute("UPDATE saas_users_auth SET password = ? WHERE LOWER(TRIM(email)) = ?", (fp_new_pw, target_em))
+                            conn_fp2.commit(); conn_fp2.close()
+                            save_to_github_fast()
+                            st.session_state.pop("fp_reset_code", None)
+                            st.session_state.pop("fp_reset_target", None)
+                            st.success("🎉 تم تغيير كلمة المرور بنجاح!")
+                            time.sleep(1)
+                            st.session_state["landing_step"] = "login"
+                            st.rerun()
+
+                st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+                if st.button("العودة إلى تسجيل الدخول", key="fp_page_back_login"):
+                    st.session_state.pop("fp_reset_code", None)
+                    st.session_state.pop("fp_reset_target", None)
+                    st.session_state["landing_step"] = "login"
+                    st.rerun()
+
 
         elif st.session_state["landing_step"] == "register":
             _, col_reg_box, _ = st.columns([0.25, 3.0, 0.25])
