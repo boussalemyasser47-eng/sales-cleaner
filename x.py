@@ -1947,7 +1947,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.rerun()
 
             st.markdown(f"""
-                <div id="footer-sec" style="max-width: 1050px; margin: 50px auto 15px auto; padding: 32px 26px; background: rgba(11, 17, 32, 0.9); border-top: 1px solid #1E293B; border-radius: 20px; direction: rtl; text-align: right;">
+                    <div id="footer-sec" style="width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; margin-top: 60px; margin-bottom: -100px; padding: 45px 8% 35px 8%; background: #070B14; border-top: 1px solid #1E293B; direction: rtl; text-align: right;">
+
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 20px;">
                         <div>
                             <div style="color: #F8FAFC; font-weight: 900; font-size: 19px; margin-bottom: 8px;">Tijaratna <span style="color: #10B981;">DataDZ</span></div>
