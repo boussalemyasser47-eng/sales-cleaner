@@ -1763,6 +1763,39 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     padding: 10px 16px !important;
                     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45) !important;
                 }}
+                /* 📌 تثبيت الشريط العلوي في أعلى الشاشة ليتبع الزائر دائماً */
+                div[data-testid="stVerticalBlock"] > div:has(.sticky-nav-anchor) + div[data-testid="stHorizontalBlock"] {{
+                    position: fixed !important;
+                    top: 10px !important;
+                    left: 3% !important;
+                    right: 3% !important;
+                    z-index: 999990 !important;
+                    background: rgba(9, 13, 22, 0.92) !important;
+                    backdrop-filter: blur(14px) !important;
+                    border: 1px solid #1E293B !important;
+                    border-radius: 14px !important;
+                    padding: 10px 18px !important;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+                }}
+                /* مسافة علوية للصفحة لكي لا يغطي الشريط المثبت العنوان الأول */
+                .block-container {{
+                    padding-top: 95px !important;
+                }}
+                /* جعل زري الدخول والدعم داكنين بحدود أنيقة داخل الشريط العلوي */
+                div[class*="st-key-nav_supp_top"] button,
+                div[class*="st-key-nav_login_top"] button,
+                div[class*="st-key-hero_open_login"] button {{
+                    background: #0F172A !important;
+                    color: #F8FAFC !important;
+                    border: 1px solid #334155 !important;
+                    box-shadow: none !important;
+                }}
+                div[class*="st-key-nav_supp_top"] button:hover,
+                div[class*="st-key-nav_login_top"] button:hover,
+                div[class*="st-key-hero_open_login"] button:hover {{
+                    border-color: #10B981 !important;
+                    color: #10B981 !important;
+                }}
 
                 </style>
 
