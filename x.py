@@ -1188,7 +1188,7 @@ import re
 # === الإضافات والتعديلات الجديدة لبوابة التوثيق وأمن المشتركين ===
 # ====================================================================
 
-def render_premium_neon_packages():
+def render_premium_neon_packages(is_trial_mode=True):
     has_selected = "selected_neon_package" in st.session_state
     current_choice = st.session_state.get("selected_neon_package", "الباقة الاحترافية المتوسطة (45k)")
 
@@ -1198,6 +1198,29 @@ def render_premium_neon_packages():
         cls_b = "price-card active-glow" if "الأساسية" in current_choice else "price-card dimmed"
         cls_p = "price-card active-glow" if "الاحترافية" in current_choice else "price-card dimmed"
         cls_c = "price-card active-glow" if "السيبرانية" in current_choice else "price-card dimmed"
+
+    if is_trial_mode:
+        badge_b = '<span class="trial-free-badge">🎁 0 DA لمدة 3 أيام مجاناً</span>'
+        badge_p = '<span class="popular-ribbon">⭐ الأكثر طلباً</span><span class="trial-free-badge">🎁 0 DA لمدة 3 أيام</span>'
+        badge_c = '<span class="trial-free-badge">🎁 0 DA لمدة 3 أيام مجاناً</span>'
+        cost_b = '0 DA <span style="font-size:13px; color:#34D399;">/ أول 3 أيام</span>'
+        cost_p = '0 DA <span style="font-size:13px; color:#34D399;">/ أول 3 أيام</span>'
+        cost_c = '0 DA <span style="font-size:13px; color:#34D399;">/ أول 3 أيام</span>'
+        sub_b = 'بعد التجربة: <b>29,000 DA / سنة</b> (79 دج/يوم)'
+        sub_p = 'بعد التجربة: <b>45,000 DA / سنة</b> (123 دج/يوم)'
+        sub_c = 'بعد التجربة: <b>65,000 DA / سنة</b> (178 دج/يوم)'
+        radio_label = "اختر باقتك للبدء فوراً بـ 0 DA لمدة 3 أيام مجاناً (بدون أي التزام):"
+    else:
+        badge_b = ''
+        badge_p = '<span class="popular-ribbon">⭐ الأكثر طلباً من التجار</span>'
+        badge_c = ''
+        cost_b = '29,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span>'
+        cost_p = '45,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span>'
+        cost_c = '65,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span>'
+        sub_b = 'تعادل 79 دج فقط يومياً'
+        sub_p = 'تعادل 123 دج فقط يومياً'
+        sub_c = 'تعادل 178 دج فقط يومياً'
+        radio_label = "حدد الباقة السنوية لتفعيل اشتراكك الكامل:"
 
     st.markdown("""
 <style>
@@ -1272,10 +1295,10 @@ def render_premium_neon_packages():
     html_cards = f"""
 <div class="pricing-grid-3">
 <div class="{cls_b}">
-<span class="trial-free-badge">🎁 0 DA لمدة 3 أيام مجاناً</span>
+{badge_b}
 <div class="p-name">🌱 الباقة الأساسية</div>
-<div class="p-cost">0 DA <span style="font-size:13px; color:#34D399;">/ أول 3 أيام</span></div>
-<div class="p-daily">بعد التجربة: <b>29,000 DA / سنة</b> (79 دج/يوم)</div>
+<div class="p-cost">{cost_b}</div>
+<div class="p-daily">{sub_b}</div>
 <div class="p-item">✓ فواتير PDF وملصقات حرارية 4x4</div>
 <div class="p-item">✓ إدارة المخزون ورادار القائمة السوداء</div>
 <div class="p-item">✓ إرسال الطلبات عبر WhatsApp</div>
@@ -1283,11 +1306,10 @@ def render_premium_neon_packages():
 <div class="p-no">✕ مولّد الإعلانات الذكي AI</div>
 </div>
 <div class="{cls_p}">
-<span class="popular-ribbon">⭐ الأكثر طلباً</span>
-<span class="trial-free-badge">🎁 0 DA لمدة 3 أيام</span>
+{badge_p}
 <div class="p-name">💎 الباقة الاحترافية</div>
-<div class="p-cost">0 DA <span style="font-size:13px; color:#34D399;">/ أول 3 أيام</span></div>
-<div class="p-daily">بعد التجربة: <b>45,000 DA / سنة</b> (123 دج/يوم)</div>
+<div class="p-cost">{cost_p}</div>
+<div class="p-daily">{sub_p}</div>
 <div class="p-item">✓ <b>كل مميزات الباقة الأساسية</b></div>
 <div class="p-item">✓ مطهر ملفات Excel والبيانات</div>
 <div class="p-item">✓ رادار الولايات الأكثر مبيعاً</div>
@@ -1295,10 +1317,10 @@ def render_premium_neon_packages():
 <div class="p-no">✕ مولّد الإعلانات وسيناريو الفيديو AI</div>
 </div>
 <div class="{cls_c}">
-<span class="trial-free-badge">🎁 0 DA لمدة 3 أيام مجاناً</span>
+{badge_c}
 <div class="p-name">⚡ الباقة السيبرانية</div>
-<div class="p-cost">0 DA <span style="font-size:13px; color:#34D399;">/ أول 3 أيام</span></div>
-<div class="p-daily">بعد التجربة: <b>65,000 DA / سنة</b> (178 دج/يوم)</div>
+<div class="p-cost">{cost_c}</div>
+<div class="p-daily">{sub_c}</div>
 <div class="p-item">✓ <b>كل مميزات الباقتين السابقتين</b></div>
 <div class="p-item">✓ صياغة إعلانات بالدارجة الجزائرية AI</div>
 <div class="p-item">✓ سيناريو فيديو TikTok و Reels</div>
@@ -1309,13 +1331,14 @@ def render_premium_neon_packages():
     st.markdown(html_cards, unsafe_allow_html=True)
 
     chosen_package = st.radio(
-        "اختر باقتك للبدء فوراً بـ 0 DA لمدة 3 أيام مجاناً (بدون أي التزام):",
+        radio_label,
         ["الباقة الأساسية المبتدئة (29k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة السيبرانية الخارقة (65k)"],
         index=1,
         horizontal=True,
         key="selected_neon_package"
     )
     return chosen_package
+
 
 
 
@@ -1802,7 +1825,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 _, col_pkg_wide, _ = st.columns([0.15, 3.2, 0.15])
                 with col_pkg_wide:
                     st.markdown("<h4 style='color: #10B981; text-align: center; direction: rtl; margin: 20px 0 6px 0;'>🏷️ اختر باقتك السنوية المناسبة قبل التحويل:</h4>", unsafe_allow_html=True)
-                    chosen_upgrade_pkg = render_premium_neon_packages()
+                    chosen_upgrade_pkg = render_premium_neon_packages(is_trial_mode=False)
                     st.session_state["expired_trial_pkg"] = chosen_upgrade_pkg
 
                 pkg_price_label = "29,000 DA" if "29k" in chosen_upgrade_pkg else ("65,000 DA" if "65k" in chosen_upgrade_pkg else "45,000 DA")
