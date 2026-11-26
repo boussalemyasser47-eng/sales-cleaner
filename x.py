@@ -2903,7 +2903,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         85%  {{ opacity: 1; transform: translateY(0) scale(1); }}
                         100% {{ opacity: 0; transform: translateY(-20px) scale(0.95); visibility: hidden; pointer-events: none; }}
                     }}
-                    .auto-fade-corner-toast {
+                    .auto-fade-corner-toast{{
                         position: fixed;
                         top: 72px;
                         right: 24px;
@@ -2917,7 +2917,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         direction: rtl;
                         text-align: right;
                         animation: cornerToastAutoHide 7.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-                    }
+                    }}
 
                     </style>
                     <div class="auto-fade-corner-toast">
