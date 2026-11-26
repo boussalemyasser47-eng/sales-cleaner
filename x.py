@@ -2623,7 +2623,10 @@ if is_boss_link:
                 conn_lg1 = sqlite3.connect("saas_security_vault.db", timeout=10)
                 try:
                     df_em_logs = pd.read_sql("SELECT sent_time as 'الوقت', recipient_email as 'المستلم', subject as 'الموضوع', status as 'الحالة' FROM email_logs ORDER BY id DESC LIMIT 50", conn_lg1)
-                    st.dataframe(df_em_logs, use_container_width=True) if not df_em_logs.empty else st.info("📭 لا توجد إيميلات مسجلة بعد.")
+                    if not df_em_logs.empty:
+                        st.dataframe(df_em_logs, use_container_width=True)
+                    else:
+                        st.info("📭 لا توجد إيميلات مسجلة بعد.")
                 except Exception:
                     st.info("📭 سجل الإيميلات قيد التهيئة.")
                 conn_lg1.close()
@@ -2633,10 +2636,14 @@ if is_boss_link:
                 conn_lg2 = sqlite3.connect("saas_security_vault.db", timeout=10)
                 try:
                     df_au_logs = pd.read_sql("SELECT action_time as 'الوقت', target_email as 'التاجر', action_type as 'الإجراء', details as 'التفاصيل' FROM admin_audit_logs ORDER BY id DESC LIMIT 50", conn_lg2)
-                    st.dataframe(df_au_logs, use_container_width=True) if not df_au_logs.empty else st.info("📭 لا توجد حركات مسجلة بعد.")
+                    if not df_au_logs.empty:
+                        st.dataframe(df_au_logs, use_container_width=True)
+                    else:
+                        st.info("📭 لا توجد حركات مسجلة بعد.")
                 except Exception:
                     st.info("📭 سجل الحركات قيد التهيئة.")
                 conn_lg2.close()
+
 
 
     # ✅ وضع زر المغادرة هنا مرة واحدة فقط في أسفل اللوحة بالكامل خارج حلقة التجار
