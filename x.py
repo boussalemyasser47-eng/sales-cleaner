@@ -1520,6 +1520,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 border: none !important;
                 box-shadow: none !important;
             }
+
             [data-testid="stFileUploaderDropzoneInstructions"] span {
                 display: none !important;
             }
