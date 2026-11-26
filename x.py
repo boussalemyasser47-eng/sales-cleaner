@@ -1647,70 +1647,169 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             </style>
         """, unsafe_allow_html=True)
 
-        if st.session_state["landing_step"] == "home":
-            nav_col_brand, _, nav_col_support = st.columns([2, 3, 1.2])
-            with nav_col_brand:
-                st.markdown("<p style='color: #F8FAFC; font-weight: 800; font-size: 22px; margin: 6px 0 0 0; direction: rtl; text-align: right;'>Tijaratna <span style='color: #10B981;'>DataDZ</span></p>", unsafe_allow_html=True)
+            wa_support_num = str(st.secrets.get("SUPPORT_WHATSAPP", "213654742605")).replace("+", "").strip()
+            wa_float_link = "https://wa.me" + "/" + wa_support_num + "?text=" + urllib.parse.quote("مرحباً إدارة Tijaratna DataDZ، لدي استفسار بخصوص المنصة.")
 
-            with nav_col_support:
-                if st.button("الدعم الفني والشكاوى", key="top_navbar_support_btn"):
+            st.markdown(f"""
+                <style>
+                div[data-testid="stHorizontalBlock"] > div:nth-child(n) div.stButton button {{
+                    background: #10B981 !important;
+                    color: #022C22 !important;
+                    border: none !important;
+                    border-radius: 10px !important;
+                    font-weight: 800 !important;
+                    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25) !important;
+                }}
+                div[data-testid="stHorizontalBlock"] > div:nth-child(n) div.stButton button:hover {{
+                    background: #059669 !important;
+                    color: #FFFFFF !important;
+                }}
+                div[class*="st-key-nav_login_top"] button,
+                div[class*="st-key-nav_supp_top"] button,
+                div[class*="st-key-hero_open_login"] button {{
+                    background: rgba(15, 23, 42, 0.85) !important;
+                    color: #F8FAFC !important;
+                    border: 1px solid #334155 !important;
+                    box-shadow: none !important;
+                }}
+                div[class*="st-key-nav_login_top"] button:hover,
+                div[class*="st-key-nav_supp_top"] button:hover,
+                div[class*="st-key-hero_open_login"] button:hover {{
+                    border-color: #10B981 !important;
+                    color: #10B981 !important;
+                }}
+                .open-hero-wrap {{
+                    max-width: 920px;
+                    margin: 35px auto 20px auto;
+                    text-align: center;
+                    direction: rtl;
+                    padding: 10px 20px;
+                }}
+                .open-hero-title {{
+                    color: #F8FAFC !important;
+                    font-size: 42px !important;
+                    font-weight: 900 !important;
+                    line-height: 1.3 !important;
+                    margin-bottom: 26px !important;
+                }}
+                .open-hero-title span {{ color: #10B981 !important; }}
+                .hero-checks-grid {{
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                    gap: 14px 36px;
+                    max-width: 760px;
+                    margin: 0 auto 28px auto;
+                    text-align: right;
+                }}
+                .hero-check-item {{
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    color: #E2E8F0 !important;
+                    font-size: 15px !important;
+                    font-weight: 600 !important;
+                }}
+                .check-dot {{
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 50%;
+                    background: #10B981;
+                    color: #022C22 !important;
+                    font-size: 13px;
+                    font-weight: 900;
+                    flex-shrink: 0;
+                }}
+                .floating-wa-btn {{
+                    position: fixed;
+                    bottom: 24px;
+                    left: 24px;
+                    width: 56px;
+                    height: 56px;
+                    background: #25D366;
+                    color: #FFFFFF !important;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 28px;
+                    text-decoration: none !important;
+                    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
+                    z-index: 999999;
+                    transition: transform 0.25s ease;
+                }}
+                .floating-wa-btn:hover {{ transform: scale(1.1); }}
+                </style>
+
+                <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
+            """, unsafe_allow_html=True)
+            # 🧭 الشريط العلوي المتكامل (الشعار في اليمين + الروابط في الوسط + الأزرار في اليسار)
+            nav_r, nav_mid, nav_l1, nav_l2, nav_l3 = st.columns([1.8, 2.6, 1.1, 1.1, 1.1])
+            with nav_r:
+                st.markdown("<div style='direction:rtl; text-align:right; padding-top:6px;'><span style='color:#F8FAFC; font-weight:900; font-size:21px;'>Tijaratna <span style='color:#10B981;'>DataDZ</span></span><br><span style='color:#94A3B8; font-size:11px;'>منصة التجارة الإلكترونية الذكية 🇩🇿</span></div>", unsafe_allow_html=True)
+            with nav_mid:
+                st.markdown("""
+                    <div style="display:flex; justify-content:center; gap:22px; padding-top:14px; direction:rtl; font-size:14px; font-weight:600;">
+                        <a href="#features-sec" style="color:#CBD5E1; text-decoration:none;">المميزات</a>
+                        <a href="#footer-sec" style="color:#CBD5E1; text-decoration:none;">ضمان الثقة</a>
+                        <a href="#footer-sec" style="color:#CBD5E1; text-decoration:none;">الخصوصية</a>
+                    </div>
+                """, unsafe_allow_html=True)
+            with nav_l1:
+                if st.button("الدعم والشكاوى", key="nav_supp_top"):
                     st.session_state["current_view"] = "complaint_page"
                     st.rerun()
+            with nav_l2:
+                if st.button("تسجيل الدخول", key="nav_login_top"):
+                    st.session_state["login_failed_show_fp"] = False
+                    st.session_state["landing_step"] = "login"
+                    st.rerun()
+            with nav_l3:
+                if st.button("إنشاء حساب", key="nav_reg_top"):
+                    st.session_state["landing_step"] = "register"
+                    st.rerun()
 
-
-
+            # 🌟 واجهة Hero مفتوحة بنقاط القوة المزدوجة (بدون صندوق مقيد)
             st.markdown("""
-                <div class="hero-landing-container">
-                    <span class="hero-pill">Tijaratna DataDZ • الجيل الجديد لإدارة التجارة الإلكترونية</span>
-                    <div class="hero-main-title">تحكّم في مبيعاتك، مخزونك، وفواتيرك من مكان واحد</div>
-                    <div class="hero-sub-desc">
-                        نظام سحابي متكامل مصمم للتجار في الجزائر لإصدار الفواتير المزدوجة، كشف الزبائن الوهميين، ومضاعفة أرباحك الصافية بدقة.
+                <div class="open-hero-wrap">
+                    <div class="open-hero-title">المنصة <span>#1</span> في الجزائر لإدارة التجارة الإلكترونية والفواتير</div>
+                    <div class="hero-checks-grid">
+                        <div class="hero-check-item"><span class="check-dot">✓</span> فواتير PDF مزدوجة وملصقات 4x4 بضغطة زر</div>
+                        <div class="hero-check-item"><span class="check-dot">✓</span> كشف الزبائن الوهميين وتقليل المرتجعات (Retour)</div>
+                        <div class="hero-check-item"><span class="check-dot">✓</span> تجربة مجانية 3 أيام بـ 0 DA بدون أي التزام</div>
+                        <div class="hero-check-item"><span class="check-dot">✓</span> أتمتة المخزون وحساب صافي الربح الحقيقي</div>
+                        <div class="hero-check-item"><span class="check-dot">✓</span> استيراد طلبيات Excel وتوليدها دفعة واحدة</div>
+                        <div class="hero-check-item"><span class="check-dot">✓</span> دفع محلي آمن عبر BaridiMob و CCP</div>
                     </div>
+                    <p style="color:#F8FAFC; font-weight:700; font-size:15.5px; margin-bottom:16px;">لديك متجر إلكتروني؟ ابدأ الآن في تنظيم مبيعاتك ومضاعفة أرباحك!</p>
                 </div>
             """, unsafe_allow_html=True)
 
-            _, col_cta1, col_cta2, _ = st.columns([1.2, 1.3, 1.3, 1.2], gap="medium")
+            _, col_cta1, col_cta2, _ = st.columns([1.3, 1.2, 1.2, 1.3], gap="medium")
             with col_cta1:
-                if st.button("إنشاء حساب تاجر جديد", key="hero_go_register_btn"):
+                if st.button("🚀 إنشاء حساب (0 DA مجاناً)", key="hero_go_register_btn"):
                     st.session_state["landing_step"] = "register"
                     st.rerun()
             with col_cta2:
-                if st.button("تسجيل الدخول إلى متجرك", key="hero_go_login_btn"):
-
+                if st.button("تسجيل الدخول إلى متجرك", key="hero_open_login"):
                     st.session_state["login_failed_show_fp"] = False
-                    
                     st.session_state["landing_step"] = "login"
-                    st.session_state["login_failed_show_fp"] = False
                     st.rerun()
-
-
+            # 📦 شبكة المميزات الست المنظمة + التذييل الرسمي
             st.markdown("""
                 <style>
                 .corp-features-section {
                     max-width: 1050px;
-                    margin: 45px auto 20px auto;
+                    margin: 50px auto 20px auto;
                     direction: rtl;
                     text-align: right;
                 }
-                .corp-sec-header {
-                    text-align: center;
-                    margin-bottom: 30px;
-                }
-                .corp-sec-title {
-                    color: #F8FAFC !important;
-                    font-size: 24px !important;
-                    font-weight: 700 !important;
-                    margin-bottom: 8px !important;
-                }
-                .corp-sec-sub {
-                    color: #94A3B8 !important;
-                    font-size: 14.5px !important;
-                }
-                .corp-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                    gap: 18px;
-                }
+                .corp-sec-header { text-align: center; margin-bottom: 30px; }
+                .corp-sec-title { color: #F8FAFC !important; font-size: 24px !important; font-weight: 800 !important; margin-bottom: 8px !important; }
+                .corp-sec-sub { color: #94A3B8 !important; font-size: 14.5px !important; }
+                .corp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
                 .corp-feat-card {
                     background: rgba(15, 23, 42, 0.72) !important;
                     border: 1px solid #1E293B !important;
@@ -1733,20 +1832,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     font-weight: 700;
                     margin-bottom: 12px;
                 }
-                .corp-feat-name {
-                    color: #F1F5F9 !important;
-                    font-size: 16.5px !important;
-                    font-weight: 700 !important;
-                    margin-bottom: 8px !important;
-                }
-                .corp-feat-info {
-                    color: #94A3B8 !important;
-                    font-size: 13.5px !important;
-                    line-height: 1.65 !important;
-                }
+                .corp-feat-name { color: #F1F5F9 !important; font-size: 16.5px !important; font-weight: 700 !important; margin-bottom: 8px !important; }
+                .corp-feat-info { color: #94A3B8 !important; font-size: 13.5px !important; line-height: 1.65 !important; }
                 </style>
 
-                <div class="corp-features-section">
+                <div id="features-sec" class="corp-features-section">
                     <div class="corp-sec-header">
                         <div class="corp-sec-title">كل ما يحتاجه التاجر الجزائري في نظام سحابي واحد</div>
                         <div class="corp-sec-sub">أدوات ذكية مصممة لتقليل المرتجعات، تسريع الشحن، وحساب أرباحك بدقة متناهية</div>
@@ -1784,14 +1874,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         </div>
                     </div>
                 </div>
-            """, unsafe_allow_html=True)
 
-
-            st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
-            _, col_supp, _ = st.columns([2, 1.2, 2])
-             # 🏛️ تذييل الصفحة الرسمي وسياسة الضمان والخصوصية (Enterprise Footer)
-            st.markdown("""
-                <div style="max-width: 1050px; margin: 50px auto 15px auto; padding: 28px 24px; background: rgba(11, 17, 32, 0.85); border-top: 1px solid #1E293B; border-radius: 18px; direction: rtl; text-align: right;">
+                <div id="footer-sec" style="max-width: 1050px; margin: 50px auto 15px auto; padding: 28px 24px; background: rgba(11, 17, 32, 0.85); border-top: 1px solid #1E293B; border-radius: 18px; direction: rtl; text-align: right;">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 18px;">
                         <div>
                             <div style="color: #F8FAFC; font-weight: 800; font-size: 18px; margin-bottom: 6px;">Tijaratna <span style="color: #10B981;">DataDZ</span></div>
@@ -1811,6 +1895,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     </div>
                 </div>
             """, unsafe_allow_html=True)
+
 
 
         elif st.session_state["landing_step"] == "login":
