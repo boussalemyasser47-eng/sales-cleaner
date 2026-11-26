@@ -1903,43 +1903,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
 
                 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
-                if st.button("دخول إلى لوحة التحكم", key="login_submit_enterprise"):
-                    if clean_email == "" or clean_pass == "":
-                        st.error("يرجى إدخال البريد الإلكتروني وكلمة المرور.")
-                    else:
-                        conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        cursor_login = conn_login.cursor()
-                        cursor_login.execute("SELECT status, created_at, package FROM saas_users_auth WHERE LOWER(TRIM(email)) = ? AND password = ?", (clean_email.lower(), clean_pass))
-                        user_row = cursor_login.fetchone()
-
-                        if user_row:
-                            u_status, u_created, u_pkg = str(user_row[0]), str(user_row[1] or ""), str(user_row[2] or "29k")
-                            trial_expired = False
-                            if "تجربة مجانية" in u_status and u_created:
-                                try:
-                                    start_dt = datetime.strptime(u_created.split(".")[0], "%Y-%m-%d %H:%M:%S")
-                                    if (datetime.now() - start_dt).total_seconds() > 3 * 86400:
-                                        trial_expired = True
-                                        cursor_login.execute("UPDATE saas_users_auth SET status = '⏳ انتهت التجربة المجانية - بانتظار الدفع' WHERE LOWER(TRIM(email)) = ?", (clean_email.lower(),))
-                                        conn_login.commit()
-                                        save_to_github_fast()
-                                except Exception:
-                                    pass
-                            conn_login.close()
-
-                            if "مفعّل" in u_status and not trial_expired:
-                                st.session_state["active_merchant_user"] = clean_email
-                                st.success("تم التحقق بنجاح. جاري فتح لوحة التحكم...")
-                                time.sleep(0.5)
-                                st.rerun()
-                            else:
-                                st.session_state["expired_trial_email"] = clean_email
-                                st.session_state["expired_trial_pkg"] = u_pkg
-                                st.warning("⚠️ انتهت فترة التجربة المجانية (3 أيام) أو حسابك بانتظار التفعيل السنوي. أكمل الدفع أدناه للتفعيل الفوري.")
-                        else:
-                            conn_login.close()
-                            st.session_state["login_failed_show_fp"] = True
-                            st.error("❌ بيانات الدخول غير صحيحة. هل نسيت كلمة المرور؟ استخدم خيار الاستعادة بالأسفل 👇")
 
             # 💳 صندوق الدفع الآمن بعرض متناسق للباقات الثلاث في صف واحد
             if st.session_state.get("expired_trial_email"):
