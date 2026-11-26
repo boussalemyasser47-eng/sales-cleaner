@@ -1570,6 +1570,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 border: none !important;
                 box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
             }
+         [data-testid="stIconMaterial"] { display: none !important; }
 
             .hero-landing-container {
                 max-width: 820px;
@@ -1816,6 +1817,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             # 🔑 استعادة كلمة المرور ذاتياً عبر رمز التحقق (OTP)
             _, col_fp_mid, _ = st.columns([1.0, 1.4, 1.0])
             with col_fp_mid:
+             if st.session_state.get("login_failed_show_fp", False):
+
                 with st.expander("🔑 نسيت كلمة المرور؟ اضغط هنا لاستعادتها فوراً", expanded=st.session_state.get("login_failed_show_fp", False)):
                     fp_email = st.text_input("أدخل بريدك الإلكتروني المسجل:", placeholder="name@gmail.com", key="fp_email_input").strip().lower()
                     if st.button("📩 إرسال رمز استعادة كلمة المرور", key="fp_send_otp_btn"):
