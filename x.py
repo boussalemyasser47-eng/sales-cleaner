@@ -1775,7 +1775,68 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
             st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
             _, col_supp, _ = st.columns([2, 1.2, 2])
- 
+             # 🏛️ تذييل الصفحة الرسمي وسياسة الضمان والخصوصية (Enterprise Footer)
+            st.markdown("""
+                <div style="max-width: 1050px; margin: 50px auto 15px auto; padding: 28px 24px; background: rgba(11, 17, 32, 0.85); border-top: 1px solid #1E293B; border-radius: 18px; direction: rtl; text-align: right;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 18px;">
+                        <div>
+                            <div style="color: #F8FAFC; font-weight: 800; font-size: 18px; margin-bottom: 6px;">Tijaratna <span style="color: #10B981;">DataDZ</span></div>
+                            <p style="color: #94A3B8; font-size: 12.5px; line-height: 1.6; margin: 0;">المنصة السحابية المتكاملة لإدارة التجارة الإلكترونية في الجزائر: فواتير، مخزون، وحماية من المرتجعات.</p>
+                        </div>
+                        <div>
+                            <div style="color: #10B981; font-weight: 700; font-size: 14px; margin-bottom: 6px;">🛡️ ضمان الثقة والأمان</div>
+                            <p style="color: #CBD5E1; font-size: 12px; line-height: 1.6; margin: 0;">• تجربة مجانية 3 أيام بـ 0 DA<br>• تفعيل فوري وضمان استرجاع الأموال خلال 7 أيام<br>• تشفير وعزل تام لبيانات كل متجر</p>
+                        </div>
+                        <div>
+                            <div style="color: #38BDF8; font-weight: 700; font-size: 14px; margin-bottom: 6px;">📜 الشروط والخصوصية</div>
+                            <p style="color: #94A3B8; font-size: 12px; line-height: 1.6; margin: 0;">بيانات زبائنك وفواتيرك ملك حصري لمتجرك ولا تتم مشاركتها مع أي طرف ثالث.</p>
+                        </div>
+                    </div>
+                    <div style="border-top: 1px solid #1E293B; padding-top: 12px; text-align: center; color: #64748B; font-size: 12px;">
+                        © 2026 Tijaratna DataDZ — صُمم بكل فخر للتجار في الجزائر 🇩🇿 | جميع الحقوق محفوظة.
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            # 🔑 استعادة كلمة المرور ذاتياً عبر رمز التحقق (OTP)
+            _, col_fp_mid, _ = st.columns([1.0, 1.4, 1.0])
+            with col_fp_mid:
+                with st.expander("🔑 نسيت كلمة المرور؟ اضغط هنا لاستعادتها فوراً"):
+                    fp_email = st.text_input("أدخل بريدك الإلكتروني المسجل:", placeholder="name@gmail.com", key="fp_email_input").strip().lower()
+                    if st.button("📩 إرسال رمز استعادة كلمة المرور", key="fp_send_otp_btn"):
+                        if not fp_email:
+                            st.error("يرجى إدخال بريدك الإلكتروني أولاً.")
+                        else:
+                            conn_fp = sqlite3.connect("saas_security_vault.db", timeout=10)
+                            fp_exists = conn_fp.cursor().execute("SELECT email FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (fp_email,)).fetchone()
+                            conn_fp.close()
+                            if not fp_exists:
+                                st.error("❌ هذا البريد الإلكتروني غير مسجل في المنصة.")
+                            else:
+                                fp_code = f"{random.randint(100000, 999999)}"
+                                st.session_state["fp_reset_code"] = fp_code
+                                st.session_state["fp_reset_target"] = fp_email
+                                if send_gmail_notification(fp_email, f"🔑 رمز استعادة كلمة المرور ({fp_code})", f"مرحباً،\n\nرمز التحقق الخاص بتعيين كلمة مرور جديدة لمتجرك هو: {fp_code}", action_type="OTP"):
+                                    st.success("✅ تم إرسال رمز الاستعادة إلى بريدك الإلكتروني!")
+
+                    if st.session_state.get("fp_reset_target"):
+                        st.info(f"أدخل الرمز المرسل إلى: **{st.session_state['fp_reset_target']}**")
+                        fp_in_code = st.text_input("رمز التحقق (6 أرقام):", max_chars=6, key="fp_verify_code_in").strip()
+                        fp_new_pw = st.text_input("كلمة المرور الجديدة (6 أحرف على الأقل):", type="password", key="fp_new_pw_in").strip()
+                        if st.button("✅ تأكيد وتغيير كلمة المرور", key="fp_confirm_reset_btn"):
+                            if fp_in_code != st.session_state.get("fp_reset_code"):
+                                st.error("❌ رمز التحقق غير صحيح!")
+                            elif len(fp_new_pw) < 6:
+                                st.warning("⚠️ يجب أن تكون كلمة المرور 6 أحرف على الأقل.")
+                            else:
+                                target_reset = st.session_state["fp_reset_target"]
+                                conn_fp2 = sqlite3.connect("saas_security_vault.db", timeout=10)
+                                conn_fp2.cursor().execute("UPDATE saas_users_auth SET password = ? WHERE LOWER(TRIM(email)) = ?", (fp_new_pw, target_reset))
+                                conn_fp2.commit(); conn_fp2.close()
+                                save_to_github_fast()
+                                st.session_state.pop("fp_reset_code", None)
+                                st.session_state.pop("fp_reset_target", None)
+                                st.success("🎉 تم تحديث كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول بها أعلاه.")
+
         elif st.session_state["landing_step"] == "login":
             _, col_login_mid, _ = st.columns([1.0, 1.4, 1.0])
             with col_login_mid:
@@ -3579,6 +3640,86 @@ if "choice" in locals() or "choice" in globals():
             with send_col2: 
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
         # === إضافة صندوق المعاينة الحية للفاتورة النيونية ===
+        # 📥 استيراد الطلبيات بالجملة من Excel / CSV (Bulk Invoice & Anti-Retour Generator)
+        st.markdown("---")
+        with st.expander("📥 استيراد وتوليد الفواتير بالجملة من ملف Excel / CSV (دفعة واحدة)"):
+            st.markdown("<p style='color: #94A3B8; font-size: 13px;'>ارفع ملف Excel أو CSV يحتوي على الأعمدة: <b>customer_name, customer_phone, customer_address, product_name, price, quantity, shipping_cost</b> لتوليد كل الفواتير وفحص القائمة السوداء في ثانية واحدة.</p>", unsafe_allow_html=True)
+
+            # زر تحميل نموذج Excel جاهز للتاجر لكي لا يخطئ في أسماء الأعمدة
+            sample_bulk_df = pd.DataFrame([{
+                "customer_name": "أحمد بن علي",
+                "customer_phone": "0655112233",
+                "customer_address": "الجزائر العاصمة",
+                "product_name": "ساعة ذكية",
+                "price": 3500,
+                "quantity": 1,
+                "shipping_cost": 600
+            }])
+            sample_buf = io.BytesIO()
+            with pd.ExcelWriter(sample_buf, engine='openpyxl') as wr:
+                sample_bulk_df.to_excel(wr, index=False)
+            sample_buf.seek(0)
+            st.download_button("📄 تحميل نموذج ملف Excel جاهز للتعبئة", data=sample_buf, file_name="Tijaratna_Bulk_Template.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_bulk_template_btn")
+
+            bulk_file = st.file_uploader("اختر ملف الطلبيات (Excel أو CSV):", type=["xlsx", "csv"], key="bulk_orders_uploader")
+            if bulk_file is not None:
+                try:
+                    df_bulk = pd.read_csv(bulk_file) if bulk_file.name.endswith(".csv") else pd.read_excel(bulk_file)
+                    st.dataframe(df_bulk.head(5), use_container_width=True)
+
+                    if st.button(f"⚡ معالجة وتوليد ({len(df_bulk)}) فاتورة دفعة واحدة", key="run_bulk_invoices_btn"):
+                        import zipfile
+                        zip_inv_buf = io.BytesIO()
+                        blacklisted_found = []
+                        generated_count = 0
+                        b_date = datetime.now().strftime("%Y-%m-%d %H:%M")
+                        b_month = datetime.now().strftime("%Y-%m")
+
+                        with zipfile.ZipFile(zip_inv_buf, "w", zipfile.ZIP_DEFLATED) as zf:
+                            for idx_b, r_b in df_bulk.iterrows():
+                                c_nm = str(r_b.get("customer_name", f"زبون_{idx_b+1}")).strip()
+                                c_ph = str(r_b.get("customer_phone", "")).strip()
+                                c_ad = str(r_b.get("customer_address", "الجزائر")).strip()
+                                p_nm = str(r_b.get("product_name", "منتج")).strip()
+                                pr_val = float(r_b.get("price", 1000))
+                                qt_val = int(r_b.get("quantity", 1))
+                                sh_val = float(r_b.get("shipping_cost", 600))
+                                sub_v = pr_val * qt_val
+                                tot_v = sub_v + sh_val
+
+                                # فحص رادار القائمة السوداء
+                                ret_c = pd.read_sql("SELECT COUNT(*) as cnt FROM v4_customer_invoices WHERE customer_phone = ? AND order_status LIKE '%مرتجع%'", conne, params=(c_ph,))
+                                if not ret_c.empty and int(ret_c['cnt'].tolist().pop(0)) > 0:
+                                    blacklisted_found.append(f"{c_nm} ({c_ph})")
+
+                                cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (qt_val, p_nm))
+                                cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, customer_address, product_name, qty, shipping_cost, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (shop_name, c_nm, c_ph, c_ad, p_nm, qt_val, sh_val, tot_v, b_month, b_date))
+
+                                pdf_bytes = generate_invoice_pdf(shop_name, c_nm, c_ph, c_ad, p_nm, pr_val, qt_val, sub_v, sh_val, tot_v, saved_logo_bytes, lang=lang_code, template=invoice_template)
+                                zf.writestr(f"invoice_{idx_b+1}_{c_nm}.pdf", pdf_bytes)
+                                generated_count += 1
+
+                        conne.commit()
+                        save_to_github_fast(merchant_db_name, "merchants")
+                        zip_inv_buf.seek(0)
+                        st.session_state["bulk_invoices_zip"] = zip_inv_buf.getvalue()
+                        st.session_state["bulk_generated_cnt"] = generated_count
+
+                        if blacklisted_found:
+                            st.error(f"🚨 تنبيه القائمة السوداء: تم رصد أرقام لديها مرتجعات سابقة: {', '.join(blacklisted_found)}")
+                        st.success(f"🎉 تم تسجيل وتوليد ({generated_count}) فاتورة PDF بنجاح!")
+                except Exception as e_bulk:
+                    st.error(f"⚠️ تأكد من مطابقة أعمدة الملف للنموذج: {e_bulk}")
+
+            if "bulk_invoices_zip" in st.session_state:
+                st.download_button(
+                    label=f"📦 تحميل حزمة الفواتير الكاملة ({st.session_state.get('bulk_generated_cnt', 0)} فاتورة PDF في ملف ZIP)",
+                    data=st.session_state["bulk_invoices_zip"],
+                    file_name=f"Tijaratna_Bulk_Invoices_{datetime.now().strftime('%Y%m%d')}.zip",
+                    mime="application/zip",
+                    key="dl_bulk_zip_final_btn"
+                )
+
         # === إضافة صندوق المعاينة الحية للفاتورة النيونية المتفاعلة مع القالب ===
         st.markdown("---")
         st.subheader("👁️ معاينة حية فورية قبل الحفظ:")
