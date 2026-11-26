@@ -2107,7 +2107,8 @@ def calculate_actual_revenue(df_users):
     for _, row in df_users.iterrows():
         # نتحقق من التاجر إذا كان حسابه مفعّلاً ونشطاً
         status_str = str(row.get('status', ''))
-        if 'مفعّل' in status_str:
+        if 'مفعّل' in status_str and 'تجربة مجانية' not in status_str:
+
             pkg = str(row.get('package', ''))
             if '29k' in pkg or 'الأساسية' in pkg:
                 total_rev += 29000
