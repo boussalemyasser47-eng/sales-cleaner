@@ -1755,14 +1755,18 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 html, body, div, section {{
                     scroll-behavior: smooth !important;
                 }}
+                [data-testid="stAppViewContainer"] {{
+                    scroll-timeline-name: --pageScroll;
+                    scroll-timeline-axis: block;
+                }}
                 @keyframes revealOnScroll {{
-                    0%, 8% {{
+                    0%, 5% {{
                         opacity: 0;
                         visibility: hidden;
                         transform: translateY(18px) scale(0.85);
                         pointer-events: none;
                     }}
-                    15%, 100% {{
+                    12%, 100% {{
                         opacity: 1;
                         visibility: visible;
                         transform: translateY(0) scale(1);
@@ -1788,13 +1792,14 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
                     z-index: 9999999;
                     animation: revealOnScroll linear both;
-                    animation-timeline: scroll(root block);
-                    animation-range: 0px 300px;
+                    animation-timeline: --pageScroll;
+                    animation-range: 0px 250px;
                 }}
                 .scroll-top-btn:hover {{
                     background: #059669 !important;
                     color: #FFFFFF !important;
                 }}
+
 
                 </style>
 
