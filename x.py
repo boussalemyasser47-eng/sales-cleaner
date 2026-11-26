@@ -2310,7 +2310,52 @@ if is_boss_link:
         
         # 2️⃣ تشغيل دالة لوحة المؤشرات الحية المحدثة وشريط البحث والتصفية
         filtered_merchants_df = render_boss_kpis_and_filters(total_merchants_query)
-        
+        # ⏳ رادار التجربة المجانية (72 ساعة) + زر واتساب مباشر لإغلاق المبيعات
+        trial_merchants_list = []
+        if not total_merchants_query.empty:
+            for _, t_row_item in total_merchants_query.iterrows():
+                st_val = str(t_row_item.get('status', ''))
+                if "تجربة مجانية" in st_val:
+                    cr_val = str(t_row_item.get('created_at', ''))
+                    rem_h_trial = 72
+                    if cr_val:
+                        try:
+                            dt_s = datetime.strptime(cr_val.split(".")[0], "%Y-%m-%d %H:%M:%S")
+                            rem_h_trial = max(0, int(72 - ((datetime.now() - dt_s).total_seconds() / 3600.0)))
+                        except Exception:
+                            pass
+                    trial_merchants_list.append({
+                        "email": t_row_item['email'],
+                        "phone": str(t_row_item.get('phone', '')),
+                        "package": str(t_row_item.get('package', '45k')),
+                        "hours_left": rem_h_trial
+                    })
+
+        if trial_merchants_list:
+            st.markdown("<br>", unsafe_allow_html=True)
+            with st.expander(f"🎁 رادار التجربة المجانية النشطة (3 أيام) — يوجد ({len(trial_merchants_list)}) تجار قيد التجربة", expanded=True):
+                for tm in trial_merchants_list:
+                    tm_color = "#ff0055" if tm["hours_left"] <= 12 else ("#ffaa00" if tm["hours_left"] <= 36 else "#00ff66")
+                    c_tm1, c_tm2 = st.columns([3, 1.2])
+                    with c_tm1:
+                        st.markdown(f"""
+                        <div style="border-right: 4px solid {tm_color}; background: rgba(10,15,25,0.85); padding: 10px 15px; border-radius: 8px; direction: rtl; text-align: right; margin-bottom: 6px;">
+                            <span style="color: #00fff0; font-weight: bold;">{tm['email']}</span> | 
+                            <span style="color: #cbd5e1;">الباقة: {tm['package']}</span> | 
+                            <span style="color: {tm_color}; font-weight: 900;">⏱️ المتبقي: {tm['hours_left']} ساعة</span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    with c_tm2:
+                        raw_p = tm["phone"].replace("+", "").strip()
+                        if raw_p.startswith("0"):
+                            raw_p = "213" + raw_p[1:]
+                        if raw_p.isdigit() and len(raw_p) >= 9:
+                            msg_f = urllib.parse.quote(f"مرحباً بك في Tijaratna DataDZ! لاحظنا أنك تجرب المنصة حالياً (متبقي {tm['hours_left']} ساعة في تجربتك المجانية). هل تحتاج أي مساعدة لتفعيل باقتك السنوية ({tm['package']})؟")
+                            wa_f_url = "https://wa.me" + "/" + raw_p + "?text=" + msg_f
+                            st.link_button("💬 متابعة عبر WhatsApp", wa_f_url)
+                        else:
+                            st.caption("📵 لا يوجد هاتف")
+     
         # 🚨 رادار فحص التراخيص المقتربة من الانتهاء (تنبيه الـ 7 أيام بموثوقية عالية)
         st.markdown("<br>", unsafe_allow_html=True)
         expired_alerts = []
@@ -2520,6 +2565,26 @@ if is_boss_link:
                 
                 # تأكيد الحذف الفوري المستقل لكل تاجر على حدة (لا يظهر إلا عند النقر حصراً)
 # نافذة التأكيد الخاصة بالحذف (مخفية ولا تظهر إلا عند الضغط حصراً)
+                # 🔑 تعديل كلمة السر أو رقم الهاتف للتاجر من لوحة المالك
+                with st.expander(f"🔑 تعديل كلمة السر أو رقم الهاتف ({current_email})"):
+                    ed_col1, ed_col2, ed_col3 = st.columns([2, 2, 1.2])
+                    with ed_col1:
+                        new_m_pass = st.text_input("كلمة السر الجديدة:", value=str(current_pass), key=f"edit_pw_{current_email}")
+                    with ed_col2:
+                        new_m_phone = st.text_input("رقم الهاتف:", value=str(current_phone), key=f"edit_ph_{current_email}")
+                    with ed_col3:
+                        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+                        if st.button("💾 حفظ التعديل", key=f"save_edit_btn_{current_email}"):
+                            conn_ed = sqlite3.connect("saas_security_vault.db", timeout=10)
+                            conn_ed.cursor().execute("UPDATE saas_users_auth SET password = ?, phone = ? WHERE email = ?", (new_m_pass.strip(), new_m_phone.strip(), current_email))
+                            conn_ed.commit()
+                            conn_ed.close()
+                            log_admin_action(current_email, "EDIT_CREDENTIALS", f"تحديث كلمة السر/الهاتف إلى {new_m_phone.strip()}")
+                            save_to_github_fast()
+                            st.toast("✅ تم تحديث بيانات التاجر وحفظها سحابياً!")
+                            time.sleep(0.5)
+                            st.rerun()
+
                 if st.session_state.get(f"ask_confirm_{current_email}", False):
                     st.warning(f"⚠️ تنبيه: هل أنت متأكد من الحذف النهائي للتاجر ({current_email})؟")
                     col_yes, col_no = st.columns(2)
@@ -2544,6 +2609,60 @@ if is_boss_link:
 
         else: 
             st.warning("📭 الرادار صافي تماماً، لا توجد طلبات معلقة حالياً.")
+        # 📊 مركز البث الجماعي وسجلات المراقبة (Tabs)
+        st.markdown("<br><h3 style='color: #00fff0; text-align: right; direction: rtl;'>🎛️ مركز البث الجماعي وسجلات المراقبة الحية</h3>", unsafe_allow_html=True)
+        tab_bcast, tab_emails, tab_audit = st.tabs([
+            "📢 إرسال إشعار جماعي للتجار",
+            "📧 سجل الإيميلات المرسلة",
+            "🛡️ سجل قرارات الإدارة"
+        ])
+
+        with tab_bcast:
+            b_target = st.selectbox("اختر الفئة المستهدفة:", ["جميع التجار", "التجار النشطون (مفعّل)", "التجار في الفترة التجريبية"], key="bcast_target_sel")
+            b_subj = st.text_input("عنوان الرسالة:", placeholder="مثال: 🚀 تحديث جديد في منصة Tijaratna DataDZ!", key="bcast_subj_in")
+            b_body = st.text_area("نص الرسالة:", placeholder="اكتب رسالتك هنا لتصل إلى بريد التجار...", key="bcast_body_in")
+            if st.button("🚀 إرسال البريد الجماعي الآن", key="send_bcast_now_btn"):
+                if not b_subj.strip() or not b_body.strip():
+                    st.error("⚠️ يرجى كتابة عنوان ونص الرسالة أولاً.")
+                elif total_merchants_query.empty:
+                    st.warning("لا يوجد تجار مسجلون حالياً.")
+                else:
+                    target_df = total_merchants_query.copy()
+                    if b_target == "التجار النشطون (مفعّل)":
+                        target_df = target_df[target_df['status'].str.contains('مفعّل', na=False)]
+                    elif b_target == "التجار في الفترة التجريبية":
+                        target_df = target_df[target_df['status'].str.contains('تجربة مجانية', na=False)]
+                    
+                    sent_cnt = 0
+                    for r_mail in target_df['email'].dropna().unique():
+                        if send_gmail_notification_with_log(str(r_mail).strip(), b_subj.strip(), b_body.strip(), action_type="DEFAULT"):
+                            sent_cnt += 1
+                    log_admin_action("ALL_MERCHANTS", "BROADCAST", f"إرسال رسالة جماعية ({b_subj}) إلى {sent_cnt} تاجر")
+                    st.success(f"✅ تم إرسال الإشعار بنجاح إلى ({sent_cnt}) تاجر!")
+
+        with tab_emails:
+            conn_lg1 = sqlite3.connect("saas_security_vault.db", timeout=10)
+            try:
+                df_em_logs = pd.read_sql("SELECT sent_time as 'الوقت', recipient_email as 'المستلم', subject as 'الموضوع', status as 'الحالة', error_message as 'ملاحظات' FROM email_logs ORDER BY id DESC LIMIT 50", conn_lg1)
+                if not df_em_logs.empty:
+                    st.dataframe(df_em_logs, use_container_width=True)
+                else:
+                    st.info("📭 لا توجد إيميلات مسجلة بعد.")
+            except Exception:
+                st.info("📭 سجل الإيميلات قيد التهيئة.")
+            conn_lg1.close()
+
+        with tab_audit:
+            conn_lg2 = sqlite3.connect("saas_security_vault.db", timeout=10)
+            try:
+                df_au_logs = pd.read_sql("SELECT action_time as 'الوقت', target_email as 'التاجر المستهدف', action_type as 'نوع الإجراء', details as 'التفاصيل' FROM admin_audit_logs ORDER BY id DESC LIMIT 50", conn_lg2)
+                if not df_au_logs.empty:
+                    st.dataframe(df_au_logs, use_container_width=True)
+                else:
+                    st.info("📭 لا توجد حركات إدارية مسجلة بعد.")
+            except Exception:
+                st.info("📭 سجل الحركات قيد التهيئة.")
+            conn_lg2.close()
 
     # ✅ وضع زر المغادرة هنا مرة واحدة فقط في أسفل اللوحة بالكامل خارج حلقة التجار
     st.markdown("<br><hr>", unsafe_allow_html=True)
