@@ -2532,6 +2532,37 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             color: #F8FAFC !important;
             text-shadow: none !important;
         }
+
+        /* 🧱 إعادة الحدود النظيفة والفواصل الواضحة بين الأقسام والبطاقات */
+        div[data-testid="stMarkdownContainer"] > div {
+            background: rgba(15, 23, 42, 0.72) !important;
+            border: 1px solid #1E293B !important;
+            border-radius: 14px !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        /* 📏 توضيح الخطوط الفاصلة الأفقية (hr) بين الأقسام */
+        hr {
+            border: none !important;
+            border-top: 1.5px solid #1E293B !important;
+            margin: 24px 0 !important;
+        }
+
+        /* 📑 تنظيم الأعمدة المتجاورة كبطاقات منفصلة ومحددة بوضوح */
+        div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            background: rgba(15, 23, 42, 0.55) !important;
+            border: 1px solid #1E293B !important;
+            border-radius: 16px !important;
+            padding: 18px !important;
+        }
+
+        /* 📦 تنسيق القوائم المنسدلة (Expander) بحدود واضحة */
+        div[data-testid="stExpander"] {
+            background: rgba(15, 23, 42, 0.65) !important;
+            border: 1px solid #334155 !important;
+            border-radius: 14px !important;
+        }
+
         div[data-testid="stMetricBlock"], div[data-testid="metric-container"] {
             background: #0F172A !important;
             border: 1px solid #1E293B !important;
@@ -2541,11 +2572,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25) !important;
         }
         div[data-testid="stMetricValue"] { color: #10B981 !important; font-weight: 800 !important; }
-        div[data-testid="stMarkdownContainer"] > div {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-        }
+
         div.stButton button, .stButton > button,
         div[data-testid="stHorizontalBlock"] > div div.stButton button {
             width: 100% !important; min-height: 46px !important;
@@ -2557,6 +2584,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
         div[data-testid="stHorizontalBlock"] > div div.stButton button:hover {
             background: #059669 !important; color: #FFFFFF !important;
         }
+
         div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input, div[data-testid="stTextArea"] textarea {
             background-color: #0B0F19 !important; border: 1px solid #334155 !important; color: #F8FAFC !important; border-radius: 10px !important;
         }
@@ -2564,10 +2592,10 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             border-color: #10B981 !important; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
         }
         section[data-testid="stSidebar"] { background-color: #0B0F19 !important; border-left: 1px solid #1E293B !important; }
-        /* إصلاح تداخل نص زر رفع الملفات */
         [data-testid="stFileUploaderDropzoneInstructions"] span { display: none !important; }
         </style>
     """, unsafe_allow_html=True)
+
 
     
     # 🔒 الفحص السحابي الصارم وجلب حالة الحساب ونوع الباقة (package) لمتجرك الجديد
