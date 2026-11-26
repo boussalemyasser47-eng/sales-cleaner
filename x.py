@@ -1194,120 +1194,106 @@ import re
 # ====================================================================
 
 def render_premium_neon_packages():
-    """
-    تقوم هذه الدالة بتنفيذ ميكانيكية الهولوغرام الفاخرة (Holographic Phase-In Effect)،
-    حيث تعكس بدقة التحديث الشامل لمستويات الباقات السلوية ومميزاتها الفنية،
-    لتنبثق الباقة المختارة وحدها من العدم بناءً على رادار اختيار التاجر الحي.
-    """
-    # 1. قراءة الاختيار الحي من عنصر الراديو المعتمد تلقائياً
-    current_choice = st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
+    current_choice = st.session_state.get("selected_neon_package", "الباقة الاحترافية المتوسطة (45k)")
 
-    # 2. توليد فئات الحالة الهولوغرامية الديناميكية للباقات الثلاث
-    phase_cyber = "hologram-visible" if "السيبرانية" in current_choice else "hologram-hidden"
-    phase_pro = "hologram-visible" if "الاحترافية" in current_choice else "hologram-hidden"
-    phase_basic = "hologram-visible" if "الأساسية" in current_choice else "hologram-hidden"
+    cls_b = "price-card active-glow" if "الأساسية" in current_choice else "price-card"
+    cls_p = "price-card active-glow" if "الاحترافية" in current_choice else "price-card"
+    cls_c = "price-card active-glow" if "السيبرانية" in current_choice else "price-card"
 
-    # 3. حقن قواعد الهندسة الحركية والـ CSS السينمائي والميزات المحدثة للشركات
-    st.markdown(f"""
-        <style>
-        .hologram-card {{
-            transform: translateY(20px);
-            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                        opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-                        border 0.5s ease-in-out,
-                        box-shadow 0.5s ease-in-out;
-            overflow: hidden;
-            border-radius: 14px;
-        }}
-        
-        .hologram-hidden {{
-            max-height: 0px !important;
-            opacity: 0 !important;
-            transform: translateY(20px) scale(0.95);
-            padding: 0px !important;
-            margin: 0px !important;
-            border: 1px solid transparent !important;
-            box-shadow: none !important;
-            pointer-events: none;
-        }}
-        
-        .hologram-visible {{
-            max-height: 800px !important; /* ارتفاع متسع لانسكاب الخدمات المحدثة بالكامل */
-            opacity: 1 !important;
-            transform: translateY(0px) scale(1);
-            background: rgba(0, 255, 240, 0.05);
-            border: 1px solid rgba(0, 255, 240, 0.6);
-            padding: 18px;
-            margin-bottom: 15px;
-            box-shadow: 0 0 25px rgba(0, 255, 240, 0.2);
-        }}
-        
-        .holo-title {{
-            color: #00fff0;
-            font-weight: 900;
-            font-size: 17px;
-            margin-bottom: 6px;
-            text-shadow: 0 0 15px rgba(0, 255, 240, 0.5);
-        }}
-        .holo-price {{
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 15px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid rgba(0, 255, 240, 0.2);
-            padding-bottom: 6px;
-        }}
-        .holo-feat {{
-            color: #e0e0e0;
-            font-size: 13px;
-            margin: 5px 0;
-            padding-right: 5px;
-            line-height: 1.5;
-        }}
-        </style>
-        
-        <!-- باقة 1: الأساسية المبتدئة -->
-        <div class='hologram-card {phase_basic}'>
-            <div class='holo-title'>🌱 الباقة الأساسية المبتدئة (29k)</div>
-            <div class='holo-price'>💰 السعر السنوي: 29,000 DA</div>
-            <div class='holo-feat'>✓ إصدار فواتير الزبائن الكبيرة (A4) والملصقات الحرارية اللحظية.</div>
-            <div class='holo-feat'>✓ إرسال سريع للفاتورة وتفاصيل الطلب عبر WhatsApp للزبائن يدويًا.</div>
-            <div class='holo-feat'>✓ مستودع سلع مبسط لإضافة المنتجات ومراقبة الكميات المتوفرة.</div>
-            <div class='holo-feat'>✓ 🔒 قفل المساعد الجانبي الذكي (يفتح الردود العامة فقط ويحظر ميزات الـ AI المتقدمة).</div>
-        </div>
-        
-        <!-- باقة 2: الاحترافية المتوسطة -->
-        <div class='hologram-card {phase_pro}'>
-            <div class='holo-title'>💎 الباقة الاحترافية المتوسطة (45k)</div>
-            <div class='holo-price'>💰 السعر السنوي: 45,000 DA</div>
-            <div class='holo-feat'><b>✓ تشمل كافة ميزات الباقة الأساسية المبتدئة بالكامل.</b></div>
-            <div class='holo-feat'>✓ 🔥 مؤشر المخزون الناري الذكي: تنبيهات بصرية متحركة عند نفاذ السلع (أقل من 5 قطع).</div>
-            <div class='holo-feat'>✓ 🧼 مطهر ملفات المبيعات: رفع وتطهير ملفات Excel من التكرارات والأسعار السالبة.</div>
-            <div class='holo-feat'>✓ 🗺️ رادار المبيعات الجغرافي: مخطط بياني حي لفرز الولايات الجزائرية الأكثر مبيعاً لشحن آمن.</div>
-            <div class='holo-feat'>✓ 🤖 فتح ذكاء المساعد الجانبي المتوسط: تقديم نصائح وحلول لمشاكل الشحن والـ Retour وتثبيت الكليون.</div>
-        </div>
-        
-        <!-- باقة 3: السيبرانية الخارقة -->
-        <div class='hologram-card {phase_cyber}'>
-            <div class='holo-title'>⚡ الباقة السيبرانية الخارقة (65k)</div>
-            <div class='holo-price'>💰 السعر السنوي: 65,000 DA</div>
-            <div class='holo-feat'><b>✓ تشمل كافة ميزات الباقتين السابقتين بالكامل (العقل الشامل للمنصة).</b></div>
-            <div class='holo-feat'>✓ 🚀 منصة الأتمتة الإعلانية الكاملة (AI Hub): صياغة الإعلانات التلقائية بـ 3 لهجات مختلفة فوراً.</div>
-            <div class='holo-feat'>✓ 🎬 صانع سيناريوهات الفيديو بالثواني: خطة إنتاج كاملة لتصوير فيديوهات TikTok و Reels للسلع.</div>
-            <div class='holo-feat'>✓ 📊 عداد تقييم قوة الإعلان الفوري (AI Ad Score Meter) لتحليل جاذبية المنشور قبل إطلاقه.</div>
-            <div class='holo-feat'>✓ 💰 حاسبة الـ ROI وميزانية الفحص الموازية بالدولار وما يقابلها بالدينار الجزائري (Square).</div>
-            <div class='holo-feat'>✓ 🧠 العقل الخارق للمساعد الجانبي: إجابات استخباراتية فورية عن استهدافات فيسبوك وهاشتاغات تيك توك وحصانة ضد الخربشة.</div>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # أزرار الراديو النقية لمزامنة الميكانيكية الحركية وتمرير الاختيار بدقة
+    st.markdown("""
+<style>
+.pricing-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin: 18px 0 22px 0;
+    direction: rtl;
+    text-align: right;
+}
+.price-card {
+    background: #0B1120 !important;
+    border: 1.5px solid #1E293B !important;
+    border-radius: 18px !important;
+    padding: 22px 18px !important;
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    opacity: 0.78;
+}
+.price-card:hover {
+    transform: translateY(-5px) !important;
+    border-color: #334155 !important;
+    opacity: 0.95;
+}
+.price-card.active-glow {
+    background: linear-gradient(145deg, #0F2924 0%, #0B1120 100%) !important;
+    border: 2px solid #10B981 !important;
+    transform: translateY(-10px) scale(1.02) !important;
+    box-shadow: 0 15px 35px -5px rgba(16, 185, 129, 0.38), 0 0 18px rgba(16, 185, 129, 0.25) !important;
+    opacity: 1 !important;
+}
+.popular-ribbon {
+    display: inline-block;
+    background: #10B981;
+    color: #022C22 !important;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+}
+.p-name { color: #F8FAFC !important; font-size: 16.5px; font-weight: 700; margin-bottom: 4px; }
+.p-cost { color: #10B981 !important; font-size: 21px; font-weight: 800; }
+.p-daily { color: #94A3B8 !important; font-size: 11.5px; margin-bottom: 12px; border-bottom: 1px solid #1E293B; padding-bottom: 8px; }
+.p-item { color: #E2E8F0 !important; font-size: 12.5px; margin: 6px 0; line-height: 1.5; }
+.p-no { color: #64748B !important; font-size: 12px; margin: 6px 0; text-decoration: line-through; }
+</style>
+""", unsafe_allow_html=True)
+
+    html_cards = f"""
+<div class="pricing-grid-3">
+<div class="{cls_b}">
+<div class="p-name">🌱 الباقة الأساسية</div>
+<div class="p-cost">29,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
+<div class="p-daily">تعادل 79 دج فقط يومياً</div>
+<div class="p-item">✓ فواتير PDF وملصقات حرارية 4x4</div>
+<div class="p-item">✓ إدارة المخزون ورادار القائمة السوداء</div>
+<div class="p-item">✓ إرسال الطلبات عبر WhatsApp</div>
+<div class="p-no">✕ مطهر ملفات Excel والولايات</div>
+<div class="p-no">✕ مولّد الإعلانات الذكي AI</div>
+</div>
+<div class="{cls_p}">
+<span class="popular-ribbon">⭐ الأكثر طلباً من التجار</span>
+<div class="p-name">💎 الباقة الاحترافية</div>
+<div class="p-cost">45,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
+<div class="p-daily">تعادل 123 دج فقط يومياً</div>
+<div class="p-item">✓ <b>كل مميزات الباقة الأساسية</b></div>
+<div class="p-item">✓ مطهر ملفات Excel والبيانات</div>
+<div class="p-item">✓ رادار الولايات الأكثر مبيعاً</div>
+<div class="p-item">✓ مساعد تجاري لحلول الشحن</div>
+<div class="p-no">✕ مولّد الإعلانات وسيناريو الفيديو AI</div>
+</div>
+<div class="{cls_c}">
+<div class="p-name">⚡ الباقة السيبرانية</div>
+<div class="p-cost">65,000 DA <span style="font-size:12px; color:#94A3B8;">/ سنة</span></div>
+<div class="p-daily">تعادل 178 دج فقط يومياً</div>
+<div class="p-item">✓ <b>كل مميزات الباقتين السابقتين</b></div>
+<div class="p-item">✓ صياغة إعلانات بالدارجة الجزائرية AI</div>
+<div class="p-item">✓ سيناريو فيديو TikTok و Reels</div>
+<div class="p-item">✓ عداد قوة الإعلان وحاسبة ROI</div>
+</div>
+</div>
+"""
+    st.markdown(html_cards, unsafe_allow_html=True)
+
     chosen_package = st.radio(
-        "اختر فئة الباقة السنوية لمتجرك لتفعيل عرض مميزاتها فوراً:",
+        "حدد الباقة التي تناسب متجرك (تبدأ بـ 3 أيام تجربة مجانية):",
         ["الباقة الأساسية المبتدئة (29k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة السيبرانية الخارقة (65k)"],
+        index=1,
+        horizontal=True,
         key="selected_neon_package"
     )
     return chosen_package
+
+
 
 def validate_and_process_registration(email, password):
     clean_em = str(email).strip().lower()
@@ -1822,7 +1808,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         st.session_state["landing_step"] = "home"
                         st.rerun()
         elif st.session_state["landing_step"] == "register":
-            _, col_reg_box, _ = st.columns([0.9, 1.8, 0.9])
+            _, col_reg_box, _ = st.columns([0.25, 3.0, 0.25])
             with col_reg_box:
                 st.markdown("""
                     <div style="background: #111827; border: 1px solid #1F2937; border-radius: 16px; padding: 24px; margin-top: 20px; margin-bottom: 18px; direction: rtl; text-align: right;">
@@ -1835,22 +1821,24 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.session_state["otp_pending_verification"] = False
 
                 if not st.session_state["otp_pending_verification"]:
-                    input_email = st.text_input("البريد الإلكتروني (Gmail)", placeholder="store@gmail.com", key="merchant_em")
-                    input_password = st.text_input("كلمة المرور (6 أحرف على الأقل)", type="password", placeholder="••••••••", key="merchant_pw")
-                    input_phone = st.text_input("رقم الهاتف المهني", placeholder="0655xxxxxxxx", key="merchant_phone").strip()
+                    _, col_inputs_mid, _ = st.columns([0.75, 1.5, 0.75])
+                    with col_inputs_mid:
+                        input_email = st.text_input("البريد الإلكتروني (Gmail)", placeholder="store@gmail.com", key="merchant_em")
+                        input_password = st.text_input("كلمة المرور (6 أحرف على الأقل)", type="password", placeholder="••••••••", key="merchant_pw")
+                        input_phone = st.text_input("رقم الهاتف المهني", placeholder="0655xxxxxxxx", key="merchant_phone").strip()
 
-                    if input_phone:
-                        check_phone = input_phone.replace("+", "").strip()
-                        if not check_phone.isdigit():
-                            st.error("يرجى إدخال أرقام صحيحة فقط في حقل الهاتف.")
-                        elif len(check_phone) < 9:
-                            st.warning("رقم الهاتف غير مكتمل.")
-                        else:
-                            st.session_state["temp_reg_phone"] = input_phone
+                        if input_phone:
+                            check_phone = input_phone.replace("+", "").strip()
+                            if not check_phone.isdigit():
+                                st.error("يرجى إدخال أرقام صحيحة فقط في حقل الهاتف.")
+                            elif len(check_phone) < 9:
+                                st.warning("رقم الهاتف غير مكتمل.")
+                            else:
+                                st.session_state["temp_reg_phone"] = input_phone
 
-                    clean_email = input_email.strip()
-                    clean_pass = input_password.strip()
-                    st.session_state["temp_reg_phone"] = input_phone
+                        clean_email = input_email.strip()
+                        clean_pass = input_password.strip()
+                        st.session_state["temp_reg_phone"] = input_phone
 
                     user_package_choice = render_premium_neon_packages()
 
