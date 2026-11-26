@@ -1779,7 +1779,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
                 <a href="#top-nav-sec" class="scroll-top-btn" title="العودة للأعلى">↑</a>
             """, unsafe_allow_html=True)
-                /* 📌 تثبيت الشريط العلوي في أعلى الشاشة ليتبع الزائر دائماً */
                 
 
                 </style>
