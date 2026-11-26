@@ -1781,10 +1781,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             """, unsafe_allow_html=True)
                 
 
-                </style>
 
-                <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
-            """, unsafe_allow_html=True)
                         # 🧭 الشريط العلوي المتكامل (الشعار في اليمين + الروابط في الوسط + الأزرار في اليسار)
             st.markdown('<div id="top-nav-sec"></div>', unsafe_allow_html=True)
 
