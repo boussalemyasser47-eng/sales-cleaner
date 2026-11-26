@@ -1766,18 +1766,58 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     justify-content: center;
                     font-size: 20px;
                     font-weight: bold;
-                    text-decoration: none !important;
+                    cursor: pointer;
                     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
                     z-index: 999999;
+                    opacity: 0;
+                    visibility: hidden;
+                    transform: translateY(15px);
+                    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }}
+                .scroll-top-btn.visible {{
+                    opacity: 1;
+                    visibility: visible;
+                    transform: translateY(0);
                 }}
                 .scroll-top-btn:hover {{
                     background: #10B981;
                     color: #022C22 !important;
+                    transform: translateY(-3px);
                 }}
                 </style>
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
-                <a href="#top-nav-sec" class="scroll-top-btn" title="العودة للأعلى">↑</a>
+                <button id="smartScrollTopBtn" class="scroll-top-btn" title="العودة للأعلى">↑</button>
+            """, unsafe_allow_html=True)
+
+            st.components.v1.html("""
+                <script>
+                (function() {
+                    const parentDoc = window.parent.document;
+                    const scrollContainer = parentDoc.querySelector('[data-testid="stAppViewContainer"]') || parentDoc.documentElement;
+                    const btn = parentDoc.getElementById('smartScrollTopBtn');
+                    if (!btn || !scrollContainer) return;
+
+                    function toggleBtn() {
+                        const scrollTop = scrollContainer.scrollTop || window.parent.scrollY || 0;
+                        if (scrollTop > 220) {
+                            btn.classList.add('visible');
+                        } else {
+                            btn.classList.remove('visible');
+                        }
+                    }
+
+                    scrollContainer.addEventListener('scroll', toggleBtn);
+                    window.parent.addEventListener('scroll', toggleBtn);
+
+                    btn.onclick = function() {
+                        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                        window.parent.scrollTo({ top: 0, behavior: 'smooth' });
+                    };
+                })();
+                </script>
+            """, height=0)
+
             """, unsafe_allow_html=True)
                 
 
