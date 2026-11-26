@@ -1732,24 +1732,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     font-weight: 900;
                     flex-shrink: 0;
                 }}
-                .floating-wa-btn {{
-                    position: fixed;
-                    bottom: 24px;
-                    left: 24px;
-                    width: 56px;
-                    height: 56px;
-                    background: #25D366;
-                    color: #FFFFFF !important;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 28px;
-                    text-decoration: none !important;
-                    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
-                    z-index: 999999;
-                    transition: transform 0.25s ease;
-                }}
+
                 .floating-wa-btn {{
                     position: fixed;
                     bottom: 88px;
@@ -1798,33 +1781,43 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
                 <button id="smartScrollTopBtn" class="scroll-top-btn" title="العودة للأعلى">↑</button>
-                <img src="x" style="display:none;" onerror="
-                    (function() {{
-                        const btn = document.getElementById('smartScrollTopBtn');
-                        if (!btn) return;
-                        function getMaxScroll() {{
-                            let s = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-                            document.querySelectorAll('div, section').forEach(el => {{
-                                if (el.scrollTop > s) s = el.scrollTop;
-                            }});
-                            return s;
-                        }}
-                        setInterval(function() {{
-                            btn.style.display = (getMaxScroll() > 140) ? 'flex' : 'none';
-                        }}, 150);
-                        btn.onclick = function() {{
-                            window.scrollTo({{ top: 0, behavior: 'smooth' }});
-                            document.documentElement.scrollTo({{ top: 0, behavior: 'smooth' }});
-                            document.body.scrollTo({{ top: 0, behavior: 'smooth' }});
-                            document.querySelectorAll('div, section').forEach(el => {{
-                                if (el.scrollTop > 0 && el.scrollTo) {{
-                                    el.scrollTo({{ top: 0, behavior: 'smooth' }});
-                                }}
-                            }});
-                        }};
-                    }})();
-                ">
             """, unsafe_allow_html=True)
+
+            st.components.v1.html("""
+                <script>
+                (function() {
+                    const pDoc = window.parent.document;
+                    const pWin = window.parent;
+
+                    function getScrollDepth() {
+                        let s = pWin.scrollY || pDoc.documentElement.scrollTop || pDoc.body.scrollTop || 0;
+                        pDoc.querySelectorAll('div, section').forEach(function(el) {
+                            if (el.scrollTop > s) s = el.scrollTop;
+                        });
+                        return s;
+                    }
+
+                    setInterval(function() {
+                        const btn = pDoc.getElementById('smartScrollTopBtn');
+                        if (!btn) return;
+                        btn.style.display = (getScrollDepth() > 140) ? 'flex' : 'none';
+                        if (!btn.dataset.ready) {
+                            btn.dataset.ready = "1";
+                            btn.onclick = function() {
+                                pWin.scrollTo({ top: 0, behavior: 'smooth' });
+                                pDoc.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+                                pDoc.body.scrollTo({ top: 0, behavior: 'smooth' });
+                                pDoc.querySelectorAll('div, section').forEach(function(el) {
+                                    if (el.scrollTop > 0 && el.scrollTo) {
+                                        el.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }
+                                });
+                            };
+                        }
+                    }, 150);
+                })();
+                </script>
+            """, height=0)
 
 
 
