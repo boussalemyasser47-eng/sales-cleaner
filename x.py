@@ -1752,6 +1752,9 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     transition: transform 0.25s ease;
                 }}
                 .floating-wa-btn:hover {{ transform: scale(1.1); }}
+                html, body, div, section {{
+                    scroll-behavior: smooth !important;
+                }}
                 .scroll-top-btn {{
                     position: fixed;
                     bottom: 24px;
@@ -1762,15 +1765,15 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     border: none;
                     color: #022C22 !important;
                     border-radius: 50%;
-                    display: none;
+                    display: flex !important;
                     align-items: center;
                     justify-content: center;
                     font-size: 22px;
                     font-weight: 900;
-                    cursor: pointer;
+                    text-decoration: none !important;
                     box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
                     z-index: 9999999;
-                    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                    transition: all 0.3s ease;
                 }}
                 .scroll-top-btn:hover {{
                     background: #059669 !important;
@@ -1780,44 +1783,9 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 </style>
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
-                <button id="smartScrollTopBtn" class="scroll-top-btn" title="العودة للأعلى">↑</button>
+                <a href="#top-nav-sec" class="scroll-top-btn" title="العودة للأعلى">↑</a>
             """, unsafe_allow_html=True)
 
-            st.components.v1.html("""
-                <script>
-                (function() {
-                    const pDoc = window.parent.document;
-                    const pWin = window.parent;
-
-                    function getScrollDepth() {
-                        let s = pWin.scrollY || pDoc.documentElement.scrollTop || pDoc.body.scrollTop || 0;
-                        pDoc.querySelectorAll('div, section').forEach(function(el) {
-                            if (el.scrollTop > s) s = el.scrollTop;
-                        });
-                        return s;
-                    }
-
-                    setInterval(function() {
-                        const btn = pDoc.getElementById('smartScrollTopBtn');
-                        if (!btn) return;
-                        btn.style.display = (getScrollDepth() > 140) ? 'flex' : 'none';
-                        if (!btn.dataset.ready) {
-                            btn.dataset.ready = "1";
-                            btn.onclick = function() {
-                                pWin.scrollTo({ top: 0, behavior: 'smooth' });
-                                pDoc.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
-                                pDoc.body.scrollTo({ top: 0, behavior: 'smooth' });
-                                pDoc.querySelectorAll('div, section').forEach(function(el) {
-                                    if (el.scrollTop > 0 && el.scrollTo) {
-                                        el.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }
-                                });
-                            };
-                        }
-                    }, 150);
-                })();
-                </script>
-            """, height=0)
 
 
 
