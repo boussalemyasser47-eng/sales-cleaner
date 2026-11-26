@@ -1646,172 +1646,162 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             }
             </style>
         """, unsafe_allow_html=True)
-        if st.session_state["landing_step"] == "home":
             wa_support_num = str(st.secrets.get("SUPPORT_WHATSAPP", "213654742605")).replace("+", "").strip()
             wa_float_link = "https://wa.me" + "/" + wa_support_num + "?text=" + urllib.parse.quote("مرحباً إدارة Tijaratna DataDZ، لدي استفسار بخصوص المنصة.")
 
             st.markdown(f"""
                 <style>
+                html, body, div, section {{ scroll-behavior: smooth !important; }}
+
                 div[data-testid="stHorizontalBlock"] > div:nth-child(n) div.stButton button {{
                     background: #10B981 !important;
                     color: #022C22 !important;
                     border: none !important;
-                    border-radius: 10px !important;
+                    border-radius: 999px !important;
                     font-weight: 800 !important;
-                    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25) !important;
+                    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.28) !important;
                 }}
                 div[data-testid="stHorizontalBlock"] > div:nth-child(n) div.stButton button:hover {{
                     background: #059669 !important;
                     color: #FFFFFF !important;
                 }}
-                /* زر ثانوٍ داكن بحدود أنيقة لتسجيل الدخول والدعم */
                 button[kind="secondary"] {{
                     background: rgba(15, 23, 42, 0.88) !important;
                     color: #F8FAFC !important;
                     border: 1px solid #334155 !important;
+                    border-radius: 999px !important;
                     box-shadow: none !important;
                 }}
                 button[kind="secondary"]:hover {{
                     border-color: #10B981 !important;
                     color: #10B981 !important;
-                    background: rgba(16, 185, 129, 0.08) !important;
                 }}
-                /* الزر الأساسي الأخضر البارز لإنشاء الحساب */
                 button[kind="primary"] {{
-                    background: #10B981 !important;
+                    background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
                     color: #022C22 !important;
                     border: none !important;
+                    border-radius: 999px !important;
                     font-weight: 800 !important;
-                    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3) !important;
+                    box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35) !important;
                 }}
-                button[kind="primary"]:hover {{
-                    background: #059669 !important;
-                    color: #FFFFFF !important;
+                .sec-pill {{
+                    display: inline-block;
+                    background: rgba(16, 185, 129, 0.14);
+                    border: 1px solid rgba(16, 185, 129, 0.35);
+                    color: #10B981 !important;
+                    padding: 4px 16px;
+                    border-radius: 999px;
+                    font-size: 12.5px;
+                    font-weight: 700;
+                    margin-bottom: 12px;
                 }}
-                .open-hero-wrap {{
-                    max-width: 920px;
-                    margin: 35px auto 20px auto;
+                .sec-heading {{
+                    color: #F8FAFC !important;
+                    font-size: 32px !important;
+                    font-weight: 900 !important;
+                    margin: 0 0 10px 0 !important;
+                    text-align: center;
+                }}
+                .sec-subtext {{
+                    color: #94A3B8 !important;
+                    font-size: 15px !important;
+                    max-width: 680px;
+                    margin: 0 auto 30px auto !important;
+                    line-height: 1.7;
+                    text-align: center;
+                }}
+                .hero-gradient-banner {{
+                    max-width: 1020px;
+                    margin: 25px auto 55px auto;
+                    background: linear-gradient(135deg, #10B981 0%, #047857 100%) !important;
+                    border-radius: 24px !important;
+                    padding: 46px 32px !important;
                     text-align: center;
                     direction: rtl;
-                    padding: 10px 20px;
+                    box-shadow: 0 20px 45px rgba(16, 185, 129, 0.25) !important;
                 }}
-                .open-hero-title {{
-                    color: #F8FAFC !important;
-                    font-size: 42px !important;
-                    font-weight: 900 !important;
-                    line-height: 1.3 !important;
-                    margin-bottom: 26px !important;
-                }}
-                .open-hero-title span {{ color: #10B981 !important; }}
-                .hero-checks-grid {{
+                .hero-gradient-banner h2 {{ color: #022C22 !important; font-size: 34px !important; font-weight: 900 !important; margin: 0 0 14px 0 !important; }}
+                .hero-gradient-banner p {{ color: #064E3B !important; font-size: 16px !important; font-weight: 600 !important; max-width: 680px; margin: 0 auto 18px auto !important; line-height: 1.65; }}
+                .hero-banner-tags {{ color: #022C22 !important; font-weight: 800 !important; font-size: 14.5px !important; }}
+                .grid-4-cards {{
+                    max-width: 1050px;
+                    margin: 0 auto 60px auto;
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                    gap: 14px 36px;
-                    max-width: 760px;
-                    margin: 0 auto 28px auto;
+                    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                    gap: 18px;
+                    direction: rtl;
                     text-align: right;
                 }}
-                .hero-check-item {{
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    color: #E2E8F0 !important;
-                    font-size: 15px !important;
-                    font-weight: 600 !important;
+                .struct-card {{
+                    background: rgba(15, 23, 42, 0.78) !important;
+                    border: 1px solid #1E293B !important;
+                    border-radius: 18px !important;
+                    padding: 26px 22px !important;
+                    transition: all 0.25s ease !important;
                 }}
-                .check-dot {{
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    width: 22px;
-                    height: 22px;
-                    border-radius: 50%;
-                    background: #10B981;
-                    color: #022C22 !important;
-                    font-size: 13px;
-                    font-weight: 900;
-                    flex-shrink: 0;
+                .struct-card:hover {{ border-color: rgba(16, 185, 129, 0.55) !important; transform: translateY(-4px) !important; }}
+                .card-icon-box {{
+                    width: 44px; height: 44px; border-radius: 12px;
+                    background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.3);
+                    color: #10B981 !important; display: flex; align-items: center; justify-content: center;
+                    font-size: 20px; margin-bottom: 16px;
                 }}
-
+                .step-num-big {{ color: #10B981 !important; font-size: 28px !important; font-weight: 900 !important; margin-bottom: 10px; }}
+                .struct-card h4 {{ color: #F8FAFC !important; font-size: 17px !important; font-weight: 800 !important; margin: 0 0 8px 0 !important; }}
+                .struct-card p {{ color: #94A3B8 !important; font-size: 13.5px !important; line-height: 1.6 !important; margin: 0 !important; }}
+                .stats-container-bar {{
+                    max-width: 1050px; margin: 0 auto 65px auto;
+                    background: rgba(15, 23, 42, 0.85) !important; border: 1px solid #1E293B !important;
+                    border-radius: 20px !important; padding: 32px 20px !important;
+                    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                    gap: 20px; text-align: center; direction: rtl;
+                }}
+                .stat-big-num {{ color: #10B981 !important; font-size: 32px !important; font-weight: 900 !important; margin-bottom: 4px; }}
+                .stat-lbl-txt {{ color: #CBD5E1 !important; font-size: 14px !important; font-weight: 600 !important; }}
+                .faq-wrapper {{ max-width: 820px; margin: 0 auto 65px auto; direction: rtl; text-align: right; }}
+                .faq-item {{ background: rgba(15, 23, 42, 0.78) !important; border: 1px solid #1E293B !important; border-radius: 14px !important; padding: 16px 22px !important; margin-bottom: 12px !important; }}
+                .faq-item summary {{ color: #F8FAFC !important; font-size: 15.5px !important; font-weight: 700 !important; cursor: pointer; list-style: none; }}
+                .faq-item summary::-webkit-details-marker {{ display: none; }}
+                .faq-item summary::before {{ content: "+ "; color: #10B981; font-weight: 900; font-size: 18px; margin-left: 8px; }}
+                .faq-item[open] summary::before {{ content: "− "; }}
+                .faq-item p {{ color: #94A3B8 !important; font-size: 14px !important; line-height: 1.7 !important; margin: 12px 0 0 0 !important; padding-top: 10px; border-top: 1px solid #1E293B; }}
+                .cta-bottom-box {{
+                    max-width: 960px; margin: 0 auto 55px auto;
+                    background: linear-gradient(145deg, rgba(16, 185, 129, 0.14), rgba(15, 23, 42, 0.9)) !important;
+                    border: 1px solid rgba(16, 185, 129, 0.35) !important; border-radius: 22px !important;
+                    padding: 42px 28px !important; text-align: center; direction: rtl;
+                }}
                 .floating-wa-btn {{
-                    position: fixed;
-                    bottom: 88px;
-                    left: 24px;
-                    width: 52px;
-                    height: 52px;
-                    background: #25D366;
-                    color: #FFFFFF !important;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 26px;
-                    text-decoration: none !important;
-                    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
-                    z-index: 9999999;
-                    transition: transform 0.25s ease;
+                    position: fixed; bottom: 88px; left: 24px; width: 52px; height: 52px;
+                    background: #25D366; color: #FFFFFF !important; border-radius: 50%;
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 26px; text-decoration: none !important;
+                    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45); z-index: 9999999;
                 }}
-                .floating-wa-btn:hover {{ transform: scale(1.1); }}
-                html, body, div, section {{
-                    scroll-behavior: smooth !important;
-                }}
-
                 .scroll-top-btn {{
-                    position: fixed;
-                    bottom: 24px;
-                    left: 24px;
-                    width: 52px;
-                    height: 52px;
-                    background: #10B981;
-                    border: none;
-                    color: #022C22 !important;
-                    border-radius: 50%;
-                    display: flex !important;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 22px;
-                    font-weight: 900;
-                    text-decoration: none !important;
-                    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
-                    z-index: 9999999;
-                    transition: all 0.25s ease;
+                    position: fixed; bottom: 24px; left: 24px; width: 52px; height: 52px;
+                    background: #10B981; color: #022C22 !important; border-radius: 50%;
+                    display: flex !important; align-items: center; justify-content: center;
+                    font-size: 22px; font-weight: 900; text-decoration: none !important;
+                    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45); z-index: 9999999;
                 }}
-                .scroll-top-btn:hover {{
-                    background: #059669 !important;
-                    color: #FFFFFF !important;
-                    transform: translateY(-3px);
-                }}
-
-
                 </style>
 
-                <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
+                <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل معنا عبر WhatsApp">💬</a>
                 <a href="#top-nav-sec" class="scroll-top-btn" title="العودة للأعلى">↑</a>
             """, unsafe_allow_html=True)
-
-
-
-
-
-
-                
-
-
-                        # 🧭 الشريط العلوي المتكامل (الشعار في اليمين + الروابط في الوسط + الأزرار في اليسار)
             st.markdown('<div id="top-nav-sec"></div>', unsafe_allow_html=True)
-
             nav_r, nav_mid, nav_l1, nav_l2, nav_l3 = st.columns([1.8, 2.6, 1.1, 1.1, 1.1])
             with nav_r:
                 st.markdown("<div style='direction:rtl; text-align:right; padding-top:6px;'><span style='color:#F8FAFC; font-weight:900; font-size:21px;'>Tijaratna <span style='color:#10B981;'>DataDZ</span></span><br><span style='color:#94A3B8; font-size:11px;'>منصة التجارة الإلكترونية الذكية 🇩🇿</span></div>", unsafe_allow_html=True)
             with nav_mid:
                 st.markdown("""
                     <div style="display:flex; justify-content:center; gap:22px; padding-top:14px; direction:rtl; font-size:14px; font-weight:600;">
-                        <a href="#features-sec" style="color:#CBD5E1; text-decoration:none;">المميزات</a>
-                        <a href="#footer-sec" style="color:#CBD5E1; text-decoration:none;">ضمان الثقة</a>
-                        <a href="#footer-sec" style="color:#CBD5E1; text-decoration:none;">الخصوصية</a>
+                        <a href="#why-us-sec" style="color:#CBD5E1; text-decoration:none;">المميزات</a>
+                        <a href="#steps-sec" style="color:#CBD5E1; text-decoration:none;">طريقة العمل</a>
+                        <a href="#faq-sec" style="color:#CBD5E1; text-decoration:none;">الأسئلة الشائعة</a>
                     </div>
                 """, unsafe_allow_html=True)
-
             with nav_l1:
                 if st.button("الدعم والشكاوى", key="nav_supp_top", type="secondary"):
                     st.session_state["current_view"] = "complaint_page"
@@ -1826,129 +1816,161 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.session_state["landing_step"] = "register"
                     st.rerun()
 
-
-            # 🌟 واجهة Hero مفتوحة بنقاط القوة المزدوجة (بدون صندوق مقيد)
             st.markdown("""
-                <div class="open-hero-wrap">
-                    <div class="open-hero-title">المنصة <span>#1</span> في الجزائر لإدارة التجارة الإلكترونية والفواتير</div>
-                    <div class="hero-checks-grid">
-                        <div class="hero-check-item"><span class="check-dot">✓</span> فواتير PDF مزدوجة وملصقات 4x4 بضغطة زر</div>
-                        <div class="hero-check-item"><span class="check-dot">✓</span> كشف الزبائن الوهميين وتقليل المرتجعات (Retour)</div>
-                        <div class="hero-check-item"><span class="check-dot">✓</span> تجربة مجانية 3 أيام بـ 0 DA بدون أي التزام</div>
-                        <div class="hero-check-item"><span class="check-dot">✓</span> أتمتة المخزون وحساب صافي الربح الحقيقي</div>
-                        <div class="hero-check-item"><span class="check-dot">✓</span> استيراد طلبيات Excel وتوليدها دفعة واحدة</div>
-                        <div class="hero-check-item"><span class="check-dot">✓</span> دفع محلي آمن عبر BaridiMob و CCP</div>
+                <div style="text-align:center; direction:rtl; margin-top:35px;">
+                    <span class="sec-pill">من نحن</span>
+                    <div class="sec-heading">Tijaratna DataDZ</div>
+                    <p class="sec-subtext">نواكب أحدث تقنيات التجارة الإلكترونية في الجزائر لنقدم لك حلولاً سحابية ذكية تساعدك على تنظيم الفواتير، حماية متجرك من المرتجعات، ومضاعفة أرباحك.</p>
+                </div>
+                <div class="hero-gradient-banner">
+                    <h2>طوّر إدارة متجرك الإلكتروني الآن</h2>
+                    <p>مع Tijaratna DataDZ، يمكنك إصدار فواتيرك بالعربية والفرنسية، كشف الزبائن أصحاب المرتجعات قبل الشحن، وإدارة مخزونك بضغطة زر.</p>
+                    <div class="hero-banner-tags">فوترة سريعة &nbsp;•&nbsp; حماية من الروتور &nbsp;•&nbsp; أتمتة شاملة</div>
+                </div>
+            """, unsafe_allow_html=True)
+            st.markdown("""
+                <div id="why-us-sec" style="text-align:center; direction:rtl;">
+                    <span class="sec-pill">ما يميزنا</span>
+                    <div class="sec-heading">لماذا تختار Tijaratna DataDZ؟</div>
+                </div>
+                <div class="grid-4-cards">
+                    <div class="struct-card">
+                        <div class="card-icon-box">🛡️</div>
+                        <h4>رادار القائمة السوداء</h4>
+                        <p>ينبهك فوراً قبل الشحن إذا كان رقم الزبون لديه سجل مرتجعات (Retour) لتفادي خسارة مصاريف التوصيل.</p>
                     </div>
-                    <p style="color:#F8FAFC; font-weight:700; font-size:15.5px; margin-bottom:16px;">لديك متجر إلكتروني؟ ابدأ الآن في تنظيم مبيعاتك ومضاعفة أرباحك!</p>
+                    <div class="struct-card">
+                        <div class="card-icon-box">🧾</div>
+                        <h4>فواتير مزدوجة وملصقات 4x4</h4>
+                        <p>توليد فواتير PDF بالعربية والفرنسية مع شعار متجرك ورمز QR أو استيرادها بالجملة من ملف Excel.</p>
+                    </div>
+                    <div class="struct-card">
+                        <div class="card-icon-box">💳</div>
+                        <h4>طرق دفع محلية آمنة</h4>
+                        <p>ابدأ مجاناً بـ 0 DA لمدة 3 أيام، وفعّل اشتراكك السنوي بسهولة عبر BaridiMob أو حساب CCP.</p>
+                    </div>
+                    <div class="struct-card">
+                        <div class="card-icon-box">🎧</div>
+                        <h4>مرافقة ودعم مستمر</h4>
+                        <p>تحديثات مستمرة للمنصة وتواصل مباشر عبر WhatsApp لمساعدتك في كل خطوة داخل متجرك.</p>
+                    </div>
+                </div>
+
+                <div id="steps-sec" style="text-align:center; direction:rtl;">
+                    <span class="sec-pill">كيف تستخدم منصتنا؟</span>
+                    <div class="sec-heading">ابدأ في 4 خطوات بسيطة</div>
+                    <p class="sec-subtext">اتبع الخطوات التالية للانطلاق في تنظيم مبيعات متجرك الإلكتروني في أقل من دقيقتين.</p>
+                </div>
+                <div class="grid-4-cards">
+                    <div class="struct-card">
+                        <div class="step-num-big">01</div>
+                        <h4>أنشئ حسابك مجاناً</h4>
+                        <p>سجّل ببريدك الإلكتروني واختر باقتك لتستفيد من 3 أيام تجربة مجانية كاملة بـ 0 DA.</p>
+                    </div>
+                    <div class="struct-card">
+                        <div class="step-num-big">02</div>
+                        <h4>أضف منتجاتك وشعارك</h4>
+                        <p>ارفع لوغو متجرك وأدخل سلعتك في المستودع ليتم تتبع المخزون والأرباح تلقائياً.</p>
+                    </div>
+                    <div class="struct-card">
+                        <div class="step-num-big">03</div>
+                        <h4>أصدر الفواتير والملصقات</h4>
+                        <p>سجّل طلبياتك فردياً أو من ملف Excel وافحص أرقام الزبائن قبل إرسالها لشركة التوصيل.</p>
+                    </div>
+                    <div class="struct-card">
+                        <div class="step-num-big">04</div>
+                        <h4>تابع أرباحك الصافية</h4>
+                        <p>راقب الطلبيات المستلمة والمرتجعة واعرف صافي ربحك الحقيقي بدقة من لوحة التقارير.</p>
+                    </div>
+                </div>
+
+                <div class="stats-container-bar">
+                    <div>
+                        <div class="stat-big-num">100%</div>
+                        <div class="stat-lbl-txt">عزل وأمان بيانات المتاجر</div>
+                    </div>
+                    <div>
+                        <div class="stat-big-num">58</div>
+                        <div class="stat-lbl-txt">ولاية جزائرية مدعومة</div>
+                    </div>
+                    <div>
+                        <div class="stat-big-num">0 DA</div>
+                        <div class="stat-lbl-txt">تجربة مجانية لمدة 3 أيام</div>
+                    </div>
+                    <div>
+                        <div class="stat-big-num">7 أيام</div>
+                        <div class="stat-lbl-txt">ضمان استرجاع كامل المبلغ</div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            st.markdown("""
+                <div id="faq-sec" style="text-align:center; direction:rtl;">
+                    <div class="sec-heading">الأسئلة الشائعة</div>
+                    <p class="sec-subtext">إجابات واضحة على أكثر الأسئلة التي يطرحها التجار قبل الانضمام إلى منصتنا.</p>
+                </div>
+                <div class="faq-wrapper">
+                    <details class="faq-item">
+                        <summary>ما هي منصة Tijaratna DataDZ؟</summary>
+                        <p>هي منصة سحابية متكاملة صُممت خصيصاً للتجار الإلكترونيين في الجزائر لإصدار الفواتير المزدوجة (عربي/فرنسي)، طباعة ملصقات الشحن 4x4، كشف الزبائن أصحاب المرتجعات، وإدارة المخزون والأرباح في مكان واحد.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>كيف تعمل التجربة المجانية لمدة 3 أيام؟</summary>
+                        <p>بمجرد إنشاء حسابك وتأكيد بريدك الإلكتروني، يُفعّل حسابك فوراً بـ 0 DA لمدة 72 ساعة كاملة لتجربة جميع الأدوات على متجرك الحقيقي قبل اتخاذ قرار الاشتراك السنوي.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>ما هي طرق الدفع المتوفرة للاشتراك السنوي؟</summary>
+                        <p>ندعم الدفع المحلي السريع عبر تطبيق BaridiMob (تحويل RIP) أو عبر البريد الجزائري CCP، مع تفعيل الحساب خلال أقل من 15 دقيقة من رفع وصل الدفع.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>هل بيانات زبائني وفواتيري محمية وسرية؟</summary>
+                        <p>نعم تماماً، كل متجر يملك قاعدة بيانات مستقلة ومشفرة بالكامل مع نسخ احتياطي سحابي مستمر، ولا يمكن لأي طرف آخر الاطلاع على بيانات زبائنك أو مبيعاتك.</p>
+                    </details>
+                </div>
+
+                <div class="cta-bottom-box">
+                    <div class="sec-heading">جاهز للبدء؟</div>
+                    <p class="sec-subtext" style="margin-bottom:20px !important;">أنشئ حسابك المجاني الآن وابدأ في تنظيم طلبيات متجرك وتقليل المرتجعات من اليوم الأول.</p>
                 </div>
             """, unsafe_allow_html=True)
 
-            _, col_cta1, col_cta2, _ = st.columns([1.3, 1.2, 1.2, 1.3], gap="medium")
-            with col_cta1:
-                if st.button("🚀 إنشاء حساب (0 DA مجاناً)", key="hero_go_register_btn", type="primary"):
+            _, col_bottom_cta1, col_bottom_cta2, _ = st.columns([1.3, 1.2, 1.2, 1.3], gap="medium")
+            with col_bottom_cta1:
+                if st.button("🚀 إنشاء حساب مجاني (0 DA)", key="bottom_cta_reg_btn", type="primary"):
                     st.session_state["landing_step"] = "register"
                     st.rerun()
-            with col_cta2:
-                if st.button("تسجيل الدخول إلى متجرك", key="hero_open_login", type="secondary"):
+            with col_bottom_cta2:
+                if st.button("تسجيل الدخول للمتجر", key="bottom_cta_login_btn", type="secondary"):
                     st.session_state["login_failed_show_fp"] = False
                     st.session_state["landing_step"] = "login"
-                   
                     st.rerun()
-            # 📦 شبكة المميزات الست المنظمة + التذييل الرسمي
-            st.markdown("""
-                <style>
-                .corp-features-section {
-                    max-width: 1050px;
-                    margin: 50px auto 20px auto;
-                    direction: rtl;
-                    text-align: right;
-                }
-                .corp-sec-header { text-align: center; margin-bottom: 30px; }
-                .corp-sec-title { color: #F8FAFC !important; font-size: 24px !important; font-weight: 800 !important; margin-bottom: 8px !important; }
-                .corp-sec-sub { color: #94A3B8 !important; font-size: 14.5px !important; }
-                .corp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
-                .corp-feat-card {
-                    background: rgba(15, 23, 42, 0.72) !important;
-                    border: 1px solid #1E293B !important;
-                    border-radius: 16px !important;
-                    padding: 24px !important;
-                    transition: all 0.25s ease !important;
-                }
-                .corp-feat-card:hover {
-                    border-color: rgba(16, 185, 129, 0.5) !important;
-                    transform: translateY(-4px) !important;
-                    background: rgba(15, 23, 42, 0.92) !important;
-                }
-                .corp-feat-badge {
-                    display: inline-block;
-                    background: rgba(16, 185, 129, 0.12);
-                    color: #10B981 !important;
-                    padding: 4px 10px;
-                    border-radius: 8px;
-                    font-size: 12px;
-                    font-weight: 700;
-                    margin-bottom: 12px;
-                }
-                .corp-feat-name { color: #F1F5F9 !important; font-size: 16.5px !important; font-weight: 700 !important; margin-bottom: 8px !important; }
-                .corp-feat-info { color: #94A3B8 !important; font-size: 13.5px !important; line-height: 1.65 !important; }
-                </style>
 
-                <div id="features-sec" class="corp-features-section">
-                    <div class="corp-sec-header">
-                        <div class="corp-sec-title">كل ما يحتاجه التاجر الجزائري في نظام سحابي واحد</div>
-                        <div class="corp-sec-sub">أدوات ذكية مصممة لتقليل المرتجعات، تسريع الشحن، وحساب أرباحك بدقة متناهية</div>
-                    </div>
-                    <div class="corp-grid">
-                        <div class="corp-feat-card">
-                            <span class="corp-feat-badge">حماية المبيعات</span>
-                            <div class="corp-feat-name">رادار القائمة السوداء (Anti-Retour)</div>
-                            <div class="corp-feat-info">تنبيه فوري قبل الشحن عند إدخال رقم هاتف لديه سجل مرتجعات سابقة لتفادي خسائر التوصيل.</div>
-                        </div>
-                        <div class="corp-feat-card">
-                            <span class="corp-feat-badge">فوترة احترافية</span>
-                            <div class="corp-feat-name">فواتير مزدوجة وملصقات 4x4</div>
-                            <div class="corp-feat-info">إصدار فواتير PDF بالعربية والفرنسية معاً مع ختم QR Code وشعار متجرك المحفوظ سحابياً.</div>
-                        </div>
-                        <div class="corp-feat-card">
-                            <span class="corp-feat-badge">إدارة المخزون</span>
-                            <div class="corp-feat-name">أتمتة المخزون والأرباح الصافية</div>
-                            <div class="corp-feat-info">خصم تلقائي عند البيع وإرجاع فوري للقطع عند المرتجع مع حساب صافي الربح بعد مصاريف الشحن.</div>
-                        </div>
-                        <div class="corp-feat-card">
-                            <span class="corp-feat-badge">ربط التوصيل</span>
-                            <div class="corp-feat-name">ممر العبور السحابي للشحن</div>
-                            <div class="corp-feat-info">تمرير سريع لبيانات الطلبيات إلى شركات التوصيل (ياليدين، زريكس) وإرسال تأكيد واتساب بضغطة زر.</div>
-                        </div>
-                        <div class="corp-feat-card">
-                            <span class="corp-feat-badge">تحليل البيانات</span>
-                            <div class="corp-feat-name">تقارير مالية وتطهير ملفات Excel</div>
-                            <div class="corp-feat-info">رسوم بيانية حية لأكثر المنتجات مبيعاً وتنظيف ملفات المبيعات من التكرارات مع تصدير تقارير محاسبية.</div>
-                        </div>
-                        <div class="corp-feat-card">
-                            <span class="corp-feat-badge">ذكاء اصطناعي</span>
-                            <div class="corp-feat-name">مولّد الحملات والمساعد التجاري</div>
-                            <div class="corp-feat-info">صياغة نصوص إعلانية بالدارجة الجزائرية وسيناريوهات فيديو جاهزة لرفع مبيعات متجرك.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="footer-sec" style="max-width: 1050px; margin: 50px auto 15px auto; padding: 28px 24px; background: rgba(11, 17, 32, 0.85); border-top: 1px solid #1E293B; border-radius: 18px; direction: rtl; text-align: right;">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 18px;">
+            st.markdown(f"""
+                <div id="footer-sec" style="max-width: 1050px; margin: 50px auto 15px auto; padding: 32px 26px; background: rgba(11, 17, 32, 0.9); border-top: 1px solid #1E293B; border-radius: 20px; direction: rtl; text-align: right;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 20px;">
                         <div>
-                            <div style="color: #F8FAFC; font-weight: 800; font-size: 18px; margin-bottom: 6px;">Tijaratna <span style="color: #10B981;">DataDZ</span></div>
-                            <p style="color: #94A3B8; font-size: 12.5px; line-height: 1.6; margin: 0;">المنصة السحابية المتكاملة لإدارة التجارة الإلكترونية في الجزائر: فواتير، مخزون، وحماية من المرتجعات.</p>
+                            <div style="color: #F8FAFC; font-weight: 900; font-size: 19px; margin-bottom: 8px;">Tijaratna <span style="color: #10B981;">DataDZ</span></div>
+                            <p style="color: #94A3B8; font-size: 13px; line-height: 1.65; margin: 0;">منصة جزائرية متكاملة لإدارة التجارة الإلكترونية والفواتير والمخزون بجودة واحترافية عالية.</p>
                         </div>
                         <div>
-                            <div style="color: #10B981; font-weight: 700; font-size: 14px; margin-bottom: 6px;">🛡️ ضمان الثقة والأمان</div>
-                            <p style="color: #CBD5E1; font-size: 12px; line-height: 1.6; margin: 0;">• تجربة مجانية 3 أيام بـ 0 DA<br>• تفعيل فوري وضمان استرجاع الأموال خلال 7 أيام<br>• تشفير وعزل تام لبيانات كل متجر</p>
+                            <div style="color: #F8FAFC; font-weight: 800; font-size: 15px; margin-bottom: 8px;">روابط سريعة</div>
+                            <p style="color: #94A3B8; font-size: 13px; line-height: 1.9; margin: 0;">
+                                <a href="#top-nav-sec" style="color:#94A3B8; text-decoration:none;">• الرئيسية</a><br>
+                                <a href="#why-us-sec" style="color:#94A3B8; text-decoration:none;">• المميزات والخدمات</a><br>
+                                <a href="#steps-sec" style="color:#94A3B8; text-decoration:none;">• طريقة العمل</a><br>
+                                <a href="#faq-sec" style="color:#94A3B8; text-decoration:none;">• الأسئلة الشائعة</a>
+                            </p>
                         </div>
                         <div>
-                            <div style="color: #38BDF8; font-weight: 700; font-size: 14px; margin-bottom: 6px;">📜 الشروط والخصوصية</div>
-                            <p style="color: #94A3B8; font-size: 12px; line-height: 1.6; margin: 0;">بيانات زبائنك وفواتيرك ملك حصري لمتجرك ولا تتم مشاركتها مع أي طرف ثالث.</p>
+                            <div style="color: #F8FAFC; font-weight: 800; font-size: 15px; margin-bottom: 8px;">تواصل معنا والضمان</div>
+                            <p style="color: #94A3B8; font-size: 13px; line-height: 1.8; margin: 0;">
+                                • دعم فني عبر <a href="{wa_float_link}" target="_blank" style="color:#10B981; text-decoration:none; font-weight:bold;">WhatsApp</a><br>
+                                • ضمان استرجاع الأموال خلال 7 أيام<br>
+                                • خصوصية تامة لبيانات التجار
+                            </p>
                         </div>
                     </div>
-                    <div style="border-top: 1px solid #1E293B; padding-top: 12px; text-align: center; color: #64748B; font-size: 12px;">
-                        © 2026 Tijaratna DataDZ — صُمم بكل فخر للتجار في الجزائر 🇩🇿 | جميع الحقوق محفوظة.
+                    <div style="border-top: 1px solid #1E293B; padding-top: 14px; text-align: center; color: #64748B; font-size: 12.5px;">
+                        © 2026 Tijaratna DataDZ — جميع الحقوق محفوظة 🇩🇿
                     </div>
                 </div>
             """, unsafe_allow_html=True)
