@@ -2869,38 +2869,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             st.session_state.pop("active_merchant_user", None)
             st.rerun()
         st.stop()
-    # 🔔 عرض آخر تحديث أو إعلان من إدارة المنصة داخل متجر التاجر
-    conn_chk_upd = sqlite3.connect("saas_security_vault.db", timeout=10)
-    try:
-        latest_upd = conn_chk_upd.cursor().execute(
-            "SELECT id, created_at, target_group, title, message FROM platform_updates ORDER BY id DESC LIMIT 1"
-        ).fetchone()
-    except Exception:
-        latest_upd = None
-    conn_chk_upd.close()
 
-    if latest_upd:
-        upd_id, upd_date, upd_grp, upd_title, upd_msg = latest_upd
-        dismiss_key = f"dismissed_upd_{current_merchant}_{upd_id}"
-        show_to_user = (
-            upd_grp == "جميع التجار"
-            or (upd_grp == "التجار النشطون (مفعّل)" and "مفعّل" in user_actual_status)
-            or (upd_grp == "التجار في الفترة التجريبية" and is_trial_account)
-        )
-        if show_to_user and not st.session_state.get(dismiss_key, False):
-            col_u_box, col_u_btn = st.columns([4.5, 1])
-            with col_u_box:
-                st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(56, 189, 248, 0.1)); border: 1px solid #10B981; border-radius: 12px; padding: 14px 18px; margin-bottom: 10px; direction: rtl; text-align: right;">
-                        <div style="color: #10B981; font-weight: 800; font-size: 15px; margin-bottom: 4px;">🔔 تحديث جديد من الإدارة: {upd_title} <span style="font-size: 11px; color: #94A3B8; font-weight: normal;">({upd_date})</span></div>
-                        <div style="color: #F8FAFC; font-size: 13.5px; line-height: 1.6;">{upd_msg}</div>
-                    </div>
-                """, unsafe_allow_html=True)
-            with col_u_btn:
-                st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
-                if st.button("✅ فهمت", key=f"ack_upd_btn_{upd_id}"):
-                    st.session_state[dismiss_key] = True
-                    st.rerun()
     # 🔔 جرس الإشعارات الدائم + رسالة منبثقة في الزاوية تختفي تلقائياً بعد 7 ثوانٍ
     conn_chk_upd = sqlite3.connect("saas_security_vault.db", timeout=10)
     try:
