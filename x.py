@@ -1940,7 +1940,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                     user_package_choice = render_premium_neon_packages()
 
-                    if st.button("متابعة وإرسال رمز التحقق", key="send_otp_enterprise"):
+                    if st.button("إنشاء حساب", key="send_otp_enterprise"):
                         raw_phone = st.session_state.get("temp_reg_phone", "").replace("+", "").strip()
                         if not input_phone:
                             st.error("يرجى إدخال رقم الهاتف أولاً.")
