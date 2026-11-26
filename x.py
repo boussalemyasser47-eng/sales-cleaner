@@ -1947,36 +1947,35 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.rerun()
 
             st.markdown(f"""
-                    <div id="footer-sec" style="width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; margin-top: 60px; margin-bottom: -100px; padding: 45px 8% 35px 8%; background: #070B14; border-top: 1px solid #1E293B; direction: rtl; text-align: right;">
+<div id="footer-sec" style="width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; margin-top: 60px; margin-bottom: -100px; padding: 45px 8% 35px 8%; background: #070B14; border-top: 1px solid #1E293B; direction: rtl; text-align: right;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 20px;">
+        <div>
+            <div style="color: #F8FAFC; font-weight: 900; font-size: 19px; margin-bottom: 8px;">Tijaratna <span style="color: #10B981;">DataDZ</span></div>
+            <p style="color: #94A3B8; font-size: 13px; line-height: 1.65; margin: 0;">منصة جزائرية متكاملة لإدارة التجارة الإلكترونية والفواتير والمخزون بجودة واحترافية عالية.</p>
+        </div>
+        <div>
+            <div style="color: #F8FAFC; font-weight: 800; font-size: 15px; margin-bottom: 8px;">روابط سريعة</div>
+            <p style="color: #94A3B8; font-size: 13px; line-height: 1.9; margin: 0;">
+                <a href="#top-nav-sec" style="color:#94A3B8; text-decoration:none;">• الرئيسية</a><br>
+                <a href="#why-us-sec" style="color:#94A3B8; text-decoration:none;">• المميزات والخدمات</a><br>
+                <a href="#steps-sec" style="color:#94A3B8; text-decoration:none;">• طريقة العمل</a><br>
+                <a href="#faq-sec" style="color:#94A3B8; text-decoration:none;">• الأسئلة الشائعة</a>
+            </p>
+        </div>
+        <div>
+            <div style="color: #F8FAFC; font-weight: 800; font-size: 15px; margin-bottom: 8px;">تواصل معنا والضمان</div>
+            <p style="color: #94A3B8; font-size: 13px; line-height: 1.8; margin: 0;">
+                • دعم فني عبر <a href="{wa_float_link}" target="_blank" style="color:#10B981; text-decoration:none; font-weight:bold;">WhatsApp</a><br>
+                • ضمان استرجاع الأموال خلال 7 أيام<br>
+                • خصوصية تامة لبيانات التجار
+            </p>
+        </div>
+    </div>
+    <div style="border-top: 1px solid #1E293B; padding-top: 14px; text-align: center; color: #64748B; font-size: 12.5px;">
+        © 2026 Tijaratna DataDZ — جميع الحقوق محفوظة 🇩🇿
+    </div>
+</div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 20px;">
-                        <div>
-                            <div style="color: #F8FAFC; font-weight: 900; font-size: 19px; margin-bottom: 8px;">Tijaratna <span style="color: #10B981;">DataDZ</span></div>
-                            <p style="color: #94A3B8; font-size: 13px; line-height: 1.65; margin: 0;">منصة جزائرية متكاملة لإدارة التجارة الإلكترونية والفواتير والمخزون بجودة واحترافية عالية.</p>
-                        </div>
-                        <div>
-                            <div style="color: #F8FAFC; font-weight: 800; font-size: 15px; margin-bottom: 8px;">روابط سريعة</div>
-                            <p style="color: #94A3B8; font-size: 13px; line-height: 1.9; margin: 0;">
-                                <a href="#top-nav-sec" style="color:#94A3B8; text-decoration:none;">• الرئيسية</a><br>
-                                <a href="#why-us-sec" style="color:#94A3B8; text-decoration:none;">• المميزات والخدمات</a><br>
-                                <a href="#steps-sec" style="color:#94A3B8; text-decoration:none;">• طريقة العمل</a><br>
-                                <a href="#faq-sec" style="color:#94A3B8; text-decoration:none;">• الأسئلة الشائعة</a>
-                            </p>
-                        </div>
-                        <div>
-                            <div style="color: #F8FAFC; font-weight: 800; font-size: 15px; margin-bottom: 8px;">تواصل معنا والضمان</div>
-                            <p style="color: #94A3B8; font-size: 13px; line-height: 1.8; margin: 0;">
-                                • دعم فني عبر <a href="{wa_float_link}" target="_blank" style="color:#10B981; text-decoration:none; font-weight:bold;">WhatsApp</a><br>
-                                • ضمان استرجاع الأموال خلال 7 أيام<br>
-                                • خصوصية تامة لبيانات التجار
-                            </p>
-                        </div>
-                    </div>
-                    <div style="border-top: 1px solid #1E293B; padding-top: 14px; text-align: center; color: #64748B; font-size: 12.5px;">
-                        © 2026 Tijaratna DataDZ — جميع الحقوق محفوظة 🇩🇿
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
 
 
 
