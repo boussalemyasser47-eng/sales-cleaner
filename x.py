@@ -1753,70 +1753,98 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 .floating-wa-btn:hover {{ transform: scale(1.1); }}
                 .scroll-top-btn {{
                     position: fixed;
-                    bottom: 24px;
+                    bottom: 85px;
                     right: 24px;
                     width: 48px;
                     height: 48px;
                     background: #0F172A;
-                    border: 1.5px solid #10B981;
+                    border: 2px solid #10B981;
                     color: #10B981 !important;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 20px;
-                    font-weight: bold;
+                    font-size: 22px;
+                    font-weight: 900;
                     cursor: pointer;
-                    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-                    z-index: 999999;
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.65);
+                    z-index: 9999999;
                     opacity: 0;
                     visibility: hidden;
                     transform: translateY(15px);
                     transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
                 }}
                 .scroll-top-btn.visible {{
-                    opacity: 1;
-                    visibility: visible;
-                    transform: translateY(0);
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    transform: translateY(0) !important;
                 }}
                 .scroll-top-btn:hover {{
-                    background: #10B981;
+                    background: #10B981 !important;
                     color: #022C22 !important;
-                    transform: translateY(-3px);
+                    transform: translateY(-3px) !important;
                 }}
                 </style>
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
                 <button id="smartScrollTopBtn" class="scroll-top-btn" title="العودة للأعلى">↑</button>
-          
             """, unsafe_allow_html=True)
+
             st.components.v1.html("""
                 <script>
                 (function() {
-                    const parentDoc = window.parent.document;
-                    const scrollContainer = parentDoc.querySelector('[data-testid="stAppViewContainer"]') || parentDoc.documentElement;
-                    const btn = parentDoc.getElementById('smartScrollTopBtn');
-                    if (!btn || !scrollContainer) return;
+                    const pDoc = window.parent.document;
+                    const pWin = window.parent;
 
-                    function toggleBtn() {
-                        const scrollTop = scrollContainer.scrollTop || window.parent.scrollY || 0;
-                        if (scrollTop > 220) {
+                    function getScrollPos() {
+                        const candidates = [
+                            pDoc.querySelector('[data-testid="stAppViewContainer"]'),
+                            pDoc.querySelector('section.main'),
+                            pDoc.querySelector('.main'),
+                            pDoc.documentElement,
+                            pDoc.body
+                        ];
+                        let maxScroll = pWin.scrollY || pWin.pageYOffset || 0;
+                        for (const el of candidates) {
+                            if (el && el.scrollTop > maxScroll) {
+                                maxScroll = el.scrollTop;
+                            }
+                        }
+                        return maxScroll;
+                    }
+
+                    setInterval(function() {
+                        const btn = pDoc.getElementById('smartScrollTopBtn');
+                        if (!btn) return;
+                        if (getScrollPos() > 160) {
                             btn.classList.add('visible');
                         } else {
                             btn.classList.remove('visible');
                         }
-                    }
 
-                    scrollContainer.addEventListener('scroll', toggleBtn);
-                    window.parent.addEventListener('scroll', toggleBtn);
-
-                    btn.onclick = function() {
-                        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
-                        window.parent.scrollTo({ top: 0, behavior: 'smooth' });
-                    };
+                        if (!btn.dataset.bound) {
+                            btn.dataset.bound = "true";
+                            btn.addEventListener('click', function() {
+                                const targets = [
+                                    pDoc.querySelector('[data-testid="stAppViewContainer"]'),
+                                    pDoc.querySelector('section.main'),
+                                    pDoc.querySelector('.main'),
+                                    pDoc.documentElement,
+                                    pDoc.body
+                                ];
+                                for (const t of targets) {
+                                    if (t && t.scrollTo) {
+                                        t.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }
+                                }
+                                pWin.scrollTo({ top: 0, behavior: 'smooth' });
+                            });
+                        }
+                    }, 200);
                 })();
                 </script>
             """, height=0)
+
 
 
                 
