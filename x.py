@@ -1751,65 +1751,43 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     transition: transform 0.25s ease;
                 }}
                 .floating-wa-btn:hover {{ transform: scale(1.1); }}
-                /* 📌 تثبيت الشريط العلوي في أعلى الشاشة ليتبع الزائر دائماً */
-                /* 📌 تثبيت الشريط العلوي أياً كان اسم حاوية Streamlit */
-                div:has(> .stMarkdown .sticky-nav-anchor) + div,
-                div:has(.sticky-nav-anchor) + div {{
-                    position: fixed !important;
-                    top: 12px !important;
-                    left: 3% !important;
-                    right: 3% !important;
-                    z-index: 999995 !important;
-                    background: rgba(9, 13, 22, 0.94) !important;
-                    backdrop-filter: blur(16px) !important;
-                    border: 1px solid #1E293B !important;
-                    border-radius: 14px !important;
-                    padding: 10px 18px !important;
-                    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65) !important;
-                }}
-                .open-hero-wrap {{
-                    margin-top: 95px !important;
-                }}
-
-                /* مسافة علوية للصفحة لكي لا يغطي الشريط المثبت العنوان الأول */
-                .block-container {{
-                    padding-top: 95px !important;
-                }}
-                /* جعل زري الدخول والدعم داكنين بحدود أنيقة داخل الشريط العلوي */
-                div[class*="st-key-nav_supp_top"] button,
-                div[class*="st-key-nav_login_top"] button,
-                div[class*="st-key-hero_open_login"] button {{
-                    background: #0F172A !important;
-                    color: #F8FAFC !important;
-                    border: 1px solid #334155 !important;
-                    box-shadow: none !important;
-                }}
-                div[class*="st-key-nav_supp_top"] button:hover,
-                div[class*="st-key-nav_login_top"] button:hover,
-                div[class*="st-key-hero_open_login"] button:hover {{
-                    border-color: #10B981 !important;
+                .scroll-top-btn {{
+                    position: fixed;
+                    bottom: 24px;
+                    right: 24px;
+                    width: 48px;
+                    height: 48px;
+                    background: #0F172A;
+                    border: 1.5px solid #10B981;
                     color: #10B981 !important;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 20px;
+                    font-weight: bold;
+                    text-decoration: none !important;
+                    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+                    z-index: 999999;
                 }}
-                /* 📌 تثبيت الشريط العلوي ليتبع التاجر أينما نزل في الصفحة */
-                div[data-testid="stVerticalBlock"] > div:has(.sticky-nav-marker) + div[data-testid="stHorizontalBlock"] {{
-                    position: sticky !important;
-                    top: 12px !important;
-                    z-index: 99990 !important;
-                    background: rgba(9, 13, 22, 0.88) !important;
-                    backdrop-filter: blur(14px) !important;
-                    border: 1px solid #1E293B !important;
-                    border-radius: 14px !important;
-                    padding: 10px 16px !important;
-                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45) !important;
+                .scroll-top-btn:hover {{
+                    background: #10B981;
+                    color: #022C22 !important;
                 }}
+                </style>
 
+                <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
+                <a href="#top-nav-sec" class="scroll-top-btn" title="العودة للأعلى">↑</a>
+            """, unsafe_allow_html=True)
+                /* 📌 تثبيت الشريط العلوي في أعلى الشاشة ليتبع الزائر دائماً */
+                
 
                 </style>
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
             """, unsafe_allow_html=True)
                         # 🧭 الشريط العلوي المتكامل (الشعار في اليمين + الروابط في الوسط + الأزرار في اليسار)
-            st.markdown('<div class="sticky-nav-anchor" style="display:none;"></div>', unsafe_allow_html=True)
+            st.markdown('<div id="top-nav-sec"></div>', unsafe_allow_html=True)
 
             nav_r, nav_mid, nav_l1, nav_l2, nav_l3 = st.columns([1.8, 2.6, 1.1, 1.1, 1.1])
             with nav_r:
