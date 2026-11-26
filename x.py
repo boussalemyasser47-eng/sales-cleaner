@@ -1836,6 +1836,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                         <a href="#footer-sec" style="color:#CBD5E1; text-decoration:none;">الخصوصية</a>
                     </div>
                 """, unsafe_allow_html=True)
+
             with nav_l1:
                 if st.button("الدعم والشكاوى", key="nav_supp_top", type="secondary"):
                     st.session_state["current_view"] = "complaint_page"
