@@ -1646,6 +1646,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             }
             </style>
         """, unsafe_allow_html=True)
+        if st.session_state["landing_step"] == "home":
+
             wa_support_num = str(st.secrets.get("SUPPORT_WHATSAPP", "213654742605")).replace("+", "").strip()
             wa_float_link = "https://wa.me" + "/" + wa_support_num + "?text=" + urllib.parse.quote("مرحباً إدارة Tijaratna DataDZ، لدي استفسار بخصوص المنصة.")
 
