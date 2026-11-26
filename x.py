@@ -1669,10 +1669,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.rerun()
             with col_cta2:
                 if st.button("تسجيل الدخول إلى متجرك", key="hero_go_login_btn"):
-                    st.session_state["login_failed_show_fp"] = False
 
                     st.session_state["login_failed_show_fp"] = False
+                    
                     st.session_state["landing_step"] = "login"
+                    st.session_state["login_failed_show_fp"] = False
                     st.rerun()
 
 
