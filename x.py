@@ -2929,8 +2929,22 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             is_unread = not st.session_state.get(dismiss_key, False)
             bell_label = "🔔 تحديث جديد (1)" if is_unread else "🔔 الإشعارات"
 
-            col_bell_corner, _ = st.columns([1.3, 4.5])
-            with col_bell_corner:
+            st.markdown("""
+                <style>
+                div[data-testid="stPopover"] svg { display: none !important; }
+                div[data-testid="stPopover"] button span[data-testid="stIconMaterial"] { display: none !important; }
+                div[data-testid="stPopover"] button {
+                    background: #0F172A !important;
+                    border: 1px solid #10B981 !important;
+                    border-radius: 10px !important;
+                    padding: 6px 14px !important;
+                    min-height: 40px !important;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+
+            _, col_bell_right = st.columns([4.4, 1.6])
+            with col_bell_right:
                 with st.popover(bell_label):
                     st.markdown(f"""
                         <div style="direction: rtl; text-align: right; min-width: 260px;">
@@ -2940,9 +2954,10 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                         </div>
                     """, unsafe_allow_html=True)
                     if is_unread:
-                        if st.button("✅ تحديد كمقروء", key=f"ack_upd_btn_{upd_id}"):
+                        if st.button("✅ تحديد كمقروء", key=f"ack_upd_btn_{current_merchant}_{upd_id}"):
                             st.session_state[dismiss_key] = True
                             st.rerun()
+
 
 
     if is_trial_account:
