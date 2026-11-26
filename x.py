@@ -2901,7 +2901,7 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                 if st.button("✅ فهمت", key=f"ack_upd_btn_{upd_id}"):
                     st.session_state[dismiss_key] = True
                     st.rerun()
-    # 🔔 جرس إشعارات التحديثات في الزاوية العلوية (مثل منصات SaaS الحديثة)
+    # 🔔 جرس الإشعارات الدائم + رسالة منبثقة في الزاوية تختفي تلقائياً بعد 7 ثوانٍ
     conn_chk_upd = sqlite3.connect("saas_security_vault.db", timeout=10)
     try:
         latest_upd = conn_chk_upd.cursor().execute(
@@ -2914,15 +2914,55 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     if latest_upd:
         upd_id, upd_date, upd_grp, upd_title, upd_msg = latest_upd
         dismiss_key = f"dismissed_upd_{current_merchant}_{upd_id}"
+        toast_shown_key = f"toast_shown_upd_{current_merchant}_{upd_id}"
+
         show_to_user = (
             upd_grp == "جميع التجار"
             or (upd_grp == "التجار النشطون (مفعّل)" and "مفعّل" in user_actual_status)
             or (upd_grp == "التجار في الفترة التجريبية" and is_trial_account)
         )
-        if show_to_user and not st.session_state.get(dismiss_key, False):
+
+        if show_to_user:
+            # 1️⃣ رسالة عائمة في الزاوية تظهر مرة واحدة وتختفي تلقائياً بعد 7 ثوانٍ
+            if not st.session_state.get(toast_shown_key, False) and not st.session_state.get(dismiss_key, False):
+                st.session_state[toast_shown_key] = True
+                st.markdown(f"""
+                    <style>
+                    @keyframes cornerToastAutoHide {{
+                        0%   {{ opacity: 0; transform: translateY(-20px) scale(0.95); }}
+                        10%  {{ opacity: 1; transform: translateY(0) scale(1); }}
+                        85%  {{ opacity: 1; transform: translateY(0) scale(1); }}
+                        100% {{ opacity: 0; transform: translateY(-20px) scale(0.95); visibility: hidden; pointer-events: none; }}
+                    }}
+                    .auto-fade-corner-toast {{
+                        position: fixed;
+                        top: 68px;
+                        left: 24px;
+                        z-index: 999999;
+                        max-width: 340px;
+                        background: rgba(11, 17, 32, 0.96) !important;
+                        border: 1.5px solid #10B981 !important;
+                        border-radius: 14px !important;
+                        padding: 14px 18px !important;
+                        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65), 0 0 15px rgba(16, 185, 129, 0.25) !important;
+                        direction: rtl;
+                        text-align: right;
+                        animation: cornerToastAutoHide 7.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+                    }}
+                    </style>
+                    <div class="auto-fade-corner-toast">
+                        <div style="color: #10B981; font-weight: 800; font-size: 13.5px; margin-bottom: 4px;">🔔 إشعار تحديث جديد: {upd_title}</div>
+                        <div style="color: #E2E8F0; font-size: 12.5px; line-height: 1.5;">{upd_msg}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+            # 2️⃣ جرس الإشعارات في الزاوية العلوية (يظل محفوظاً بداخل الجرس للرجوع إليه دائماً)
+            is_unread = not st.session_state.get(dismiss_key, False)
+            bell_label = "🔔 تحديث جديد (1)" if is_unread else "🔔 الإشعارات"
+
             col_bell_corner, _ = st.columns([1.3, 4.5])
             with col_bell_corner:
-                with st.popover(f"🔔 تحديث جديد (1)"):
+                with st.popover(bell_label):
                     st.markdown(f"""
                         <div style="direction: rtl; text-align: right; min-width: 260px;">
                             <div style="color: #10B981; font-weight: 800; font-size: 14px; margin-bottom: 6px;">🚀 {upd_title}</div>
@@ -2930,9 +2970,11 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
                             <div style="color: #E2E8F0; font-size: 13px; line-height: 1.6; margin-bottom: 12px;">{upd_msg}</div>
                         </div>
                     """, unsafe_allow_html=True)
-                    if st.button("✅ تم الاطلاع (إخفاء)", key=f"ack_upd_btn_{upd_id}"):
-                        st.session_state[dismiss_key] = True
-                        st.rerun()
+                    if is_unread:
+                        if st.button("✅ تحديد كمقروء", key=f"ack_upd_btn_{upd_id}"):
+                            st.session_state[dismiss_key] = True
+                            st.rerun()
+
 
     if is_trial_account:
         col_tr_msg, col_tr_btn = st.columns([4, 1.2])
