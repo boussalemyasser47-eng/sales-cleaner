@@ -1816,7 +1816,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
             # 🔑 استعادة كلمة المرور ذاتياً عبر رمز التحقق (OTP)
             _, col_fp_mid, _ = st.columns([1.0, 1.4, 1.0])
             with col_fp_mid:
-                with st.expander("🔑 نسيت كلمة المرور؟ اضغط هنا لاستعادتها فوراً"):
+                with st.expander("🔑 نسيت كلمة المرور؟ اضغط هنا لاستعادتها فوراً", expanded=st.session_state.get("login_failed_show_fp", False)):
                     fp_email = st.text_input("أدخل بريدك الإلكتروني المسجل:", placeholder="name@gmail.com", key="fp_email_input").strip().lower()
                     if st.button("📩 إرسال رمز استعادة كلمة المرور", key="fp_send_otp_btn"):
                         if not fp_email:
@@ -1889,7 +1889,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                                 st.warning("⚠️ انتهت فترة التجربة المجانية (3 أيام) أو حسابك بانتظار التفعيل السنوي. أكمل الدفع أدناه للتفعيل الفوري.")
                         else:
                             conn_login.close()
-                            st.error("بيانات الدخول غير صحيحة، يرجى التحقق والمحاولة مرة أخرى.")
+                            st.session_state["login_failed_show_fp"] = True
+                            st.error("❌ بيانات الدخول غير صحيحة. هل نسيت كلمة المرور؟ استخدم خيار الاستعادة بالأسفل 👇")
 
             # 💳 صندوق الدفع الآمن بعرض متناسق للباقات الثلاث في صف واحد
             if st.session_state.get("expired_trial_email"):
