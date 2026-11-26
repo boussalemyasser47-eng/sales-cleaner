@@ -1751,18 +1751,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     transition: transform 0.25s ease;
                 }}
                 .floating-wa-btn:hover {{ transform: scale(1.1); }}
-                /* 📌 تثبيت الشريط العلوي ليتبع التاجر أينما نزل في الصفحة */
-                div[data-testid="stVerticalBlock"] > div:has(.sticky-nav-marker) + div[data-testid="stHorizontalBlock"] {{
-                    position: sticky !important;
-                    top: 12px !important;
-                    z-index: 99990 !important;
-                    background: rgba(9, 13, 22, 0.88) !important;
-                    backdrop-filter: blur(14px) !important;
-                    border: 1px solid #1E293B !important;
-                    border-radius: 14px !important;
-                    padding: 10px 16px !important;
-                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45) !important;
-                }}
                 /* 📌 تثبيت الشريط العلوي في أعلى الشاشة ليتبع الزائر دائماً */
                 div[data-testid="stVerticalBlock"] > div:has(.sticky-nav-anchor) + div[data-testid="stHorizontalBlock"] {{
                     position: fixed !important;
@@ -1796,13 +1784,26 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     border-color: #10B981 !important;
                     color: #10B981 !important;
                 }}
+                /* 📌 تثبيت الشريط العلوي ليتبع التاجر أينما نزل في الصفحة */
+                div[data-testid="stVerticalBlock"] > div:has(.sticky-nav-marker) + div[data-testid="stHorizontalBlock"] {{
+                    position: sticky !important;
+                    top: 12px !important;
+                    z-index: 99990 !important;
+                    background: rgba(9, 13, 22, 0.88) !important;
+                    backdrop-filter: blur(14px) !important;
+                    border: 1px solid #1E293B !important;
+                    border-radius: 14px !important;
+                    padding: 10px 16px !important;
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45) !important;
+                }}
+
 
                 </style>
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل مع الدعم عبر WhatsApp">💬</a>
             """, unsafe_allow_html=True)
                         # 🧭 الشريط العلوي المتكامل (الشعار في اليمين + الروابط في الوسط + الأزرار في اليسار)
-            st.markdown('<div class="sticky-nav-marker" style="display:none;"></div>', unsafe_allow_html=True)
+            st.markdown('<div class="sticky-nav-anchor" style="display:none;"></div>', unsafe_allow_html=True)
 
             nav_r, nav_mid, nav_l1, nav_l2, nav_l3 = st.columns([1.8, 2.6, 1.1, 1.1, 1.1])
             with nav_r:
