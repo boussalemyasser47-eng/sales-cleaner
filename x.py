@@ -1752,19 +1752,25 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 }}
                 .floating-wa-btn:hover {{ transform: scale(1.1); }}
                 /* 📌 تثبيت الشريط العلوي في أعلى الشاشة ليتبع الزائر دائماً */
-                div[data-testid="stVerticalBlock"] > div:has(.sticky-nav-anchor) + div[data-testid="stHorizontalBlock"] {{
+                /* 📌 تثبيت الشريط العلوي أياً كان اسم حاوية Streamlit */
+                div:has(> .stMarkdown .sticky-nav-anchor) + div,
+                div:has(.sticky-nav-anchor) + div {{
                     position: fixed !important;
-                    top: 10px !important;
+                    top: 12px !important;
                     left: 3% !important;
                     right: 3% !important;
-                    z-index: 999990 !important;
-                    background: rgba(9, 13, 22, 0.92) !important;
-                    backdrop-filter: blur(14px) !important;
+                    z-index: 999995 !important;
+                    background: rgba(9, 13, 22, 0.94) !important;
+                    backdrop-filter: blur(16px) !important;
                     border: 1px solid #1E293B !important;
                     border-radius: 14px !important;
                     padding: 10px 18px !important;
-                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+                    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65) !important;
                 }}
+                .open-hero-wrap {{
+                    margin-top: 95px !important;
+                }}
+
                 /* مسافة علوية للصفحة لكي لا يغطي الشريط المثبت العنوان الأول */
                 .block-container {{
                     padding-top: 95px !important;
