@@ -582,7 +582,7 @@ def render_otp_popup(target_email):
 
     return full_entered_otp
 # 🔒 ضبط إعدادات الشاشة الأساسية للمنصة الموحدة
-st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
+st.set_page_config(page_title="Tijaratna DataDZ — منصة التجارة الإلكترونية الذكية", page_icon="🛡️", layout="wide")
 
 query_params = st.query_params
 if "verify_email" in query_params and "code" in query_params and "magic_otp_done" not in st.session_state:
