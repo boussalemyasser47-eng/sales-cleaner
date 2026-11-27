@@ -1801,8 +1801,8 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                 </style>
 
-             <a href="#page-top-start" class="scroll-top-btn" title="العودة للأعلى">↑</a>
-         """, unsafe_allow_html=True)
+                <a href="#page-top-start" class="scroll-top-btn" title="العودة للأعلى">↑</a>
+            """, unsafe_allow_html=True)
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل معنا عبر WhatsApp">💬</a>
             """, unsafe_allow_html=True)
