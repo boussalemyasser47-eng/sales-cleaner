@@ -1798,14 +1798,11 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45); z-index: 9999999;
                 }}
                 .block-container {{ padding-bottom: 0rem !important; }}
+             </style>
 
-                </style>
-
-                <a href="#page-top-start" class="scroll-top-btn" title="العودة للأعلى">↑</a>
-            """, unsafe_allow_html=True)
-
-                <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل معنا عبر WhatsApp">💬</a>
-            """, unsafe_allow_html=True)
+             <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل معنا عبر WhatsApp">💬</a>
+             <a href="#page-top-start" class="scroll-top-btn" title="العودة للأعلى">↑</a>
+         """, unsafe_allow_html=True)
 
 
 
