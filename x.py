@@ -1906,6 +1906,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
                 }
                 </style>
+                <div id="top-nav-sec"></div>
 
                 <div class="top-hero-block">
                     <div class="top-hero-headline">🛡️ المنصة #1 في الجزائر لإدارة التجارة الإلكترونية والفواتير</div>
