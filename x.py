@@ -600,6 +600,16 @@ if "reset_email" in query_params and "reset_code" in query_params and "magic_res
     st.session_state["prefill_fp_code"] = query_params.get("reset_code")
     st.session_state["magic_reset_done"] = True
 
+if "go" in query_params:
+    go_target = query_params.get("go")
+    st.query_params.clear()
+    if go_target == "login":
+        st.session_state["login_failed_show_fp"] = False
+        st.session_state["landing_step"] = "login"
+    elif go_target == "register":
+        st.session_state["landing_step"] = "register"
+    elif go_target == "support":
+        st.session_state["current_view"] = "complaint_page"
 
 
 is_boss_link = query_params.get("role") == "mohmed" if "role" in query_params else False
@@ -1794,31 +1804,58 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل معنا عبر WhatsApp">💬</a>
                 <a href="#top-nav-sec" class="scroll-top-btn" title="العودة للأعلى">↑</a>
             """, unsafe_allow_html=True)
-            st.markdown('<div id="top-nav-sec"></div>', unsafe_allow_html=True)
-            nav_r, nav_mid, nav_l1, nav_l2, nav_l3 = st.columns([1.8, 2.6, 1.1, 1.1, 1.1])
-            with nav_r:
-                st.markdown("<div style='direction:rtl; text-align:right; padding-top:6px;'><span style='color:#F8FAFC; font-weight:900; font-size:21px;'>Tijaratna <span style='color:#10B981;'>DataDZ</span></span><br><span style='color:#94A3B8; font-size:11px;'>منصة التجارة الإلكترونية الذكية 🇩🇿</span></div>", unsafe_allow_html=True)
-            with nav_mid:
-                st.markdown("""
-                    <div style="display:flex; justify-content:center; gap:22px; padding-top:14px; direction:rtl; font-size:14px; font-weight:600;">
-                        <a href="#why-us-sec" style="color:#CBD5E1; text-decoration:none;">المميزات</a>
-                        <a href="#steps-sec" style="color:#CBD5E1; text-decoration:none;">طريقة العمل</a>
-                        <a href="#faq-sec" style="color:#CBD5E1; text-decoration:none;">الأسئلة الشائعة</a>
+            st.markdown("""
+                <style>
+                .fixed-top-navbar {
+                    position: fixed;
+                    top: 0; left: 0; right: 0;
+                    height: 68px;
+                    background: rgba(7, 11, 20, 0.88);
+                    backdrop-filter: blur(14px);
+                    border-bottom: 1px solid #1E293B;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 0 5%;
+                    z-index: 999999;
+                    direction: rtl;
+                }
+                .f-nav-links { display: flex; gap: 24px; }
+                .f-nav-links a { color: #CBD5E1 !important; text-decoration: none !important; font-size: 14px; font-weight: 600; }
+                .f-nav-links a:hover { color: #10B981 !important; }
+                .f-nav-btns { display: flex; gap: 10px; align-items: center; }
+                .btn-nav-sec {
+                    padding: 8px 18px; border-radius: 999px; border: 1px solid #334155;
+                    background: #0F172A; color: #F8FAFC !important; text-decoration: none !important;
+                    font-size: 13.5px; font-weight: 700;
+                }
+                .btn-nav-sec:hover { border-color: #10B981; color: #10B981 !important; }
+                .btn-nav-pri {
+                    padding: 8px 20px; border-radius: 999px;
+                    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+                    color: #022C22 !important; text-decoration: none !important;
+                    font-size: 13.5px; font-weight: 800; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+                }
+                .top-hero-block { margin-top: 85px !important; }
+                </style>
+
+                <div id="top-nav-sec" class="fixed-top-navbar">
+                    <div style="text-align: right;">
+                        <span style="color:#F8FAFC; font-weight:900; font-size:20px;">Tijaratna <span style="color:#10B981;">DataDZ</span></span>
+                        <div style="color:#94A3B8; font-size:10.5px;">منصة التجارة الإلكترونية الذكية 🇩🇿</div>
                     </div>
-                """, unsafe_allow_html=True)
-            with nav_l1:
-                if st.button("الدعم والشكاوى", key="nav_supp_top", type="secondary"):
-                    st.session_state["current_view"] = "complaint_page"
-                    st.rerun()
-            with nav_l2:
-                if st.button("تسجيل الدخول", key="nav_login_top", type="secondary"):
-                    st.session_state["login_failed_show_fp"] = False
-                    st.session_state["landing_step"] = "login"
-                    st.rerun()
-            with nav_l3:
-                if st.button("إنشاء حساب", key="nav_reg_top", type="primary"):
-                    st.session_state["landing_step"] = "register"
-                    st.rerun()
+                    <div class="f-nav-links">
+                        <a href="#why-us-sec">المميزات</a>
+                        <a href="#steps-sec">طريقة العمل</a>
+                        <a href="#faq-sec">الأسئلة الشائعة</a>
+                        <a href="?go=support" target="_self">الدعم والشكاوى</a>
+                    </div>
+                    <div class="f-nav-btns">
+                        <a href="?go=login" target="_self" class="btn-nav-sec">تسجيل الدخول</a>
+                        <a href="?go=register" target="_self" class="btn-nav-pri">إنشاء حساب</a>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
 
             st.markdown("""
                 <style>
