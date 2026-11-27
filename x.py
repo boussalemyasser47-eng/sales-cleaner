@@ -1802,9 +1802,44 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 </style>
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل معنا عبر WhatsApp">💬</a>
-                <a href="#page-top-start" class="scroll-top-btn" title="العودة للأعلى">↑</a>
-
+                <a href="#page-top-start" id="mechTopArrow" class="scroll-top-btn" title="العودة للأعلى">↑</a>
             """, unsafe_allow_html=True)
+
+            st.components.v1.html("""
+                <script>
+                (function() {
+                    function smoothScrollUp(el) {
+                        if (!el) return;
+                        const start = el.scrollTop || 0;
+                        if (start <= 0) return;
+                        const duration = 650;
+                        const startTime = performance.now();
+                        function step(now) {
+                            const progress = Math.min((now - startTime) / duration, 1);
+                            const ease = 1 - Math.pow(1 - progress, 3);
+                            el.scrollTop = start * (1 - ease);
+                            if (progress < 1) requestAnimationFrame(step);
+                        }
+                        requestAnimationFrame(step);
+                    }
+
+                    setInterval(function() {
+                        const btn = window.parent.document.getElementById('mechTopArrow');
+                        if (btn && !btn.dataset.mech) {
+                            btn.dataset.mech = "1";
+                            btn.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                smoothScrollUp(window.parent.document.querySelector('[data-testid="stAppViewContainer"]'));
+                                smoothScrollUp(window.parent.document.querySelector('section.main'));
+                                smoothScrollUp(window.parent.document.documentElement);
+                                smoothScrollUp(window.parent.document.body);
+                            });
+                        }
+                    }, 300);
+                })();
+                </script>
+            """, height=0)
+
             st.markdown("""
                 <style>
                 .fixed-top-navbar {
