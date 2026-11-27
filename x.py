@@ -1821,6 +1821,84 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.rerun()
 
             st.markdown("""
+            # 🌟 القسم الافتتاحي الأول في أعلى الصفحة (Hero Section مثل الصورة الأولى)
+            st.markdown("""
+                <style>
+                .top-hero-block {
+                    max-width: 920px;
+                    margin: 42px auto 15px auto;
+                    text-align: center;
+                    direction: rtl;
+                    padding: 10px 18px;
+                }
+                .top-hero-headline {
+                    font-size: 38px !important;
+                    font-weight: 900 !important;
+                    background: linear-gradient(90deg, #F8FAFC 0%, #10B981 55%, #34D399 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    margin-bottom: 30px !important;
+                    line-height: 1.35 !important;
+                }
+                .top-checks-2col {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 16px 40px;
+                    max-width: 780px;
+                    margin: 0 auto 30px auto;
+                    text-align: right;
+                }
+                .top-check-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    color: #E2E8F0 !important;
+                    font-size: 15.5px !important;
+                    font-weight: 600 !important;
+                }
+                .top-check-badge {
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    background: #10B981;
+                    color: #022C22 !important;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 13px;
+                    font-weight: 900;
+                    flex-shrink: 0;
+                    box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
+                }
+                </style>
+
+                <div class="top-hero-block">
+                    <div class="top-hero-headline">🛡️ المنصة #1 في الجزائر لإدارة التجارة الإلكترونية والفواتير</div>
+                    <div class="top-checks-2col">
+                        <div class="top-check-row"><span class="top-check-badge">✓</span> فواتير PDF مزدوجة وملصقات 4x4 بضغطة زر</div>
+                        <div class="top-check-row"><span class="top-check-badge">✓</span> كشف الزبائن الوهميين وتقليل المرتجعات (Retour)</div>
+                        <div class="top-check-row"><span class="top-check-badge">✓</span> تجربة مجانية 3 أيام بـ 0 DA بدون أي التزام</div>
+                        <div class="top-check-row"><span class="top-check-badge">✓</span> أتمتة المخزون وحساب صافي الربح الحقيقي</div>
+                        <div class="top-check-row"><span class="top-check-badge">✓</span> استيراد طلبيات Excel وتوليدها دفعة واحدة</div>
+                        <div class="top-check-row"><span class="top-check-badge">✓</span> دفع محلي آمن عبر BaridiMob و CCP</div>
+                    </div>
+                    <p style="color: #F8FAFC; font-weight: 700; font-size: 15.5px; margin-bottom: 18px;">لديك متجر إلكتروني؟ إذن لديك كل ما تحتاجه لتنظيم مبيعاتك ومضاعفة أرباحك!</p>
+                </div>
+            """, unsafe_allow_html=True)
+
+            _, col_top_cta1, col_top_cta2, _ = st.columns([1.3, 1.2, 1.2, 1.3], gap="medium")
+            with col_top_cta1:
+                if st.button("🚀 إنشاء حساب (0 DA مجاناً)", key="top_hero_reg_btn", type="primary"):
+                    st.session_state["landing_step"] = "register"
+                    st.rerun()
+            with col_top_cta2:
+                if st.button("تسجيل الدخول", key="top_hero_login_btn", type="secondary"):
+                    st.session_state["login_failed_show_fp"] = False
+                    st.session_state["landing_step"] = "login"
+                    st.rerun()
+
+            st.markdown("<div style='height: 35px;'></div>", unsafe_allow_html=True)
+
                 <div style="text-align:center; direction:rtl; margin-top:35px;">
                     <span class="sec-pill">من نحن</span>
                     <div class="sec-heading">Tijaratna DataDZ</div>
