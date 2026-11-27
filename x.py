@@ -1821,8 +1821,6 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.rerun()
 
             st.markdown("""
-            # 🌟 القسم الافتتاحي الأول في أعلى الصفحة (Hero Section مثل الصورة الأولى)
-            st.markdown("""
                 <style>
                 .top-hero-block {
                     max-width: 920px;
@@ -1897,7 +1895,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.session_state["landing_step"] = "login"
                     st.rerun()
 
-            st.markdown("<div style='height: 35px;'></div>", unsafe_allow_html=True)
+            st.markdown("""
 
                 <div style="text-align:center; direction:rtl; margin-top:35px;">
                     <span class="sec-pill">من نحن</span>
