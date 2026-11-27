@@ -1,5 +1,88 @@
-# ========================================================
-# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
+import streamlit as st
+
+import os
+import base64
+import threading
+import requests
+
+GITHUB_SYNC_LOCK = threading.Lock()
+
+def save_to_github_fast(filename="saas_security_vault.db", folder=""):
+    token = st.secrets.get("GITHUB_TOKEN")
+    repo = st.secrets.get("GITHUB_REPO")
+    if not token or not repo:
+        return
+    def _task(tk, rp, fname, fldr):
+        with GITHUB_SYNC_LOCK:
+            try:
+                if not os.path.exists(fname):
+                    return
+                with open(fname, "rb") as f:
+                    content = base64.b64encode(f.read()).decode("utf-8")
+                
+                github_path = f"{fldr}/{fname}" if fldr else fname
+                api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
+
+                url = f"{api_base}/{rp}/contents/{github_path}"
+                headers = {
+                    "Authorization": f"Bearer {tk}",
+                    "Accept": "application/vnd.github.v3+json"
+                }
+                res = requests.get(url, headers=headers)
+                sha = res.json().get("sha") if res.status_code == 200 else None
+                data = {"message": f"Update {github_path}", "content": content}
+                if sha:
+                    data["sha"] = sha
+                requests.put(url, json=data, headers=headers)
+            except Exception as e:
+                print("GitHub Exception:", e)
+    threading.Thread(target=_task, args=(token, repo, filename, folder), daemon=True).start()
+
+# استرجاع البيانات مرة واحدة عند تشغيل الموقع
+if "db_loaded" not in st.session_state:
+    try:
+        token = st.secrets.get("GITHUB_TOKEN")
+        repo = st.secrets.get("GITHUB_REPO")
+        if token and repo:
+            url = f"https://api.github.com/repos/{repo}/contents/saas_security_vault.db"
+            res = requests.get(url, headers={"Authorization": f"Bearer {token}"})
+            if res.status_code == 200:
+                with open("saas_security_vault.db", "wb") as f:
+                    f.write(base64.b64decode(res.json()["content"]))
+    except Exception:
+        pass
+    st.session_state["db_loaded"] = True
+
+import os
+
+# تحديد مسار ثابت وموثوق لقاعدة البيانات لمنع ضياعها في وضع السكون أو إعادة التشغيل
+DB_FILENAME = "saas_security_vault.db"
+
+def get_secure_db_connection():
+    """
+    إنشاء اتصال آمن مع مهلة زمنية دقيقة لضمان استقرار العمليات المتزامنة
+    """
+    conn = sqlite3.connect(DB_FILENAME, timeout=15)
+    return conn
+
+# تحسين دالة خزانة النسخ الاحتياطي التلقائي (.ZIP) لتشمل ملفات الـ DB بمسارها الثابت بدقة
+def create_robust_backup_vault():
+    import zipfile
+    zip_buffer = io.BytesIO()
+    try:
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            if os.path.exists(DB_FILENAME):
+                with open(DB_FILENAME, "rb") as f:
+                    timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    zip_file.writestr(f"backup_{timestamp_str}_{DB_FILENAME}", f.read())
+    except Exception as e:
+        print(f"⚠️ خطأ في إنشاء النسخة الاحتياطية: {e}")
+        
+    zip_buffer.seek(0)
+    return zip_buffer
+
+# === الإضافات والتعديلات الجديدة ===
+# تم تأمين مسار قاعدة البيانات وتفعيل استقرار الحفظ الدائم بنجاح.# الجزء الأول المطور - [1 من 4]: النواة والتحقق الشبح (gate_core.py)
 # ========================================================
 # ========================================================
 # 🔒 [خزانة النسخ الاحتياطي التلقائي المشفرة - Cyber Auto-Backup Vault]
@@ -106,9 +189,17 @@ try:
 except ImportError:
     ARABIC_TEXT_PROCESSING = False
 
+# استيراد أدوات إصلاح وعكس النصوص العربية لتظهر متصلة وباتجاه صحيح (RTL)
+try:
+    import arabic_reshaper
+    from bidi.algorithm import get_display
+    ARABIC_TEXT_PROCESSING = True
+except ImportError:
+    ARABIC_TEXT_PROCESSING = False
+
 def fix_arabic(text):
     """
-    دالة مساعدة لمعالجة النصوص العربية لضمان اتصالها واتجاهها الصحيح (RTL) وتفادي أي انعكاس
+    دالة مساعدة لمعالجة النصوص العربية لضمان اتصالها واتجاهها الصحيح (RTL) وتفادي أي انعكاس أو مستطيلات
     """
     if not text or not isinstance(text, str):
         return str(text)
@@ -120,196 +211,216 @@ def fix_arabic(text):
         except Exception:
             return text
     return text
-
 # === تسجيل الخط العربي لدعم اللغة العربية ومنع ظهور المربعات ===
+# === تحميل وتسجيل الخط العربي تلقائياً (ضمان عدم ظهور المستطيلات) ===
+import urllib.request
+import os
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+FONT_FILE = "Amiri-Regular.ttf"
+FONT_URL = "https://raw.githubusercontent.com/google/fonts/main/ofl/amiri/Amiri-Regular.ttf"
+
 try:
-    pdfmetrics.registerFont(TTFont('ArabicFont', 'Cairo.ttf'))
-    ARABIC_FONT_AVAILABLE = True
-except Exception:
-    try:
-        pdfmetrics.registerFont(TTFont('ArabicFont', 'Amiri-Regular.ttf'))
-        ARABIC_FONT_AVAILABLE = True
-    except Exception:
-        ARABIC_FONT_AVAILABLE = False
-
-FONT_NAME = 'ArabicFont' if ARABIC_FONT_AVAILABLE else 'Helvetica'
-
-def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data):
-    """
-    دالة توليد فاتورة مبيعات رسمية بحجم A4 بالجدول الأزرق الاحترافي مع دعم QR Code رقمي موثق[cite: 1]
-    """
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(
-        buffer, 
-        pagesize=A4, 
-        rightMargin=30, 
-        leftMargin=30, 
-        topMargin=30, 
-        bottomMargin=30
-    )
-    elements = []
+    if not os.path.exists(FONT_FILE) or os.path.getsize(FONT_FILE) < 10000:
+        urllib.request.urlretrieve(FONT_URL, FONT_FILE)
     
+    pdfmetrics.registerFont(TTFont('CustomArabic', FONT_FILE))
+    FONT_NAME = 'CustomArabic'
+    print("✅ تم تحميل وتسجيل خط Amiri بنجاح تام!")
+except Exception as e:
+    print(f"⚠️ فشل تحميل الخط، سيتم استخدام البديل: {e}")
+    FONT_NAME = 'Helvetica'
+
+def generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data, lang="ar", template="formal"):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
+    elements = []
     styles = getSampleStyleSheet()
     
-    # أنماط النصوص الاحترافية
-    title_style = ParagraphStyle(
-        'InvoiceTitle',
-        parent=styles['Heading1'],
-        fontName=FONT_NAME,
-        fontSize=22,
-        textColor=colors.HexColor('#003366'),
-        alignment=1,
-        spaceAfter=6
-    )
-    
-    sub_title_style = ParagraphStyle(
-        'InvoiceSubTitle',
-        parent=styles['Normal'],
-        fontName=FONT_NAME,
-        fontSize=12,
-        textColor=colors.HexColor('#555555'),
-        alignment=1,
-        spaceAfter=15
-    )
-    
-    cell_style_right = ParagraphStyle(
-        'CellRight',
-        parent=styles['Normal'],
-        fontName=FONT_NAME,
-        fontSize=10,
-        textColor=colors.HexColor('#222222'),
-        alignment=2
-    )
+    is_fr = (lang == "fr")
+    is_bi = (lang == "bi")
+    active_font = FONT_NAME
 
-    cell_style_center = ParagraphStyle(
-        'CellCenter',
-        parent=styles['Normal'],
-        fontName=FONT_NAME,
-        fontSize=10,
-        textColor=colors.HexColor('#222222'),
-        alignment=1
-    )
 
-    # إضافة اللوغو إن وجد
-    if logo_data:
+    # ضبط الألوان حسب القالب المختار
+    if template == "simple":
+        primary_hex, bg_light_hex, border_hex = '#111111', '#ffffff', '#444444'
+    elif template == "modern":
+        primary_hex, bg_light_hex, border_hex = '#0f766e', '#f0fdfa', '#5eead4'
+    else:
+        primary_hex, bg_light_hex, border_hex = '#003366', '#f8f9fa', '#cbd5e1'
+
+    # إعداد النصوص (عربي / فرنسي / مزدوج)
+    if is_bi:
+        lbl_subtitle = f"FACTURE DE VENTE / {fix_arabic('فاتورة مبيعات وتأكيد طلبية')}"
+        lbl_shop = f"<b>Magasin / {fix_arabic('المتجر')} :</b> {fix_arabic(shop_name)}"
+        lbl_cust = f"<b>Client / {fix_arabic('الزبون')} :</b> {fix_arabic(customer_name)}"
+        lbl_addr = f"<b>Adresse / {fix_arabic('العنوان')} :</b> {fix_arabic(customer_address)}"
+        lbl_phone = f"<b>Tél / {fix_arabic('الهاتف')} :</b> {customer_phone}"
+        h_prod = f"Désignation / {fix_arabic('المنتج')}"
+        h_qty = f"Qté / {fix_arabic('الكمية')}"
+        h_price = f"Prix U. / {fix_arabic('السعر')}"
+        h_tot = f"Total / {fix_arabic('الإجمالي')}"
+        lbl_sub = f"Sous-total / {fix_arabic('المجموع الفرعي')} :"
+        lbl_ship = f"Livraison / {fix_arabic('تكلفة الشحن')} :"
+        lbl_final = f"NET À PAYER / {fix_arabic('الإجمالي النهائي')} :"
+        lbl_qr_title = f"Sceau Numérique / {fix_arabic('ختم التحقق الرقمي')} :"
+        lbl_qr_desc = f"Document sécurisé par NEXUS GATE / {fix_arabic('وثيقة مؤمنة إلكترونياً')}"
+    elif is_fr:
+        lbl_subtitle = "FACTURE DE VENTE ET BON DE COMMANDE"
+        lbl_shop = f"<b>Magasin :</b> {fix_arabic(shop_name)}"
+        lbl_cust = f"<b>Client :</b> {fix_arabic(customer_name)}"
+        lbl_addr = f"<b>Adresse :</b> {fix_arabic(customer_address)}"
+        lbl_phone = f"<b>Téléphone :</b> {customer_phone}"
+
+        h_prod, h_qty, h_price, h_tot = "Désignation", "Qté", "Prix Unitaire", "Total (DA)"
+        lbl_sub = "Sous-total Produit :"
+        lbl_ship = "Frais de Livraison :"
+        lbl_final = "NET À PAYER :"
+        lbl_qr_title = "Sceau de Vérification Numérique :"
+        lbl_qr_desc = "Document généré électroniquement et sécurisé par NEXUS CENTRAL GATE."
+    else:
+        lbl_subtitle = fix_arabic("فاتورة مبيعات وتأكيد طلبية رسمية وموثقة")
+        lbl_shop = f"<b>{fix_arabic('اسم المتجر')} :</b> {fix_arabic(shop_name)}"
+        lbl_cust = f"<b>{fix_arabic('اسم الزبون')} :</b> {fix_arabic(customer_name)}"
+        lbl_addr = f"<b>{fix_arabic('عنوان التوصيل')} :</b> {fix_arabic(customer_address)}"
+        lbl_phone = f"<b>{fix_arabic('رقم الهاتف')} :</b> {fix_arabic(customer_phone)}"
+        h_prod = fix_arabic("اسم المنتج")
+        h_qty = fix_arabic("الكمية")
+        h_price = fix_arabic("السعر الفردي")
+        h_tot = fix_arabic("الإجمالي (DA)")
+        lbl_sub = fix_arabic("المجموع الفرعي للمنتج:")
+        lbl_ship = fix_arabic("تكلفة الشحن والتوصيل:")
+        lbl_final = fix_arabic("الإجمالي النهائي المطلوب:")
+        lbl_qr_title = fix_arabic("ختم التحقق الرقمي الموثق:")
+        lbl_qr_desc = fix_arabic("هذه الفاتورة صادرة إلكترونياً ومؤمنة عبر نظام NEXUS CENTRAL GATE.")
+
+    ltr_mode = (is_fr or is_bi)
+    title_style = ParagraphStyle('InvTitle', parent=styles['Heading1'], fontName=active_font, fontSize=22, textColor=colors.HexColor(primary_hex), alignment=1, spaceAfter=6)
+    sub_style = ParagraphStyle('InvSub', parent=styles['Normal'], fontName=active_font, fontSize=11, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=15)
+    align_style = ParagraphStyle('AlignStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=0 if ltr_mode else 2)
+    center_style = ParagraphStyle('CenterStyle', parent=styles['Normal'], fontName=active_font, fontSize=10, textColor=colors.HexColor('#222222'), alignment=1)
+    header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontName=active_font, fontSize=9.5, textColor=colors.whitesmoke, alignment=1)
+    if logo_data and template != "simple":
         try:
-            logo_buffer = io.BytesIO(logo_data)
-            img = Image(logo_buffer, width=65, height=65)
+            img = Image(io.BytesIO(logo_data), width=65, height=65)
             elements.append(img)
             elements.append(Spacer(1, 8))
         except Exception:
             pass
 
-    elements.append(Paragraph(fix_arabic(f"<b>{shop_name}</b>"), title_style))
-    elements.append(Paragraph(fix_arabic("<b>فاتورة مبيعات وتأكيد طلبية رسمية وموثقة</b>"), sub_title_style))
+    shop_display = fix_arabic(shop_name)
+
+    elements.append(Paragraph(f"<b>{shop_display}</b>", title_style))
+    elements.append(Paragraph(f"<b>{lbl_subtitle}</b>", sub_style))
     elements.append(Spacer(1, 10))
 
-    # جدول بيانات المتجر والزبون (تصميم هندسي متناسق ومن اليمين لليسار)
-    t_info_formatted = [
-        [Paragraph(fix_arabic(f"<b>اسم المتجر:</b> {shop_name}"), cell_style_right), Paragraph(fix_arabic(f"<b>اسم الزبون:</b> {customer_name}"), cell_style_right)],
-        [Paragraph(fix_arabic(f"<b>عنوان التوصيل:</b> {customer_address}"), cell_style_right), Paragraph(fix_arabic(f"<b>رقم الهاتف:</b> {customer_phone}"), cell_style_right)]
-    ]
-    t_info = Table(t_info_formatted, colWidths=[260, 260])
+    # 1. جدول بيانات المتجر والزبون
+    if ltr_mode:
+        info_data = [[Paragraph(lbl_cust, align_style), Paragraph(lbl_shop, align_style)], [Paragraph(lbl_phone, align_style), Paragraph(lbl_addr, align_style)]]
+    else:
+        info_data = [[Paragraph(lbl_shop, align_style), Paragraph(lbl_cust, align_style)], [Paragraph(lbl_addr, align_style), Paragraph(lbl_phone, align_style)]]
+
+    t_info = Table(info_data, colWidths=(260, 260))
     t_info.setStyle(TableStyle([
-        ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT' if ltr_mode else 'RIGHT'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('TOPPADDING', (0,0), (-1,-1), 8),
         ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8f9fa')),
-        ('BOX', (0,0), (-1,-1), 0.7, colors.HexColor('#cbd5e1')),
-        ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e2e8f0')),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor(bg_light_hex)),
+        ('BOX', (0,0), (-1,-1), 0.7, colors.HexColor(border_hex)),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor(border_hex)),
     ]))
     elements.append(t_info)
     elements.append(Spacer(1, 15))
 
-    # جدول تفاصيل المنتجات والأسعار (التصميم الأزرق الكلاسيكي Mفضل)
-    table_data = [
-        [
-            Paragraph(fix_arabic("<b>الإجمالي (DA)</b>"), ParagraphStyle('H1', parent=cell_style_center, fontName=FONT_NAME, textColor=colors.whitesmoke)),
-            Paragraph(fix_arabic("<b>السعر الفردي</b>"), ParagraphStyle('H2', parent=cell_style_center, fontName=FONT_NAME, textColor=colors.whitesmoke)),
-            Paragraph(fix_arabic("<b>الكمية</b>"), ParagraphStyle('H3', parent=cell_style_center, fontName=FONT_NAME, textColor=colors.whitesmoke)),
-            Paragraph(fix_arabic("<b>اسم المنتج</b>"), ParagraphStyle('H4', parent=cell_style_right, fontName=FONT_NAME, textColor=colors.whitesmoke))
-        ],
-        [
-            Paragraph(f"{product_total:,.2f}", cell_style_center),
-            Paragraph(f"{price:,.2f}", cell_style_center),
-            Paragraph(str(quantity), cell_style_center),
-            Paragraph(fix_arabic(product_name), cell_style_right)
+    # 2. جدول المنتجات
+    prod_display = fix_arabic(product_name)
+
+    if ltr_mode:
+        items_data = [
+            [Paragraph(f"<b>{h_prod}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_tot}</b>", header_style)],
+            [Paragraph(prod_display, align_style), Paragraph(str(quantity), center_style), Paragraph(f"{price:,.2f}", center_style), Paragraph(f"{product_total:,.2f}", center_style)]
         ]
-    ]
-    t_items = Table(table_data, colWidths=[110, 110, 60, 240])
+        col_widths_items = (230, 65, 110, 115)
+    else:
+        items_data = [
+            [Paragraph(f"<b>{h_tot}</b>", header_style), Paragraph(f"<b>{h_price}</b>", header_style), Paragraph(f"<b>{h_qty}</b>", header_style), Paragraph(f"<b>{h_prod}</b>", header_style)],
+            [Paragraph(f"{product_total:,.2f}", center_style), Paragraph(f"{price:,.2f}", center_style), Paragraph(str(quantity), center_style), Paragraph(prod_display, align_style)]
+        ]
+        col_widths_items = (115, 110, 65, 230)
+
+    t_items = Table(items_data, colWidths=col_widths_items)
     t_items.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor(primary_hex)),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('BOTTOMPADDING', (0,0), (-1,-1), 9),
         ('TOPPADDING', (0,0), (-1,-1), 9),
         ('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#ffffff')),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor(border_hex)),
     ]))
     elements.append(t_items)
     elements.append(Spacer(1, 15))
 
-    # جدول المجاميع النهائية
-    totals_data = [
-        [Paragraph(f"<b>{product_total:,.2f} DA</b>", cell_style_right), Paragraph(fix_arabic("<b>المجموع الفرعي للمنتج:</b>"), cell_style_right)],
-        [Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", cell_style_right), Paragraph(fix_arabic("<b>تكلفة الشحن والتوصيل:</b>"), cell_style_right)],
-        [
-            Paragraph(f"<b>{final_total:,.2f} DA</b>", ParagraphStyle('FTotal', parent=cell_style_right, fontName=FONT_NAME, fontSize=11, textColor=colors.HexColor('#003366'))), 
-            Paragraph(fix_arabic("<b>الإجمالي النهائي المطلوب:</b>"), ParagraphStyle('FTotalLbl', parent=cell_style_right, fontName=FONT_NAME, fontSize=11, textColor=colors.HexColor('#003366')))
+    # 3. جدول المجاميع النهائية
+    final_style = ParagraphStyle('FinalSt', parent=align_style, fontName=active_font, fontSize=11.5 if template == "modern" else 10.5, textColor=colors.HexColor(primary_hex))
+    if ltr_mode:
+        totals_data = [
+            [Paragraph(f"<b>{lbl_sub}</b>", align_style), Paragraph(f"<b>{product_total:,.2f} DA</b>", align_style)],
+            [Paragraph(f"<b>{lbl_ship}</b>", align_style), Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", align_style)],
+            [Paragraph(f"<b>{lbl_final}</b>", final_style), Paragraph(f"<b>{final_total:,.2f} DA</b>", final_style)]
         ]
-    ]
-    t_totals = Table(totals_data, colWidths=[160, 190])
-    t_totals.setStyle(TableStyle([
-        ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
+        col_widths_tot = (220, 150)
+    else:
+        totals_data = [
+            [Paragraph(f"<b>{product_total:,.2f} DA</b>", align_style), Paragraph(f"<b>{lbl_sub}</b>", align_style)],
+            [Paragraph(f"<b>{shipping_cost:,.2f} DA</b>", align_style), Paragraph(f"<b>{lbl_ship}</b>", align_style)],
+            [Paragraph(f"<b>{final_total:,.2f} DA</b>", final_style), Paragraph(f"<b>{lbl_final}</b>", final_style)]
+        ]
+        col_widths_tot = (150, 220)
+
+    totals_style = [
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('BOTTOMPADDING', (0,0), (-1,-1), 7),
         ('TOPPADDING', (0,0), (-1,-1), 7),
-        ('LINEABOVE', (0,2), (-1,2), 1, colors.HexColor('#003366')),
-    ]))
-    elements.append(t_totals)
-    elements.append(Spacer(1, 20))
-
-    # === إضافة الختم الرقمي أو QR Code الديناميكي الموثق في أسفل الفاتورة ===
-    qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Phone: {customer_phone} | Product: {product_name} | Total: {final_total} DA | Status: Verified"
-    
-    qr = QrCodeWidget(qr_data_string)
-    qr.barWidth = 70
-    qr.barHeight = 70
-    qr.qrVersion = 1
-    
-    d = Drawing(70, 70)
-    d.add(qr)
-
-    verification_text_style = ParagraphStyle(
-        'VerifyText',
-        parent=styles['Normal'],
-        fontName=FONT_NAME,
-        fontSize=8.5,
-        textColor=colors.HexColor('#444444'),
-        alignment=2
-    )
-
-    qr_section_data = [
-        [
-            Paragraph(fix_arabic("<b>ختم التحقق الرقمي الموثق:</b><br/>هذه الفاتورة صادرة إلكترونياً ومؤمنة عبر نظام NEXUS CENTRAL GATE. يمنع تزويرها أو تعديل بياناتها وتخضع للسجل التجاري للمتجر."), verification_text_style),
-            d
-        ]
+        ('LINEABOVE', (0,2), (-1,2), 1.5, colors.HexColor(primary_hex)),
     ]
-    t_qr = Table(qr_section_data, colWidths=[380, 120])
-    t_qr.setStyle(TableStyle([
-        ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f1f5f9')),
-        ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
-        ('TOPPADDING', (0,0), (-1,-1), 8),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-        ('LEFTPADDING', (0,0), (-1,-1), 10),
-        ('RIGHTPADDING', (0,0), (-1,-1), 10),
-    ]))
-    
-    elements.append(t_qr)
-    
+    if template == "modern":
+        totals_style.append(('BACKGROUND', (0,2), (-1,2), colors.HexColor(bg_light_hex)))
+
+    t_totals = Table(totals_data, colWidths=col_widths_tot)
+    t_totals.setStyle(TableStyle(totals_style))
+    elements.append(t_totals)
+
+    # 4. الختم الرقمي QR Code
+    if template != "simple":
+        elements.append(Spacer(1, 20))
+        qr_data_string = f"Shop: {shop_name} | Customer: {customer_name} | Phone: {customer_phone} | Total: {final_total} DA | Lang: {lang}"
+        qr = QrCodeWidget(qr_data_string)
+        qr.barWidth = 70
+        qr.barHeight = 70
+        d = Drawing(70, 70)
+        d.add(qr)
+
+        qr_text_style = ParagraphStyle('QrTxt', parent=styles['Normal'], fontName=active_font, fontSize=8.5, textColor=colors.HexColor('#444444'), alignment=0 if ltr_mode else 2)
+        qr_para = Paragraph(f"<b>{lbl_qr_title}</b><br/>{lbl_qr_desc}", qr_text_style)
+
+        qr_data = [[qr_para, d]] if not ltr_mode else [[d, qr_para]]
+        qr_widths = (380, 120) if not ltr_mode else (120, 380)
+
+        t_qr = Table(qr_data, colWidths=qr_widths)
+        t_qr.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor(bg_light_hex)),
+            ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor(border_hex)),
+            ('TOPPADDING', (0,0), (-1,-1), 8),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+            ('LEFTPADDING', (0,0), (-1,-1), 10),
+            ('RIGHTPADDING', (0,0), (-1,-1), 10),
+        ]))
+        elements.append(t_qr)
+
     doc.build(elements)
     buffer.seek(0)
     return buffer.getvalue()
@@ -362,10 +473,11 @@ def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, custome
     inner_elements = []
     
     # اسم المتجر والعنوان الفرعي
+# اسم المتجر والعنوان الفرعي
     inner_elements.append(Paragraph(fix_arabic(shop_name), label_title))
     inner_elements.append(Paragraph(fix_arabic("--- ملصق شحن وتوصيل حراري ---"), ParagraphStyle('SubLbl', parent=label_normal, alignment=1, fontSize=8, textColor=colors.HexColor('#555555'))))
     
-    # خط فاصل أنيق تحت اسم المتجر والعنوان الفرعي
+    # خط فاصل أنيق
     inner_elements.append(Spacer(1, 2))
     divider_table = Table([[""]], colWidths=[250], rowHeights=[1])
     divider_table.setStyle(TableStyle([
@@ -376,17 +488,16 @@ def generate_thermal_label_pdf(shop_name, customer_name, customer_phone, custome
     inner_elements.append(divider_table)
     inner_elements.append(Spacer(1, 6))
     
-    # بيانات الشحن والزبون منظمة من اليمين لليسار
-    inner_elements.append(Paragraph(f"{current_date} : {fix_arabic('التاريخ')}", label_normal))
-    inner_elements.append(Paragraph(f"{customer_name} : {fix_arabic('الزبون')}", label_normal))
-    inner_elements.append(Paragraph(f"{customer_phone} : {fix_arabic('الهاتف')}", label_normal))
-    inner_elements.append(Paragraph(f"{customer_address} : {fix_arabic('العنوان')}", label_normal))
-    inner_elements.append(Paragraph(f"{product_name} : {fix_arabic('المنتج')}", label_normal))
+    # بيانات الشحن والزبون (عربي مفصول عن التاريخ والأرقام لتفادي المستطيلات)
+    inner_elements.append(Paragraph(f"{fix_arabic('التاريخ')} : {current_date}", label_normal))
+    inner_elements.append(Paragraph(f"{fix_arabic('الزبون')} : {customer_name}", label_normal))
+    inner_elements.append(Paragraph(f"{fix_arabic('الهاتف')} : {customer_phone}", label_normal))
+    inner_elements.append(Paragraph(f"{fix_arabic('العنوان')} : {customer_address}", label_normal))
+    inner_elements.append(Paragraph(f"{fix_arabic('المنتج')} : {product_name}", label_normal))
     
     inner_elements.append(Spacer(1, 4))
     price_str = f"{final_total:,.2f} DA"
-    inner_elements.append(Paragraph(f"{price_str} : {fix_arabic('المبلغ الواجب تحصيله')}", label_price))
-
+    inner_elements.append(Paragraph(f"{fix_arabic('المبلغ الواجب تحصيله')} : {price_str}", label_price))
     # وضع العناصر داخل جدول يحيط به إطار خارجي (Border) واضح للطباعة
     outer_table = Table([[inner_elements]], colWidths=[260])
     outer_table.setStyle(TableStyle([
@@ -474,7 +585,17 @@ def render_otp_popup(target_email):
 st.set_page_config(page_title="NEXUS CENTRAL GATE v4", page_icon="👑", layout="wide")
 
 query_params = st.query_params
-is_boss_link = query_params.get("role") == "boss" if "role" in query_params else False
+if "verify_email" in query_params and "code" in query_params and "magic_otp_done" not in st.session_state:
+    st.session_state["otp_pending_verification"] = True
+    st.session_state["temp_reg_email"] = query_params.get("verify_email")
+    st.session_state["temp_reg_otp"] = query_params.get("code")
+    st.session_state["otp_sent_at"] = time.time()
+    st.session_state["prefill_otp_code"] = query_params.get("code")
+    st.session_state["magic_otp_done"] = True
+    st.session_state["auth_mode_radio"] = "📝 إنشاء حساب تاجر جديد فريش"
+
+
+is_boss_link = query_params.get("role") == "mohmed" if "role" in query_params else False
 if "admin_master_logged" not in st.session_state:
     st.session_state["admin_master_logged"] = False
 
@@ -538,9 +659,13 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
         }
         
         theme = theme_colors.get(action_type, theme_colors["DEFAULT"])
-        btn_link = action_url if action_url else "https://sales-cleaner-qqzrjsdzslrysgsyagohnq.streamlit.app/"
+        default_site = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
+        btn_link = action_url if action_url else default_site
+
         logo_url = "https://img.icons8.com/isometric-folders/100/00fff0/cyber-security.png"
         formatted_body = body_text.replace("\n", "<br>")
+
+        unique_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         html_content = f"""
         <!DOCTYPE html>
@@ -558,12 +683,13 @@ def send_gmail_notification(target_email, subject, body_text, action_type="DEFAU
                     <a href="{btn_link}" style="background: {theme['primary']}; color: #000000; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;" target="_blank">{theme['btn_text']}</a>
                 </div>
                 <div style="text-align: center; font-size: 11px; color: #777; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-                    © 2026 NEXUS SAAS PLATFORM — جميع الحقوق محفوظة.
+                    © 2026 NEXUS SAAS PLATFORM — جميع الحقوق محفوظة. | مرجع: {unique_stamp}
                 </div>
             </div>
         </body>
         </html>
         """
+
 
         message = MIMEMultipart("alternative")
         message["Subject"] = subject
@@ -639,7 +765,7 @@ import time
 from datetime import datetime
 import io
 import urllib.parse
-import datetime
+from datetime import datetime
 
 # 1. تهيئة وإنشاء الجداول الجديدة في قاعدة البيانات
 def init_advanced_db():
@@ -686,7 +812,8 @@ def log_admin_action(target_email, action_type, details=""):
     cursor = conn.cursor()
     cursor.execute(
         """
-        INSERT INTO admin_audit_logs (timestamp, target_email, action_type, details)
+        INSERT INTO admin_audit_logs (action_time, target_email, action_type, details)
+
         VALUES (?, ?, ?, ?)
     """,
         (now, target_email, action_type, details),
@@ -720,7 +847,95 @@ st.markdown("""
         color: #ffffff !important;
         font-family: 'Cairo', sans-serif !important;
     }
-    
+ .enterprise-shimmer-box {
+     position: relative;
+     overflow: hidden;
+     background: #0B1120 !important;
+     border: 1px solid rgba(16, 185, 129, 0.45) !important;
+     border-radius: 14px !important;
+     padding: 20px !important;
+     margin: 14px 0 !important;
+     display: flex !important;
+     align-items: center !important;
+     justify-content: center !important;
+     gap: 14px !important;
+     color: #F8FAFC !important;
+     font-weight: 700 !important;
+     font-size: 14.5px !important;
+     box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15) !important;
+ }
+     /* 🌐 تعميم الدائرة المزدوجة الاحترافية على كل عمليات الموقع تلقائياً دون أي بطء */
+    [data-testid="stStatusWidget"] {
+        position: fixed !important;
+        top: 16px !important;
+        right: 20px !important;
+        z-index: 9999999 !important;
+        background: rgba(11, 17, 32, 0.9) !important;
+        border: 1px solid rgba(16, 185, 129, 0.45) !important;
+        border-radius: 12px !important;
+        padding: 8px 14px !important;
+        backdrop-filter: blur(10px) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+    }
+    [data-testid="stStatusWidget"] svg,
+    [data-testid="stStatusWidget"] img,
+    [data-testid="stStatusWidget"] button {
+        display: none !important;
+    }
+    [data-testid="stStatusWidget"]::before {
+        content: "";
+        display: inline-block;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        border-top-color: #10B981;
+        border-right-color: #38BDF8;
+        animation: spinClockwise 0.8s linear infinite;
+        margin-left: 8px;
+        vertical-align: middle;
+    }
+    [data-testid="stStatusWidget"] label,
+    [data-testid="stStatusWidget"] span {
+        color: #F8FAFC !important;
+        font-family: 'Cairo', sans-serif !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+    }
+
+ .corp-dual-spinner {
+     position: relative;
+     width: 28px;
+     height: 28px;
+     flex-shrink: 0;
+ }
+ .corp-dual-spinner::before,
+ .corp-dual-spinner::after {
+     content: "";
+     position: absolute;
+     border-radius: 50%;
+     inset: 0;
+ }
+ .corp-dual-spinner::before {
+     border: 3px solid transparent;
+     border-top-color: #10B981;
+     border-right-color: #10B981;
+     animation: spinClockwise 0.85s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+ }
+ .corp-dual-spinner::after {
+     inset: 5px;
+     border: 2.5px solid transparent;
+     border-bottom-color: #38BDF8;
+     border-left-color: #38BDF8;
+     animation: spinCounter 0.65s linear infinite;
+ }
+ @keyframes spinClockwise {
+     to { transform: rotate(360deg); }
+ }
+ @keyframes spinCounter {
+     to { transform: rotate(-360deg); }
+ }
+
     /* 💎 صبغ العدادات الثلاثية والمقاييس المستقلة بالبلور الزجاجي والنيون الفاخر المشع */
     div[data-testid="stMetricBlock"], div[data-testid="metric-container"], .premium-card-cyan, .premium-card-pink {
         background: linear-gradient(135deg, rgba(15, 2, 20, 0.85) 0%, rgba(5, 5, 12, 0.98) 100%) !important;
@@ -898,11 +1113,15 @@ st.markdown("""
 # ========================================================
 
 # صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
+# ========================================================
+# [القسم الرابع]: إدارة ومزامنة جدول قاعدة بيانات الـ Auth وجدار الحماية الاستباقي للثغرات
+# ========================================================
+# صياغة ومزامنة جدول الـ Auth لقراءة كلمات سر المشتركين في نفس الحاوية الموحدة حياً
 db_conn = sqlite3.connect("saas_security_vault.db", timeout=10)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
     CREATE TABLE IF NOT EXISTS saas_users_auth (
-        email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT
+        email TEXT PRIMARY KEY, password TEXT, status TEXT, package TEXT, created_at TEXT, phone TEXT
     )
 """)
 db_conn.commit()
@@ -911,20 +1130,52 @@ db_conn.commit()
 db_cursor.execute("SELECT COUNT(*) FROM saas_users_auth WHERE email = 'daymaabdaalhmdllh@gmail.com'")
 account_exists = db_cursor.fetchone()
 if account_exists[0] == 0 and "destroyed_flag" not in st.session_state:
-    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
+    db_cursor.execute("INSERT OR IGNORE INTO saas_users_auth (email, password, status, package) VALUES ('daymaabdaalhmdllh@gmail.com', '123456', '🟢 مفعّل ونشط', 'الباقة السيبرانية الخارقة')")
     db_conn.commit()
+
 db_conn.close()
 
 # دالة التدمير الفوري لأي حساب في قاعدة البيانات دون إعطاب الاتصالات المفتوحة حياً
 def delete_email_completely(email_to_delete):
     try:
+        clean_target = str(email_to_delete).strip().lower()
         conn = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM saas_users_auth WHERE email = ?", (email_to_delete,))
-        conn.commit(); conn.close()
+        cursor.execute("DELETE FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (clean_target,))
+        conn.commit()
+        conn.close()
+
+        rec_name = f"receipt_{urllib.parse.quote_plus(clean_target)}.png"
+        rec_path = f"receipts/{rec_name}"
+        if os.path.exists(rec_path):
+            try:
+                os.remove(rec_path)
+            except Exception:
+                pass
+
+        token = st.secrets.get("GITHUB_TOKEN")
+        repo = st.secrets.get("GITHUB_REPO")
+        if token and repo:
+            try:
+                api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
+                url = f"{api_base}/{repo}/contents/{rec_path}"
+                headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github.v3+json"}
+                res = requests.get(url, headers=headers)
+                if res.status_code == 200:
+                    sha = res.json().get("sha")
+                    requests.delete(url, json={"message": f"Delete {rec_path}", "sha": sha}, headers=headers)
+            except Exception:
+                pass
+
+        save_to_github_fast()
         return True
     except Exception as e:
-        st.error(f"⚠️ خطأ ميكانيكي أثناء الحذف: {e}"); return False
+        st.error(f"⚠️ خطأ أثناء الحذف: {e}")
+        return False
+
+
+# === الإضافات والتعديلات الجديدة ===
+# جاهز ومؤمن بالكامل هنا لاستقبال أي ميزات إضافية في المحادثات القادمة...
 
 # === الإضافات والتعديلات الجديدة ===
 # جاهز ومؤمن بالكامل هنا لاستقبال أي ميزات إضافية في المحادثات القادمة...
@@ -1059,40 +1310,38 @@ def render_premium_neon_packages():
     return chosen_package
 
 def validate_and_process_registration(email, password):
-    """
-    ممر الأمان الذكي المكون من 3 طبقات فحص صارمة لمنع حقن البيانات العشوائية وحظر الحسابات المتكررة.
-    """
-    if email == "" or password == "":
+    clean_em = str(email).strip().lower()
+    if clean_em == "" or password == "":
         st.error("⚠️ يرجى ملء حقول البريد وكلمة السر أولاً!")
         return None
         
-    # 1. جدار التحقق من صيغة البريد (Email Format Guard)
     email_pattern = r'^[a-zA-Z0-9._%+-]+@gmail\.com$'
-    if not re.match(email_pattern, email):
+    if not re.match(email_pattern, clean_em):
         st.warning("⚠️ يرجى كتابة بريد إلكتروني منطقي وصحيح ينتهي بـ @gmail.com")
         return None
         
-    # 2. قوة كلمة المرور (Password Strength Check)
     if len(password) < 6:
         st.warning("⚠️ يجب أن تحتوي كلمة السر على 6 حروف أو أكثر لحماية متجرك")
         return None
         
-    # 3. منع تكرار الحسابات (Unique Email Guard)
     try:
         conn_check = sqlite3.connect("saas_security_vault.db", timeout=10)
         cursor_check = conn_check.cursor()
-        cursor_check.execute("SELECT email FROM saas_users_auth WHERE email = ?", (email,))
+        cursor_check.execute("SELECT status FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (clean_em,))
         existing_user = cursor_check.fetchone()
         conn_check.close()
         
         if existing_user:
-            st.error("❌ هذا البريد الإلكتروني مسجل مسبقاً في رادار المنصة السحابية!")
-            return None
+            # السماح بإعادة التسجيل فقط إذا لم يكمل التاجر تأكيد بريده (OTP) سابقاً
+            if "تأكيد البريد" not in str(existing_user[0]):
+                st.error("❌ هذا البريد الإلكتروني مسجل مسبقاً في رادار المنصة السحابية!")
+                return None
     except Exception as e:
         st.error(f"❌ خطأ في فحص جدار الأمان: {str(e)}")
         return None
         
     return st.session_state.get("selected_neon_package", "الباقة الأساسية المبتدئة (29k)")
+
 # ========================================================
 # الجزء الثاني: مركز توثيق هوية التاجر وعزل البوابات (auth_gate.py)
 # ========================================================
@@ -1154,199 +1403,593 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
         st.markdown("</div>", unsafe_allow_html=True)
 
     # 🔑 (2) صفحة التسجيل والدخول الأصلية (تظهر وحدها ولا تظهر الشكاوى معها)
+    # 🔑 (2) صفحة التسجيل والدخول الاحترافية بنمط الشركات (Enterprise Split-Screen)
+    # 🌐 (2) واجهة الهبوط السينمائية ذات الخلفيات المتغيرة زمنياً + صفحة الدخول/التسجيل المعزولة
     else:
-        st.markdown("<h1 style='color: #00fff0; text-align: center; font-weight:900; margin-top: 40px; text-shadow: 0 0 20px #00fff0; font-size:32px;'>🔐 بوابة التوثيق والاشتراكات السنوية المتكاملة</h1>", unsafe_allow_html=True)
-        
-        col_side_left, col_center_box, col_side_right = st.columns(3)
-        with col_center_box:
-            st.markdown("<div class='premium-card-cyan'>", unsafe_allow_html=True)
-            st.markdown("<h3 style='color:#ffffff; text-align:center; font-weight:700; margin-top:0;'>مركز توثيق هوية التاجر</h3>", unsafe_allow_html=True)
-            
-            auth_mode = st.radio("اختر العملية المطلوبة للتوثيق الآمن لمتجرك:", ["🔑 تسجيل الدخول للحساب الحالي", "📝 إنشاء حساب تاجر جديد فريش"])
-            st.markdown("<hr style='border-color: rgba(0, 255, 240, 0.15); margin: 15px 0;'>", unsafe_allow_html=True)
-            
-            input_email = st.text_input("أدخل البريد الإلكتروني الخاص بك:", key="merchant_em")
-            input_password = st.text_input("أدخل كلمة المرور السرية من اختيارك:", type="password", key="merchant_pw")
-            input_phone = st.text_input("📱 أدخل رقم الهاتف الخاص بك:", placeholder="مثال: 0655xxxxxxxx", key="merchant_phone").strip()
-            
-            # 🛑 التحقق من صحة رقم الهاتف (منع الحروف والتأكد من الطول)
-            if input_phone:
-                check_phone = input_phone.replace("+", "").strip()
-            
-                if not check_phone.isdigit():
-                    st.error("❌ خطأ: يرجى إدخال أرقام صحيحة فقط في حقل الهاتف (بدون أحرف أو رموز خاصة).")
-                elif len(check_phone) < 9:
-                    st.warning("⚠️ تنبيه: رقم الهاتف قصير جداً، تأكد من إدخال الرقم كاملاً.")
-                else:
-                    st.session_state["temp_reg_phone"] = input_phone
-            
-            clean_email = input_email.strip()
-            clean_pass = input_password.strip()
-            st.session_state["temp_reg_phone"] = input_phone
-            
-            if auth_mode == "📝 إنشاء حساب تاجر جديد فريش":
-                user_package_choice = render_premium_neon_packages()
-                st.markdown("</div>", unsafe_allow_html=True)
-                
+        if "landing_step" not in st.session_state:
+            st.session_state["landing_step"] = "home"
+
+        if st.session_state.get("otp_pending_verification", False):
+            st.session_state["landing_step"] = "register"
+
+        st.markdown("""
+            <style>
+            @import url('https://googleapis.com');
+
+            @keyframes corporateBgCycle {
+                0%   { background: radial-gradient(circle at 20% 20%, #0F292E 0%, #090D16 60%, #05070C 100%); }
+                33%  { background: radial-gradient(circle at 80% 30%, #111E38 0%, #090D16 60%, #05070C 100%); }
+                66%  { background: radial-gradient(circle at 50% 80%, #0D2B26 0%, #090D16 60%, #05070C 100%); }
+                100% { background: radial-gradient(circle at 20% 20%, #0F292E 0%, #090D16 60%, #05070C 100%); }
+            }
+
+            .stApp {
+                animation: corporateBgCycle 14s ease-in-out infinite !important;
+                font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+            }
+
+            p, span, label, h1, h2, h3, h4, div {
+                font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+                text-shadow: none !important;
+            }
+            /* 🌟 شريط التحميل الضوئي العلوي */
+            [data-testid="stStatusWidget"] {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 4px !important;
+                z-index: 9999999 !important;
+                background: linear-gradient(90deg, #10B981, #00fff0, #3B82F6, #10B981) !important;
+                background-size: 200% 100% !important;
+                animation: topLaserMove 1s linear infinite !important;
+            }
+            [data-testid="stStatusWidget"] * {
+                display: none !important;
+            }
+            @keyframes topLaserMove {
+                0% { background-position: 200% 0; }
+                100% { background-position: 0% 0; }
+            }
+
+            /* ✨ بطاقة الانتظار المتموجة */
+            /* ✨ بطاقة الانتظار الأسطورية بحلقة الشركات الدوارة (Enterprise Dual-Ring Spinner) */
+            .enterprise-shimmer-box {
+                position: relative;
+                overflow: hidden;
+                background: #0B1120 !important;
+                border: 1px solid rgba(16, 185, 129, 0.45) !important;
+                border-radius: 14px !important;
+                padding: 20px !important;
+                margin: 14px 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 14px !important;
+                color: #F8FAFC !important;
+                font-weight: 700 !important;
+                font-size: 14.5px !important;
+                box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15) !important;
+            }
+            .corp-dual-spinner {
+                position: relative;
+                width: 28px;
+                height: 28px;
+                flex-shrink: 0;
+            }
+            .corp-dual-spinner::before,
+            .corp-dual-spinner::after {
+                content: "";
+                position: absolute;
+                border-radius: 50%;
+                inset: 0;
+            }
+            .corp-dual-spinner::before {
+                border: 3px solid transparent;
+                border-top-color: #10B981;
+                border-right-color: #10B981;
+                animation: spinClockwise 0.85s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+            }
+            .corp-dual-spinner::after {
+                inset: 5px;
+                border: 2.5px solid transparent;
+                border-bottom-color: #38BDF8;
+                border-left-color: #38BDF8;
+                animation: spinCounter 0.65s linear infinite;
+            }
+            @keyframes spinClockwise {
+                to { transform: rotate(360deg); }
+            }
+            @keyframes spinCounter {
+                to { transform: rotate(-360deg); }
+            }
+
+            .enterprise-shimmer-box::after {
+                content: "";
+                position: absolute;
+                top: 0; left: -100%;
+                width: 100%; height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.22), transparent);
+                animation: shimmerSweep 1.5s infinite;
+            }
+            @keyframes shimmerSweep {
+                100% { left: 100%; }
+            }
+
+            .hero-landing-container {
+                max-width: 820px;
+                margin: 55px auto 25px auto;
+                padding: 50px 40px;
+                background: rgba(15, 23, 42, 0.65) !important;
+                backdrop-filter: blur(18px) !important;
+                border: 1px solid rgba(148, 163, 184, 0.18) !important;
+                border-radius: 24px !important;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+                text-align: center;
+                direction: rtl;
+            }
+            .hero-pill {
+                display: inline-block;
+                background: rgba(16, 185, 129, 0.12);
+                border: 1px solid rgba(16, 185, 129, 0.35);
+                color: #34D399 !important;
+                padding: 6px 18px;
+                border-radius: 999px;
+                font-size: 13px;
+                font-weight: 600;
+                margin-bottom: 20px;
+            }
+            .hero-main-title {
+                color: #F8FAFC !important;
+                font-size: 40px !important;
+                font-weight: 800 !important;
+                line-height: 1.3 !important;
+                margin-bottom: 16px !important;
+            }
+            .hero-sub-desc {
+                color: #94A3B8 !important;
+                font-size: 17px !important;
+                line-height: 1.7 !important;
+                max-width: 620px;
+                margin: 0 auto 10px auto !important;
+            }
+            div[data-testid="stTextInput"] input {
+                background-color: #0B0F19 !important;
+                border: 1px solid #334155 !important;
+                border-radius: 10px !important;
+                color: #F8FAFC !important;
+                padding: 12px 14px !important;
+                font-size: 14px !important;
+                box-shadow: none !important;
+            }
+            div[data-testid="stTextInput"] input:focus {
+                border-color: #10B981 !important;
+                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
+            }
+            div.stButton button, .stButton > button {
+                background: #10B981 !important;
+                color: #022C22 !important;
+                border: none !important;
+                border-radius: 10px !important;
+                font-weight: 700 !important;
+                font-size: 15.5px !important;
+                min-height: 50px !important;
+                box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
+            }
+            div.stButton button:hover {
+                background: #059669 !important;
+                color: #FFFFFF !important;
+                transform: translateY(-2px) !important;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+
+        if st.session_state["landing_step"] == "home":
+            nav_col_brand, _, nav_col_support = st.columns([2, 3, 1.2])
+            with nav_col_brand:
+                st.markdown("<p style='color: #F8FAFC; font-weight: 800; font-size: 22px; margin: 6px 0 0 0; direction: rtl; text-align: right;'>Tijaratna <span style='color: #10B981;'>DataDZ</span></p>", unsafe_allow_html=True)
+
+            with nav_col_support:
+                if st.button("الدعم الفني والشكاوى", key="top_navbar_support_btn"):
+                    st.session_state["current_view"] = "complaint_page"
+                    st.rerun()
+
+
+
+            st.markdown("""
+                <div class="hero-landing-container">
+                    <span class="hero-pill">Tijaratna DataDZ • الجيل الجديد لإدارة التجارة الإلكترونية</span>
+                    <div class="hero-main-title">تحكّم في مبيعاتك، مخزونك، وفواتيرك من مكان واحد</div>
+                    <div class="hero-sub-desc">
+                        نظام سحابي متكامل مصمم للتجار في الجزائر لإصدار الفواتير المزدوجة، كشف الزبائن الوهميين، ومضاعفة أرباحك الصافية بدقة.
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+
+            _, col_cta1, col_cta2, _ = st.columns([1.2, 1.3, 1.3, 1.2], gap="medium")
+            with col_cta1:
+                if st.button("إنشاء حساب تاجر جديد", key="hero_go_register_btn"):
+                    st.session_state["landing_step"] = "register"
+                    st.rerun()
+            with col_cta2:
+                if st.button("تسجيل الدخول إلى متجرك", key="hero_go_login_btn"):
+                    st.session_state["landing_step"] = "login"
+                    st.rerun()
+            st.markdown("""
+                <style>
+                .corp-features-section {
+                    max-width: 1050px;
+                    margin: 45px auto 20px auto;
+                    direction: rtl;
+                    text-align: right;
+                }
+                .corp-sec-header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                }
+                .corp-sec-title {
+                    color: #F8FAFC !important;
+                    font-size: 24px !important;
+                    font-weight: 700 !important;
+                    margin-bottom: 8px !important;
+                }
+                .corp-sec-sub {
+                    color: #94A3B8 !important;
+                    font-size: 14.5px !important;
+                }
+                .corp-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 18px;
+                }
+                .corp-feat-card {
+                    background: rgba(15, 23, 42, 0.72) !important;
+                    border: 1px solid #1E293B !important;
+                    border-radius: 16px !important;
+                    padding: 24px !important;
+                    transition: all 0.25s ease !important;
+                }
+                .corp-feat-card:hover {
+                    border-color: rgba(16, 185, 129, 0.5) !important;
+                    transform: translateY(-4px) !important;
+                    background: rgba(15, 23, 42, 0.92) !important;
+                }
+                .corp-feat-badge {
+                    display: inline-block;
+                    background: rgba(16, 185, 129, 0.12);
+                    color: #10B981 !important;
+                    padding: 4px 10px;
+                    border-radius: 8px;
+                    font-size: 12px;
+                    font-weight: 700;
+                    margin-bottom: 12px;
+                }
+                .corp-feat-name {
+                    color: #F1F5F9 !important;
+                    font-size: 16.5px !important;
+                    font-weight: 700 !important;
+                    margin-bottom: 8px !important;
+                }
+                .corp-feat-info {
+                    color: #94A3B8 !important;
+                    font-size: 13.5px !important;
+                    line-height: 1.65 !important;
+                }
+                </style>
+
+                <div class="corp-features-section">
+                    <div class="corp-sec-header">
+                        <div class="corp-sec-title">كل ما يحتاجه التاجر الجزائري في نظام سحابي واحد</div>
+                        <div class="corp-sec-sub">أدوات ذكية مصممة لتقليل المرتجعات، تسريع الشحن، وحساب أرباحك بدقة متناهية</div>
+                    </div>
+                    <div class="corp-grid">
+                        <div class="corp-feat-card">
+                            <span class="corp-feat-badge">حماية المبيعات</span>
+                            <div class="corp-feat-name">رادار القائمة السوداء (Anti-Retour)</div>
+                            <div class="corp-feat-info">تنبيه فوري قبل الشحن عند إدخال رقم هاتف لديه سجل مرتجعات سابقة لتفادي خسائر التوصيل.</div>
+                        </div>
+                        <div class="corp-feat-card">
+                            <span class="corp-feat-badge">فوترة احترافية</span>
+                            <div class="corp-feat-name">فواتير مزدوجة وملصقات 4x4</div>
+                            <div class="corp-feat-info">إصدار فواتير PDF بالعربية والفرنسية معاً مع ختم QR Code وشعار متجرك المحفوظ سحابياً.</div>
+                        </div>
+                        <div class="corp-feat-card">
+                            <span class="corp-feat-badge">إدارة المخزون</span>
+                            <div class="corp-feat-name">أتمتة المخزون والأرباح الصافية</div>
+                            <div class="corp-feat-info">خصم تلقائي عند البيع وإرجاع فوري للقطع عند المرتجع مع حساب صافي الربح بعد مصاريف الشحن.</div>
+                        </div>
+                        <div class="corp-feat-card">
+                            <span class="corp-feat-badge">ربط التوصيل</span>
+                            <div class="corp-feat-name">ممر العبور السحابي للشحن</div>
+                            <div class="corp-feat-info">تمرير سريع لبيانات الطلبيات إلى شركات التوصيل (ياليدين، زريكس) وإرسال تأكيد واتساب بضغطة زر.</div>
+                        </div>
+                        <div class="corp-feat-card">
+                            <span class="corp-feat-badge">تحليل البيانات</span>
+                            <div class="corp-feat-name">تقارير مالية وتطهير ملفات Excel</div>
+                            <div class="corp-feat-info">رسوم بيانية حية لأكثر المنتجات مبيعاً وتنظيف ملفات المبيعات من التكرارات مع تصدير تقارير محاسبية.</div>
+                        </div>
+                        <div class="corp-feat-card">
+                            <span class="corp-feat-badge">ذكاء اصطناعي</span>
+                            <div class="corp-feat-name">مولّد الحملات والمساعد التجاري</div>
+                            <div class="corp-feat-info">صياغة نصوص إعلانية بالدارجة الجزائرية وسيناريوهات فيديو جاهزة لرفع مبيعات متجرك.</div>
+                        </div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+
+
+            st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
+            _, col_supp, _ = st.columns([2, 1.2, 2])
+ 
+        elif st.session_state["landing_step"] == "login":
+            _, col_login_box, _ = st.columns([1.1, 1.4, 1.1])
+            with col_login_box:
+                st.markdown("""
+                    <div style="background: #111827; border: 1px solid #1F2937; border-radius: 16px; padding: 24px; margin-top: 30px; margin-bottom: 18px; direction: rtl; text-align: right;">
+                        <h2 style="color: #F8FAFC !important; margin: 0 0 6px 0; font-size: 22px; font-weight: 700;">تسجيل الدخول إلى المتجر</h2>
+                        <p style="color: #94A3B8 !important; margin: 0; font-size: 13.5px;">أدخل بيانات حسابك للوصول إلى لوحة التحكم الخاصة بك.</p>
+                    </div>
+                """, unsafe_allow_html=True)
+
+                input_email = st.text_input("البريد الإلكتروني", placeholder="name@gmail.com", key="merchant_em")
+                input_password = st.text_input("كلمة المرور", type="password", placeholder="••••••••", key="merchant_pw")
+                clean_email = input_email.strip()
+                clean_pass = input_password.strip()
+
+                st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                if st.button("دخول إلى لوحة التحكم", key="login_submit_enterprise"):
+                    if clean_email == "" or clean_pass == "":
+                        st.error("يرجى إدخال البريد الإلكتروني وكلمة المرور.")
+                    else:
+                        conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
+                        cursor_login = conn_login.cursor()
+                        cursor_login.execute("SELECT status, created_at, package FROM saas_users_auth WHERE LOWER(TRIM(email)) = ? AND password = ?", (clean_email.lower(), clean_pass))
+                        user_row = cursor_login.fetchone()
+
+                        if user_row:
+                            u_status, u_created, u_pkg = str(user_row[0]), str(user_row[1] or ""), str(user_row[2] or "29k")
+                            # فحص انتهاء مدة التجربة المجانية (3 أيام = 72 ساعة)
+                            trial_expired = False
+                            if "تجربة مجانية" in u_status and u_created:
+                                try:
+                                    start_dt = datetime.strptime(u_created.split(".")[0], "%Y-%m-%d %H:%M:%S")
+                                    if (datetime.now() - start_dt).total_seconds() > 3 * 86400:
+                                        trial_expired = True
+                                        cursor_login.execute("UPDATE saas_users_auth SET status = '⏳ انتهت التجربة المجانية - بانتظار الدفع' WHERE LOWER(TRIM(email)) = ?", (clean_email.lower(),))
+                                        conn_login.commit()
+                                        save_to_github_fast()
+                                except Exception:
+                                    pass
+                            conn_login.close()
+
+                            if "مفعّل" in u_status and not trial_expired:
+                                st.session_state["active_merchant_user"] = clean_email
+                                st.success("تم التحقق بنجاح. جاري فتح لوحة التحكم...")
+                                time.sleep(0.5)
+                                st.rerun()
+                            else:
+                                st.session_state["expired_trial_email"] = clean_email
+                                st.session_state["expired_trial_pkg"] = u_pkg
+                                st.warning("⚠️ انتهت فترة التجربة المجانية (3 أيام) أو حسابك بانتظار التفعيل السنوي. أكمل الدفع أدناه للتفعيل الفوري.")
+                        else:
+                            conn_login.close()
+                            st.error("بيانات الدخول غير صحيحة، يرجى التحقق والمحاولة مرة أخرى.")
+
+                # 💳 صندوق الدفع الآمن وضمان الثقة (يظهر تلقائياً عند انتهاء التجربة أو في أي وقت للتجديد)
+                if st.session_state.get("expired_trial_email"):
+                    exp_mail = st.session_state["expired_trial_email"]
+                    exp_pkg = st.session_state.get("expired_trial_pkg", "29k")
+                    rip_val = st.secrets.get("MY_RIP", "تواصل مع الإدارة عبر واتساب")
+                    ccp_val = st.secrets.get("MY_CCP", "تواصل مع الإدارة عبر واتساب")
+                    wa_admin = st.secrets.get("SUPPORT_WHATSAPP", "213655000000")
+
+                    st.markdown(f"""
+                        <div style="background: #0F172A; border: 1px solid #10B981; border-radius: 14px; padding: 18px; margin-top: 15px; direction: rtl; text-align: right;">
+                            <div style="color: #10B981; font-weight: 800; font-size: 16px; margin-bottom: 8px;">🛡️ بوابة التفعيل السنوي الآمن ({exp_pkg})</div>
+                            <p style="color: #E2E8F0; font-size: 13px; margin: 4px 0;">• <b>رقم RIP (BaridiMob):</b> <span style="color: #38BDF8;">{rip_val}</span></p>
+                            <p style="color: #E2E8F0; font-size: 13px; margin: 4px 0;">• <b>حساب CCP:</b> <span style="color: #38BDF8;">{ccp_val}</span></p>
+                            <div style="background: rgba(16, 185, 129, 0.1); border-right: 3px solid #10B981; padding: 10px; margin-top: 10px; border-radius: 6px; font-size: 12px; color: #CBD5E1;">
+                                <b>ضمان الثقة 100%:</b> التفعيل يتم خلال أقل من 15 دقيقة من رفع وصل الدفع، مع ضمان استرجاع كامل المبلغ في حال عدم الرضا خلال 7 أيام.
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                    wa_txt = urllib.parse.quote(f"مرحباً إدارة Tijaratna DataDZ، أريد تفعيل اشتراكي السنوي للحساب: {exp_mail} ({exp_pkg})")
+                    clean_wa_admin = str(wa_admin).replace("+", "").strip()
+                    wa_direct_url = "https://wa.me" + "/" + clean_wa_admin + "?text=" + wa_txt
+                    st.link_button("💬 تواصل مباشر مع الإدارة عبر WhatsApp", wa_direct_url)
+
+
+                    receipt_file = st.file_uploader("📤 ارفع صورة وصل الدفع (BaridiMob / CCP):", type=["png", "jpg", "jpeg"], key="upload_payment_receipt")
+                    if receipt_file is not None and st.button("✅ إرسال وصل الدفع وطلب التفعيل الفوري", key="submit_receipt_btn"):
+                        os.makedirs("receipts", exist_ok=True)
+                        rec_path = f"receipts/receipt_{urllib.parse.quote_plus(exp_mail)}.png"
+                        with open(rec_path, "wb") as f:
+                            f.write(receipt_file.read())
+                        save_to_github_fast(rec_path, "")
+                        send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", ""), f"💰 وصل دفع جديد من: {exp_mail}", f"التاجر {exp_mail} رفع وصل دفع الباقة {exp_pkg} ويطلب التفعيل السنوي.", action_type="ACTIVATE")
+                        st.success("🎉 تم استلام وصل الدفع بنجاح! سيتم تفعيل حسابك السنوي خلال دقائق.")
+
+
+                st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+                col_nav1, col_nav2 = st.columns(2)
+                with col_nav1:
+                    if st.button("إنشاء حساب جديد", key="switch_to_reg_btn"):
+                        st.session_state["landing_step"] = "register"
+                        st.rerun()
+                with col_nav2:
+                    if st.button("العودة للرئيسية", key="back_home_from_login"):
+                        st.session_state["landing_step"] = "home"
+                        st.rerun()
+        elif st.session_state["landing_step"] == "register":
+            _, col_reg_box, _ = st.columns([0.9, 1.8, 0.9])
+            with col_reg_box:
+                st.markdown("""
+                    <div style="background: #111827; border: 1px solid #1F2937; border-radius: 16px; padding: 24px; margin-top: 20px; margin-bottom: 18px; direction: rtl; text-align: right;">
+                        <h2 style="color: #F8FAFC !important; margin: 0 0 6px 0; font-size: 22px; font-weight: 700;">إنشاء حساب تاجر جديد</h2>
+                        <p style="color: #94A3B8 !important; margin: 0; font-size: 13.5px;">اختر الباقة المناسبة لحجم مبيعاتك وابدأ في تنظيم متجرك فوراً.</p>
+                    </div>
+                """, unsafe_allow_html=True)
+
                 if "otp_pending_verification" not in st.session_state:
                     st.session_state["otp_pending_verification"] = False
 
                 if not st.session_state["otp_pending_verification"]:
-                    if st.button("📝 إرسال رمز التحقق (OTP) إلى بريدك"):
-                        
-                        # 🛑 شرط إضافي صارم: التأكد من وجود رقم هاتف وعدم وجود خطأ في طوله
+                    input_email = st.text_input("البريد الإلكتروني (Gmail)", placeholder="store@gmail.com", key="merchant_em")
+                    input_password = st.text_input("كلمة المرور (6 أحرف على الأقل)", type="password", placeholder="••••••••", key="merchant_pw")
+                    input_phone = st.text_input("رقم الهاتف المهني", placeholder="0655xxxxxxxx", key="merchant_phone").strip()
+
+                    if input_phone:
+                        check_phone = input_phone.replace("+", "").strip()
+                        if not check_phone.isdigit():
+                            st.error("يرجى إدخال أرقام صحيحة فقط في حقل الهاتف.")
+                        elif len(check_phone) < 9:
+                            st.warning("رقم الهاتف غير مكتمل.")
+                        else:
+                            st.session_state["temp_reg_phone"] = input_phone
+
+                    clean_email = input_email.strip()
+                    clean_pass = input_password.strip()
+                    st.session_state["temp_reg_phone"] = input_phone
+
+                    user_package_choice = render_premium_neon_packages()
+
+                    if st.button("متابعة وإرسال رمز التحقق", key="send_otp_enterprise"):
                         raw_phone = st.session_state.get("temp_reg_phone", "").replace("+", "").strip()
-                        
                         if not input_phone:
-                            st.error("⚠️ يرجى إدخال رقم الهاتف أولاً!")
+                            st.error("يرجى إدخال رقم الهاتف أولاً.")
                         elif not raw_phone.isdigit() or len(raw_phone) < 9:
-                            st.error("❌ لا يمكن إرسال الرمز: رقم الهاتف المدخل قصير أو غير صحيح. يرجى تصحيحه أولاً.")
+                            st.error("يرجى إدخال رقم هاتف صحيح مكون من 9 أرقام على الأقل.")
                         else:
                             validated_package = validate_and_process_registration(clean_email, clean_pass)
                             if validated_package:
                                 generated_otp = f"{random.randint(100000, 999999)}"
                                 st.session_state["temp_reg_otp"] = generated_otp
-                                st.session_state["temp_reg_email"]  = clean_email
-                                st.session_state["temp_reg_pass"]   = clean_pass
+                                st.session_state["temp_reg_email"] = clean_email
+                                st.session_state["temp_reg_pass"] = clean_pass
                                 st.session_state["temp_reg_package"] = validated_package
-                                
-                                subject = "رمز التحقق (OTP) لإنشاء حساب متجرك الجديد"
-                                body = f"مرحباً بك،\n\nرمز التحقق العشوائي الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق لإتمام إنشاء الحساب."
-                                
-                                if send_gmail_notification(clean_email, subject, body):
+                                st.session_state["otp_sent_at"] = time.time()
+
+                                subject = f"رمز التحقق ({generated_otp}) لتفعيل حسابك في Tijaratna"
+                                body = f"مرحباً بك،\n\nرمز التحقق الخاص بتفعيل حسابك هو: {generated_otp}\n\nيرجى إدخاله في المنصة لإتمام التسجيل."
+                                base_app_url = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
+                                magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(clean_email)}&code={generated_otp}"
+
+                                loader_slot = st.empty()
+                                loader_slot.markdown("<div class='enterprise-shimmer-box'><div class='corp-dual-spinner'></div><span>جاري تأمين البيانات وإرسال رمز التحقق...</span></div>", unsafe_allow_html=True)
+                                if send_gmail_notification(clean_email, subject, body, action_type="OTP", action_url=magic_otp_link):
+                                    loader_slot.empty()
+                                    reg_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                    conn_pre = sqlite3.connect("saas_security_vault.db", timeout=10)
+                                    conn_pre.cursor().execute(
+                                        "INSERT OR REPLACE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)",
+                                        (clean_email, clean_pass, '📧 في انتظار تأكيد البريد', validated_package, reg_time, input_phone)
+                                    )
+                                    conn_pre.commit()
+                                    conn_pre.close()
+                                    save_to_github_fast()
+
                                     st.session_state["otp_pending_verification"] = True
-                                    st.success(f"📬 تم إرسال رمز التحقق بنجاح إلى البريد: {clean_email}")
+                                    st.success(f"تم إرسال رمز التحقق إلى {clean_email}")
                                     time.sleep(0.5)
                                     st.rerun()
+                                loader_slot.empty()
 
                 else:
-                    if "otp_countdown" not in st.session_state:
-                        st.session_state["otp_countdown"] = 60
-
-                    st.markdown("""
-                        <style>
-                        .otp-modal-container {
-                            max-width: 500px;
-                            margin: 20px auto;
-                            background: linear-gradient(135deg, #0d0d21 0%, #05050c 100%);
-                            border: 2px solid #00fff0;
-                            border-radius: 20px;
-                            padding: 30px;
-                            box-shadow: 0 0 40px rgba(0, 255, 240, 0.4);
-                            direction: rtl;
-                            text-align: right;
-                        }
-                        div[data-testid="stTextInput"] input {
-                            text-align: center !important;
-                            font-size: 28px !important;
-                            letter-spacing: 15px !important;
-                            font-weight: 900 !important;
-                            color: #00fff0 !important;
-                        }
-                        </style>
-                    """, unsafe_allow_html=True)
-
-                    target_mail = st.session_state.get('temp_reg_email', 'البريد الإلكتروني')
-
-                    st.markdown(f"""
-                        <div class="otp-modal-container">
-                            <h3 style="color: #00fff0; text-align: center; margin-top: 0; font-weight: 900;">🔐 تحقق الأمان</h3>
-                            <p style="color: #e0e0e0; font-size: 14px; text-align: center; margin-bottom: 15px;">
-                                تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني:<br>
-                                <span style="color: #ff00ff; font-weight: bold;">{target_mail}</span>
-                            </p>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    target_mail = st.session_state.get('temp_reg_email', '')
+                    st.info(f"تم إرسال رمز مكون من 6 أرقام إلى: **{target_mail}**")
 
                     entered_otp = st.text_input(
-                        "أدخل الرمز المكون من 6 أرقام هنا:", 
-                        max_chars=6, 
-                        placeholder="------", 
+                        "رمز التحقق (6 أرقام)",
+                        value=st.session_state.get("prefill_otp_code", ""),
+                        max_chars=6,
+                        placeholder="000000",
                         key="smart_otp_paste_input"
                     )
 
-                    if st.session_state["otp_countdown"] > 0:
-                        st.markdown(f"<p style='text-align: center; color: #ffaa00; font-size: 14px; font-weight: bold; margin: 10px 0;'>⏳ إعادة إرسال الرمز خلال: {st.session_state['otp_countdown']} ثانية</p>", unsafe_allow_html=True)
-                    else:
-                        if st.button("🔄 إعادة إرسال الرمز الجديد", key="resend_otp_btn"):
-                            generated_otp = f"{random.randint(100000, 999999)}"
-                            st.session_state["temp_reg_otp"] = generated_otp
-                            st.session_state["otp_countdown"] = 60
-                            
-                            subject = "رمز التحقق (OTP) الجديد لإنشاء حساب متجرك"
-                            body = f"مرحباً بك،\n\nرمز التحقق الجديد الخاص بك هو: {generated_otp}\n\nيرجى إدخاله في التطبيق."
-                            if send_gmail_notification(target_mail, subject, body, action_type="OTP"):
-                                st.success("📬 تم إعادة إرسال رمز جديد بنجاح!")
-                                time.sleep(0.5)
-                                st.rerun()
+                    elapsed_sec = int(time.time() - st.session_state.get("otp_sent_at", time.time()))
+                    remaining_sec = max(0, 60 - elapsed_sec)
 
-                    st.markdown("<p style='text-align: center; color: #888899; font-size: 12px;'>💡 يمكنك نسخ الرمز من بريدك واللصق هنا مباشرة ليتم تعبئته تلقائياً.</p>", unsafe_allow_html=True)
+                    if remaining_sec > 0:
+                        st.components.v1.html(f"""
+                        <div style="text-align: right; font-family: 'IBM Plex Sans Arabic', sans-serif; color: #94A3B8; font-size: 13px; direction: rtl;">
+                            يمكنك طلب رمز جديد بعد <span id="js_otp_timer" style="color: #10B981; font-weight: bold;">{remaining_sec}</span> ثانية
+                        </div>
+                        <script>
+                            var timeLeft = {remaining_sec};
+                            var timerElem = document.getElementById("js_otp_timer");
+                            var countdown = setInterval(function() {{
+                                timeLeft--;
+                                if (timeLeft <= 0) {{
+                                    clearInterval(countdown);
+                                    timerElem.parentElement.innerHTML = "يمكنك الآن طلب رمز تحقق جديد.";
+                                }} else {{
+                                    timerElem.textContent = timeLeft;
+                                }}
+                            }}, 1000);
+                        </script>
+                        """, height=30)
 
-                    col_verify_btn, col_cancel_btn = st.columns(2)
-                    with col_verify_btn:
-                        if st.button("✅ تأكيد الرمز وحفظ الحساب للإدارة", key="verify_otp_submit_btn"):
+                    col_v1, col_v2 = st.columns(2)
+                    with col_v1:
+                        if st.button("تأكيد والدخول إلى متجرك الآن", key="verify_otp_submit_btn"):
                             if entered_otp.strip() == st.session_state.get("temp_reg_otp"):
-                                reg_email = st.session_state["temp_reg_email"]
-                                reg_pass = st.session_state["temp_reg_pass"]
-                                reg_pkg = st.session_state["temp_reg_package"]
-                                reg_phone = st.session_state.get("temp_reg_phone", "")
-                                reg_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                                
+                                reg_email = st.session_state.get("temp_reg_email", "").strip()
+                                trial_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 conn_reg = sqlite3.connect("saas_security_vault.db", timeout=10)
-                                cursor_reg = conn_reg.cursor()
-                                cursor_reg.execute(
-                                    "INSERT OR IGNORE INTO saas_users_auth (email, password, status, package, created_at, phone) VALUES (?, ?, ?, ?, ?, ?)", 
-                                    (reg_email, reg_pass, '⏳ في انتظار التفعيل', reg_pkg, reg_time, reg_phone)
+                                conn_reg.cursor().execute(
+                                    "UPDATE saas_users_auth SET status = '🟢 مفعّل (تجربة مجانية 3 أيام)', created_at = ? WHERE LOWER(TRIM(email)) = ?",
+                                    (trial_start, reg_email.lower())
                                 )
                                 conn_reg.commit()
                                 conn_reg.close()
-                                
+                                save_to_github_fast()
+
                                 st.session_state["otp_pending_verification"] = False
-                                st.success("🎯 تم التحقق بنجاح وإرسال طلبك للإدارة!")
-                                time.sleep(1)
+                                st.session_state.pop("prefill_otp_code", None)
+                                st.session_state["active_merchant_user"] = reg_email
+                                st.success("🎉 تم تأكيد حسابك وتفعيل تجربتك المجانية (3 أيام)! جاري فتح متجرك...")
+                                time.sleep(0.8)
                                 st.rerun()
                             else:
-                                st.error("❌ الرمز غير صحيح، تأكد من إدخال الأرقام الستة بدقة.")
-                                
-                    with col_cancel_btn:
-                        if st.button("❌ إلغاء والعودة", key="cancel_otp_btn"):
-                            st.session_state["otp_pending_verification"] = False
-                            st.session_state.pop("otp_countdown", None)
-                            st.rerun()
+                                st.error("رمز التحقق غير صحيح.")
 
-                    if st.session_state.get("otp_countdown", 0) > 0:
-                        time.sleep(1)
-                        st.session_state["otp_countdown"] -= 1
-                        st.rerun()
-            else:
-                st.markdown("</div>", unsafe_allow_html=True)
-                if st.button("🔑 تسجيل الدخول إلى المتجر"):
-                    if clean_email == "" or clean_pass == "": 
-                        st.error("⚠️ يرجى إدخال البريد وكلمة السر!")
-                    else:
-                        conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        cursor_login = conn_login.cursor()
-                        cursor_login.execute("SELECT status FROM saas_users_auth WHERE email = ? AND password = ?", (clean_email, clean_pass))
-                        user_status_row = cursor_login.fetchone()
-                        conn_login.close()
-                        
-                        if user_status_row:
-                            if "🟢 مفعّل ونشط" in user_status_row:
-                                st.session_state["active_merchant_user"] = clean_email
-                                st.success("🔓 تم التحقق بنجاح! جاري فتح متجرك...")
-                                time.sleep(0.5); st.rerun()
+
+
+                    with col_v2:
+                        if st.button("إعادة إرسال الرمز", key="resend_otp_btn"):
+                            now_elapsed = int(time.time() - st.session_state.get("otp_sent_at", 0))
+                            if now_elapsed < 60:
+                                st.warning(f"يرجى الانتظار {60 - now_elapsed} ثانية.")
                             else:
-                                st.warning(f"⏳ حالة حسابك الحالية: {user_status_row}")
-                        else:
-                            st.error("❌ بيانات الدخول غير مطابقة لملف الأمان السحابي.")
-            
-            # 📢 زر الانتقال إلى صفحة الشكاوى المستقلة (موضع آمن في أسفل الصندوق الأوسط)
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("📢 تسجيل شكوى أو بلاغ جديد", key="go_to_complaint_page_btn"):
-                st.session_state["current_view"] = "complaint_page"
-                st.rerun()
-                
-            st.markdown("</div>", unsafe_allow_html=True)
+                                generated_otp = f"{random.randint(100000, 999999)}"
+                                st.session_state["temp_reg_otp"] = generated_otp
+                                st.session_state["otp_sent_at"] = time.time()
+                                subject = f"رمز التحقق الجديد ({generated_otp}) لتفعيل حسابك"
+                                body = f"رمز التحقق الجديد الخاص بك هو: {generated_otp}"
+                                base_app_url = "https://" + "tijaratna-data-dz" + "." + "streamlit" + "." + "app/"
+                                magic_otp_link = f"{base_app_url}?verify_email={urllib.parse.quote(target_mail)}&code={generated_otp}"
+                                if send_gmail_notification(target_mail, subject, body, action_type="OTP", action_url=magic_otp_link):
+                                    st.success("تم إرسال رمز جديد.")
+                                    time.sleep(0.5)
+                                    st.rerun()
+
+                    if st.button("تغيير البريد الإلكتروني أو الإلغاء", key="cancel_otp_btn"):
+                        st.session_state["otp_pending_verification"] = False
+                        st.session_state.pop("otp_sent_at", None)
+                        st.rerun()
+
+                st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+                col_nav_r1, col_nav_r2 = st.columns(2)
+                with col_nav_r1:
+                    if st.button("لدي حساب بالفعل (تسجيل الدخول)", key="switch_to_login_btn"):
+                        st.session_state["landing_step"] = "login"
+                        st.rerun()
+                with col_nav_r2:
+                    if st.button("العودة للرئيسية", key="back_home_from_reg"):
+                        st.session_state["landing_step"] = "home"
+                        st.rerun()
+
 # ========================================================
 # الجزء الثالث المصحح سيبرانياً: غرفة المالك ورادار الموافقات الخماسي (auth_gate.py) - [الجزء 1]
 # ========================================================
@@ -1505,8 +2148,9 @@ def render_neon_license_ring(email, days_left):
 # ========================================================
 if is_boss_link:
     # تأمين وحقن الهوية علوياً لمنع خطأ NameError
-    ADMIN_USERNAME = "admin_master_v4"
-    ADMIN_PASSWORD = "SaasPassword2026"
+    ADMIN_USERNAME = st.secrets.get("ADMIN_USER", "admin_master_v4")
+    ADMIN_PASSWORD = st.secrets.get("ADMIN_PASS", "SaasPassword2026")
+
     
     # 🔒 [المستوى الأول]: إذا لم يسجل المالك دخوله، تظهر لوحة الحماية فقط وتُحجب العدادات كلياً
     if not st.session_state.get("admin_master_logged", False):
@@ -1520,20 +2164,52 @@ if is_boss_link:
         
         st.markdown("<br>", unsafe_allow_html=True)
         
-        if st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="submit_boss_login_btn"):
+        if st.session_state.get("boss_failed_attempts", 0) >= 3:
+            st.error("🔒 تم قفل بوابة الإدارة مؤقتاً لتجاوز الحد المسموح من المحاولات الخاطئة.")
+        elif st.button("⚙️ صعود وتفعيل خادم التحكم الأعلى", key="submit_boss_login_btn"):
             if boss_user == ADMIN_USERNAME and boss_pass == ADMIN_PASSWORD:
+                st.session_state["boss_failed_attempts"] = 0
                 st.session_state["admin_master_logged"] = True
                 st.toast("👑 مرحباً بك يا قائد! تم تفعيل لوحة السيادة والموافقات.", icon="🔓")
                 time.sleep(0.5)
                 st.rerun()
             else:
-                st.error("❌ بيانات خاطئة! يرجى إعادة التحقق من مفاتيح الأمان السحابية.")
+                st.session_state["boss_failed_attempts"] = st.session_state.get("boss_failed_attempts", 0) + 1
+                rem = 3 - st.session_state["boss_failed_attempts"]
+                st.error(f"❌ بيانات خاطئة! المحاولات المتبقية قبل القفل: {rem}")
+
         st.markdown("</div>", unsafe_allow_html=True)
         
     # 👑 [المستوى الثاني مقفل ومحمي]: تنبثق العدادات والرادار هنا حصرياً وفقط بعد نجاح تسجيل الدخول
     else:
         st.markdown("<h1 style='color: #ffffff; text-align: center; font-weight:900; text-shadow: 0 0 25px #00fff0;'>👑 غرفة المالك والسيادة العليا v4</h1>", unsafe_allow_html=True)
-        
+        # 📡 رادار التحديث الصامت التلقائي (يفحص وجود تغييرات كل 10 ثوانٍ دون إبطاء الموقع)
+        @st.fragment(run_every="10s")
+        def auto_watch_github_changes():
+            try:
+                tk_w = st.secrets.get("GITHUB_TOKEN")
+                rp_w = st.secrets.get("GITHUB_REPO")
+                if tk_w and rp_w:
+                    api_w = "https://" + "api" + "." + "github" + "." + "com/repos"
+                    url_w = f"{api_w}/{rp_w}/contents/saas_security_vault.db"
+                    headers_w = {"Authorization": f"Bearer {tk_w}", "Accept": "application/vnd.github.v3+json"}
+                    res_w = requests.get(url_w, headers=headers_w, timeout=5)
+                    if res_w.status_code == 200:
+                        data_w = res_w.json()
+                        remote_sha = data_w.get("sha")
+                        if remote_sha and st.session_state.get("last_known_db_sha") != remote_sha:
+                            with open("saas_security_vault.db", "wb") as f_w:
+                                f_w.write(base64.b64decode(data_w["content"]))
+                            first_run = "last_known_db_sha" not in st.session_state
+                            st.session_state["last_known_db_sha"] = remote_sha
+                            if not first_run:
+                                st.toast("🔔 وصل تحديث جديد! جاري عرض أحدث الحسابات...")
+                                st.rerun()
+            except Exception:
+                pass
+
+        auto_watch_github_changes()
+
         # 1️⃣ قراءة بيانات قاعدة البيانات بالكامل
         conn_hud = sqlite3.connect("saas_security_vault.db", timeout=10)
         try:
@@ -1623,6 +2299,25 @@ if is_boss_link:
                 </div>
                 """, unsafe_allow_html=True)
                 
+                # 🖼️ عرض صورة وصل الدفع (BaridiMob / CCP) إذا قام التاجر برفعها
+                rec_filename = f"receipt_{urllib.parse.quote_plus(current_email)}.png"
+                rec_local_path = f"receipts/{rec_filename}"
+                os.makedirs("receipts", exist_ok=True)
+                if not os.path.exists(rec_local_path):
+                    try:
+                        tk_r, rp_r = st.secrets.get("GITHUB_TOKEN"), st.secrets.get("GITHUB_REPO")
+                        if tk_r and rp_r:
+                            api_base_r = "https://" + "api" + "." + "github" + "." + "com/repos"
+                            res_rec = requests.get(f"{api_base_r}/{rp_r}/contents/{rec_local_path}", headers={"Authorization": f"Bearer {tk_r}"})
+                            if res_rec.status_code == 200:
+                                with open(rec_local_path, "wb") as f_rec:
+                                    f_rec.write(base64.b64decode(res_rec.json()["content"]))
+                    except Exception:
+                        pass
+
+                if os.path.exists(rec_local_path):
+                    with st.expander(f"💰 وصل دفع مرفق من التاجر ({current_email}) — اضغط للمعاينة"):
+                        st.image(rec_local_path, caption="إيصال التحويل البنكي / البريدي", width=350)
 
 
                 col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
@@ -1631,14 +2326,19 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟢 مفعّل ونشط' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-        
+                        save_to_github_fast()
+
                         # 📧 إرسال الإيميل مع إظهار شاشة انتظار لضمان عدم قطع الاتصال
-                        with st.spinner("جاري إرسال البريد الإلكتروني..."):
-                            welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
-                            welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك."
-                            send_gmail_notification_with_log(current_email, welcome_subject, welcome_body, action_type="ACTIVATE")                        
-                            time.sleep(1.5) # إعطاء مهلة كافية لسيرفر جوجل لإنهاء الإرسال
-            
+                     # 📧 إرسال الإيميل مع إظهار بطاقة الانتظار الاحترافية
+                        loader_slot = st.empty()
+                        loader_slot.markdown("<div class='enterprise-shimmer-box'><div class='corp-dual-spinner'></div><span>جاري تفعيل الحساب وإرسال البريد الإلكتروني...</span></div>", unsafe_allow_html=True)
+                        welcome_subject = "🎉 مبروك! تم قبول وتفعيل حساب متجرك بنجاح"
+                        welcome_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم قبول وتفعيل حسابك في المنصة بنجاح تام!\nيمكنك الآن تسجيل الدخول إلى متجرك."
+                        send_gmail_notification_with_log(current_email, welcome_subject, welcome_body, action_type="ACTIVATE")
+                        loader_slot.empty()
+                        time.sleep(1.0)
+
+                         
                         st.session_state[f"border_color_{current_email}"] = "#00ff66"
                         st.toast("🎯 تم التفعيل وإرسال البريد بنجاح!")
                         st.rerun()
@@ -1647,7 +2347,7 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🟡 تم تمديد فترة التجربة 7 أيام' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-                        
+                        save_to_github_fast()
                         # 📧 إرسال إيميل تمديد المهلة
                         ext_subject = "⏳ تم تمديد الفترة التجريبية لمتجرك"
                         ext_body = f"مرحباً بك يا تاجرنا العزيز,\n\nنود إعلامك بأنه تم تمديد الفترة التجريبية لمتجرك لمدة 7 أيام إضافية بنجاح.\nيمكنك الآن مواصلة تجربة كافة ميزات المنصة.\n\nنتمنى لك مبيعات موفقة!"
@@ -1666,7 +2366,7 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET package = 'الباقة السيبرانية الخارقة (65k)' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-                        
+                        save_to_github_fast()
                         # 📧 إرسال إيميل ترقية الباقة
                         upg_subject = "🚀 مبروك! تم ترقية باقة متجرك إلى الباقة الخارقة"
                         upg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nيسعدنا إبلاغك بأنه تم ترقية باقة حسابك رسمياً إلى (الباقة السيبرانية الخارقة 65k)!\nتم فتح كافة أدوات الأتمتة المتقدمة والذكاء الاصطناعي لمتجرك.\n\nبالتوفيق والنجاح!"
@@ -1679,7 +2379,7 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET status = '🔴 تم قفل ومصادرة الصلاحيات' WHERE email = ?", (current_email,))
                         conn.commit(); conn.close()
-                        
+                        save_to_github_fast()
                         # 📧 إرسال إيميل الحظر وقفل الحساب
                         lck_subject = "⚠️ تنبيه: تم تجميد حساب متجرك مؤقتاً"
                         lck_body = f"مرحباً,\n\nنحيطك علماً بأنه تم قفل ومصادرة صلاحيات الوصول إلى حسابك مؤقتاً من قبل الإدارة.\nإذا كنت تعتقد أن هذا حدث عن طريق الخطأ، يرجى التواصل مع فريق الدعم الفني للإدارة.\n\nتحياتنا."
@@ -1709,7 +2409,7 @@ if is_boss_link:
                         conn = sqlite3.connect("saas_security_vault.db")
                         conn.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE email = ?", (selected_opt, current_email))
                         conn.commit(); conn.close()
-                        
+                        save_to_github_fast()
                         # 📧 إرسال إيميل تحديث فئة الاشتراك المخصصة
                         pkg_subject = "🏷️ تحديث فئة اشتراك متجرك"
                         pkg_body = f"مرحباً بك يا تاجرنا العزيز,\n\nتم تحديث باقة متجرك رسمياً إلى: {selected_opt}.\nيمكنك الآن استغلال كافة الميزات المتاحة في باقتك الجديدة من خلال لوحة التحكم.\n\nنتمنى لك كل التوفيق والنجاح!"
@@ -1828,17 +2528,65 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
     user_actual_status = str(chk_row[0]) if chk_row and chk_row[0] is not None else ""
     user_package = str(chk_row[1]).strip() if chk_row and len(chk_row) > 1 and chk_row[1] is not None else "29k"
     
-    if not chk_row or "مفعّل" not in user_actual_status:
-        st.warning("🔒 انتهت أو سُحبت تراخيص الحساب السحابي.")
-        if st.button("🔄 العودة لبوابة الدخول الرئيسية", key="back_gate_refresh_btn"): 
-            st.session_state.pop("active_merchant_user")
+    conn_t_chk = sqlite3.connect("saas_security_vault.db", timeout=10)
+    t_row = conn_t_chk.cursor().execute("SELECT created_at FROM saas_users_auth WHERE email = ?", (current_merchant,)).fetchone()
+    conn_t_chk.close()
+
+    is_trial_account = "تجربة مجانية" in user_actual_status
+    trial_over = False
+    hours_left = 72
+
+    if is_trial_account and t_row and t_row[0]:
+        try:
+            st_dt = datetime.strptime(str(t_row[0]).split(".")[0], "%Y-%m-%d %H:%M:%S")
+            elapsed_hrs = (datetime.now() - st_dt).total_seconds() / 3600.0
+            hours_left = max(0, int(72 - elapsed_hrs))
+            if elapsed_hrs > 72:
+                trial_over = True
+        except Exception:
+            pass
+
+    if not chk_row or "مفعّل" not in user_actual_status or trial_over:
+        st.warning("🔒 انتهت فترة التجربة المجانية (3 أيام) أو سُحبت تراخيص الحساب السحابي.")
+        if st.button("💳 الانتقال لتفعيل الاشتراك السنوي", key="back_gate_refresh_btn"): 
+            st.session_state["expired_trial_email"] = current_merchant
+            st.session_state["expired_trial_pkg"] = user_package
+            st.session_state["landing_step"] = "login"
+            st.session_state.pop("active_merchant_user", None)
             st.rerun()
         st.stop()
+
+    if is_trial_account:
+        st.info(f"🎁 أنت تستخدم حالياً **التجربة المجانية (3 أيام)** — المتبقي: **{hours_left} ساعة**. يمكنك تفعيل اشتراكك السنوي في أي لحظة من صفحة الدخول.")
+
         
     # 🏪 [جدار العزل الفردي الأسطوري]: قفل البيانات وعزل فواتير ومخزون كل تاجر باسم إيميله المشفر
     merchant_db_name = f"invoice_vault_{urllib.parse.quote_plus(current_merchant)}.db"
     
+    # استرجاع فواتير ومخزون التاجر من المستودع عند الدخول
+    # استرجاع فواتير ومخزون التاجر من المستودع عند الدخول
+    restore_flag = f"restored_{merchant_db_name}"
+    if restore_flag not in st.session_state:
+        try:
+            tk = st.secrets.get("GITHUB_TOKEN")
+            rp = st.secrets.get("GITHUB_REPO")
+            if tk and rp:
+                api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
+
+                url_m = f"{api_base}/{rp}/contents/merchants/{merchant_db_name}"
+                res_m = requests.get(url_m, headers={"Authorization": f"Bearer {tk}"})
+                if res_m.status_code == 200:
+                    with open(merchant_db_name, "wb") as f:
+                        f.write(base64.b64decode(res_m.json()["content"]))
+        except Exception:
+            pass
+        st.session_state[restore_flag] = True
+
+
     if "merchant_db_conn" not in st.session_state:
+        st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
+
+
         st.session_state["merchant_db_conn"] = sqlite3.connect(merchant_db_name, check_same_thread=False)
     else:
         try:
@@ -1856,15 +2604,42 @@ if "active_merchant_user" in st.session_state and not is_boss_link:
             customer_phone TEXT, product_name TEXT, final_total REAL, month_created TEXT, date_created TEXT
         )
     ''')
+    # إضافة عمود العنوان وحالة الطلبية تلقائياً دون مسح الفواتير القديمة
+    try:
+        cursor.execute("ALTER TABLE v4_customer_invoices ADD COLUMN customer_address TEXT DEFAULT 'الجزائر'")
+    except Exception:
+        pass
+    try:
+        cursor.execute("ALTER TABLE v4_customer_invoices ADD COLUMN order_status TEXT DEFAULT '⏳ قيد التوصيل'")
+    except Exception:
+        pass
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS store_stock (
             product_id INTEGER PRIMARY KEY AUTOINCREMENT, product_name TEXT UNIQUE, available_qty INTEGER
         )
     ''')
     conne.commit()
-    
+    save_to_github_fast(merchant_db_name, "merchants")
+    for col_sql in [
+        "ALTER TABLE v4_customer_invoices ADD COLUMN customer_address TEXT DEFAULT 'الجزائر'",
+        "ALTER TABLE v4_customer_invoices ADD COLUMN order_status TEXT DEFAULT '⏳ قيد التوصيل'",
+        "ALTER TABLE v4_customer_invoices ADD COLUMN qty INTEGER DEFAULT 1",
+        "ALTER TABLE v4_customer_invoices ADD COLUMN shipping_cost REAL DEFAULT 600"
+    ]:
+        try:
+            cursor.execute(col_sql)
+        except Exception:
+            pass
+    conne.commit()
+
+
+
     # 🌐 جدار حجب الأدوات التلقائي بناءً على فئة باقة التاجر الحالية
-    available_tools = ["✨ صانع الفواتير الاحترافي (PDF)", "📦 إدارة وتنبيهات المخزون السلعي", "🚀 ممر العبور السحابي للشحن"]
+    available_tools = ["✨ صانع الفواتير الاحترافي (PDF)", "📜 سجل الفواتير والطلبيات", "📊 التقارير المالية والرسوم البيانية", "📦 إدارة وتنبيهات المخزون السلعي", "🚀 ممر العبور السحابي للشحن"]
+
+
+
     if "45k" in user_package:
         available_tools.append("🧼 مطهر ملفات المبيعات وإحصائيات الولايات")
     elif "65k" in user_package:
@@ -2195,11 +2970,169 @@ if "choice" in locals() or "choice" in globals():
         col_left, col_right = st.columns(2)
         with col_left:
             st.subheader("🏪 معلومات المتجر والزبون")
+            # --- المفاتيح الأصلية المحمية (ممنوع تغييرها لضمان دقة الحفظ المحاسبي) ---
             shop_name = st.text_input("اسم متجرك الإلكتروني:", "DZ Cyber Store", key="invoice_shop_name_input")
             customer_name = st.text_input("اسم الزبون الكامل:", key="invoice_customer_name_input")
             customer_phone = st.text_input("رقم هاتف الزبون:", key="invoice_customer_phone_input")
+                        # 🚨 رادار القائمة السوداء للزبائن (Anti-Retour Blacklist Radar)
+            if customer_phone.strip():
+                clean_ph = customer_phone.strip()
+                ret_check = pd.read_sql(
+                    "SELECT COUNT(*) as cnt FROM v4_customer_invoices WHERE customer_phone = ? AND order_status LIKE '%مرتجع%'",
+                    conne, params=(clean_ph,)
+                )
+                ret_count = int(ret_check['cnt'].tolist().pop(0)) if not ret_check.empty else 0
+                if ret_count > 0:
+                    st.error(f"🚨 تنبيه القائمة السوداء: هذا الرقم ({clean_ph}) لديه ({ret_count}) مرتجعات سابقة! يُنصح بتأكيد الطلبية هاتفياً بدقة قبل الشحن.")
+
             customer_address = st.text_input("عنوان التوصيل والولاية:", key="invoice_customer_address_input")
-            uploaded_logo = st.file_uploader("اختر لوغو متجرك (اختياري)", type=["png", "jpg", "jpeg"], key="invoice_logo_uploader")
+
+            # --- مفتاح فريد وحصري لزر اختيار لغة الفاتورة (عربي / فرنسي) ---
+            selected_invoice_lang = st.radio(
+                label="اختر لغة الفاتورة:",
+                options=[
+                    "🇩🇿 اللغة العربية (RTL)", 
+                    "🇫🇷 اللغة الفرنسية (LTR)", 
+                    "🌐 مزدوج (عربي + فرنسي)"
+                ],
+                horizontal=True,
+                label_visibility="collapsed",
+                key="sec4b_invoice_lang_selector_unique"
+            )
+            if "الفرنسية" in selected_invoice_lang:
+                lang_code = "fr"
+            elif "مزدوج" in selected_invoice_lang:
+                lang_code = "bi"
+            else:
+                lang_code = "ar"
+
+            os.makedirs("logos", exist_ok=True)
+            logo_filename = f"logo_{urllib.parse.quote_plus(current_merchant)}.png"
+            logo_local_path = f"logos/{logo_filename}"
+
+            if f"logo_loaded_{logo_filename}" not in st.session_state:
+                try:
+                    tk, rp = st.secrets.get("GITHUB_TOKEN"), st.secrets.get("GITHUB_REPO")
+                    if tk and rp:
+                        api_base = "https://" + "api" + "." + "github" + "." + "com/repos"
+                        res_l = requests.get(f"{api_base}/{rp}/contents/{logo_local_path}", headers={"Authorization": f"Bearer {tk}"})
+                        if res_l.status_code == 200:
+                            with open(logo_local_path, "wb") as f:
+                                f.write(base64.b64decode(res_l.json()["content"]))
+                except Exception:
+                    pass
+                st.session_state[f"logo_loaded_{logo_filename}"] = True
+
+            uploaded_logo = st.file_uploader("اختر لوغو متجرك (يُحفظ تلقائياً للمرات القادمة):", type=["png", "jpg", "jpeg"], key="sec4b_invoice_logo_uploader_unique")
+            if uploaded_logo is not None:
+                saved_logo_bytes = uploaded_logo.read()
+                with open(logo_local_path, "wb") as f:
+                    f.write(saved_logo_bytes)
+                save_to_github_fast(logo_local_path, "")
+                st.success("✅ تم حفظ شعار متجرك في الخزنة السحابية تلقائياً!")
+            elif os.path.exists(logo_local_path):
+                with open(logo_local_path, "rb") as f:
+                    saved_logo_bytes = f.read()
+                st.info("🖼️ تم تحميل شعار متجرك المحفوظ مسبقاً تلقائياً.")
+            else:
+                saved_logo_bytes = None
+
+
+# ==========================================================
+            # === بداية الكتلة الجديدة: قائمة منبثقة نيونية لاختيار القوالب ===
+            # ==========================================================
+            st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+            
+            # استخدام expander كممر تفاعلي منبثق لإخفاء أو إظهار تفاصيل القوالب والمعاينة
+            with st.expander("🎨 تخصيص وتغيير قالب الفاتورة (اضغط للإظهار / الإخفاء)", expanded=False):
+                st.markdown("<span style='font-size: 12px; color: #a5b4fc;'>اختر التصميم الذي يناسب هوية متجرك بدقة:</span>", unsafe_allow_html=True)
+                st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
+
+                # شفرة تفاعلية لالتقاط الاختيار عبر st.radio المدمج داخل القائمة
+                selected_template_option = st.radio(
+                    label="اختر قالب الفاتورة:",
+                    options=[
+                        "🏛️ القالب الرسمي الموثق (جداول زرقاء + QR Code)",
+                        "⚡ القالب الاقتصادي البسيط (خفيف وسريع للطباعة)",
+                        "✨ القالب التجاري الحديث (عصري ومبرز للمجاميع)"
+                    ],
+                    horizontal=False,
+                    label_visibility="collapsed",
+                    key="sec4b_holo_expandable_template_selector_unique"
+                )
+
+                # تحديد القالب البرمجي وتأثيرات الإضاءة النيونية بناءً على اختيار التاجر
+                if "الاقتصادي" in selected_template_option:
+                    invoice_template = "simple"
+                    active_glow_formal = "rgba(0, 51, 102, 0.04);"
+                    active_border_formal = "1px solid rgba(0, 51, 102, 0.2);"
+                    active_glow_simple = "rgba(0, 255, 240, 0.15);"
+                    active_border_simple = "2px solid #00fff0; box-shadow: 0 0 12px rgba(0, 255, 240, 0.25);"
+                    active_glow_modern = "rgba(15, 118, 110, 0.04);"
+                    active_border_modern = "1px solid rgba(15, 118, 110, 0.2);"
+                elif "الحديث" in selected_template_option:
+                    invoice_template = "modern"
+                    active_glow_formal = "rgba(0, 51, 102, 0.04);"
+                    active_border_formal = "1px solid rgba(0, 51, 102, 0.2);"
+                    active_glow_simple = "rgba(51, 51, 51, 0.02);"
+                    active_border_simple = "1px solid rgba(102, 102, 102, 0.2);"
+                    active_glow_modern = "rgba(0, 255, 240, 0.15);"
+                    active_border_modern = "2px solid #00fff0; box-shadow: 0 0 12px rgba(0, 255, 240, 0.25);"
+                else:
+                    invoice_template = "formal"
+                    active_glow_formal = "rgba(0, 255, 240, 0.15);"
+                    active_border_formal = "2px solid #00fff0; box-shadow: 0 0 12px rgba(0, 255, 240, 0.25);"
+                    active_glow_simple = "rgba(51, 51, 51, 0.02);"
+                    active_border_simple = "1px solid rgba(102, 102, 102, 0.2);"
+                    active_glow_modern = "rgba(15, 118, 110, 0.04);"
+                    active_border_modern = "1px solid rgba(15, 118, 110, 0.2);"
+
+                st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
+                
+                # عرض البطاقات الهولوغرافية الثلاث بشكل مصغر داخل القائمة المنبثقة
+                holo_col1, holo_col2, holo_col3 = st.columns(3)
+
+                with holo_col1:
+                    st.markdown(f"""
+                    <div style="background: {active_glow_formal}; backdrop-filter: blur(8px); border-radius: 10px; padding: 10px; border: {active_border_formal}; text-align: right; direction: rtl; min-height: 110px;">
+                        <div style="font-weight: bold; color: #00fff0; font-size: 12px; margin-bottom: 4px;">🏛️ الرسمي الموثق</div>
+                        <div style="font-size: 10.5px; color: #cbd5e1; line-height: 1.3;">
+                            • جدول أزرق هندسي<br>
+                            • ختم QR Code للتحقق
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with holo_col2:
+                    st.markdown(f"""
+                    <div style="background: {active_glow_simple}; backdrop-filter: blur(8px); border-radius: 10px; padding: 10px; border: {active_border_simple}; text-align: right; direction: rtl; min-height: 110px;">
+                        <div style="font-weight: bold; color: #00fff0; font-size: 12px; margin-bottom: 4px;">⚡ الاقتصادي البسيط</div>
+                        <div style="font-size: 10.5px; color: #cbd5e1; line-height: 1.3;">
+                            • تصميم نصي خفيف<br>
+                            • سريع للطباعة المباشرة
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with holo_col3:
+                    st.markdown(f"""
+                    <div style="background: {active_glow_modern}; backdrop-filter: blur(8px); border-radius: 10px; padding: 10px; border: {active_border_modern}; text-align: right; direction: rtl; min-height: 110px;">
+                        <div style="font-weight: bold; color: #00fff0; font-size: 12px; margin-bottom: 4px;">✨ التجاري الحديث</div>
+                        <div style="font-size: 10.5px; color: #cbd5e1; line-height: 1.3;">
+                            • ألوان تيل عصرية<br>
+                            • إبراز دقيق للمجاميع
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            # قيمة افتراضية في حال كانت القائمة مغلقة (القالب الرسمي الموثق كافتراضي)
+            if 'invoice_template' not in locals():
+                invoice_template = "formal"
+
+            st.markdown("<div style='margin-top: 12px;'></div>", unsafe_allow_html=True)
+            # ==========================================================
+
+
         with col_right:
             st.subheader("📦 تفاصيل السلعة والحسابات")
             stock_products = pd.read_sql("SELECT product_name FROM store_stock", conne)
@@ -2220,16 +3153,24 @@ if "choice" in locals() or "choice" in globals():
             if not customer_name or not product_name: 
                 st.error("❌ خطأ: يرجى ملء اسم الزبون والمنتج أولاً!")
             else:
-                check_stock = pd.read_sql(f"SELECT available_qty FROM store_stock WHERE product_name = '{product_name}'", conne)
+                check_stock = pd.read_sql("SELECT available_qty FROM store_stock WHERE product_name = ?", conne, params=(product_name,))
+
+
                 if not check_stock.empty and check_stock['available_qty'].values[0] < quantity:
                     st.error(f"❌ خطأ! المتبقي في المستودع هو: {check_stock['available_qty'].values[0]} قطع فقط.")
                 else:
                     cursor.execute("UPDATE store_stock SET available_qty = available_qty - ? WHERE product_name = ?", (quantity, product_name))
-                    cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, product_name, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, product_name, final_total, current_month, current_date))
+                    cursor.execute('INSERT INTO v4_customer_invoices (shop_name, customer_name, customer_phone, customer_address, product_name, qty, shipping_cost, final_total, month_created, date_created) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (shop_name, customer_name, customer_phone, customer_address, product_name, quantity, shipping_cost, final_total, current_month, current_date))
                     conne.commit()
+                    save_to_github_fast(merchant_db_name, "merchants")
+                    logo_data = saved_logo_bytes
+
                     
-                    logo_data = uploaded_logo.read() if uploaded_logo is not None else None
-                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost, final_total, logo_data)
+                    st.session_state["generated_pdf_invoice"] = generate_invoice_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, price, quantity, product_total, shipping_cost,  final_total, logo_data, lang=lang_code, template=invoice_template)
+
+
+
+
                     st.session_state["generated_pdf_label"] = generate_thermal_label_pdf(shop_name, customer_name, customer_phone, customer_address, product_name, final_total, current_date)
                     st.session_state["last_active_customer"] = customer_name
                     st.session_state["last_active_phone"] = customer_phone
@@ -2253,42 +3194,244 @@ if "choice" in locals() or "choice" in globals():
             
             send_col1, send_col2 = st.columns(2)
             with send_col1: 
-                st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me{st.session_state['last_active_phone']}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
+                wa_num = str(st.session_state['last_active_phone']).strip()
+                wa_num = "213" + wa_num[1:] if wa_num.startswith("0") else wa_num
+                st.link_button("🟢 إرسال تفاصيل الفاتورة عبر WhatsApp", f"https://wa.me/{wa_num}?text={encoded_msg}", key="send_whatsapp_invoice_btn")
+
+
             with send_col2: 
                 st.link_button("🟣 إرسال تفاصيل الفاتورة عبر Viber", f"viber://forward?text={encoded_msg}", key="send_viber_invoice_btn")
         # === إضافة صندوق المعاينة الحية للفاتورة النيونية ===
+        # === إضافة صندوق المعاينة الحية للفاتورة النيونية المتفاعلة مع القالب ===
         st.markdown("---")
         st.subheader("👁️ معاينة حية فورية قبل الحفظ:")
         
         preview_customer = customer_name if customer_name else "<i>لم يتم الإدخال بعد</i>"
         preview_phone = customer_phone if customer_phone else "<i>لم يتم الإدخال بعد</i>"
         preview_product = product_name if product_name else "<i>لم يتم الاختيار بعد</i>"
-        
+
+        # 🎨 ضبط ألوان وشارة المعاينة الحية حسب القالب المختار
+        if invoice_template == "simple":
+            prev_accent = "#e2e8f0"
+            prev_border = "rgba(226, 232, 240, 0.35)"
+            prev_bg = "rgba(255, 255, 255, 0.02)"
+            prev_shadow = "rgba(255, 255, 255, 0.05)"
+            prev_badge = "⚡ القالب الاقتصادي البسيط (خفيف وبدون QR)"
+        elif invoice_template == "modern":
+            prev_accent = "#2dd4bf"
+            prev_border = "rgba(45, 212, 191, 0.45)"
+            prev_bg = "rgba(15, 118, 110, 0.12)"
+            prev_shadow = "rgba(45, 212, 191, 0.2)"
+            prev_badge = "✨ القالب التجاري الحديث (ألوان تيل عصرية)"
+        else:
+            prev_accent = "#00fff0"
+            prev_border = "rgba(0, 255, 240, 0.35)"
+            prev_bg = "rgba(0, 51, 102, 0.15)"
+            prev_shadow = "rgba(0, 255, 240, 0.15)"
+            prev_badge = "🏛️ القالب الرسمي الموثق (أزرق + ختم QR)"
+
         neon_card_html = f"""
-        <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border-radius: 12px; padding: 25px; border: 1px solid rgba(0, 255, 240, 0.2); box-shadow: 0 0 20px rgba(0, 255, 240, 0.1), inset 0 0 15px rgba(0, 255, 240, 0.05); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: right; direction: rtl;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(0, 255, 240, 0.3); padding-bottom: 12px; margin-bottom: 15px;">
-                <span style="font-size: 18px; font-weight: bold; color: #00fff0; text-shadow: 0 0 10px rgba(0, 255, 240, 0.5);">🏪 {shop_name}</span>
-                <span style="font-size: 12px; color: #888;">📅 {current_date}</span>
+        <div style="background: {prev_bg}; backdrop-filter: blur(10px); border-radius: 12px; padding: 25px; border: 1.5px solid {prev_border}; box-shadow: 0 0 20px {prev_shadow}; font-family: 'Cairo', 'Segoe UI', sans-serif; text-align: right; direction: rtl; transition: all 0.3s ease;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed {prev_border}; padding-bottom: 12px; margin-bottom: 15px;">
+                <span style="font-size: 18px; font-weight: bold; color: {prev_accent}; text-shadow: 0 0 10px {prev_shadow};">🏪 {shop_name}</span>
+                <span style="font-size: 11px; font-weight: bold; color: {prev_accent}; border: 1px solid {prev_border}; padding: 3px 10px; border-radius: 20px;">{prev_badge}</span>
             </div>
             <div style="margin-bottom: 10px; color: #e0e0e0; font-size: 14px;"><strong>👤 العميل:</strong> <span style="color: #fff;">{preview_customer}</span></div>
             <div style="margin-bottom: 10px; color: #e0e0e0; font-size: 14px;"><strong>📞 الهاتف:</strong> <span style="color: #fff; direction: ltr; display: inline-block;">{preview_phone}</span></div>
-            <div style="margin-bottom: 15px; color: #e0e0e0; font-size: 14px;"><strong>📦 المنتج المطلوب:</strong> <span style="color: #00fff0;">{preview_product} (×{quantity})</span></div>
-            <div style="background: rgba(0, 255, 240, 0.05); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0, 255, 240, 0.15);">
+            <div style="margin-bottom: 15px; color: #e0e0e0; font-size: 14px;"><strong>📦 المنتج المطلوب:</strong> <span style="color: {prev_accent};">{preview_product} (×{quantity})</span></div>
+            <div style="background: rgba(0, 0, 0, 0.25); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid {prev_border};">
                 <span style="font-size: 15px; font-weight: bold; color: #fff;">💰 الصافي الإجمالي (شامل الشحن):</span>
-                <span style="font-size: 20px; font-weight: bold; color: #00fff0; text-shadow: 0 0 12px #00fff0;">{final_total:,.2f} DA</span>
+                <span style="font-size: 20px; font-weight: bold; color: {prev_accent}; text-shadow: 0 0 12px {prev_shadow};">{final_total:,.2f} DA</span>
             </div>
+            <div style="text-align: left; font-size: 11px; color: #888; margin-top: 8px;">📅 {current_date}</div>
         </div>
         """
         st.markdown(neon_card_html, unsafe_allow_html=True)
 
+# === إضافات نظام صانع الفواتير والملصقات الحرارية ===
+    # دالة حاسبة الأرباح الصافية وتقارير الأداء المالي (Net Profit & P&L Calculator)
+        st.markdown("---")
+        st.subheader("📊 حاسبة الأرباح الصافية وتقارير الأداء المالي (Net Profit & P&L)")
 
+        with st.expander("💡 افتح لوحة حاسبة الأرباح وتحليل الأداء المالي المتقدم", expanded=True):
+            p_col1, p_col2 = st.columns(2)
         
+            with p_col1:
+                calc_buy_price = st.number_input("سعر شراء السلعة (DA):", min_value=0.0, value=700.0, step=50.0, key="calc_buy_price_input")
+                calc_sell_price = st.number_input("سعر بيع السلعة للزبون (DA):", min_value=0.0, value=float(price) if 'price' in locals() else 1200.0, step=50.0, key="calc_sell_price_input")
+                calc_shipping_cost = st.number_input("تكلفة التوصيل الفعلية (DA):", min_value=0.0, value=float(shipping_cost) if 'shipping_cost' in locals() else 600.0, step=50.0, key="calc_shipping_cost_input")
+            
+            with p_col2:
+                calc_return_rate = st.slider("نسبة الإرجاع المتوقعة (Retour %):", min_value=0, max_value=50, value=10, step=1, key="calc_return_rate_slider")
+                calc_ads_cost = st.number_input("تلفة الإعلانات التقديرية للقطعة (DA):", min_value=0.0, value=150.0, step=10.0, key="calc_ads_cost_input")
+                calc_other_expenses = st.number_input("مصاريف تشغيلية أخرى (تغليف، تلف...) (DA):", min_value=0.0, value=50.0, step=10.0, key="calc_other_expenses_input")
+
+        # حسابات الأرباح الصافية مع أخذ نسبة الإرجاع بعين الاعتبار
+            effective_return_penalty = (calc_shipping_cost * 1.5) * (calc_return_rate / 100.0)
+            gross_profit = calc_sell_price - calc_buy_price
+            total_expenses = calc_shipping_cost + calc_ads_cost + calc_other_expenses + effective_return_penalty
+            net_profit_per_piece = gross_profit - total_expenses
+            profit_margin_percent = (net_profit_per_piece / calc_sell_price * 100) if calc_sell_price > 0 else 0
+
+        # عرض النتائج في كرت زجاجي نيوكي مشع متناسق مع واجهة المعاينة
+            net_card_color = "#00fff0" if net_profit_per_piece > 0 else "#ff4d4d"
         
+            net_profit_card_html = f"""
+            <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; border: 1px solid rgba(0, 255, 240, 0.2); box-shadow: 0 0 20px rgba(0, 255, 240, 0.08); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: right; direction: rtl; margin-top: 15px;">
+                <div style="font-size: 16px; font-weight: bold; color: #00fff0; border-bottom: 1px dashed rgba(0, 255, 240, 0.3); padding-bottom: 8px; margin-bottom: 12px;">
+                    🧮 تقرير تحليل الأداء المالي وصافي الربح للقطعة الواحدة
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #e0e0e0; font-size: 14px;">
+                    <span>إجمالي الربح الإسمي (قبل المصاريف):</span>
+                    <span style="color: #fff; font-weight: bold;">{gross_profit:,.2f} DA</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #e0e0e0; font-size: 14px;">
+                    <span>إجمالي التكاليف والمصاريف (شحن + إعلانات + نسبة الإرجاع):</span>
+                    <span style="color: #ff9999; font-weight: bold;">-{total_expenses:,.2f} DA</span>
+                </div>
+                <div style="background: rgba(0, 255, 240, 0.05); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0, 255, 240, 0.15); margin-top: 10px;">
+                    <span style="font-size: 15px; font-weight: bold; color: #fff;">💎 صافي الربح الحقيقي للقطعة:</span>
+                    <span style="font-size: 20px; font-weight: bold; color: {net_card_color}; text-shadow: 0 0 12px {net_card_color};">{net_profit_per_piece:,.2f} DA ({profit_margin_percent:.1f}%)</span>
+                </div>
+            </div>
+            """
+            st.markdown(net_profit_card_html, unsafe_allow_html=True)
+# === إضافات نظام صانع الفواتير والملصقات الحرارية ===
+# دالة حاسبة الأرباح الصافية وتقارير الأداء المالي (Net Profit & P&L Calculator)
+
 
 
  
        # القسم (4 - ج): نظام إدارة المخزون، مطهر الولايات ومولد حملات الـ AI وقفل الـ DB
     # ========================================================
+    if choice == "📜 سجل الفواتير والطلبيات":
+        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📜 سجل الفواتير السابقة ومتابعة الطلبيات</h1>", unsafe_allow_html=True)
+        
+        invoices_df = pd.read_sql("SELECT * FROM v4_customer_invoices ORDER BY invoice_id DESC", conne)
+        
+        if invoices_df.empty:
+            st.info("📭 لم تقم بإصدار أي فواتير بعد.")
+        else:
+            # 1. بطاقات ملخص الطلبيات وصافي المداخيل بعد خصم الشحن الضائع للمرتجعات
+            delivered_df = invoices_df[invoices_df['order_status'].str.contains('تم الاستلام', na=False)]
+            returned_df = invoices_df[invoices_df['order_status'].str.contains('مرتجع', na=False)]
+            pending_count = len(invoices_df) - len(delivered_df) - len(returned_df)
+            
+            lost_shipping = returned_df['shipping_cost'].fillna(600).sum() if 'shipping_cost' in returned_df.columns else 0
+            net_confirmed_revenue = delivered_df['final_total'].sum() - lost_shipping
+            
+            c_s1, c_s2, c_s3, c_s4 = st.columns(4)
+            c_s1.metric("⏳ قيد التوصيل", f"{pending_count} طلبية")
+            c_s2.metric("✅ تم الاستلام (Livré)", f"{len(delivered_df)} طلبية")
+            c_s3.metric("🔄 مرتجع (Retour)", f"{len(returned_df)} طلبية", delta=f"-{lost_shipping:,.0f} DA شحن ضائع", delta_color="inverse")
+            c_s4.metric("💎 صافي المداخيل المؤكدة", f"{net_confirmed_revenue:,.2f} DA")
+            
+            st.markdown("---")
+            
+            # 2. شريط البحث بالاسم أو رقم الهاتف
+            search_inv = st.text_input("🔍 ابحث باسم الزبون أو رقم الهاتف:", placeholder="اكتب اسم الزبون أو رقمه...").strip()
+            if search_inv:
+                invoices_df = invoices_df[
+                    invoices_df['customer_name'].str.contains(search_inv, case=False, na=False) |
+                    invoices_df['customer_phone'].str.contains(search_inv, case=False, na=False)
+                ]
+            
+            if invoices_df.empty:
+                st.warning("🔍 لا توجد فواتير مطابقة لبحثك. جرّب اسماً أو رقماً آخر.")
+            else:
+                # 3. عرض الجدول الكامل
+                display_df = invoices_df.loc[:, ('invoice_id', 'customer_name', 'customer_phone', 'product_name', 'final_total', 'order_status', 'date_created')]
+                display_df.columns = ('رقم الفاتورة', 'الزبون', 'الهاتف', 'المنتج', 'الإجمالي (DA)', 'حالة الطلبية', 'التاريخ')
+                st.dataframe(display_df, use_container_width=True)
+                
+                st.markdown("---")
+                
+                # 4. تحديث حالة الطلبية أو إعادة تحميل الفاتورة PDF
+                st.subheader("⚙️ إدارة طلبية محددة:")
+                inv_ids = invoices_df['invoice_id'].tolist()
+                selected_inv_id = st.selectbox(
+                    "اختر رقم الفاتورة للتعديل أو إعادة التحميل:", 
+                    inv_ids, 
+                    format_func=lambda x: f"فاتورة رقم #{x} - {invoices_df[invoices_df['invoice_id']==x]['customer_name'].tolist().pop(0)}"
+                )
+                
+                sel_row = invoices_df[invoices_df['invoice_id'] == selected_inv_id].to_dict(orient="records").pop(0)
+                
+                col_act1, col_act2, col_act3 = st.columns(3)
+                with col_act1:
+                    if st.button("✅ تأكيد الاستلام (Livré)", key="mark_delivered_btn"):
+                        cursor.execute("UPDATE v4_customer_invoices SET order_status = '✅ تم الاستلام' WHERE invoice_id = ?", (int(selected_inv_id),))
+                        conne.commit()
+                        save_to_github_fast(merchant_db_name, "merchants")
+                        st.success("تم تحديث الحالة إلى (تم الاستلام)!")
+                        time.sleep(0.5); st.rerun()
+                        
+                with col_act2:
+                    if st.button("🔄 تسجيل كمرتجع (Retour)", key="mark_return_btn"):
+                        if "مرتجع" not in str(sel_row.get('order_status', '')):
+                            ret_qty = int(sel_row.get('qty', 1))
+                            ret_prod = sel_row['product_name']
+                            cursor.execute("UPDATE store_stock SET available_qty = available_qty + ? WHERE product_name = ?", (ret_qty, ret_prod))
+                            cursor.execute("UPDATE v4_customer_invoices SET order_status = '🔄 مرتجع (Retour)' WHERE invoice_id = ?", (int(selected_inv_id),))
+                            conne.commit()
+                            save_to_github_fast(merchant_db_name, "merchants")
+                            st.warning(f"🔄 تم تسجيل المرتجع وإرجاع ({ret_qty}) قطعة من [{ret_prod}] إلى المخزون تلقائياً!")
+                            time.sleep(0.8); st.rerun()
+                        else:
+                            st.info("هذه الطلبية مسجلة كمرتجع بالفعل.")
+                        
+                with col_act3:
+                    q_old = max(1, int(sel_row.get('qty', 1)))
+                    ship_old = float(sel_row.get('shipping_cost', 0))
+                    sub_old = float(sel_row['final_total']) - ship_old
+                    unit_old = sub_old / q_old
+                    reprint_pdf = generate_invoice_pdf(
+                        sel_row['shop_name'], sel_row['customer_name'], sel_row['customer_phone'], 
+                        sel_row.get('customer_address', 'الجزائر'), sel_row['product_name'], 
+                        unit_old, q_old, sub_old, ship_old, float(sel_row['final_total']), 
+                        saved_logo_bytes if 'saved_logo_bytes' in locals() else None, lang="bi", template="formal"
+                    )
+
+                    st.download_button(
+                        label="📥 إعادة تحميل الفاتورة PDF",
+                        data=reprint_pdf,
+                        file_name=f"invoice_{selected_inv_id}_{sel_row['customer_name']}.pdf",
+                        mime="application/pdf",
+                        key="reprint_old_inv_btn"
+                    )
+    if choice == "📊 التقارير المالية والرسوم البيانية":
+        st.write("<h1 style='font-size: 32px; color: #00fff0; text-shadow: 0 0 15px #00fff0;'>📊 التقارير المالية والتحليلات البيانية للمتجر</h1>", unsafe_allow_html=True)
+        
+        df_rep = pd.read_sql("SELECT * FROM v4_customer_invoices", conne)
+        if df_rep.empty:
+            st.info("📭 لا توجد مبيعات كافية لعرض الرسوم البيانية بعد.")
+        else:
+            col_chart1, col_chart2 = st.columns(2)
+            with col_chart1:
+                st.subheader("📈 المبيعات المستلمة مقابل المرتجعات")
+                status_summary = df_rep['order_status'].value_counts()
+                st.bar_chart(status_summary, color="#00fff0")
+                
+            with col_chart2:
+                st.subheader("🏆 أكثر 5 منتجات مبيعاً (بالدينار)")
+                top_prods = df_rep.groupby('product_name')['final_total'].sum().sort_values(ascending=False).head(5)
+                st.bar_chart(top_prods, color="#ff00ff")
+                
+            st.markdown("---")
+            excel_buffer = io.BytesIO()
+            with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                df_rep.to_excel(writer, index=False, sheet_name='سجل_المبيعات')
+            excel_buffer.seek(0)
+            
+            st.download_button(
+                label="📥 تصدير التقرير المحاسبي الشهري الشامل (Excel)",
+                data=excel_buffer,
+                file_name=f"Tijaratna_Financial_Report_{datetime.now().strftime('%Y_%m')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="export_merchant_excel_btn"
+            )
+
+
     elif choice == "📦 إدارة وتنبيهات المخزون السلعي":
         st.write("<h1 style='font-size: 32px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff;'>📦 نظام إدارة ومراقبة مخزون المستودع</h1>", unsafe_allow_html=True)
         col_add, col_view = st.columns(2)
@@ -2301,6 +3444,8 @@ if "choice" in locals() or "choice" in globals():
                     try:
                         cursor.execute("INSERT INTO store_stock (product_name, available_qty) VALUES (?, ?)", (new_prod, new_qty))
                         conne.commit()
+                        save_to_github_fast(merchant_db_name, "merchants")
+
                         st.success(f"تم إضافة {new_prod} للمستودع!")
                         
                         # حساب تفاصيل الإعلان مسبقاً وتخزينها في ذاكرة الجلسة المستمرة لتفادي مسحها بالـ rerun
@@ -2378,8 +3523,13 @@ if "choice" in locals() or "choice" in globals():
                 delete_prod = st.selectbox("اختر السلعة المراد محوها نهائياً:", stock_df['product_name'])
                 if st.button("❌ محو السلعة المحددة"):
                     cursor.execute("DELETE FROM store_stock WHERE product_name = ?", (delete_prod,))
-                    conne.commit(); st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!"); time.sleep(0.5); st.rerun()
-                
+                    conne.commit()
+                    save_to_github_fast(merchant_db_name, "merchants")
+                    st.success(f"🗑️ تم محو السلعة [{delete_prod}] من المخزون بنجاح!")
+                    time.sleep(0.5)
+                    st.rerun()
+
+
                 low_stock = stock_df[stock_df['available_qty'] <= 5]
                 if not low_stock.empty:
                     st.markdown("---")
