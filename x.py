@@ -1663,7 +1663,7 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
             st.markdown(f"""
                 <style>
-                html, body, div, section {{ scroll-behavior: smooth !important; }}
+             html, body, [data-testid="stAppViewContainer"], section.main, .main, div {{ scroll-behavior: smooth !important; }}
 
                 div[data-testid="stHorizontalBlock"] > div:nth-child(n) div.stButton button {{
                     background: #10B981 !important;
