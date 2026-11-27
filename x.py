@@ -1798,64 +1798,15 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45); z-index: 9999999;
                 }}
                 .block-container {{ padding-bottom: 0rem !important; }}
-                iframe[height="56"] {{
-                    position: fixed !important;
-                    bottom: 24px !important;
-                    left: 24px !important;
-                    width: 56px !important;
-                    height: 56px !important;
-                    z-index: 9999999 !important;
-                    border: none !important;
-                }}
+
                 </style>
 
+             <a href="#page-top-start" class="scroll-top-btn" title="العودة للأعلى">↑</a>
+         """, unsafe_allow_html=True)
 
                 <a href="{wa_float_link}" target="_blank" class="floating-wa-btn" title="تواصل معنا عبر WhatsApp">💬</a>
             """, unsafe_allow_html=True)
-            st.components.v1.html("""
-                <style>
-                body { margin: 0; background: transparent; overflow: hidden; }
-                #mechBtn {
-                    position: fixed; bottom: 0; left: 0;
-                    width: 52px; height: 52px; border-radius: 50%;
-                    background: #10B981; color: #022C22; border: none;
-                    font-size: 22px; font-weight: 900; cursor: pointer;
-                    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
-                    display: flex; align-items: center; justify-content: center;
-                    transition: transform 0.25s ease, background 0.25s ease;
-                }
-                #mechBtn:hover { background: #059669; color: #fff; transform: translateY(-2px); }
-                </style>
-                <button id="mechBtn" title="العودة للأعلى">↑</button>
-                <script>
-                document.getElementById('mechBtn').onclick = function() {
-                    const pDoc = window.parent.document;
-                    const targets = [
-                        pDoc.querySelector('[data-testid="stAppViewContainer"]'),
-                        pDoc.querySelector('section.main'),
-                        pDoc.querySelector('.main'),
-                        pDoc.documentElement,
-                        pDoc.body
-                    ];
-                    targets.forEach(function(el) {
-                        if (!el) return;
-                        const start = el.scrollTop || 0;
-                        if (start > 0) {
-                            const startTime = performance.now();
-                            const duration = 750;
-                            function animateScroll(now) {
-                                const elapsed = now - startTime;
-                                const progress = Math.min(elapsed / duration, 1);
-                                const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-                                el.scrollTop = start * (1 - easeOutCubic);
-                                if (progress < 1) requestAnimationFrame(animateScroll);
-                            }
-                            requestAnimationFrame(animateScroll);
-                        }
-                    });
-                };
-                </script>
-            """, height=56)
+
 
 
 
