@@ -2199,15 +2199,12 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
                 _, col_btm_nav, _ = st.columns([0.9, 1.6, 0.9])
                 with col_btm_nav:
-                    if can_resume_trial:
-                        if st.button(f"↩️ تراجع والعودة لمتجري لإكمال الساعات المتبقية ({rem_hrs_display} ساعة)", key="resume_trial_back_btn"):
-                            st.session_state["active_merchant_user"] = exp_mail
-                            st.session_state.pop("expired_trial_email", None)
-                            st.rerun()
                     if st.button("تسجيل الخروج والعودة للرئيسية", key="back_home_from_upgrade"):
                         st.session_state.pop("expired_trial_email", None)
+                        st.session_state.pop("receipt_uploaded_done", None)
                         st.session_state["landing_step"] = "home"
                         st.rerun()
+
 
             else:
                 _, col_login_mid, _ = st.columns([1.0, 1.4, 1.0])
@@ -2845,6 +2842,25 @@ if is_boss_link:
                     if os.path.exists(rec_local_path):
                         with st.expander(f"💰 وصل دفع مرفق من التاجر ({current_email}) — اضغط للمعاينة"):
                             st.image(rec_local_path, caption="إيصال التحويل البنكي / البريدي", width=350)
+                            if st.button("🗑️ حذف صورة وصل الدفع", key=f"del_receipt_img_{current_email}"):
+                                try:
+                                    if os.path.exists(rec_local_path):
+                                        os.remove(rec_local_path)
+                                    tk_del, rp_del = st.secrets.get("GITHUB_TOKEN"), st.secrets.get("GITHUB_REPO")
+                                    if tk_del and rp_del:
+                                        api_del = "https://" + "api" + "." + "github" + "." + "com/repos"
+                                        url_del = f"{api_del}/{rp_del}/contents/{rec_local_path}"
+                                        hdr_del = {"Authorization": f"Bearer {tk_del}", "Accept": "application/vnd.github.v3+json"}
+                                        res_d = requests.get(url_del, headers=hdr_del)
+                                        if res_d.status_code == 200:
+                                            requests.delete(url_del, json={"message": f"Delete {rec_local_path}", "sha": res_d.json().get("sha")}, headers=hdr_del)
+                                    log_admin_action(current_email, "DELETE_RECEIPT", "حذف صورة وصل الدفع")
+                                    st.success("✅ تم حذف صورة الوصل بنجاح!")
+                                    time.sleep(0.5)
+                                    st.rerun()
+                                except Exception as e_del:
+                                    st.error(f"⚠️ تعذر حذف الصورة: {e_del}")
+
                     col_1, col_2, col_3, col_4, col_5, col_6 = st.columns(6)
                     with col_1:
                         if st.button("⚡ تفعيل وقبول حياً", key=f"btn_act_{current_email}"):
