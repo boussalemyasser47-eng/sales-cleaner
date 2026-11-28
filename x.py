@@ -2101,106 +2101,59 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
 
 
         elif st.session_state["landing_step"] == "login":
-            _, col_login_mid, _ = st.columns([1.0, 1.4, 1.0])
-            with col_login_mid:
-                st.markdown("""
-                    <style>
-                    /* تحويل زر نسيت كلمة المرور إلى رابط نصي أنيق مثل Google */
-                    div[class*="st-key-google_style_fp_link"] button {
-                        background: transparent !important;
-                        border: none !important;
-                        box-shadow: none !important;
-                        color: #38BDF8 !important;
-                        font-size: 13.5px !important;
-                        font-weight: 600 !important;
-                        min-height: 28px !important;
-                        padding: 0 !important;
-                        text-align: right !important;
-                        justify-content: flex-start !important;
-                    }
-                    div[class*="st-key-google_style_fp_link"] button:hover {
-                        color: #10B981 !important;
-                        text-decoration: underline !important;
-                        transform: none !important;
-                    }
-                    </style>
-                    <div style="background: #111827; border: 1px solid #1F2937; border-radius: 16px; padding: 24px; margin-top: 25px; margin-bottom: 18px; direction: rtl; text-align: right;">
-                        <h2 style="color: #F8FAFC !important; margin: 0 0 6px 0; font-size: 22px; font-weight: 700;">تسجيل الدخول إلى المتجر</h2>
-                        <p style="color: #94A3B8 !important; margin: 0; font-size: 13.5px;">أدخل بيانات حسابك للوصول إلى لوحة التحكم الخاصة بك.</p>
-                    </div>
-                """, unsafe_allow_html=True)
-
-                input_email = st.text_input("البريد الإلكتروني", placeholder="name@gmail.com", key="merchant_em")
-                input_password = st.text_input("كلمة المرور", type="password", placeholder="••••••••", key="merchant_pw")
-                clean_email = input_email.strip()
-                clean_pass = input_password.strip()
-
-                # 🔗 الرابط النصي الأنيق تحت كلمة المرور مباشرة (مثل Google)
-                if st.button("هل نسيت كلمة المرور؟", key="google_style_fp_link"):
-                    st.session_state["prefill_fp_email"] = clean_email
-                    st.session_state["landing_step"] = "forgot_password"
-                    st.rerun()
-
-                st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
-                if st.button("دخول إلى لوحة التحكم", key="login_submit_enterprise"):
-                    if clean_email == "" or clean_pass == "":
-                        st.error("يرجى إدخال البريد الإلكتروني وكلمة المرور.")
-                    else:
-                        conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        cursor_login = conn_login.cursor()
-                        cursor_login.execute("SELECT status, created_at, package FROM saas_users_auth WHERE LOWER(TRIM(email)) = ? AND password = ?", (clean_email.lower(), clean_pass))
-                        user_row = cursor_login.fetchone()
-
-                        if user_row:
-                            u_status, u_created, u_pkg = str(user_row), str(user_row or ""), str(user_row or "29k")
-                            trial_expired = False
-                            if "تجربة مجانية" in u_status and u_created:
-                                try:
-                                    start_dt = datetime.strptime(u_created.split("."), "%Y-%m-%d %H:%M:%S")
-                                    if (datetime.now() - start_dt).total_seconds() > 3 * 86400:
-                                        trial_expired = True
-                                        cursor_login.execute("UPDATE saas_users_auth SET status = '⏳ انتهت التجربة المجانية - بانتظار الدفع' WHERE LOWER(TRIM(email)) = ?", (clean_email.lower(),))
-                                        conn_login.commit()
-                                        save_to_github_fast()
-                                except Exception:
-                                    pass
-                            conn_login.close()
-
-                            if "مفعّل" in u_status and not trial_expired:
-                                st.session_state["active_merchant_user"] = clean_email
-                                st.success("تم التحقق بنجاح. جاري فتح لوحة التحكم...")
-                                time.sleep(0.5)
-                                st.rerun()
-                            else:
-                                st.session_state["expired_trial_email"] = clean_email
-                                st.session_state["expired_trial_pkg"] = u_pkg
-                                st.warning("⚠️ انتهت فترة التجربة المجانية (3 أيام) أو حسابك بانتظار التفعيل السنوي. أكمل الدفع أدناه للتفعيل الفوري.")
-                        else:
-                            conn_login.close()
-                            st.error("❌ البريد الإلكتروني أو كلمة المرور غير صحيحة.")
-            # 💳 صندوق الدفع الآمن بعرض متناسق للباقات الثلاث
             if st.session_state.get("expired_trial_email"):
                 exp_mail = st.session_state["expired_trial_email"]
+
+                conn_rem = sqlite3.connect("saas_security_vault.db", timeout=10)
+                rem_row = conn_rem.cursor().execute("SELECT status, created_at FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (exp_mail.lower(),)).fetchone()
+                conn_rem.close()
+
+                can_resume_trial = False
+                rem_hrs_display = 0
+                if rem_row and "تجربة مجانية" in str(rem_row[0]) and rem_row[1]:
+                    try:
+                        st_trial = datetime.strptime(str(rem_row[1]).split(".")[0], "%Y-%m-%d %H:%M:%S")
+                        elapsed_h = (datetime.now() - st_trial).total_seconds() / 3600.0
+                        if elapsed_h < 72:
+                            can_resume_trial = True
+                            rem_hrs_display = max(1, int(72 - elapsed_h))
+                    except Exception:
+                        pass
+
+                _, col_up_hdr, _ = st.columns([0.5, 2.5, 0.5])
+                with col_up_hdr:
+                    st.markdown(f"""
+                        <div style="background: #111827; border: 1px solid #10B981; border-radius: 16px; padding: 20px; margin-top: 15px; margin-bottom: 12px; direction: rtl; text-align: right;">
+                            <h2 style="color: #F8FAFC !important; margin: 0 0 6px 0; font-size: 21px; font-weight: 800;">💳 ترقية الاشتراك السنوي للحساب: <span style="color:#10B981;">{exp_mail}</span></h2>
+                            <p style="color: #94A3B8 !important; margin: 0; font-size: 13.5px;">اختر باقتك السنوية وارفع وصل الدفع لإرسال طلب التفعيل، أو عُد لمتجرك لإكمال ساعات تجربتك المجانية.</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                    if can_resume_trial:
+                        if st.button(f"↩️ العودة إلى لوحة التحكم وإكمال الساعات المتبقية ({rem_hrs_display} ساعة)", key="top_resume_trial_back_btn"):
+                            st.session_state["active_merchant_user"] = exp_mail
+                            st.session_state.pop("expired_trial_email", None)
+                            st.rerun()
+
                 _, col_pkg_wide, _ = st.columns([0.15, 3.2, 0.15])
                 with col_pkg_wide:
-                    st.markdown("<h4 style='color: #10B981; text-align: center; direction: rtl; margin: 20px 0 6px 0;'>🏷️ اختر باقتك السنوية المناسبة قبل التحويل:</h4>", unsafe_allow_html=True)
+                    st.markdown("<h4 style='color: #10B981; text-align: center; direction: rtl; margin: 16px 0 6px 0;'>🏷️ اختر باقتك السنوية المناسبة:</h4>", unsafe_allow_html=True)
                     chosen_upgrade_pkg = render_premium_neon_packages(is_trial_mode=False)
                     st.session_state["expired_trial_pkg"] = chosen_upgrade_pkg
-
                 pkg_price_label = "29,000 DA" if "29k" in chosen_upgrade_pkg else ("65,000 DA" if "65k" in chosen_upgrade_pkg else "45,000 DA")
                 rip_val = st.secrets.get("MY_RIP", "تواصل مع الإدارة عبر واتساب")
                 ccp_val = st.secrets.get("MY_CCP", "تواصل مع الإدارة عبر واتساب")
-                wa_admin = st.secrets.get("SUPPORT_WHATSAPP", "213655000000")
+                wa_admin = st.secrets.get("SUPPORT_WHATSAPP", "213654742605")
 
-                _, col_pay_mid, _ = st.columns([1.0, 1.4, 1.0])
+                _, col_pay_mid, _ = st.columns([0.9, 1.6, 0.9])
                 with col_pay_mid:
                     st.markdown(f"""
                         <div style="background: #0F172A; border: 1px solid #10B981; border-radius: 14px; padding: 18px; margin-top: 12px; direction: rtl; text-align: right;">
-                            <div style="color: #10B981; font-weight: 800; font-size: 16px; margin-bottom: 8px;">🛡️ بوابة التفعيل السنوي الآمن — {chosen_upgrade_pkg} ({pkg_price_label})</div>
-                            <p style="color: #E2E8F0; font-size: 13px; margin: 4px 0;">• <b>رقم RIP (BaridiMob):</b> <span style="color: #38BDF8;">{rip_val}</span></p>
-                            <p style="color: #E2E8F0; font-size: 13px; margin: 4px 0;">• <b>حساب CCP:</b> <span style="color: #38BDF8;">{ccp_val}</span></p>
+                            <div style="color: #10B981; font-weight: 800; font-size: 16px; margin-bottom: 8px;">🛡️ بوابة الدفع الآمن — {chosen_upgrade_pkg} ({pkg_price_label})</div>
+                            <p style="color: #E2E8F0; font-size: 13.5px; margin: 4px 0;">• <b>رقم RIP (BaridiMob):</b> <span style="color: #38BDF8;">{rip_val}</span></p>
+                            <p style="color: #E2E8F0; font-size: 13.5px; margin: 4px 0;">• <b>حساب CCP:</b> <span style="color: #38BDF8;">{ccp_val}</span></p>
                             <div style="background: rgba(16, 185, 129, 0.1); border-right: 3px solid #10B981; padding: 10px; margin-top: 10px; border-radius: 6px; font-size: 12px; color: #CBD5E1;">
-                                <b>ضمان الثقة 100%:</b> التفعيل يتم خلال أقل من 15 دقيقة من رفع وصل الدفع، مع ضمان استرجاع كامل المبلغ في حال عدم الرضا خلال 7 أيام.
+                                <b>ضمان الثقة 100%:</b> التفعيل يتم خلال أقل من 15 دقيقة من رفع وصل الدفع، مع ضمان استرجاع كامل المبلغ خلال 7 أيام.
                             </div>
                         </div>
                     """, unsafe_allow_html=True)
@@ -2211,56 +2164,124 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                     st.link_button("💬 تواصل مباشر مع الإدارة عبر WhatsApp", wa_direct_url)
 
                     receipt_file = st.file_uploader("📤 ارفع صورة وصل الدفع (BaridiMob / CCP):", type=["png", "jpg", "jpeg"], key="upload_payment_receipt")
-                    if receipt_file is not None and st.button("✅ إرسال وصل الدفع وطلب التفعيل الفوري", key="submit_receipt_btn"):
-                        os.makedirs("receipts", exist_ok=True)
-                        rec_path = f"receipts/receipt_{urllib.parse.quote_plus(exp_mail)}.png"
-                        with open(rec_path, "wb") as f:
-                            f.write(receipt_file.read())
+                    if st.button("✅ إرسال بيانات الترقية ووصل الدفع", key="submit_receipt_btn"):
+                        if receipt_file is None:
+                            st.error("⚠️ يرجى رفع صورة وصل الدفع أولاً قبل الإرسال.")
+                        else:
+                            os.makedirs("receipts", exist_ok=True)
+                            rec_path = f"receipts/receipt_{urllib.parse.quote_plus(exp_mail)}.png"
+                            with open(rec_path, "wb") as f:
+                                f.write(receipt_file.read())
 
-                        conn_up = sqlite3.connect("saas_security_vault.db", timeout=10)
-                        conn_up.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE LOWER(TRIM(email)) = ?", (chosen_upgrade_pkg, exp_mail.lower()))
-                        conn_up.commit(); conn_up.close()
+                            conn_up = sqlite3.connect("saas_security_vault.db", timeout=10)
+                            conn_up.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE LOWER(TRIM(email)) = ?", (chosen_upgrade_pkg, exp_mail.lower()))
+                            conn_up.commit(); conn_up.close()
 
-                        save_to_github_fast(rec_path, "")
-                        save_to_github_fast()
-                        send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", ""), f"💰 وصل دفع جديد من: {exp_mail}", f"التاجر {exp_mail} اختار باقة: {chosen_upgrade_pkg} ({pkg_price_label}) ورفع وصل الدفع.", action_type="ACTIVATE")
-                        st.success("🎉 تم استلام وصل الدفع وحفظ باقتك بنجاح! سيتم تفعيل حسابك السنوي خلال دقائق.")
-
-                    conn_rem = sqlite3.connect("saas_security_vault.db", timeout=10)
-                    rem_row = conn_rem.cursor().execute("SELECT status, created_at FROM saas_users_auth WHERE LOWER(TRIM(email)) = ?", (exp_mail.lower(),)).fetchone()
-                    conn_rem.close()
-
-                    can_resume_trial = False
-                    rem_hrs_display = 0
-                    if rem_row and "تجربة مجانية" in str(rem_row) and rem_row:
-                        try:
-                            st_trial = datetime.strptime(str(rem_row).split("."), "%Y-%m-%d %H:%M:%S")
-                            elapsed_h = (datetime.now() - st_trial).total_seconds() / 3600.0
-                            if elapsed_h < 72:
-                                can_resume_trial = True
-                                rem_hrs_display = max(1, int(72 - elapsed_h))
-                        except Exception:
-                            pass
+                            save_to_github_fast(rec_path, "")
+                            save_to_github_fast()
+                            send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", ""), f"💰 وصل دفع جديد من: {exp_mail}", f"التاجر {exp_mail} اختار باقة: {chosen_upgrade_pkg} ({pkg_price_label}) ورفع وصل الدفع.", action_type="ACTIVATE")
+                            st.success("🎉 تم إرسال بياناتك ووصل الدفع للإدارة بنجاح! سيتم تفعيل باقتك السنوية خلال دقائق، ويمكنك الآن العودة لمتجرك لإكمال ساعاتك المتبقية.")
 
                     if can_resume_trial:
                         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-                        if st.button(f"↩️ لم أقرر الشراء بعد — العودة للمتجر وإكمال الساعات المتبقية ({rem_hrs_display} ساعة)", key="resume_trial_back_btn"):
+                        if st.button(f"↩️ العودة إلى لوحة التحكم وإكمال الساعات المتبقية ({rem_hrs_display} ساعة)", key="resume_trial_back_btn"):
                             st.session_state["active_merchant_user"] = exp_mail
                             st.session_state.pop("expired_trial_email", None)
                             st.rerun()
 
-            _, col_nav_mid, _ = st.columns([1.0, 1.4, 1.0])
-            with col_nav_mid:
-                st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-                col_nav1, col_nav2 = st.columns(2)
-                with col_nav1:
-                    if st.button("إنشاء حساب جديد", key="switch_to_reg_btn"):
-                        st.session_state["landing_step"] = "register"
-                        st.rerun()
-                with col_nav2:
-                    if st.button("العودة للرئيسية", key="back_home_from_login"):
+                    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+                    if st.button("تسجيل الخروج والعودة للرئيسية", key="back_home_from_upgrade"):
+                        st.session_state.pop("expired_trial_email", None)
                         st.session_state["landing_step"] = "home"
                         st.rerun()
+            else:
+                _, col_login_mid, _ = st.columns([1.0, 1.4, 1.0])
+                with col_login_mid:
+                    st.markdown("""
+                        <style>
+                        div[class*="st-key-google_style_fp_link"] button {
+                            background: transparent !important;
+                            border: none !important;
+                            box-shadow: none !important;
+                            color: #38BDF8 !important;
+                            font-size: 13.5px !important;
+                            font-weight: 600 !important;
+                            min-height: 28px !important;
+                            padding: 0 !important;
+                            text-align: right !important;
+                            justify-content: flex-start !important;
+                        }
+                        div[class*="st-key-google_style_fp_link"] button:hover {
+                            color: #10B981 !important;
+                            text-decoration: underline !important;
+                            transform: none !important;
+                        }
+                        </style>
+                        <div style="background: #111827; border: 1px solid #1F2937; border-radius: 16px; padding: 24px; margin-top: 25px; margin-bottom: 18px; direction: rtl; text-align: right;">
+                            <h2 style="color: #F8FAFC !important; margin: 0 0 6px 0; font-size: 22px; font-weight: 700;">تسجيل الدخول إلى المتجر</h2>
+                            <p style="color: #94A3B8 !important; margin: 0; font-size: 13.5px;">أدخل بيانات حسابك للوصول إلى لوحة التحكم الخاصة بك.</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                    input_email = st.text_input("البريد الإلكتروني", placeholder="name@gmail.com", key="merchant_em")
+                    input_password = st.text_input("كلمة المرور", type="password", placeholder="••••••••", key="merchant_pw")
+                    clean_email = input_email.strip()
+                    clean_pass = input_password.strip()
+
+                    if st.button("هل نسيت كلمة المرور؟", key="google_style_fp_link"):
+                        st.session_state["prefill_fp_email"] = clean_email
+                        st.session_state["landing_step"] = "forgot_password"
+                        st.rerun()
+
+                    st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
+                    if st.button("دخول إلى لوحة التحكم", key="login_submit_enterprise"):
+                        if clean_email == "" or clean_pass == "":
+                            st.error("يرجى إدخال البريد الإلكتروني وكلمة المرور.")
+                        else:
+                            conn_login = sqlite3.connect("saas_security_vault.db", timeout=10)
+                            cursor_login = conn_login.cursor()
+                            cursor_login.execute("SELECT status, created_at, package FROM saas_users_auth WHERE LOWER(TRIM(email)) = ? AND password = ?", (clean_email.lower(), clean_pass))
+                            user_row = cursor_login.fetchone()
+
+                            if user_row:
+                                u_status, u_created, u_pkg = str(user_row[0]), str(user_row[1] or ""), str(user_row[2] or "29k")
+                                trial_expired = False
+                                if "تجربة مجانية" in u_status and u_created:
+                                    try:
+                                        start_dt = datetime.strptime(u_created.split(".")[0], "%Y-%m-%d %H:%M:%S")
+                                        if (datetime.now() - start_dt).total_seconds() > 3 * 86400:
+                                            trial_expired = True
+                                            cursor_login.execute("UPDATE saas_users_auth SET status = '⏳ انتهت التجربة المجانية - بانتظار الدفع' WHERE LOWER(TRIM(email)) = ?", (clean_email.lower(),))
+                                            conn_login.commit()
+                                            save_to_github_fast()
+                                    except Exception:
+                                        pass
+                                conn_login.close()
+
+                                if "مفعّل" in u_status and not trial_expired:
+                                    st.session_state["active_merchant_user"] = clean_email
+                                    st.success("تم التحقق بنجاح. جاري فتح لوحة التحكم...")
+                                    time.sleep(0.5)
+                                    st.rerun()
+                                else:
+                                    st.session_state["expired_trial_email"] = clean_email
+                                    st.session_state["expired_trial_pkg"] = u_pkg
+                                    st.rerun()
+                            else:
+                                conn_login.close()
+                                st.error("❌ البريد الإلكتروني أو كلمة المرور غير صحيحة.")
+
+                    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+                    col_nav1, col_nav2 = st.columns(2)
+                    with col_nav1:
+                        if st.button("إنشاء حساب جديد", key="switch_to_reg_btn"):
+                            st.session_state["landing_step"] = "register"
+                            st.rerun()
+                    with col_nav2:
+                        if st.button("العودة للرئيسية", key="back_home_from_login"):
+                            st.session_state["landing_step"] = "home"
+                            st.rerun()
+
         # 🔐 شاشة استعادة كلمة المرور المستقلة (نمط Google Account Recovery)
         elif st.session_state["landing_step"] == "forgot_password":
             _, col_fp_page, _ = st.columns([1.0, 1.4, 1.0])
