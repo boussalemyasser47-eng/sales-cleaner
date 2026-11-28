@@ -1216,8 +1216,9 @@ import re
 # ====================================================================
 
 def render_premium_neon_packages(is_trial_mode=True):
-    has_selected = "selected_neon_package" in st.session_state
-    current_choice = st.session_state.get("selected_neon_package", "الباقة الاحترافية المتوسطة (45k)")
+    has_selected = bool(st.session_state.get("selected_neon_package"))
+    current_choice = st.session_state.get("selected_neon_package") or ""
+
 
     if not has_selected:
         cls_b = cls_p = cls_c = "price-card"
@@ -1360,11 +1361,12 @@ def render_premium_neon_packages(is_trial_mode=True):
     chosen_package = st.radio(
         radio_label,
         ["الباقة الأساسية المبتدئة (29k)", "الباقة الاحترافية المتوسطة (45k)", "الباقة السيبرانية الخارقة (65k)"],
-        index=1,
+        index=1 if is_trial_mode else None,
         horizontal=True,
         key="selected_neon_package"
     )
     return chosen_package
+
 
 
 
@@ -2139,61 +2141,74 @@ if not is_boss_link and "active_merchant_user" not in st.session_state:
                 with col_pkg_wide:
                     st.markdown("<h4 style='color: #10B981; text-align: center; direction: rtl; margin: 16px 0 6px 0;'>🏷️ اختر باقتك السنوية المناسبة:</h4>", unsafe_allow_html=True)
                     chosen_upgrade_pkg = render_premium_neon_packages(is_trial_mode=False)
+
+                if chosen_upgrade_pkg:
                     st.session_state["expired_trial_pkg"] = chosen_upgrade_pkg
-                pkg_price_label = "29,000 DA" if "29k" in chosen_upgrade_pkg else ("65,000 DA" if "65k" in chosen_upgrade_pkg else "45,000 DA")
-                rip_val = st.secrets.get("MY_RIP", "تواصل مع الإدارة عبر واتساب")
-                ccp_val = st.secrets.get("MY_CCP", "تواصل مع الإدارة عبر واتساب")
-                wa_admin = st.secrets.get("SUPPORT_WHATSAPP", "213654742605")
+                    pkg_price_label = "29,000 DA" if "29k" in chosen_upgrade_pkg else ("65,000 DA" if "65k" in chosen_upgrade_pkg else "45,000 DA")
+                    rip_val = st.secrets.get("MY_RIP", "تواصل مع الإدارة عبر واتساب")
+                    ccp_val = st.secrets.get("MY_CCP", "تواصل مع الإدارة عبر واتساب")
+                    wa_admin = st.secrets.get("SUPPORT_WHATSAPP", "213654742605")
 
-                _, col_pay_mid, _ = st.columns([0.9, 1.6, 0.9])
-                with col_pay_mid:
-                    st.markdown(f"""
-                        <div style="background: #0F172A; border: 1px solid #10B981; border-radius: 14px; padding: 18px; margin-top: 12px; direction: rtl; text-align: right;">
-                            <div style="color: #10B981; font-weight: 800; font-size: 16px; margin-bottom: 8px;">🛡️ بوابة الدفع الآمن — {chosen_upgrade_pkg} ({pkg_price_label})</div>
-                            <p style="color: #E2E8F0; font-size: 13.5px; margin: 4px 0;">• <b>رقم RIP (BaridiMob):</b> <span style="color: #38BDF8;">{rip_val}</span></p>
-                            <p style="color: #E2E8F0; font-size: 13.5px; margin: 4px 0;">• <b>حساب CCP:</b> <span style="color: #38BDF8;">{ccp_val}</span></p>
-                            <div style="background: rgba(16, 185, 129, 0.1); border-right: 3px solid #10B981; padding: 10px; margin-top: 10px; border-radius: 6px; font-size: 12px; color: #CBD5E1;">
-                                <b>ضمان الثقة 100%:</b> التفعيل يتم خلال أقل من 15 دقيقة من رفع وصل الدفع، مع ضمان استرجاع كامل المبلغ خلال 7 أيام.
+                    _, col_pay_mid, _ = st.columns([0.9, 1.6, 0.9])
+                    with col_pay_mid:
+                        st.markdown(f"""
+                            <div style="background: #0F172A; border: 1px solid #10B981; border-radius: 14px; padding: 18px; margin-top: 12px; direction: rtl; text-align: right;">
+                                <div style="color: #10B981; font-weight: 800; font-size: 16px; margin-bottom: 8px;">🛡️ بوابة الدفع الآمن — {chosen_upgrade_pkg} ({pkg_price_label})</div>
+                                <p style="color: #E2E8F0; font-size: 13.5px; margin: 4px 0;">• <b>رقم RIP (BaridiMob):</b> <span style="color: #38BDF8;">{rip_val}</span></p>
+                                <p style="color: #E2E8F0; font-size: 13.5px; margin: 4px 0;">• <b>حساب CCP:</b> <span style="color: #38BDF8;">{ccp_val}</span></p>
+                                <div style="background: rgba(16, 185, 129, 0.1); border-right: 3px solid #10B981; padding: 10px; margin-top: 10px; border-radius: 6px; font-size: 12px; color: #CBD5E1;">
+                                    <b>ضمان الثقة 100%:</b> التفعيل يتم خلال أقل من 15 دقيقة من رفع وصل الدفع، مع ضمان استرجاع كامل المبلغ خلال 7 أيام.
+                                </div>
                             </div>
-                        </div>
-                    """, unsafe_allow_html=True)
+                        """, unsafe_allow_html=True)
 
-                    wa_txt = urllib.parse.quote(f"مرحباً إدارة Tijaratna DataDZ، أريد تفعيل اشتراكي السنوي للحساب: {exp_mail} | الباقة المختارة: {chosen_upgrade_pkg} ({pkg_price_label})")
-                    clean_wa_admin = str(wa_admin).replace("+", "").strip()
-                    wa_direct_url = "https://wa.me" + "/" + clean_wa_admin + "?text=" + wa_txt
-                    st.link_button("💬 تواصل مباشر مع الإدارة عبر WhatsApp", wa_direct_url)
+                        wa_txt = urllib.parse.quote(f"مرحباً إدارة Tijaratna DataDZ، أريد تفعيل اشتراكي السنوي للحساب: {exp_mail} | الباقة المختارة: {chosen_upgrade_pkg} ({pkg_price_label})")
+                        clean_wa_admin = str(wa_admin).replace("+", "").strip()
+                        wa_direct_url = "https://wa.me" + "/" + clean_wa_admin + "?text=" + wa_txt
+                        st.link_button("💬 تواصل مباشر مع الإدارة عبر WhatsApp", wa_direct_url)
 
-                    receipt_file = st.file_uploader("📤 ارفع صورة وصل الدفع (BaridiMob / CCP):", type=["png", "jpg", "jpeg"], key="upload_payment_receipt")
-                    if st.button("✅ إرسال بيانات الترقية ووصل الدفع", key="submit_receipt_btn"):
-                        if receipt_file is None:
-                            st.error("⚠️ يرجى رفع صورة وصل الدفع أولاً قبل الإرسال.")
-                        else:
-                            os.makedirs("receipts", exist_ok=True)
-                            rec_path = f"receipts/receipt_{urllib.parse.quote_plus(exp_mail)}.png"
-                            with open(rec_path, "wb") as f:
-                                f.write(receipt_file.read())
+                        receipt_file = st.file_uploader("📤 ارفع صورة وصل الدفع (BaridiMob / CCP):", type=["png", "jpg", "jpeg"], key="upload_payment_receipt")
+                        if st.button("✅ إرسال بيانات الترقية ووصل الدفع", key="submit_receipt_btn"):
+                            if receipt_file is None:
+                                st.error("⚠️ يرجى رفع صورة وصل الدفع أولاً قبل الإرسال.")
+                            else:
+                                os.makedirs("receipts", exist_ok=True)
+                                rec_path = f"receipts/receipt_{urllib.parse.quote_plus(exp_mail)}.png"
+                                with open(rec_path, "wb") as f:
+                                    f.write(receipt_file.read())
 
-                            conn_up = sqlite3.connect("saas_security_vault.db", timeout=10)
-                            conn_up.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE LOWER(TRIM(email)) = ?", (chosen_upgrade_pkg, exp_mail.lower()))
-                            conn_up.commit(); conn_up.close()
+                                conn_up = sqlite3.connect("saas_security_vault.db", timeout=10)
+                                conn_up.cursor().execute("UPDATE saas_users_auth SET package = ? WHERE LOWER(TRIM(email)) = ?", (chosen_upgrade_pkg, exp_mail.lower()))
+                                conn_up.commit(); conn_up.close()
 
-                            save_to_github_fast(rec_path, "")
-                            save_to_github_fast()
-                            send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", ""), f"💰 وصل دفع جديد من: {exp_mail}", f"التاجر {exp_mail} اختار باقة: {chosen_upgrade_pkg} ({pkg_price_label}) ورفع وصل الدفع.", action_type="ACTIVATE")
-                            st.success("🎉 تم إرسال بياناتك ووصل الدفع للإدارة بنجاح! سيتم تفعيل باقتك السنوية خلال دقائق، ويمكنك الآن العودة لمتجرك لإكمال ساعاتك المتبقية.")
+                                save_to_github_fast(rec_path, "")
+                                save_to_github_fast()
+                                send_gmail_notification_with_log(st.secrets.get("GMAIL_USER", ""), f"💰 وصل دفع جديد من: {exp_mail}", f"التاجر {exp_mail} اختار باقة: {chosen_upgrade_pkg} ({pkg_price_label}) ورفع وصل الدفع.", action_type="ACTIVATE")
+                                st.session_state["receipt_uploaded_done"] = True
+                                st.success("🎉 تم إرسال بياناتك ووصل الدفع للإدارة بنجاح! سيتم تفعيل باقتك السنوية خلال دقائق.")
 
+                        if st.session_state.get("receipt_uploaded_done") and can_resume_trial:
+                            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+                            if st.button(f"↩️ العودة إلى لوحة التحكم وإكمال الساعات المتبقية ({rem_hrs_display} ساعة)", key="after_send_resume_btn"):
+                                st.session_state["active_merchant_user"] = exp_mail
+                                st.session_state.pop("expired_trial_email", None)
+                                st.session_state.pop("receipt_uploaded_done", None)
+                                st.rerun()
+                else:
+                    st.info("👆 يرجى اختيار إحدى الباقات الثلاث أعلاه أولاً لإظهار معلومات الدفع ورفع الوصل.")
+
+                _, col_btm_nav, _ = st.columns([0.9, 1.6, 0.9])
+                with col_btm_nav:
                     if can_resume_trial:
-                        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-                        if st.button(f"↩️ العودة إلى لوحة التحكم وإكمال الساعات المتبقية ({rem_hrs_display} ساعة)", key="resume_trial_back_btn"):
+                        if st.button(f"↩️ تراجع والعودة لمتجري لإكمال الساعات المتبقية ({rem_hrs_display} ساعة)", key="resume_trial_back_btn"):
                             st.session_state["active_merchant_user"] = exp_mail
                             st.session_state.pop("expired_trial_email", None)
                             st.rerun()
-
-                    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
                     if st.button("تسجيل الخروج والعودة للرئيسية", key="back_home_from_upgrade"):
                         st.session_state.pop("expired_trial_email", None)
                         st.session_state["landing_step"] = "home"
                         st.rerun()
+
             else:
                 _, col_login_mid, _ = st.columns([1.0, 1.4, 1.0])
                 with col_login_mid:
